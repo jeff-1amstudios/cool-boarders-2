@@ -82,5 +82,7 @@ segments:
       - [0xBD9C, c, clear_globals]
       - [0xBDB4, c, table_exchange]
       - [0xBDD0, asm, boot_after_globals]
+      - [0xC708, c, two_command_calls]
+      - [0xC748, asm, after_two_command_calls]
       - [0x35BA8, data, 35BA8] # estimated
   - [0x41000]
