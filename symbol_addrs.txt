@@ -11,3 +11,4 @@ func_80014388 = 0x80014388; // type:func size:0x58
 func_8001787C = 0x8001787C; // type:func size:0x30
 func_8001B59C = 0x8001B59C; // type:func size:0x18
 func_8001B5B4 = 0x8001B5B4; // type:func size:0x1C
+func_80015F68 = 0x80015F68; // type:func size:0x30
