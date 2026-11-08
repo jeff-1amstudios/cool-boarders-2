@@ -1,0 +1,23 @@
+{
+  "scope": "Five integrated C reconstructions, also used for isolated compiler discrimination",
+  "probes": [
+    {"name": "queue_call", "address": "0x80013B30", "size": 48},
+    {"name": "poll_loop", "address": "0x80014388", "size": 88},
+    {"name": "sdk_calls", "address": "0x8001787C", "size": 48},
+    {"name": "clear_globals", "address": "0x8001B59C", "size": 24},
+    {"name": "table_exchange", "address": "0x8001B5B4", "size": 28}
+  ],
+  "external_symbols": {
+    "D_800580A8": "0x800580A8",
+    "D_80047D18": "0x80047D18",
+    "D_80047D1C": "0x80047D1C",
+    "func_8004097C": "0x8004097C",
+    "func_80013C70": "0x80013C70",
+    "func_8001B320": "0x8001B320",
+    "func_800449F8": "0x800449F8",
+    "func_8003BD60": "0x8003BD60",
+    "func_80044524": "0x80044524",
+    "func_80044578": "0x80044578",
+    "func_8003CA7C": "0x8003CA7C"
+  }
+}

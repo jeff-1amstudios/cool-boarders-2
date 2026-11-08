@@ -1,0 +1,150 @@
+{
+  "title": "Cool Boarders 2",
+  "region": "USA",
+  "serial": "SCUS-94358",
+  "verification": "All source hashes recorded and unchanged after extraction. Direct Redump verification pending.",
+  "tracks": [
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 01).bin",
+      "size": 154759248,
+      "sha1": "a6e71a783e06e6862c2d406eb8dc885201aa6108",
+      "sha256": "9fa6ac71924e178e86722c5304c99a9f1543f90c62e62ce4580efe1e59d6731a"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 02).bin",
+      "size": 41766816,
+      "sha1": "6c2d1cfa7ec1229f6c5a77e8ed322d8934a2df88",
+      "sha256": "1161ce1083c419cf787c44971cb3f1c83d22357add59500f5276a13a6eb85d44"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 03).bin",
+      "size": 22518048,
+      "sha1": "9505519ea20e2b585c5161281c6958aa39320ab8",
+      "sha256": "9e572d029ee7eb5986aafddbe7847b1b85b854fcf7d93cf32729fadfd6b19f21"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 04).bin",
+      "size": 35256480,
+      "sha1": "c04a9468bc29e5efba74440388041ba78b326a80",
+      "sha256": "047c4c8c062834ff97909f846a581fa5c0211cd1e6aae0c6e75f25104c782eea"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 05).bin",
+      "size": 39711168,
+      "sha1": "6c64c4a0aac0691af5367d127a810e0892dca23c",
+      "sha256": "eb2b77a973d5a9bcc8cb5f1868a0516422dfcc815b43d01b9593ad9f570d6a8e"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 06).bin",
+      "size": 31194576,
+      "sha1": "e98f4f2350129607c28fbb57ee72b566e24f76a6",
+      "sha256": "a3db30a59a23b1f25fd7911809f4af40b5cc0a7a84701f633ae85c2c0e52c6f0"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 07).bin",
+      "size": 41414016,
+      "sha1": "feef9dfffdae084a8c26f4e8ed63121b4dd24cec",
+      "sha256": "bff59ee2e8cf920941329b1508bd1a6cd7c2644e5ffeb5e0f34b83e2151806c8"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 08).bin",
+      "size": 36077328,
+      "sha1": "fc8c77afae129cdafeba50e9f19008cecab77ea4",
+      "sha256": "c10fd32bd2186c76accf70e040fb6b52314af0487def1099b8e5fe328f357903"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 09).bin",
+      "size": 36241968,
+      "sha1": "47ebbf0e8043cfe70f39340e0dac3468c6968923",
+      "sha256": "97ff35b17ad7732f5d30ade494a93d2b31152f454a6598fbfb39e3f25c72d7dc"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 10).bin",
+      "size": 37544976,
+      "sha1": "28fa17d04e12b40d41af3c8780f533d789ee4cd2",
+      "sha256": "f7c589e119c1d486191971a935b4687264ba88f4f4686e471ae3ba9683a6fe2b"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 11).bin",
+      "size": 28456848,
+      "sha1": "6256129c3390387042102eba75b650e396ecbbb8",
+      "sha256": "c1d0213a444a9334043568d2c273aeb729eb3d8ebf7ed324472c5f24b75ece96"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 12).bin",
+      "size": 42571200,
+      "sha1": "4ee6d370a22cc00a68aa15b415dca373a479ff56",
+      "sha256": "fed1394e32f0bb7b72b37eb95185a57aac82edfd2d2ab786cbdc36825cc49629"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 13).bin",
+      "size": 20972784,
+      "sha1": "801823be95f8579cbc06c59073d98e555a1e1d20",
+      "sha256": "8d2bdde4d1a17dc4721189f2bc411baf0cf2460b87b092a723d594a05e3077f1"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 14).bin",
+      "size": 12199824,
+      "sha1": "4908f18b642fa126470657b53eac253182dd6afd",
+      "sha256": "096fabb70bb53005626e12e5b1f03572870e59262f1772e4a7129dddf8774a3c"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 15).bin",
+      "size": 33240816,
+      "sha1": "8e8cacb6c540b11a443bcf5762cfe01a25884047",
+      "sha256": "88a1ae39f3f65886a2ea553ce2a77b486044504d9caab35bcffb1185005b9ed1"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 16).bin",
+      "size": 29813952,
+      "sha1": "0202430851066ac4d166e1435871a893f80f3273",
+      "sha256": "d7b005ce7bdf158c0b7f1533ec3d6cd1d98800bc083df1f80cc4b35d6863b9e6"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 17).bin",
+      "size": 1587600,
+      "sha1": "9c7e1f222617140fcd8dec1c80ef5525dc41d300",
+      "sha256": "e2b6d5daa9a5bd2f120aa04d01e1fa6caedeab3621e36818ef514f5a61417bd5"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 18).bin",
+      "size": 19860288,
+      "sha1": "772d1d47071c61fa1e95cec29592a8e9f3be95eb",
+      "sha256": "be93baf7bbca03a3b0180cea932cbe88f59e54aed454d4ba646e1f9c6b925a51"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 19).bin",
+      "size": 10990896,
+      "sha1": "684eb105cc852950dc39bde3d419b3a12132cfb7",
+      "sha256": "34d71981e72ad37878e410fb9d39fb8bc1fa6df89094d4079671c7412bef49cb"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 20).bin",
+      "size": 45859296,
+      "sha1": "8013736becd51b488da20bb8bcde2b8e1547b37e",
+      "sha256": "588a8ebfcac51a46bfef1a858eb1dae7e849f22c59cdb172e1e045addc06f292"
+    },
+    {
+      "filename": "Cool Boarders 2 (USA) (Track 21).bin",
+      "size": 3010560,
+      "sha1": "184f9ceae934d2789f9f225d641071817f768702",
+      "sha256": "d8bbd802f98c667345efc0dc40b77267d0a931e707d856db846f2cea685077f2"
+    }
+  ],
+  "boot_executable": {
+    "path": "SCUS_943.58",
+    "size": 266240,
+    "sha1": "0f49672190fead08b59abdcb0122a83864fefe32",
+    "sha256": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+    "psx_exe": {
+      "entrypoint": "0x800120FC",
+      "gp": "0x00000000",
+      "load_address": "0x80010000",
+      "payload_size": "0x00040800",
+      "bss_address": "0x00000000",
+      "bss_size": "0x00000000",
+      "stack_base": "0x801FFFF0",
+      "stack_offset": "0x00000000"
+    }
+  }
+}

@@ -1,0 +1,78 @@
+name: SCUS_943.58
+sha1: 0f49672190fead08b59abdcb0122a83864fefe32
+options:
+  basename: scus_943.58
+  target_path: orig/disc/files/SCUS_943.58
+  elf_path: build/scus_943.58.elf
+  base_path: .
+  platform: psx
+  compiler: PSYQ
+  generated_asm_macros_directory: build/include
+
+  # asm_path: asm
+  # src_path: src
+  # build_path: build
+  # create_asm_dependencies: True
+
+  ld_script_path: build/scus_943.58.ld
+  ld_dependencies: True
+
+  find_file_boundaries: False
+  gp_value: 0x80050274
+  # ld_gp_expression: main_SCOMMON_START + 0x7FF0
+
+  o_as_suffix: True
+  use_legacy_include_asm: False
+  migrate_rodata_to_functions: False
+
+  section_order: [".rodata", ".text", ".data", ".bss"]
+  # auto_link_sections: [".data", ".rodata", ".bss"]
+
+  symbol_addrs_path:
+    - symbol_addrs.txt
+  reloc_addrs_path:
+    - reloc_addrs.txt
+
+  undefined_funcs_auto_path: build/undefined_funcs_auto.txt
+  undefined_syms_auto_path: build/undefined_syms_auto.txt
+
+  # Preserve the observed non-16-byte-aligned section boundaries.
+  ld_align_section_vram_end: False
+
+  extensions_path: tools/splat_ext
+
+  subalign: 2
+
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 2
+  data_string_guesser_level: 2
+
+  # Uncomment this line if you need to use the maspsx reorder workaround hack
+  # https://github.com/mkst/maspsx?tab=readme-ov-file#include_asm-reordering-workaround-hack
+  # include_asm_macro_style: maspsx_hack
+segments:
+  - name: header
+    type: header
+    start: 0x0
+
+  - name: main
+    type: code
+    start: 0x800
+    vram: 0x80010000
+    # bss_size: Please fill out this value when you figure out the bss size
+    subsegments:
+      - [0x800, rodata, 800]
+      # 0x283C..0x28F4 is a pointer table, not code. First code is a return stub.
+      - [0x28F4, asm, boot]
+      - [0x4330, c, queue_call]
+      - [0x4360, asm, boot_after_queue]
+      - [0x4B88, c, poll_loop]
+      - [0x4BE0, asm, boot_after_poll]
+      - [0x807C, c, sdk_calls]
+      - [0x80AC, asm, boot_after_sdk_calls]
+      - [0xBD9C, c, clear_globals]
+      - [0xBDB4, c, table_exchange]
+      - [0xBDD0, asm, boot_after_globals]
+      - [0x35BA8, data, 35BA8] # estimated
+  - [0x41000]

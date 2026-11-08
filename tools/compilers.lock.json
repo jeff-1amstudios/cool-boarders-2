@@ -1,0 +1,24 @@
+{
+  "release": "decompals/old-gcc 0.17",
+  "assets": [
+    {
+      "name": "gcc-2.7.2-psx-macos.tar.gz",
+      "browser_download_url": "https://github.com/decompals/old-gcc/releases/download/0.17/gcc-2.7.2-psx-macos.tar.gz",
+      "digest": "sha256:4280894661c9792bc19f5c970c283d35381937fb44e479a91d0c044c95fcd208",
+      "size": 1953917
+    },
+    {
+      "name": "gcc-2.7.2-cdk-macos.tar.gz",
+      "browser_download_url": "https://github.com/decompals/old-gcc/releases/download/0.17/gcc-2.7.2-cdk-macos.tar.gz",
+      "digest": "sha256:43fe3df44badd23d57075adc06ab177d980b1e29f0392a5426e89f652c832d1a",
+      "size": 2225309
+    },
+    {
+      "name": "gcc-2.8.1-psx-macos.tar.gz",
+      "browser_download_url": "https://github.com/decompals/old-gcc/releases/download/0.17/gcc-2.8.1-psx-macos.tar.gz",
+      "digest": "sha256:bab0c6ea1f394573d5aabbdd7b37e36aceeb83c522141d946a87a9f58c199ea0",
+      "size": 2256255
+    }
+  ],
+  "maspsx_commit": "4ffa8b5106f9780d5d4aa7609f184949433ddbbc"
+}

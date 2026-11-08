@@ -1,0 +1,4 @@
+**
+!ghidra-install.lock.json
+!ghidra-docker/
+!ghidra-docker/**

@@ -1,0 +1,13 @@
+// Addresses observed in SCUS_943.58 (USA), SHA-1 0f49672190fead08b59abdcb0122a83864fefe32.
+// Names below describe initial static analysis; no SDK/compiler version is established.
+boot_noop = 0x800120F4; // type:func size:0x8
+_start = 0x800120FC; // type:func size:0xA8
+boot_stack_options = 0x800121A4; // type:u32 size:0x14
+boot_main = 0x800121B8; // type:func size:0xD4
+overlay_load_addresses = 0x80010030; // type:u32 size:0x3C
+init_filename = 0x8001006C; // type:char size:0xC
+func_80013B30 = 0x80013B30; // type:func size:0x30
+func_80014388 = 0x80014388; // type:func size:0x58
+func_8001787C = 0x8001787C; // type:func size:0x30
+func_8001B59C = 0x8001B59C; // type:func size:0x18
+func_8001B5B4 = 0x8001B5B4; // type:func size:0x1C

@@ -1,0 +1,18 @@
+{
+  "ghidra_release": "Ghidra_12.1.4_build",
+  "psx_loader_release": "2026.10.03",
+  "assets": [
+    {
+      "name": "ghidra_12.1.4_PUBLIC_20260921.zip",
+      "size": 569649598,
+      "digest": "sha256:ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db",
+      "browser_download_url": "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_12.1.4_build/ghidra_12.1.4_PUBLIC_20260921.zip"
+    },
+    {
+      "name": "ghidra_12.1.4_PUBLIC_20261004_ghidra_psx_ldr.zip",
+      "size": 9159228,
+      "digest": "sha256:32abacd90a5950b97a0756f67e991c3cc0f8a62edd5531890d91af68a9916255",
+      "browser_download_url": "https://github.com/lab313ru/ghidra_psx_ldr/releases/download/2026.10.03/ghidra_12.1.4_PUBLIC_20261004_ghidra_psx_ldr.zip"
+    }
+  ]
+}
