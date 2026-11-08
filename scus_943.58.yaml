@@ -74,6 +74,8 @@ segments:
       - [0x67C8, asm, after_flag_release]
       - [0x7844, c, queue_word]
       - [0x7874, asm, after_queue_word]
+      - [0x7A8C, c, command_reset]
+      - [0x7AB8, asm, after_command_reset]
       - [0x807C, c, sdk_calls]
       - [0x80AC, asm, boot_after_sdk_calls]
       - [0xBD9C, c, clear_globals]
