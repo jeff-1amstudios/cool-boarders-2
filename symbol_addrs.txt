@@ -15,3 +15,4 @@ func_80015F68 = 0x80015F68; // type:func size:0x30
 func_80015F98 = 0x80015F98; // type:func size:0x30
 func_80017044 = 0x80017044; // type:func size:0x30
 func_8001728C = 0x8001728C; // type:func size:0x2C
+func_800178AC = 0x800178AC; // type:func size:0x20
