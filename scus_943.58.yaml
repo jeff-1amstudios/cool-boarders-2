@@ -87,6 +87,7 @@ segments:
       - [0xC8D4, c, clear_words]
       - [0xC8F4, asm, after_clear_words]
       - [0xE298, c, record_find_greater]
-      - [0xE2D4, asm, after_record_find_greater]
+      - [0xE2D4, c, record_find_less]
+      - [0xE310, asm, after_record_find_less]
       - [0x35BA8, data, 35BA8] # estimated
   - [0x41000]

@@ -19,3 +19,4 @@ func_800178AC = 0x800178AC; // type:func size:0x20
 func_8001BF08 = 0x8001BF08; // type:func size:0x40
 func_8001C0D4 = 0x8001C0D4; // type:func size:0x20
 func_8001DA98 = 0x8001DA98; // type:func size:0x3C
+func_8001DAD4 = 0x8001DAD4; // type:func size:0x3C
