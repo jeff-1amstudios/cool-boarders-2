@@ -7,6 +7,8 @@ import re
 import subprocess
 import sys
 import time
+import shutil
+from contextlib import contextmanager
 from pathlib import Path
 
 import yaml
@@ -33,6 +35,24 @@ def write(path, value):
     temporary.replace(path)
 
 
+def save_state(session):
+    write(STATE, session)
+    if "directory" in session:
+        write(ROOT / session["directory"] / "state.json", session)
+
+
+@contextmanager
+def exclusive_worker(directory):
+    import fcntl
+    directory.mkdir(parents=True, exist_ok=True)
+    with (directory / "worker.lock").open("w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise RuntimeError("Another reconstruction worker command is running")
+        yield
+
+
 def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
@@ -51,8 +71,8 @@ def fingerprints():
     return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in PROTECTED}
 
 
-def command(arguments, name, timeout=300):
-    path = STATE.parent / f"{name}.log"
+def command(arguments, name, timeout=300, directory=None):
+    path = (directory or STATE.parent) / f"{name}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
     with path.open("w") as log:
@@ -136,6 +156,7 @@ def inventory():
             row.update(status="c" if path.stem in c_units else "assembly",
                        unit=path.stem, classification=item.get("classification", "unknown"),
                        boundary_reviewed=item.get("boundary_reviewed", False),
+                       hold=item.get("hold", False),
                        note=item.get("note", ""))
             rows.append(row)
     if len({r["address"] for r in rows}) != len(rows):
@@ -173,6 +194,7 @@ def choose(report, session, address=None):
     excluded = {r["address"] for r in session["completed"] + session["deferred"]}
     candidates = [r for r in report["functions"] if r["status"] == "assembly"
                   and r["contiguous"] and not r["hardware_or_gp"]
+                  and not r.get("hold", False)
                   and r["classification"] not in ("sdk", "handwritten")
                   and r["address"] not in excluded and r["size"] <= 160
                   and "indirect-control" not in r["features"]]
@@ -195,8 +217,9 @@ def next_target(session, address=None):
     if changes():
         raise RuntimeError("Next target requires a clean checkout; preserve unfinished edits first")
     report = inventory()
+    check_session(session)
     row = choose(report, session, address)
-    directory = STATE.parent / row["address"]
+    directory = ROOT / session.get("directory", "reports/reconstruction") / row["address"]
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "target.s").write_text(row["body"] + "\n")
     write(directory / "context.json", {**row, "compiler": read(ROOT / "config/compiler.json")})
@@ -210,7 +233,7 @@ def next_target(session, address=None):
         "Use finish --paths <explicit authored files> --message <commit message> after review.\n")
     session["active"] = {"address": row["address"], "name": row["name"], "size": row["size"],
                          "attempts": 0, "context": str(directory.relative_to(ROOT))}
-    write(STATE, session)
+    save_state(session)
     print(json.dumps(session["active"], indent=2))
 
 
@@ -222,9 +245,21 @@ def validate(session):
     if active["attempts"] >= session["attempt_limit"]:
         raise RuntimeError("Attempt limit reached; defer this target")
     active["attempts"] += 1
-    write(STATE, session)
-    command(["make", "validate"], f"{active['address']}-attempt-{active['attempts']}",
-            timeout=min(300, max(1, session["deadline"] - time.time())))
+    save_state(session)
+    attempt = ROOT / active["context"] / f"attempt-{active['attempts']}"
+    attempt.mkdir(parents=True, exist_ok=True)
+    archive_edits(attempt)
+    try:
+        command(["make", "validate"], "validate", directory=attempt,
+                timeout=min(300, max(1, session["deadline"] - time.time())))
+    finally:
+        for name in ("objdiff.json", "boot-rebuild.json"):
+            path = ROOT / "reports" / name
+            if path.exists():
+                shutil.copy2(path, attempt / name)
+        details = ROOT / "reports/objdiff"
+        if details.exists() and (attempt / "objdiff.json").exists():
+            shutil.copytree(details, attempt / "objdiff", dirs_exist_ok=True)
     report = read(ROOT / "reports/boot-rebuild.json")
     _, original, sha = reference()
     if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:
@@ -234,6 +269,16 @@ def validate(session):
     if target is None or target["status"] != "c" or target["size"] != active["size"]:
         raise RuntimeError("Target was not converted to C at its original boundary")
     print(f"Exact full-file match; {active['name']} is integrated as C.")
+
+
+def archive_edits(directory):
+    (directory / "attempt.patch").write_bytes(subprocess.check_output(["git", "diff", "HEAD"], cwd=ROOT))
+    sources = {}
+    for name in changes():
+        path = ROOT / name
+        if path.is_file() and name.startswith("src/"):
+            sources[name] = path.read_text()
+    write(directory / "sources.json", sources)
 
 
 def audit_paths(requested, changed):
@@ -279,8 +324,13 @@ def main():
             raise RuntimeError("Defer or finish the active target before replacing the session")
         if changes() or git("diff", "--cached", "--name-only"):
             raise RuntimeError("Begin requires a clean checkout and index")
-        command(["make", "validate"], "baseline")
-        write(STATE, {"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
+        directory = STATE.parent / "sessions" / str(time.time_ns())
+        command(["make", "validate"], "baseline", directory=directory)
+        # Preserve pre-session-format state from older worker versions too.
+        if STATE.exists() and "directory" not in state():
+            write(STATE.parent / "sessions" / f"legacy-{time.time_ns()}" / "state.json", state())
+        save_state({"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
+                      "directory": str(directory.relative_to(ROOT)),
                       "deadline": time.time() + args.minutes * 60, "limit": args.limit,
                       "attempt_limit": args.attempts, "completed": [], "deferred": [], "active": None})
         print("Session ready; run next to prepare one target.")
@@ -298,16 +348,10 @@ def main():
                 raise RuntimeError("No active target")
             directory = ROOT / active["context"]
             # Preserve tracked edits and untracked authored sources without resetting anything.
-            (directory / "attempt.patch").write_bytes(subprocess.check_output(["git", "diff", "HEAD"], cwd=ROOT))
-            untracked = {}
-            for name in changes():
-                path = ROOT / name
-                if path.is_file() and name.startswith("src/"):
-                    untracked[name] = path.read_text()
-            write(directory / "sources.json", untracked)
+            archive_edits(directory)
             session["deferred"].append({**active, "reason": args.reason})
             session["active"] = None
-            write(STATE, session)
+            save_state(session)
             print("Attempt preserved. Restore only this attempt's edits before next; no files were reset.")
         elif args.command == "finish":
             if git("diff", "--cached", "--name-only"):
@@ -326,12 +370,13 @@ def main():
             session["completed"].append({**session["active"], "commit": git("rev-parse", "HEAD")})
             session["head"] = git("rev-parse", "HEAD")
             session["active"] = None
-            write(STATE, session)
+            save_state(session)
 
 
 if __name__ == "__main__":
     try:
-        main()
+        with exclusive_worker(STATE.parent):
+            main()
     except (RuntimeError, subprocess.CalledProcessError) as error:
         print(f"Stopped: {error}", file=sys.stderr)
         sys.exit(1)

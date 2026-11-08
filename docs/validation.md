@@ -53,6 +53,10 @@ Docker image metadata, migration sizes and decompiler output are recorded under 
 
 Reports are `reports/boot-rebuild.json`, `reports/boot-negative-control.json`, `reports/compiler-matrix.json`, and `reports/compiler-evidence/`. The current recipe is provisional: O2/O3 remain tied and an ASPSX compatibility mode does not uniquely identify the original assembler. Remaining assembly, overlays, detailed types, and runtime validation are unfinished.
 
+## Bounded reconstruction pilot
+
+The [ten-target pilot](reconstruction-pilot.md) added nine matching C functions (436 bytes), bringing the total to fourteen functions and 672 bytes. One 88-byte function was deferred with register-allocation differences and remains assembly. Each C commit passed fresh full-file validation; the final executable retains the pinned hash above. Worker guard tests passed, and blocked-attempt restoration recovered the matching baseline before continuing. No compiler-recipe or reference changes were needed. Overlay mapping and runtime validation remain outstanding.
+
 ## Commit preparation
 
 Moved the supplied BIN/CUE folder to ignored `orig/images/` and its archive to ignored `orig/archives/`. Rehashed the entire source set and confirmed no input bytes changed. Updated local inventory paths without changing their recorded fingerprints.

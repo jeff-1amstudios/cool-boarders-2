@@ -9,7 +9,7 @@
     "0x80017044": {"boundary_reviewed": true, "note": "Indexed word address passed to command 22."},
     "0x8001728C": {"boundary_reviewed": true, "note": "Command 9 then global clear."},
     "0x800178AC": {"boundary_reviewed": true, "note": "Single SDK call wrapper; wrapper C remains distinct from SDK recognition."},
-    "0x80017A00": {"boundary_reviewed": true, "note": "Eight-word pointer walk bracketed by calls."},
+    "0x80017A00": {"boundary_reviewed": true, "hold": true, "note": "Pilot deferred after five attempts. Best score 97.64%; pointer/counter use opposite saved registers. Eight-word pointer walk bracketed by calls. Investigate allocation without changing the global recipe, then remove hold to retry."},
     "0x8001BF08": {"boundary_reviewed": true, "note": "Global clear followed by two three-argument calls."},
     "0x8001C0D4": {"boundary_reviewed": true, "note": "Descending sixteen-word clear loop."},
     "0x8001DA98": {"boundary_reviewed": true, "note": "Three unsigned comparisons at twelve-byte strides, greater-than search."},

@@ -2,6 +2,8 @@
 """Negative controls for the reconstruction worker's selection and commit gates."""
 import tempfile
 import time
+import sys
+import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -46,6 +48,7 @@ class WorkerTests(unittest.TestCase):
         rows = [{**base, "address": "0x80010000", "hardware_or_gp": True},
                 {**base, "address": "0x80010004", "classification": "sdk"},
                 {**base, "address": "0x80010008"},
+                {**base, "address": "0x8001000A", "hold": True},
                 {**base, "address": "0x8001000C"}]
         session = {"completed": [{"address": "0x80010008"}], "deferred": []}
         with patch.object(worker, "read", return_value={"pilot": []}):
@@ -65,6 +68,32 @@ class WorkerTests(unittest.TestCase):
             self.assertTrue(rows[0]["contiguous"])
             with self.assertRaises(RuntimeError):
                 worker.parse_functions(path, bytes(8))
+
+    def test_session_archives_survive_new_sessions(self):
+        directory = worker.ROOT / "tools/tmp"
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=directory) as tmp:
+            root = Path(tmp)
+            with patch.object(worker, "ROOT", root), patch.object(worker, "STATE", root / "state.json"):
+                first = {"directory": "sessions/first", "completed": ["a"]}
+                second = {"directory": "sessions/second", "completed": []}
+                worker.save_state(first)
+                worker.save_state(second)
+                self.assertEqual(worker.read(root / "sessions/first/state.json"), first)
+                self.assertEqual(worker.read(root / "state.json"), second)
+
+    def test_concurrent_worker_is_rejected(self):
+        directory = worker.ROOT / "tools/tmp"
+        directory.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=directory) as tmp:
+            with worker.exclusive_worker(Path(tmp)):
+                result = subprocess.run([sys.executable, "-c",
+                    "import sys; from pathlib import Path; sys.path.insert(0, 'tools'); "
+                    "from reconstruct import exclusive_worker; "
+                    "\nwith exclusive_worker(Path(sys.argv[1])): pass", tmp],
+                    capture_output=True, text=True, cwd=worker.ROOT)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Another reconstruction worker", result.stderr)
 
 
 if __name__ == "__main__":
