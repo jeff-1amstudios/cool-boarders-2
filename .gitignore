@@ -9,6 +9,8 @@
 /tools/build/
 /tools/toolchain/
 /tools/compilers/
+/tools/objdiff/
+/objdiff.json
 
 # User-supplied originals, extracted data, and generated output.
 /orig/*

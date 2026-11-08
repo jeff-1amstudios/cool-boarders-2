@@ -17,3 +17,7 @@ The primary goal is a matching reconstruction/recompilation of the original PS1 
 # Repository boundary
 
 Commit project-authored C reconstructions, analysis configuration, build/install scripts, documentation and dependency/version locks. Do not commit game images, extracted assets, raw disassembly/code dumps, generated files, or downloaded/vendored third-party tools and binaries. Keep source BIN/CUE under `orig/images/`, source archives under `orig/archives/`, extraction under `orig/disc/`, and analysis projects under `orig/ghidra/`; these are ignored. Regenerate tool-provided macro headers into `build/include/` from the pinned Splat dependency. Audit the staged file list before committing.
+
+# C reconstruction validation loop
+
+Use a headless edit → validate → inspect → iterate workflow. Add/edit C and update reviewed Splat segment boundaries as needed, then run `make validate` (also the default `make`). Inspect per-unit scores in `reports/objdiff.json`, instruction/relocation diffs in `reports/objdiff/<unit>.json`, and the full-file result in `reports/boot-rebuild.json`. A nonmatching EXE must fail validation while preserving object diagnostics for the next edit. `make objdiff` runs the object diagnostics alone. Do not launch GUI or interactive diff viewers. Only the pinned full-executable byte comparison establishes correctness.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Split, compile/assemble, link and byte-compare the USA boot executable."""
 from pathlib import Path
+import argparse
 import hashlib
 import json
 import re
@@ -21,14 +22,44 @@ def run(arguments, *, input_text=None, output_path=None):
                            input=input_text, stdout=output, text=True)
 
 
-def main():
+def reference():
     original = ROOT / "orig/disc/files/SCUS_943.58"
     target = original.read_bytes()
     expected = json.loads((ROOT / "config/usa-disc.json").read_text())["boot_executable"]["sha256"]
     if hashlib.sha256(target).hexdigest() != expected:
         raise RuntimeError("Reference executable differs from the pinned disc manifest")
+    return original, target, expected
+
+
+def compile_c(name, recipe):
+    """Build one C object, also used by objdiff's per-object make targets."""
+    relative = Path(name).relative_to("build")
+    if relative.parts[0] != "src" or ".." in relative.parts:
+        raise ValueError(f"Not a C object path: {name}")
+    compiler = ROOT / "tools/compilers" / recipe["compiler"]
+    source = relative.with_suffix(".c")
+    (ROOT / name).parent.mkdir(parents=True, exist_ok=True)
+    preprocessed = ROOT / Path(name).with_suffix(".i")
+    psyq = ROOT / Path(name).with_suffix(".psyq.s")
+    gas = ROOT / Path(name).with_suffix(".gas.s")
+    run([compiler / "cpp", "-P", "-undef", "-nostdinc", source, preprocessed])
+    run([compiler / "cc1", "-quiet", *recipe["cc1_flags"], "-o", psyq, preprocessed])
+    run([sys.executable, ROOT / "tools/vendor/maspsx/maspsx.py", *recipe["maspsx_flags"], "-G0"],
+        input_text=psyq.read_text(), output_path=gas)
+    run([str(PREFIX) + "as", *recipe["as_flags"], "-o", name, gas])
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--object", help="Compile one build/src/*.o for objdiff; does not verify the EXE")
+    args = parser.parse_args()
+    original, target, expected = reference()
     if not Path(str(PREFIX) + "as").is_file():
         raise RuntimeError("Missing local MIPS toolchain; run tools/install_mips.py first")
+    recipe = json.loads((ROOT / "config/compiler.json").read_text())
+    if args.object:
+        compile_c(args.object, recipe)
+        return
     run([sys.executable, "-m", "splat", "split", "scus_943.58.yaml"])
     # Obtain tool-provided macro headers from the pinned Splat installation;
     # they are generated dependencies, not files to vendor in the repository.
@@ -37,22 +68,13 @@ def main():
          "conf.load([Path('scus_943.58.yaml')]); file_presets.write_all_files()"])
     script = ROOT / "build/scus_943.58.ld"
     objects = list(dict.fromkeys(re.findall(r"\b(build/[^\s()]+\.o)\(", script.read_text())))
-    recipe = json.loads((ROOT / "config/compiler.json").read_text())
-    compiler = ROOT / "tools/compilers" / recipe["compiler"]
     c_sources = []
     for name in objects:
         relative = Path(name).relative_to("build")
         (ROOT / name).parent.mkdir(parents=True, exist_ok=True)
         if relative.parts[0] == "src":
             source = relative.with_suffix(".c")
-            preprocessed = ROOT / Path(name).with_suffix(".i")
-            psyq = ROOT / Path(name).with_suffix(".psyq.s")
-            gas = ROOT / Path(name).with_suffix(".gas.s")
-            run([compiler / "cpp", "-P", "-undef", "-nostdinc", source, preprocessed])
-            run([compiler / "cc1", "-quiet", *recipe["cc1_flags"], "-o", psyq, preprocessed])
-            run([sys.executable, ROOT / "tools/vendor/maspsx/maspsx.py", *recipe["maspsx_flags"], "-G0"],
-                input_text=psyq.read_text(), output_path=gas)
-            run([str(PREFIX) + "as", *recipe["as_flags"], "-o", name, gas])
+            compile_c(name, recipe)
             c_sources.append(str(source))
         else:
             source = relative.with_suffix(".s")

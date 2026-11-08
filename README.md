@@ -16,6 +16,24 @@ make
 
 This regenerates assembly, compiles the C functions with the pinned historical compiler and maspsx, links the boot EXE, then checks every byte against the unchanged reference. Output is `build/SCUS_943.58`, with a comparison report at `reports/boot-rebuild.json`. A mismatch makes the command fail. The supplied source images/extraction are already present; the steps below describe setup on a fresh checkout.
 
+### Headless C reconstruction loop
+
+Add or edit a function in `src/`; for a new C unit, replace its reviewed `asm` subsegment with a `c` subsegment in `scus_943.58.yaml`, preserving the original boundaries. Then run:
+
+```sh
+make validate        # also the default make / make verify workflow
+```
+
+Validation rebuilds the original reference objects and current C objects, runs objdiff in batch mode, prints per-unit scores and changed instructions, and saves full instruction/relocation diffs under `reports/objdiff/`. It then rebuilds and compares the complete executable's size and every byte against the pinned original. A mismatch exits nonzero, with object diagnostics already available for the next edit. Compilation/tool failures also stop validation; old aggregate success reports are removed before starting.
+
+For agent work: inspect `reports/objdiff.json`, the relevant `reports/objdiff/<unit>.json` and `reports/boot-rebuild.json`, adjust the C/types/recipe, and repeat `make validate` until the full executable matches. Objdiff scores are debugging aids; only the complete EXE byte check gates correctness. The initial five C units cover 236 bytes; retained assembly, SDK signatures and unloaded overlays are excluded from objdiff progress.
+
+`make objdiff` (or `make objdiff-report`) runs just the batch object diagnostics without the final EXE link/check, for faster iteration. `make build/src/queue_call.o` recompiles a single unit. No workflow opens a GUI or an interactive viewer.
+
+The [objdiff](https://github.com/encounter/objdiff) CLI is pinned to v3.8.3 with its upstream SHA-256 digest in `tools/objdiff.lock.json`. The installer currently supports macOS ARM64 and keeps the binary under `tools/objdiff/bin/`; downloads stay under `tools/downloads/`. No host packages are installed.
+
+Reference objects come from an independent all-assembly Splat split of the fingerprint-checked original, using the reviewed boundaries and symbols. That assembly is linked and compared against the entire original EXE before its objects are used. Generated references live under `build/objdiff/target/`, compiled C objects under `build/src/`, and generated project configuration in ignored `objdiff.json`. New C segments are discovered automatically each validation run.
+
 1. Obtain a disc dump, retaining its CUE and every BIN track. Store them under ignored `orig/images/`, with any original download archive under `orig/archives/`. See [disc sourcing](docs/disc-source.md).
 2. Install the local tools, if needed:
 
