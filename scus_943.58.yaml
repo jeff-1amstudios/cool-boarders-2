@@ -72,6 +72,8 @@ segments:
       - [0x6768, c, flag_acquire]
       - [0x6798, c, flag_release]
       - [0x67C8, asm, after_flag_release]
+      - [0x7844, c, queue_word]
+      - [0x7874, asm, after_queue_word]
       - [0x807C, c, sdk_calls]
       - [0x80AC, asm, boot_after_sdk_calls]
       - [0xBD9C, c, clear_globals]
