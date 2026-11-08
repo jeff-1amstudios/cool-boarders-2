@@ -1,0 +1,337 @@
+#!/usr/bin/env python3
+"""Bounded, headless reconstruction work queue; an agent supplies the C edits."""
+import argparse
+import hashlib
+import json
+import re
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import yaml
+
+from rebuild import ROOT, reference
+
+STATE = ROOT / "reports/reconstruction/state.json"
+INVENTORY = ROOT / "reports/reconstruction/inventory.json"
+REVIEW = ROOT / "config/reconstruction.json"
+FUNCTION = re.compile(r"^glabel (\w+)\n(.*?)^endlabel \1\s*$", re.M | re.S)
+INSTRUCTION = re.compile(r"/\* ([0-9A-F]+) ([0-9A-F]+) ([0-9A-F]{8}) \*/\s*(.*)")
+PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
+             "tools/validate.py", "tools/objdiff.py", "Makefile")
+
+
+def read(path):
+    return json.loads(path.read_text())
+
+
+def write(path, value):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(value, indent=2) + "\n")
+    temporary.replace(path)
+
+
+def git(*args):
+    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+
+
+def changes():
+    # Include untracked, nonignored files; never stage ignored artifacts.
+    paths = set()
+    for args in (("diff", "--name-only", "-z", "HEAD"),
+                 ("ls-files", "--others", "--exclude-standard", "-z")):
+        output = subprocess.check_output(["git", *args], cwd=ROOT)
+        paths.update(p.decode() for p in output.split(b"\0") if p)
+    return paths
+
+
+def fingerprints():
+    return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in PROTECTED}
+
+
+def command(arguments, name, timeout=300):
+    path = STATE.parent / f"{name}.log"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
+    with path.open("w") as log:
+        # Kill the whole build process group on timeout so compilers cannot
+        # continue writing artifacts after this worker has stopped.
+        process = subprocess.Popen(list(map(str, arguments)), cwd=ROOT, stdout=log,
+                                   stderr=subprocess.STDOUT, start_new_session=True)
+        try:
+            code = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            import os
+            import signal
+            os.killpg(process.pid, signal.SIGKILL)
+            process.wait()
+            raise RuntimeError(f"Build timed out; inspect {path}")
+    if code:
+        raise RuntimeError(f"Command failed ({code}); inspect {path}")
+
+
+def parse_functions(path, target):
+    rows = []
+    text = path.read_text()
+    for match in FUNCTION.finditer(text):
+        instructions = INSTRUCTION.findall(match[2])
+        if not instructions:
+            continue
+        offsets = [int(i[0], 16) for i in instructions]
+        addresses = [int(i[1], 16) for i in instructions]
+        contiguous = (offsets == list(range(offsets[0], offsets[0] + 4 * len(offsets), 4))
+                      and addresses == list(range(addresses[0], addresses[0] + 4 * len(addresses), 4)))
+        raw = bytes.fromhex("".join(i[2] for i in instructions))
+        if target[offsets[0]:offsets[0] + len(raw)] != raw:
+            raise RuntimeError(f"Stale or invalid assembly context: {match[1]}")
+        body = match[2]
+        ops = [i[3].split()[0] for i in instructions]
+        calls = sorted(set(re.findall(r"\bjal\s+(\w+)", body)))
+        refs = sorted(set(re.findall(r"\b(?:func_[0-9A-F]+|D_[0-9A-F]+)\b", body)))
+        hardware = bool(re.search(r"\$(?:gp|k0|k1)|\b(?:[ml][ft]c[02]|[ls]wc2|syscall|break|rfe)\b", body))
+        # Also exclude GTE instructions whose mnemonics are not ordinary MIPS.
+        hardware |= any(int.from_bytes(bytes.fromhex(i[2]), "little") >> 26 in (16, 18)
+                        for i in instructions)
+        features = []
+        if any(o in ops for o in ("lb", "lh")):
+            features.append("signed-load")
+        if any(o in ops for o in ("lbu", "lhu")):
+            features.append("unsigned-load")
+        if any(o in ops for o in ("div", "divu", "mult", "multu")):
+            features.append("multiply-divide")
+        if any(o.startswith("b") for o in ops):
+            features.append("branch")
+        if "jalr" in ops or re.search(r"\bjr\s+\$(?!ra\b)", body):
+            features.append("indirect-control")
+        rows.append({"name": match[1], "address": f"0x{addresses[0]:08X}",
+                     "offset": offsets[0], "size": len(raw), "contiguous": contiguous,
+                     "assembly": str(path.relative_to(ROOT)), "calls": calls,
+                     "references": refs, "hardware_or_gp": hardware,
+                     "features": features, "body": match[0]})
+    return rows
+
+
+def inventory():
+    _, target, sha = reference()
+    # Fresh independent split and byte-checked all-assembly reference.
+    command([sys.executable, "tools/objdiff.py"], "inventory")
+    review = read(REVIEW)
+    config = yaml.safe_load((ROOT / "scus_943.58.yaml").read_text())
+    c_units = set()
+    for segment in config["segments"]:
+        if isinstance(segment, dict):
+            c_units.update(s[2] for s in segment.get("subsegments", [])
+                           if isinstance(s, list) and s[1] == "c")
+    rows = []
+    for path in sorted((ROOT / "build/objdiff/target").glob("*.s")):
+        # Ignore obsolete generated files left after a segment was renamed.
+        active = {s[2] for seg in config["segments"] if isinstance(seg, dict)
+                  for s in seg.get("subsegments", []) if isinstance(s, list) and s[1] in ("c", "asm")}
+        if path.stem not in active:
+            continue
+        for row in parse_functions(path, target):
+            item = review.get("functions", {}).get(row["address"], {})
+            row.update(status="c" if path.stem in c_units else "assembly",
+                       unit=path.stem, classification=item.get("classification", "unknown"),
+                       boundary_reviewed=item.get("boundary_reviewed", False),
+                       note=item.get("note", ""))
+            rows.append(row)
+    if len({r["address"] for r in rows}) != len(rows):
+        raise RuntimeError("Overlapping function inventory")
+    for row in rows:
+        row["callers"] = [r["name"] for r in rows if row["name"] in r["calls"]]
+    rows.sort(key=lambda r: int(r["address"], 16))
+    report = {"reference_sha256": sha, "scope": "Splat-detected boot EXE functions; boundaries provisional unless reviewed; overlays excluded",
+              "summary": {"detected_functions": len(rows),
+                          "c_functions": sum(r["status"] == "c" for r in rows),
+                          "c_bytes": sum(r["size"] for r in rows if r["status"] == "c"),
+                          "retained_assembly_functions": sum(r["status"] == "assembly" for r in rows)},
+              "functions": rows}
+    write(INVENTORY, report)
+    print(json.dumps(report["summary"], indent=2))
+    return report
+
+
+def state():
+    if not STATE.exists():
+        raise RuntimeError("Start a session with begin")
+    return read(STATE)
+
+
+def check_session(session):
+    if git("rev-parse", "HEAD") != session["head"]:
+        raise RuntimeError("HEAD changed outside the worker; begin a new session")
+    if fingerprints() != session["protected"]:
+        raise RuntimeError("Reference/build gate/compiler changed; review outside the function worker")
+    if time.time() > session["deadline"]:
+        raise RuntimeError("Session time budget exhausted; preserve/defer the attempt or begin again")
+
+
+def choose(report, session, address=None):
+    excluded = {r["address"] for r in session["completed"] + session["deferred"]}
+    candidates = [r for r in report["functions"] if r["status"] == "assembly"
+                  and r["contiguous"] and not r["hardware_or_gp"]
+                  and r["classification"] not in ("sdk", "handwritten")
+                  and r["address"] not in excluded and r["size"] <= 160
+                  and "indirect-control" not in r["features"]]
+    if address:
+        candidates = [r for r in candidates if r["address"] == f"0x{int(address, 16):08X}"]
+    order = read(REVIEW).get("pilot", [])
+    candidates.sort(key=lambda r: (order.index(r["address"]) if r["address"] in order else len(order),
+                                   not r["boundary_reviewed"], bool(r["calls"]), r["size"], r["address"]))
+    if not candidates:
+        raise RuntimeError("No eligible target; review the inventory or expand the policy")
+    return candidates[0]
+
+
+def next_target(session, address=None):
+    check_session(session)
+    if session["active"]:
+        raise RuntimeError("Finish or defer the active target first")
+    if len(session["completed"]) + len(session["deferred"]) >= session["limit"]:
+        raise RuntimeError("Session target limit reached")
+    if changes():
+        raise RuntimeError("Next target requires a clean checkout; preserve unfinished edits first")
+    report = inventory()
+    row = choose(report, session, address)
+    directory = STATE.parent / row["address"]
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / "target.s").write_text(row["body"] + "\n")
+    write(directory / "context.json", {**row, "compiler": read(ROOT / "config/compiler.json")})
+    (directory / "instructions.md").write_text(
+        f"Reconstruct {row['name']} ({row['size']} bytes).\n\n"
+        "Review callers, data types and both split boundaries before integration.\n"
+        "Use readable C; do not embed assembly or target bytes. Keep the reference and recipe fixed.\n"
+        "Run tools/.venv/bin/python tools/reconstruct.py check for each integrated attempt.\n"
+        "Inspect reports/objdiff.json, reports/objdiff/<unit>.json and reports/boot-rebuild.json.\n"
+        "Use defer --reason when blocked; archive edits and restore the passing baseline before next.\n"
+        "Use finish --paths <explicit authored files> --message <commit message> after review.\n")
+    session["active"] = {"address": row["address"], "name": row["name"], "size": row["size"],
+                         "attempts": 0, "context": str(directory.relative_to(ROOT))}
+    write(STATE, session)
+    print(json.dumps(session["active"], indent=2))
+
+
+def validate(session):
+    check_session(session)
+    active = session["active"]
+    if not active:
+        raise RuntimeError("No active target")
+    if active["attempts"] >= session["attempt_limit"]:
+        raise RuntimeError("Attempt limit reached; defer this target")
+    active["attempts"] += 1
+    write(STATE, session)
+    command(["make", "validate"], f"{active['address']}-attempt-{active['attempts']}",
+            timeout=min(300, max(1, session["deadline"] - time.time())))
+    report = read(ROOT / "reports/boot-rebuild.json")
+    _, original, sha = reference()
+    if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:
+        raise RuntimeError("Full executable gate failed")
+    current = inventory()
+    target = next((r for r in current["functions"] if r["address"] == active["address"]), None)
+    if target is None or target["status"] != "c" or target["size"] != active["size"]:
+        raise RuntimeError("Target was not converted to C at its original boundary")
+    print(f"Exact full-file match; {active['name']} is integrated as C.")
+
+
+def audit_paths(requested, changed):
+    paths = set(requested)
+    if not paths or paths != changed:
+        raise RuntimeError(f"Explicit paths must equal all checkout changes: {sorted(changed)}")
+    for name in paths:
+        path = Path(name)
+        allowed = (name in ("scus_943.58.yaml", "symbol_addrs.txt", "config/reconstruction.json")
+                   or (len(path.parts) > 1 and path.parts[0] == "src" and path.suffix in (".c", ".h"))
+                   or (len(path.parts) > 1 and path.parts[0] == "docs" and path.suffix == ".md"))
+        if not allowed or path.is_absolute() or ".." in path.parts:
+            raise RuntimeError(f"Not an authored reconstruction path: {name}")
+        if (ROOT / path).is_symlink():
+            raise RuntimeError(f"Refusing symlink: {name}")
+    return sorted(paths)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("inventory")
+    begin = sub.add_parser("begin")
+    begin.add_argument("--limit", type=int, default=10)
+    begin.add_argument("--attempts", type=int, default=6)
+    begin.add_argument("--minutes", type=int, default=120)
+    next_parser = sub.add_parser("next")
+    next_parser.add_argument("--address")
+    sub.add_parser("status")
+    sub.add_parser("check")
+    finish = sub.add_parser("finish")
+    finish.add_argument("--paths", nargs="+", required=True)
+    finish.add_argument("--message", required=True)
+    defer = sub.add_parser("defer")
+    defer.add_argument("--reason", required=True)
+    args = parser.parse_args()
+    if args.command == "inventory":
+        inventory()
+    elif args.command == "begin":
+        if min(args.limit, args.attempts, args.minutes) < 1:
+            raise RuntimeError("Budgets must be positive")
+        if STATE.exists() and state().get("active"):
+            raise RuntimeError("Defer or finish the active target before replacing the session")
+        if changes() or git("diff", "--cached", "--name-only"):
+            raise RuntimeError("Begin requires a clean checkout and index")
+        command(["make", "validate"], "baseline")
+        write(STATE, {"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
+                      "deadline": time.time() + args.minutes * 60, "limit": args.limit,
+                      "attempt_limit": args.attempts, "completed": [], "deferred": [], "active": None})
+        print("Session ready; run next to prepare one target.")
+    elif args.command == "status":
+        print(json.dumps(state(), indent=2))
+    else:
+        session = state()
+        if args.command == "next":
+            next_target(session, args.address)
+        elif args.command == "check":
+            validate(session)
+        elif args.command == "defer":
+            active = session["active"]
+            if not active:
+                raise RuntimeError("No active target")
+            directory = ROOT / active["context"]
+            # Preserve tracked edits and untracked authored sources without resetting anything.
+            (directory / "attempt.patch").write_bytes(subprocess.check_output(["git", "diff", "HEAD"], cwd=ROOT))
+            untracked = {}
+            for name in changes():
+                path = ROOT / name
+                if path.is_file() and name.startswith("src/"):
+                    untracked[name] = path.read_text()
+            write(directory / "sources.json", untracked)
+            session["deferred"].append({**active, "reason": args.reason})
+            session["active"] = None
+            write(STATE, session)
+            print("Attempt preserved. Restore only this attempt's edits before next; no files were reset.")
+        elif args.command == "finish":
+            if git("diff", "--cached", "--name-only"):
+                raise RuntimeError("Finish requires an empty index")
+            paths = audit_paths(args.paths, changes())
+            validate(session)  # Always rerun: earlier reports cannot authorize a commit.
+            check_session(session)
+            audit_paths(paths, changes())
+            subprocess.run(["git", "diff", "--check"], cwd=ROOT, check=True)
+            subprocess.run(["git", "add", "--", *paths], cwd=ROOT, check=True)
+            staged = set(git("diff", "--cached", "--name-only").splitlines())
+            if staged != set(paths):
+                raise RuntimeError("Staged file audit failed")
+            print("Audited staged paths:", ", ".join(sorted(staged)), flush=True)
+            subprocess.run(["git", "commit", "-m", args.message], cwd=ROOT, check=True)
+            session["completed"].append({**session["active"], "commit": git("rev-parse", "HEAD")})
+            session["head"] = git("rev-parse", "HEAD")
+            session["active"] = None
+            write(STATE, session)
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except (RuntimeError, subprocess.CalledProcessError) as error:
+        print(f"Stopped: {error}", file=sys.stderr)
+        sys.exit(1)

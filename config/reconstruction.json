@@ -1,0 +1,18 @@
+{
+  "scope": "Reviewed pilot queue for the USA boot EXE. Unknown classification does not establish game authorship. Overlays excluded.",
+  "pilot": ["0x80015F68", "0x80015F98", "0x80017044", "0x8001728C", "0x800178AC", "0x80017A00", "0x8001BF08", "0x8001C0D4", "0x8001DA98", "0x8001DAD4"],
+  "functions": {
+    "0x800120F4": {"classification": "sdk", "note": "Ghidra __main lead; return stub, excluded from pilot."},
+    "0x800120FC": {"classification": "handwritten", "note": "Startup and stack/GP initialization."},
+    "0x80015F68": {"boundary_reviewed": true, "note": "Halfword test/set with conditional result; inspect paired release and callers."},
+    "0x80015F98": {"boundary_reviewed": true, "note": "Halfword test/clear paired with 80015F68."},
+    "0x80017044": {"boundary_reviewed": true, "note": "Indexed word address passed to command 22."},
+    "0x8001728C": {"boundary_reviewed": true, "note": "Command 9 then global clear."},
+    "0x800178AC": {"boundary_reviewed": true, "note": "Single SDK call wrapper; wrapper C remains distinct from SDK recognition."},
+    "0x80017A00": {"boundary_reviewed": true, "note": "Eight-word pointer walk bracketed by calls."},
+    "0x8001BF08": {"boundary_reviewed": true, "note": "Global clear followed by two three-argument calls."},
+    "0x8001C0D4": {"boundary_reviewed": true, "note": "Descending sixteen-word clear loop."},
+    "0x8001DA98": {"boundary_reviewed": true, "note": "Three unsigned comparisons at twelve-byte strides, greater-than search."},
+    "0x8001DAD4": {"boundary_reviewed": true, "note": "Paired less-than search at twelve-byte strides."}
+  }
+}

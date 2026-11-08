@@ -30,6 +30,8 @@ For agent work: inspect `reports/objdiff.json`, the relevant `reports/objdiff/<u
 
 `make objdiff` (or `make objdiff-report`) runs just the batch object diagnostics without the final EXE link/check, for faster iteration. `make build/src/queue_call.o` recompiles a single unit. No workflow opens a GUI or an interactive viewer.
 
+For bounded agent batches, see the [reconstruction worker](docs/reconstruction-worker.md). It prepares one target's assembly/caller/data context, limits attempts, preserves blocked work, and permits an audited commit only after fresh full-file validation. The agent supplies the C and reviews split boundaries.
+
 The [objdiff](https://github.com/encounter/objdiff) CLI is pinned to v3.8.3 with its upstream SHA-256 digest in `tools/objdiff.lock.json`. The installer currently supports macOS ARM64 and keeps the binary under `tools/objdiff/bin/`; downloads stay under `tools/downloads/`. No host packages are installed.
 
 Reference objects come from an independent all-assembly Splat split of the fingerprint-checked original, using the reviewed boundaries and symbols. That assembly is linked and compared against the entire original EXE before its objects are used. Generated references live under `build/objdiff/target/`, compiled C objects under `build/src/`, and generated project configuration in ignored `objdiff.json`. New C segments are discovered automatically each validation run.
