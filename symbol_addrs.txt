@@ -92,3 +92,4 @@ D_80044944 = 0x80044944; // type:u32 size:0xC
 func_8001228C = 0x8001228C; // type:func size:0xEC
 D_80058C0A = 0x80058C0A; // type:s16 size:0x2
 D_80058C0E = 0x80058C0E; // type:s16 size:0x2
+func_80012378 = 0x80012378; // type:func size:0x80
