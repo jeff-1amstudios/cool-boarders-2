@@ -1,5 +1,5 @@
 {
-  "scope": "Reviewed reconstruction targets for the USA boot EXE. Unknown classification does not establish game authorship. Overlays excluded.",
+  "scope": "Complete image-qualified Ghidra backlog for the boot EXE and 14 overlays. Boundary review happens per selected target. Unknown does not establish game authorship.",
   "pilot": [
     "0x80015F68",
     "0x80015F98",
@@ -199,7 +199,6 @@
     "0x8001E560",
     "0x8002FCEC"
   ],
-  "matching_paused": true,
-  "pause_reason": "Boundary audit: matching is paused until deliberately resumed. Automatic targets additionally require byte-bound standalone reviews in config/function-boundaries.json.",
+  "matching_paused": false,
   "include_library_candidates": false
 }

@@ -27,7 +27,7 @@ The existing `orig/ghidra/CB2_USA.gpr` project is backed up under `orig/ghidra/b
 ./tools/ghidra.sh web
 ```
 
-This automates the plugin Overlay Manager's import operation: each original binary becomes an initialized memory block with the overlay flag enabled, its own address space and the shared physical base `0x8005AB68`. The header word is data, `+4` is an entry point, and GP retains `0x80050274`. Boot code, SDK functions and every overlay are browsable together. The PSX plugin analyzes each overlay range directly, avoiding rescanning the already identified resident SDK. Normal automatic analysis discovers local functions and calls. The resident boundary exporter filters out overlay spaces so the existing boot-only matching workflow stays usable.
+This automates the plugin Overlay Manager's import operation: each original binary becomes an initialized memory block with the overlay flag enabled, its own address space and the shared physical base `0x8005AB68`. The header word is data, `+4` is an entry point, and GP retains `0x80050274`. Boot code, SDK functions and every overlay are browsable together. The PSX plugin analyzes each overlay range directly, avoiding rescanning the already identified resident SDK. Normal automatic analysis discovers local functions and calls. The resident boundary exporter filters out overlay spaces so the separate boot build-span audit stays usable.
 
 Every export compares the resident payload and each overlay memory block against their original files. The boot and all 14 overlay reference hashes are checked on every preparation/report run. Run IDs prevent a failed analysis from silently reusing old successful reports. Script failures, missing exports, cross-file function bodies and analysis timeouts fail the report. The originals are not modified.
 
@@ -58,7 +58,7 @@ To reconstruct a reviewed overlay function, split its assembly span into `asm` /
 
 Overlay C units appear in `reports/objdiff.json` under names such as `overlays/init/entry`; instruction/relocation diagnostics are at `reports/objdiff/overlays/init/entry.json`. The target objects come from an independent assembly-only split, whose complete BIN is checked against the original before it is used for diagnostics. The ordinary build then compiles C and links the final overlay. Objdiff remains diagnostic; only the complete raw BIN comparison establishes matching.
 
-The current compiler recipe is a provisional default for overlay C, not evidence that every overlay originally used the same flags. An image can specify its own `compiler_config` in `config/overlays.json`. The retained-assembly baseline does not identify a C compiler. The automatic reconstruction worker still selects reviewed boot targets; overlay C edits can use the build/diagnostic workflow above, with overlay boundary review before conversion. Duplicate detection/grouping is unchanged and outside this build change.
+The current compiler recipe is a provisional default for overlay C, not evidence that every overlay originally used the same flags. An image can specify its own `compiler_config` in `config/overlays.json`. The retained-assembly baseline does not identify a C compiler. The automatic reconstruction worker selects from the complete image-qualified backlog in recorded order, reviewing the selected target before conversion. Overlay attempts use their own Splat configuration, symbols and source directory. Duplicate detection/grouping is unchanged and outside this build change.
 
 ## References between resident code and overlays
 

@@ -10,6 +10,7 @@ import time
 from pathlib import Path
 
 import yaml
+from reconstruction_backlog import key, slug, source_dir, coverage
 
 
 class Rejected(RuntimeError):
@@ -54,7 +55,7 @@ def review_split(before, after, target):
             expected["segments"][index]["subsegments"][i:i + 1] = replacement
             if after != expected:
                 raise Rejected("Split changed options, unrelated segments or boundaries")
-            return f"src/{selected[2]}.c"
+            return f"{source_dir(target)}/{selected[2]}.c"
     raise Rejected("Target is outside a reviewed assembly span")
 
 
@@ -114,9 +115,12 @@ class Runner:
             raise RuntimeError("Agent changed branch; stopping without resetting the checkout")
         if self.w.git("rev-parse", "refs/heads/main") != session["integration_head"]:
             raise RuntimeError("main moved unexpectedly; stopping without updating it")
-        if self.w.fingerprints() != session["protected"]:
+        if not self.w.protected_unchanged(session):
             raise RuntimeError("Protected build/reference/recipe changed; stopping without resetting the checkout")
         self.w.reference()
+        if "identity" in (session.get("active") or {}):
+            from overlays import load
+            load()
         if self.w.git("diff", "--cached", "--name-only"):
             raise RuntimeError("Agent changed the index; stopping without resetting the checkout")
 
@@ -131,7 +135,7 @@ class Runner:
         self.invariant(session)
         if session["branch"] != "main" or self.w.changes():
             raise RuntimeError("Function branches must start from clean main")
-        base = f"codex/match-{session['active']['address'][2:]}"
+        base = "codex/match-" + (slug(session["active"]) if "identity" in session["active"] else session["active"]["address"][2:])
         existing = set(self.w.git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines())
         if "codex" in existing:
             raise RuntimeError("Branch codex blocks the codex/ function branch namespace")
@@ -147,12 +151,13 @@ class Runner:
         self.invariant(session)
         print(f"Function branch: {branch} (base {session['integration_head'][:12]})", flush=True)
 
-    def paths(self, tracked):
+    def paths(self, tracked, active):
+        directory = Path(source_dir(active))
         changed = self.w.changes()
         for name in changed:
             path = Path(name)
-            allowed = (name in ("scus_943.58.yaml", "symbol_addrs.txt")
-                       or (name not in tracked and len(path.parts) == 2 and path.parts[0] == "src"
+            allowed = (name in (active.get("build_config", "scus_943.58.yaml"), active.get("symbol_file", "symbol_addrs.txt"))
+                       or (name not in tracked and path.parent == directory
                            and path.suffix in (".c", ".h")))
             candidate = self.w.ROOT / path
             if (not allowed or path.is_absolute() or ".." in path.parts or candidate.is_symlink()
@@ -167,12 +172,14 @@ class Runner:
         if seconds <= 0:
             raise Rejected("Session time budget expired before agent launch")
         prompt = (
-            f"Implement exactly {active['name']} at {active['address']} ({active['size']} bytes) as matching C.\n"
+            f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes) as matching C.\n"
             f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, split only this function into a new C unit and preserve all other configuration.\n"
-            "You may add plain src/*.c and src/*.h files, edit only the containing Splat span, and append symbols.\n"
+            f"Add C/headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
+            "Write boundary-decision.json in the context directory: identity, body_sha256, decision (standalone or deferred), and evidence (nonempty text explaining boundaries, callers and data dependencies).\n"
+            "Structural evidence is conservative; if the function cannot safely stand alone, record a concrete blocker and stop.\n"
             "Do not edit existing source files, build tools, the reference, compiler recipe, docs or queue metadata.\n"
             "Use readable C. No inline assembly, embedded instruction bytes, section attributes, or preprocessor tricks.\n"
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
@@ -190,7 +197,7 @@ class Runner:
                    CB2_AGENT_REPORT=str(directory / "agent-last-message.txt"))
         argv = list(self.launcher)
         if self.args.agent_command is None:
-            cache = self.w.ROOT / "tools/cache/reconstruction-agents" / Path(session["directory"]).name / active["address"]
+            cache = self.w.ROOT / "tools/cache/reconstruction-agents" / Path(session["directory"]).name / slug(active)
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
             argv += ["--no-daemon", "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
@@ -202,26 +209,36 @@ class Runner:
         self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
-        paths = self.paths(tracked)
+        active = session["active"]
+        if "identity" in active:
+            decision_path = self.w.ROOT / active["context"] / "boundary-decision.json"
+            if not decision_path.is_file():
+                raise Rejected("Missing selected-target boundary decision")
+            decision = self.w.read(decision_path)
+            if (decision.get("identity") != key(active) or decision.get("body_sha256") != active["body_sha256"]
+                    or decision.get("decision") != "standalone" or not isinstance(decision.get("evidence"), str)
+                    or not decision["evidence"].strip()):
+                raise Rejected("Boundary review deferred: " + str(decision.get("evidence", "invalid review")))
+        paths = self.paths(tracked, session["active"])
         if not paths:
             raise Rejected("Agent left no candidate edits")
         try:
-            after = yaml.safe_load((self.w.ROOT / "scus_943.58.yaml").read_text())
+            after = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
             entry = review_split(before, after, session["active"])
         except (yaml.YAMLError, KeyError, TypeError, IndexError) as error:
             raise Rejected("Invalid candidate split configuration") from error
-        symbols = (self.w.ROOT / "symbol_addrs.txt").read_text()
+        symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
         if not symbols.startswith(old_symbols):
             raise Rejected("Existing symbol definitions were changed")
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
         subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)
         expected_hashes = self.w.content_hashes(paths)
         current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
-        now_c = {r["address"]: r["size"] for r in current["functions"] if r["status"] == "c"}
-        if now_c != {**prior_c, session["active"]["address"]: session["active"]["size"]}:
+        now_c = coverage(current)
+        if now_c != {**prior_c, key(session["active"]): session["active"]["size"]}:
             raise Rejected("C coverage changed outside the selected function")
         self.invariant(session)
-        if paths != self.paths(tracked):
+        if paths != self.paths(tracked, session["active"]):
             raise RuntimeError("Checkout changed during acceptance validation")
         if self.w.content_hashes(paths) != expected_hashes:
             raise Rejected("Candidate contents changed during acceptance validation")
@@ -237,7 +254,7 @@ class Runner:
         self.w.save_state(session)
         # Never erase unexpected edits, index changes, or another process's commits.
         self.invariant(session)
-        paths = self.paths(tracked)
+        paths = self.paths(tracked, session["active"])
         try:
             # A WIP may be incomplete/nonmatching, but it must still obey the
             # repository boundary: never put assembly dumps or binaries in Git.
@@ -254,7 +271,7 @@ class Runner:
         active["phase"] = "checkpointing"
         self.w.save_state(session)
         message = (f"WIP: {active['name']} (not validated for main)\n\n"
-                   f"Target: {active['address']}\nBaseline: {active['base_commit']}\n"
+                   f"Target: {key(active)}\nBaseline: {active['base_commit']}\n"
                    f"Blocker: {reason.replace(str(self.w.ROOT), '.')[:2000]}")
         if active.get("checkpoint_excluded"):
             message += f"\nCandidate kept only in local archive: {active['checkpoint_excluded']}"
@@ -296,7 +313,7 @@ class Runner:
         self.w.git("merge", "--ff-only", commit)
         if self.w.git("rev-parse", "HEAD") != commit or self.w.git("branch", "--show-current") != "main":
             raise RuntimeError("Unexpected integration result; inspect main and the validated function branch")
-        session.update(head=commit, integration_head=commit)
+        session.update(head=commit, integration_head=commit, protected=self.w.fingerprints())
         self.invariant(session)
         if self.w.changes():
             raise RuntimeError("Integration left unexpected checkout changes")
@@ -330,12 +347,15 @@ class Runner:
                     break
                 raise
             self.start_branch(session)
-            before = yaml.safe_load((self.w.ROOT / "scus_943.58.yaml").read_text())
-            old_symbols = (self.w.ROOT / "symbol_addrs.txt").read_text()
+            before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
+            old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
             tracked = set(self.w.git("ls-files").splitlines())
-            prior_c = {r["address"]: r["size"] for r in self.w.read(self.w.INVENTORY)["functions"] if r["status"] == "c"}
+            prior_c = coverage(self.w.inventory())
             launched = False
             try:
+                if session["active"].get("boundary_findings"):
+                    launched = True
+                    raise Rejected("Selected-target structural review: " + json.dumps(session["active"]["boundary_findings"]))
                 self.launch(session)
                 launched = True
                 self.invariant(session)

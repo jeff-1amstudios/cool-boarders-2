@@ -22,7 +22,8 @@ def c_spans(config):
         for index, row in enumerate(rows):
             if not isinstance(row, list) or row[1] != 'c':
                 continue
-            end = rows[index + 1][0] if index + 1 < len(rows) else None
+            following = rows[index + 1] if index + 1 < len(rows) else None
+            end = following.get("start") if isinstance(following, dict) else following[0] if following else None
             if end is None:
                 raise RuntimeError('C unit needs an explicit following boundary')
             start = segment['vram'] + row[0] - segment['start']
@@ -64,11 +65,19 @@ def assemble(entries, images, policy, boundaries, sdk):
         review = policy.get('functions', {}).get(identity, {})
         region = boundaries.get('regions', {}).get(identity, {})
         if image == 'SCUS_943.58':
-            review = policy.get('functions', {}).get(address, review)
+            review = policy.get('functions', {}).get(identity, policy.get('functions', {}).get(address, review))
             # Include holds on shared regions, not just their first entry.
             region = next((r for a, r in boundaries.get('regions', {}).items()
                            if ':' not in a and int(a, 16) <= start < int(a, 16) + r['size']), region)
-        held = review.get('hold', False) or (region.get('kind') is not None
+        # A qualified shared region holds every intersecting function body.
+        for region_id, candidate in boundaries.get('regions', {}).items():
+            region_image, region_address = region_id.rsplit(':', 1) if ':' in region_id else ('SCUS_943.58', region_id)
+            low = int(region_address, 16)
+            if (region_image == image and candidate.get('kind') != 'standalone'
+                    and any(a < low + candidate['size'] and low < b for a,b in ranges)):
+                region = candidate
+                break
+        held = review.get('hold', False) or review.get('classification') == 'handwritten' or (region.get('kind') is not None
                                                    and region['kind'] != 'standalone')
         status = 'sdk' if is_sdk else 'c' if c else 'held' if held else 'needs_review'
         targets.append({'identity': identity, 'image': image, 'address': address,

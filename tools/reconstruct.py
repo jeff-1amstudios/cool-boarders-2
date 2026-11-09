@@ -33,7 +33,7 @@ PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
              "config/overlays.json", "tools/overlays.py", "tools/ghidra_scripts/ImportOverlays.java",
              "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
              "tools/ghidra_scripts/AuditOverlayReferences.java", "tools/overlay_rebuild.py",
-             "tools/splat_ext/bytes.py", "tools/target_queue.py", "Makefile") + tuple(
+             "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/reconstruction_backlog.py", "Makefile") + tuple(
                  p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file())
 
 
@@ -179,7 +179,7 @@ def refresh_boundary_evidence():
     check_review_export(read(BOUNDARIES), directory / "reviewed-units.json", required=True)
 
 
-def inventory():
+def legacy_inventory():
     _, target, sha = reference()
     sdk = read(SDK)
     if sdk["reference_sha256"] != sha:
@@ -247,6 +247,11 @@ def inventory():
     return report
 
 
+def inventory():
+    from reconstruction_backlog import inventory as complete_inventory
+    return complete_inventory()
+
+
 def apply_sdk_identifications(rows, sdk):
     """Trust accepted plugin names; also exclude spans containing an SDK entry."""
     entries = [(int(address, 16), name) for address, name in sdk["functions"].items()]
@@ -267,12 +272,18 @@ def state():
     return read(STATE)
 
 
+def protected_unchanged(session):
+    active = session.get("active") or {}
+    allowed = {active.get("build_config"), active.get("symbol_file")}
+    return {k: v for k, v in fingerprints().items() if k not in allowed} == {k: v for k, v in session["protected"].items() if k not in allowed}
+
+
 def check_session(session):
     if git("rev-parse", "HEAD") != session["head"]:
         raise RuntimeError("HEAD changed outside the worker; begin a new session")
     if session.get("branch") and git("branch", "--show-current") != session["branch"]:
         raise RuntimeError("Current branch changed outside the worker")
-    if fingerprints() != session["protected"]:
+    if not protected_unchanged(session):
         raise RuntimeError("Reference/build gate/compiler changed; review outside the function worker")
     if time.time() > session["deadline"]:
         raise RuntimeError("Session time budget exhausted; preserve/defer the attempt or begin again")
@@ -282,6 +293,15 @@ def choose(report, session, address=None):
     policy = read(REVIEW)
     if policy.get("matching_paused", False):
         raise NoTarget("C matching is paused by the boundary-audit policy; review config/reconstruction.json")
+    if "targets" in report:
+        from reconstruction_backlog import key
+        excluded = {key(r) for r in session["completed"] + session["deferred"]}
+        candidates = [r for r in report["targets"] if r["status"] == "needs_review" and key(r) not in excluded]
+        if address:
+            candidates = [r for r in candidates if key(r) == address]
+        if not candidates:
+            raise NoTarget("Complete backlog exhausted for this session")
+        return candidates[0]
     excluded = {r["address"] for r in session["completed"] + session["deferred"]}
     candidates = [r for r in report["functions"] if r["status"] == "assembly"
                   and r["contiguous"] and not r["hardware_or_gp"]
@@ -315,10 +335,16 @@ def next_target(session, address=None):
     report = inventory()
     check_session(session)
     row = choose(report, session, address)
-    directory = ROOT / session.get("directory", "reports/reconstruction") / row["address"]
+    from reconstruction_backlog import prepare, slug
+    if "targets" in report:
+        row = prepare(ROOT, row, report)
+    directory = ROOT / session.get("directory", "reports/reconstruction") / slug(row)
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "target.s").write_text(row["body"] + "\n")
-    write(directory / "context.json", {**row, "compiler": read(ROOT / "config/compiler.json")})
+    recipe = "config/compiler.json"
+    if row.get("image", "SCUS_943.58") != "SCUS_943.58":
+        recipe = read(ROOT / "config/overlays.json")["overlays"][row["image"]].get("compiler_config", recipe)
+    write(directory / "context.json", {**row, "compiler_config": recipe, "compiler": read(ROOT / recipe)})
     (directory / "instructions.md").write_text(
         f"Reconstruct {row['name']} ({row['size']} bytes).\n\n"
         "Review callers, data types and both split boundaries before integration.\n"
@@ -327,7 +353,10 @@ def next_target(session, address=None):
         "Inspect reports/objdiff.json, reports/objdiff/<unit>.json, reports/boot-rebuild.json and reports/overlay-rebuild.json.\n"
         "Use defer --reason when blocked; archive edits and restore the passing baseline before next.\n"
         "Use finish --paths <explicit authored files> --message <commit message> after review.\n")
-    session["active"] = {"address": row["address"], "name": row["name"], "size": row["size"],
+    write(directory / "boundary-review.json", {k: row.get(k) for k in
+          ("identity", "reference_sha256", "body_sha256", "ranges", "boundary_review", "boundary_findings", "incoming", "control_references", "containing_span")})
+    session["active"] = {**{k: row[k] for k in ("identity", "image", "build_config", "symbol_file", "boundary_findings", "source_directory", "ranges", "body_sha256") if k in row},
+                         "address": row["address"], "name": row["name"], "size": row["size"],
                          "offset": row["offset"], "attempts": 0,
                          "context": str(directory.relative_to(ROOT))}
     save_state(session)
@@ -365,9 +394,18 @@ def validate(session):
     if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:
         raise RuntimeError("Full executable gate failed")
     current = inventory()
-    target = next((r for r in current["functions"] if r["address"] == active["address"]), None)
-    if target is None or target["status"] != "c" or target["size"] != active["size"]:
+    from reconstruction_backlog import key
+    target = next((r for r in current.get("targets", current.get("functions", [])) if key(r) == key(active)), None)
+    if target is None or target.get("reconstruction", target["status"]) != "c" or target.get("body_bytes", target.get("size")) != active["size"]:
         raise RuntimeError("Target was not converted to C at its original boundary")
+    if "identity" in active:
+        from overlays import load
+        catalog, _ = load()
+        for image, spec in catalog['overlays'].items():
+            slug = Path(spec['build_config']).stem
+            rebuilt = ROOT / 'build/overlays' / slug / image
+            if rebuilt.read_bytes() != (ROOT / 'orig/disc/files' / image).read_bytes():
+                raise RuntimeError('Full overlay gate failed: ' + image)
     print(f"Exact full-file match; {active['name']} is integrated as C.")
     return current
 
@@ -398,6 +436,7 @@ def audit_paths(requested, changed):
     for name in paths:
         path = Path(name)
         allowed = (name in ("scus_943.58.yaml", "symbol_addrs.txt", "config/reconstruction.json")
+                   or (name.startswith("config/overlays/") and path.suffix in (".yaml", ".txt"))
                    or (len(path.parts) > 1 and path.parts[0] == "src" and path.suffix in (".c", ".h"))
                    or (len(path.parts) > 1 and path.parts[0] == "docs" and path.suffix == ".md"))
         if not allowed or path.is_absolute() or ".." in path.parts:
@@ -500,7 +539,7 @@ def main():
     defer.add_argument("--reason", required=True)
     args = parser.parse_args()
     if args.command == "inventory":
-        inventory()
+        legacy_inventory()
     elif args.command == "run":
         from reconstruct_run import run_batch
         run_batch(args, sys.modules[__name__])
