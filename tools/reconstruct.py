@@ -107,6 +107,11 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
                                    stderr=subprocess.STDOUT, start_new_session=True,
                                    stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
                                    text=True, env=env)
+        from reconstruction_runtime import follow_log
+        import threading
+        done = threading.Event()
+        output = threading.Thread(target=follow_log, args=(path, done, name == "agent"), daemon=True)
+        output.start()
         try:
             from reconstruction_runtime import communicate
             communicate(process, input_text, timeout, progress_path, stall_seconds)
@@ -124,6 +129,9 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
                 detail = str(error) if isinstance(error, Stalled) else "Command timed out"
                 raise CommandTimeout(f"{detail}; inspect {path}") from error
             raise
+        finally:
+            done.set()
+            output.join()
     if code:
         raise RuntimeError(f"Command failed ({code}); inspect {path}")
 
@@ -542,9 +550,10 @@ def main():
     batch.add_argument("--agent-command", help="Full launcher argv, shell-quoted; prompt on stdin, no shell")
     batch.add_argument("--stall-seconds", type=int, default=300, help="Stop after this long without object-score improvement; 0 disables")
     batch.add_argument("--retry-structural", action="store_true", help="Revisit unchanged cached structural blockers")
-    detached = sub.add_parser("start", help="Run a detached Python batch without a supervising chat")
+    detached = sub.add_parser("start", help="Run a serial batch in the foreground and stream stdout")
     for action in batch._actions[1:]:
         detached._add_action(action)
+    detached.add_argument("--detach", action="store_true", help="Run in the background and return a PID/log path")
     next_parser = sub.add_parser("next")
     next_parser.add_argument("--address")
     status_parser = sub.add_parser("status")
@@ -558,10 +567,10 @@ def main():
     args = parser.parse_args()
     if args.command == "inventory":
         legacy_inventory()
-    elif args.command == "start":
+    elif args.command == "start" and args.detach:
         from reconstruction_runtime import start
         start(ROOT, args)
-    elif args.command == "run":
+    elif args.command in ("run", "start"):
         from reconstruct_run import run_batch
         run_batch(args, sys.modules[__name__])
     elif args.command == "begin":
@@ -611,7 +620,7 @@ if __name__ == "__main__":
         def interrupted(signum, frame):
             raise KeyboardInterrupt
         signal.signal(signal.SIGTERM, interrupted)
-        if len(sys.argv) > 1 and sys.argv[1] == "start":
+        if len(sys.argv) > 1 and sys.argv[1] == "start" and "--detach" in sys.argv:
             main()
         else:
             with exclusive_worker(STATE.parent):

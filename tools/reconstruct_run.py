@@ -362,6 +362,9 @@ class Runner:
                     reason = "session time budget exhausted"
                     break
                 raise
+            active = session["active"]
+            number = len(session["completed"]) + len(session["deferred"]) + 1
+            print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)
             self.start_branch(session)
             before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
             old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()

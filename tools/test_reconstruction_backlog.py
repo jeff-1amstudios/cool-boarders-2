@@ -230,6 +230,25 @@ value = 8 if r['image']=='A.BIN' else 7
         self.assertEqual(launch['pid'],123)
         self.assertTrue((self.root/launch['log']).is_file())
 
+    def test_foreground_start_blocks_and_streams_two_targets_in_order(self):
+        import io
+        import shlex
+        from contextlib import redirect_stdout
+        agent = self.fixture.agent
+        agent.write_text(agent.read_text() + "\nprint('agent output '+address, flush=True)\nprint('agent stderr '+address, file=sys.stderr, flush=True)\n")
+        argv = ['reconstruct.py','start','--limit','2','--agent-command',
+                shlex.join([sys.executable,str(agent),'match'])]
+        output = io.StringIO()
+        with patch.object(sys,'argv',argv), redirect_stdout(output):
+            worker.main()
+        text = output.getvalue()
+        self.assertLess(text.index('agent output 0x80010000'),text.index('Target 2/2'))
+        self.assertLess(text.index('Target 2/2'),text.index('agent output 0x80010008'))
+        self.assertIn('agent stderr 0x80010000',text)
+        self.assertEqual(len(worker.state()['completed']),2)
+        self.assertFalse((self.root/'reports/reconstruction/launch.json').exists())
+        self.assertEqual(self.fixture.git('branch','--show-current'),'main')
+
 
 if __name__ == '__main__':
     unittest.main()
