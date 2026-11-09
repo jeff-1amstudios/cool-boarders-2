@@ -10,7 +10,7 @@ from unittest.mock import patch
 import yaml
 import reconstruct as worker
 from reconstruction_backlog import prepare, key, slug, coverage
-from reconstruct_run import review_split, Runner, Rejected
+from reconstruct_run import review_split, review_source, Runner, Rejected
 import test_reconstruct_run as fixtures
 
 
@@ -59,6 +59,14 @@ class BacklogTests(unittest.TestCase):
         rows = self.rows()
         first = prepare(self.root, rows[0], {'targets':rows})
         self.assertEqual(first['boundary_findings'], {})
+        (self.root/rows[0]['symbol_file']).write_text('build_entry = 0x80010000; // type:func\n')
+        self.assertEqual(prepare(self.root,rows[0],{'targets':rows})['name'],'build_entry')
+        source = self.root/'src/elements.c'
+        source.write_text('int elements(void){int state[2];state[0] = 7;return state[0];}')
+        review_source(self.root,['src/elements.c'],'src/elements.c','elements')
+        source.write_text('int elements(void){int state[2] = {7,0};return state[0];}')
+        with self.assertRaisesRegex(Rejected,'Initialized arrays'):
+            review_source(self.root,['src/elements.c'],'src/elements.c','elements')
         before = yaml.safe_load((self.root/rows[0]['build_config']).read_text())
         after = copy.deepcopy(before)
         after['segments'][0]['subsegments'][0] = [0,'c','entry']

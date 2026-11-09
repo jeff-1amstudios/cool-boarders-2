@@ -39,6 +39,10 @@ def prepare(root, row, report):
     if hashlib.sha256(data).hexdigest() != row['reference_sha256']:
         raise RuntimeError('Selected image fingerprint changed')
     start = int(row['address'], 16)
+    names = re.findall(r'^([A-Za-z_]\w*)\s*=\s*(0x[0-9A-Fa-f]+);([^\n]*)',
+                       (root / row['symbol_file']).read_text(), re.M)
+    symbol = next((name for name, address, comment in names
+                   if int(address,16) == start and 'type:data' not in comment), f'func_{start:08X}')
     base = start - row['file_offset']
     ranges = [(int(a, 16), int(b, 16)) for a, b in row['ranges']]
     findings = {}
@@ -81,8 +85,9 @@ def prepare(root, row, report):
             continue
         rows = segment.get('subsegments', [])
         for i,r in enumerate(rows[:-1]):
-            if isinstance(r,list) and r[1] == 'asm' and r[0] <= row['file_offset'] and row['file_offset'] + row['body_bytes'] <= rows[i+1][0]:
-                span = {'start': r[0], 'end': rows[i+1][0], 'name': r[2]}
+            high = rows[i+1].get('start') if isinstance(rows[i+1],dict) else rows[i+1][0]
+            if isinstance(r,list) and r[1] == 'asm' and r[0] <= row['file_offset'] and row['file_offset'] + row['body_bytes'] <= high:
+                span = {'start': r[0], 'end': high, 'name': r[2]}
     if span is None:
         findings['no_containing_assembly_span'] = row['build_config']
     neighbours = []
@@ -93,7 +98,7 @@ def prepare(root, row, report):
         value = int.from_bytes(data[offset:offset+4], 'little')
         if any(a <= value < b for a,b in ranges):
             pointers.append({'at': f'0x{offset+base:08X}', 'value': f'0x{value:08X}'})
-    return {**row, 'possible_pointer_words': pointers, 'offset' : row['file_offset'], 'size': row['body_bytes'],
+    return {**row, 'ghidra_name': row['name'], 'name': symbol, 'possible_pointer_words': pointers, 'offset' : row['file_offset'], 'size': row['body_bytes'],
             'body': '\n'.join(lines), 'containing_span': span, 'incoming': incoming,
             'control_references': calls, 'neighbour_listing': neighbours,
             'source_directory': source_dir(row), 'boundary_findings': findings,

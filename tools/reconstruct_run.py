@@ -80,7 +80,7 @@ def review_source(root, paths, entry, symbol, *, checkpoint=False):
         clean = re.sub(r"/\*.*?\*/|//[^\n]*", " ", text.replace("\\\n", ""), flags=re.S)
         if re.search(r"\b(?:asm|__asm|__asm__|INCLUDE_ASM|GLOBAL_ASM|__attribute__)\b|\.(?:incbin|word|byte)\b|##", clean):
             raise Rejected(f"Assembly/byte embedding or section attributes in {path.name}")
-        if re.search(r"\[[^\]]*\]\s*=", clean):
+        if re.search(r'\[[^\]]*\]\s*=\s*(?:\{|")', clean):
             raise Rejected(f"Initialized arrays require manual source review: {path.name}")
         for line in clean.splitlines():
             if not line.lstrip().startswith("#"):
@@ -177,6 +177,8 @@ class Runner:
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, split only this function into a new C unit and preserve all other configuration.\n"
+            "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
+            "Prior attempts and archived candidate sources may be reused from reports/reconstruction/sessions after review and fresh validation.\n"
             f"Add C/headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
             "Write boundary-decision.json in the context directory: identity, body_sha256, decision (standalone or deferred), and evidence (nonempty text explaining boundaries, callers and data dependencies).\n"
             "Structural evidence is conservative; if the function cannot safely stand alone, record a concrete blocker and stop.\n"
