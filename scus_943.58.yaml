@@ -109,5 +109,7 @@ segments:
       - [0xEDAC, asm, after_copy_bounded_name]
       - [0x204EC, c, positive_bit_length]
       - [0x20508, asm, after_positive_bit_length]
+      - [0x2D94C, c, func_8003D14C]
+      - [0x2D954, asm, after_func_8003D14C]
       - [0x35BA8, data, 35BA8] # estimated
   - [0x41000]
