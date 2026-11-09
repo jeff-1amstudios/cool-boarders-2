@@ -102,3 +102,26 @@ Remaining discrimination gaps include switches, division, floating point, inlini
 The first automatic run after this work selected a four-byte copied patch fragment (`0x8003D0B8`) and short handwritten fall-through entries (`0x80024CC0`, `0x800250C0`). None has an independent return, and a standalone C wrapper changes the shared control flow and byte extent. The controller correctly rejected them, retained WIP checkpoints on their function branches and restored matching `main`. The run was interrupted cleanly as it reached another equivalent entry, `0x80037BF8`.
 
 Reviewed persistent exclusions now cover the copied fragment and eight observed `addi a3,a1,offset; addiu a2,zero,0` fall-through entries, including those at `0x80037F68`, `0x80038378`, `0x800387F8`, `0x80038D18` and `0x80039268`. They remain retained assembly, not matching C. This uses the existing queue's classification/hold mechanism; no comparator, compiler recipe or worker acceptance rule changed. Automatic session deferrals alone are temporary, so curated exclusions are necessary to prevent the next run repeating these unsuitable targets.
+
+## Completed automatic ten-function batch
+
+After the reviewed exclusions were committed as `cb26c58`, `tools/.venv/bin/python tools/reconstruct.py run --limit 10` completed with **ten matching commits, zero deferrals**. Work was serial: one fresh agent per function branch, independent controller validation, audited commit, then fast-forward integration into `main` before selecting the next target. All ten function branches remain at their matching commits. No WIP checkpoint was integrated.
+
+| Address | Bytes | Commit | Observed behavior |
+| --- | ---: | --- | --- |
+| `0x8003D14C` | 8 | `9a019eb` | Empty return stub; preserves the return register. |
+| `0x8003E15C` | 8 | `88d5937` | Return zero. |
+| `0x8003E164` | 8 | `e47dd33` | Return zero. |
+| `0x8003E2F8` | 8 | `9d9b493` | Return zero. |
+| `0x8001EC68` | 16 | `1359792` | Store argument in D_8005802C. |
+| `0x800296D0` | 16 | `722bac3` | Return zero-extended unsigned byte D_8004E050. |
+| `0x800296E0` | 16 | `0fbb5da` | Return zero-extended unsigned byte D_8004E052. |
+| `0x8002C3BC` | 16 | `057b102` | Store pointer in D_80054C08 and return zero; pointed-to type remains provisional. |
+| `0x8002E158` | 16 | `87775b4` | Return sign-extended halfword D_8005AB3C. |
+| `0x8002ECA0` | 16 | `16af9a8` | Store argument in D_8005AB24. |
+
+This batch adds **128 bytes**, taking the total from 25 functions / 1,432 bytes to **35 functions / 1,560 bytes**. Each candidate passed fresh controller `make validate`; final read-only verification confirmed the pinned 266,240-byte file and SHA-256 were unchanged, and all ten commits were present on `main`. The final inventory has 763 detected retained assembly functions. This count is provisional and excludes unloaded overlays; it is not a whole-game denominator.
+
+The queue favors small leaf functions, so this batch contains four return stubs and six simple accessors/setters. It exercises the automation and recovers C but adds little compiler discrimination. Do not confuse a function count increase with equivalent byte coverage or new evidence resolving O2 versus O3. The 1,800-trial compiler matrix still covers the preceding 25-function probe set. Types describe the observed accesses; full API meaning and game-versus-SDK authorship remain provisional.
+
+The existing `--limit` counts selected attempts, including deferrals, rather than guaranteed matches. The interrupted discovery run is preserved separately under ignored `reports/reconstruction/sessions/1794188313715899000/`; the successful run is under `reports/reconstruction/sessions/1794188719862651000/`. A generic queue must exclude noncallable fragments before its small-function ordering can provide useful targets.

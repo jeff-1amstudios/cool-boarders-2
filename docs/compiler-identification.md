@@ -1,6 +1,6 @@
 # Matching build and compiler evidence
 
-The USA boot executable now rebuilds byte for byte, including its PS-X EXE header and data. Twenty-five functions (1,432 bytes) are compiled from reconstructed C after resolving the deferred loop and completing the next ten targets; all other executable code remains assembly. The compiler matrix below covers all 25 functions. This establishes a matching boot rebuild, not a complete game decompilation.
+The USA boot executable now rebuilds byte for byte, including its PS-X EXE header and data. Thirty-five functions (1,560 bytes) are compiled from reconstructed C after resolving the deferred loop, completing the next ten targets and integrating a subsequent automatic ten-function batch; all other executable code remains assembly. The compiler matrix below covers the 25-function probe set from the preceding batch; the latest ten have full-file validation but have not been added to that matrix. This establishes a matching boot rebuild, not a complete game decompilation.
 
 ## Repeat the build
 
