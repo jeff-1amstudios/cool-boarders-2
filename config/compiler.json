@@ -2,8 +2,23 @@
   "status": "Working recipe; original compiler/flags are not uniquely identified",
   "compiler": "gcc-2.7.2-psx",
   "compiler_release": "decompals/old-gcc 0.17",
-  "cc1_flags": ["-O2", "-G0", "-mips1"],
-  "maspsx_flags": ["--aspsx-version", "2.56"],
-  "as_flags": ["-EL", "-march=r3000", "-mtune=r3000", "-mabi=32", "-O1", "-G0", "-no-pad-sections"],
-  "scope": "Five initial C reconstructions. O3 also matches these probes; this does not prove an exact ASPSX version or project-wide flags."
+  "cc1_flags": [
+    "-O2",
+    "-G0",
+    "-mips1"
+  ],
+  "maspsx_flags": [
+    "--aspsx-version",
+    "2.56"
+  ],
+  "as_flags": [
+    "-EL",
+    "-march=r3000",
+    "-mtune=r3000",
+    "-mabi=32",
+    "-O1",
+    "-G0",
+    "-no-pad-sections"
+  ],
+  "scope": "Twenty-five integrated C reconstructions and 1,800 matrix trials. PSX GCC 2.7.2 O2/O3 G0 with maspsx 2.56 both match 25/25; original optimization level, exact ASPSX version and project-wide flags remain unproven."
 }

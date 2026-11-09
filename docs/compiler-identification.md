@@ -1,13 +1,13 @@
 # Matching build and compiler evidence
 
-The USA boot executable now rebuilds byte for byte, including its PS-X EXE header and data. Fourteen functions (672 bytes) are compiled from reconstructed C after the bounded reconstruction pilot; all other executable code remains assembly. The compiler matrix below still describes the original five probes. This is the first matching milestone, not a complete game decompilation.
+The USA boot executable now rebuilds byte for byte, including its PS-X EXE header and data. Twenty-five functions (1,432 bytes) are compiled from reconstructed C after resolving the deferred loop and completing the next ten targets; all other executable code remains assembly. The compiler matrix below covers all 25 functions. This establishes a matching boot rebuild, not a complete game decompilation.
 
 ## Repeat the build
 
 ```sh
 make toolchain       # only needed to prepare missing local tools
 make                 # split, compile/assemble, link, and compare every byte
-make compiler-matrix # repeat the 360 compiler/flag/assembler/probe trials
+make compiler-matrix # repeat the 1,800 compiler/flag/assembler/probe trials
 ```
 
 The reference is `orig/disc/files/SCUS_943.58`. Its pinned SHA-256 and the rebuilt file's SHA-256 are both:
@@ -32,13 +32,13 @@ PsyQ 3.7.0 is a useful SDK lead, not a guarantee of one compiler for all game ob
 
 ## Empirical results
 
-`tools/compiler_matrix.py` tests three compilers × four optimization levels (`O0`–`O3`) × two small-data limits (`G0`, `G8`) × three maspsx ASPSX modes (2.21, 2.34, 2.56) × five reconstructed functions: **360 trials**.
+`tools/compiler_matrix.py` tests three compilers × four optimization levels (`O0`–`O3`) × two small-data limits (`G0`, `G8`) × three maspsx ASPSX modes (2.21, 2.34, 2.56) × 25 reconstructed functions: **1,800 trials**.
 
-| Candidate | Best exact matches among the five C reconstructions |
+| Candidate | Best exact matches among the 25 C reconstructions |
 | --- | ---: |
-| PSX GCC 2.7.2 | 5/5 |
-| CDK/Cygnus GCC 2.7.2 | 3/5 |
-| PSX GCC 2.8.1 | 1/5 |
+| PSX GCC 2.7.2 | 25/25 |
+| CDK/Cygnus GCC 2.7.2 | 13/25 |
+| PSX GCC 2.8.1 | 6/25 |
 
 The working recipe, stored in `config/compiler.json`, is:
 
@@ -48,11 +48,11 @@ maspsx:    --aspsx-version 2.56 -G0
 GNU as:    -EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections
 ```
 
-**Unresolved:** `-O3` also matches all five functions. Other assembler modes not tested may produce the same results. A different source/type reconstruction can change a candidate's score, so the table does not conclusively exclude another compiler. We have selected an evidence-backed working build recipe, not uniquely recovered every original option.
+**Unresolved:** `-O3` also matches all 25 functions. Among the tested combinations, only PSX GCC 2.7.2 with G0 and maspsx 2.56 reaches 25/25, at either O2 or O3. Other assembler modes not tested may produce the same results. A different source/type reconstruction can change a candidate's score, so the table does not conclusively exclude another compiler. We have selected an evidence-backed working build recipe, not uniquely recovered every original option.
 
-330 trials reached byte comparison. Thirty G8 trials failed to link the `clear_globals` reconstruction with its assumed independent scalar declarations: their GP-relative addresses exceed the available signed displacement. Those failures are recorded separately from byte mismatches. G8 trials preserve positive `.extern` size metadata through a common-symbol shim for maspsx; unknown-size arrays are not treated as small data. These results depend on the proposed declarations and do not establish a project-wide `-G0` policy. The retained assembly also contains a small group of GP-relative stores around `0x80020F00` that needs separate analysis.
+1,620 trials reached byte comparison. Another 180 G8 trials failed linking with GP displacement errors across six reconstructions (`flag_acquire`, `flag_release`, `fill_slots`, `clear_globals`, `two_command_calls`, `copy_bounded_name`): with the proposed scalar declarations, some GP-relative addresses exceed the available signed displacement. Those failures are recorded separately from byte mismatches. G8 trials preserve positive `.extern` size metadata through a common-symbol shim for maspsx; unknown-size arrays are not treated as small data. These results depend on the proposed declarations and do not establish a project-wide `-G0` policy. The retained assembly also contains a small group of GP-relative stores around `0x80020F00` that needs separate analysis.
 
-Full scores, failed commands, source hashes and trial artifacts are under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`.
+Full scores, failed commands, source hashes and trial artifacts are under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`. The earlier five-function matrix scored 5/5, 3/5 and 1/5 respectively; the expanded sample strengthens the PSX 2.7.2 lead but preserves the O2/O3 tie. Selection remains source-dependent because these C reconstructions were developed against the working recipe. See [reconstruction learnings](reconstruction-learnings.md) for the controlled indexed-versus-pointer loop experiment and the next ten functions.
 
 ## First five C functions
 

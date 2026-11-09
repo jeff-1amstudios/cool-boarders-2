@@ -62,3 +62,9 @@ The [ten-target pilot](reconstruction-pilot.md) added nine matching C functions 
 Moved the supplied BIN/CUE folder to ignored `orig/images/` and its archive to ignored `orig/archives/`. Rehashed the entire source set and confirmed no input bytes changed. Updated local inventory paths without changing their recorded fingerprints.
 
 Removed the generated Splat macro headers from the source tree. The build now regenerates them from the pinned dependency into ignored `build/include/`, alongside the other generated build inputs. A matching rebuild passed after this change. Raw disassembly, all game assets and downloaded tool implementations remain outside the commit; the tracked build recipes fetch or regenerate them as needed.
+
+## Deferred-loop resolution and second batch
+
+The deferred `0x80017A00` now matches using indexed access under the unchanged compiler flags. Ten further functions also match, for 25 C functions / 1,432 bytes total. `make validate` reports 25/25 matching functions in its aggregate object report and zero full-file differences, retaining the original 266,240-byte size and SHA-256 above. A failed first batch attempt retained diagnostics; source-shape refinements recovered the match without changing the reference or gate. The compiler matrix has been expanded to all 25 functions. See [reconstruction learnings](reconstruction-learnings.md) and [current compiler results](compiler-identification.md).
+
+The detailed `fill_slots` object diff retains a relocation-expression difference (`D_80058D07` versus `D_80058CC8 + 63`), scoring that symbol at 99.28571%. Both resolve to the same address and identical final bytes; see the learnings for why this does not invalidate the full-file match.

@@ -1,23 +1,162 @@
 {
-  "scope": "Five integrated C reconstructions, also used for isolated compiler discrimination",
+  "scope": "Twenty-five integrated C reconstructions; source-dependent compiler discrimination, not unique identification.",
   "probes": [
-    {"name": "queue_call", "address": "0x80013B30", "size": 48},
-    {"name": "poll_loop", "address": "0x80014388", "size": 88},
-    {"name": "sdk_calls", "address": "0x8001787C", "size": 48},
-    {"name": "clear_globals", "address": "0x8001B59C", "size": 24},
-    {"name": "table_exchange", "address": "0x8001B5B4", "size": 28}
+    {
+      "name": "queue_call",
+      "address": "0x80013B30",
+      "size": 48
+    },
+    {
+      "name": "poll_loop",
+      "address": "0x80014388",
+      "size": 88
+    },
+    {
+      "name": "flag_acquire",
+      "address": "0x80015F68",
+      "size": 48
+    },
+    {
+      "name": "flag_release",
+      "address": "0x80015F98",
+      "size": 48
+    },
+    {
+      "name": "fill_slots",
+      "address": "0x800166A4",
+      "size": 56
+    },
+    {
+      "name": "queue_word",
+      "address": "0x80017044",
+      "size": 48
+    },
+    {
+      "name": "command_reset",
+      "address": "0x8001728C",
+      "size": 44
+    },
+    {
+      "name": "state_transition",
+      "address": "0x8001742C",
+      "size": 68
+    },
+    {
+      "name": "sdk_calls",
+      "address": "0x8001787C",
+      "size": 48
+    },
+    {
+      "name": "sdk_single_call",
+      "address": "0x800178AC",
+      "size": 32
+    },
+    {
+      "name": "word_call_loop",
+      "address": "0x80017A00",
+      "size": 88
+    },
+    {
+      "name": "word_find_call",
+      "address": "0x80017AC0",
+      "size": 88
+    },
+    {
+      "name": "four_word_calls",
+      "address": "0x80017B18",
+      "size": 76
+    },
+    {
+      "name": "byte_fold",
+      "address": "0x800181D4",
+      "size": 92
+    },
+    {
+      "name": "copy_bytes",
+      "address": "0x8001A3DC",
+      "size": 52
+    },
+    {
+      "name": "copy_record_payload",
+      "address": "0x8001ADC8",
+      "size": 76
+    },
+    {
+      "name": "clear_globals",
+      "address": "0x8001B59C",
+      "size": 24
+    },
+    {
+      "name": "table_exchange",
+      "address": "0x8001B5B4",
+      "size": 28
+    },
+    {
+      "name": "two_command_calls",
+      "address": "0x8001BF08",
+      "size": 64
+    },
+    {
+      "name": "clear_words",
+      "address": "0x8001C0D4",
+      "size": 32
+    },
+    {
+      "name": "clear_words_flag",
+      "address": "0x8001C0F4",
+      "size": 60
+    },
+    {
+      "name": "record_find_greater",
+      "address": "0x8001DA98",
+      "size": 60
+    },
+    {
+      "name": "record_find_less",
+      "address": "0x8001DAD4",
+      "size": 60
+    },
+    {
+      "name": "copy_bounded_name",
+      "address": "0x8001E560",
+      "size": 76
+    },
+    {
+      "name": "positive_bit_length",
+      "address": "0x8002FCEC",
+      "size": 28
+    }
   ],
   "external_symbols": {
-    "D_800580A8": "0x800580A8",
+    "D_800478D0": "0x800478D0",
     "D_80047D18": "0x80047D18",
     "D_80047D1C": "0x80047D1C",
-    "func_8004097C": "0x8004097C",
+    "D_80050570": "0x80050570",
+    "D_80050680": "0x80050680",
+    "D_80050688": "0x80050688",
+    "D_8005068C": "0x8005068C",
+    "D_80057FB8": "0x80057FB8",
+    "D_800580A8": "0x800580A8",
+    "D_80058B10": "0x80058B10",
+    "D_80058C40": "0x80058C40",
+    "D_80058CC8": "0x80058CC8",
+    "D_80058D10": "0x80058D10",
+    "D_8005A7B8": "0x8005A7B8",
+    "D_8005AB54": "0x8005AB54",
+    "D_8005AB5C": "0x8005AB5C",
     "func_80013C70": "0x80013C70",
     "func_8001B320": "0x8001B320",
-    "func_800449F8": "0x800449F8",
     "func_8003BD60": "0x8003BD60",
+    "func_8003CA7C": "0x8003CA7C",
+    "func_8003CABC": "0x8003CABC",
+    "func_8003CACC": "0x8003CACC",
+    "func_8003CB2C": "0x8003CB2C",
+    "func_8003CB3C": "0x8003CB3C",
+    "func_8003D714": "0x8003D714",
+    "func_8004097C": "0x8004097C",
     "func_80044524": "0x80044524",
     "func_80044578": "0x80044578",
-    "func_8003CA7C": "0x8003CA7C"
+    "func_800445B0": "0x800445B0",
+    "func_800449F8": "0x800449F8"
   }
 }

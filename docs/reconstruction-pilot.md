@@ -30,3 +30,7 @@ The inventory initially detected 799 functions and ended at 798. Comparing the i
 The pilot supports continued bounded batches using the [worker workflow](reconstruction-worker.md). It does not resolve the O2/O3 compiler tie or establish settings for independent libraries/overlays. The compiler matrix still measures the original five probes. For the next batch, review functions with signed byte loads, arithmetic and switches rather than selecting only trivial wrappers; add reviewed SDK leads to the queue metadata as they are established.
 
 Post-pilot worker improvements preserve separate session histories, snapshot edits and available diagnostics for each attempt, reject simultaneous worker commands and honor persistent holds. Guard tests cover byte-checked assembly context, path staging, protected recipe/HEAD/deadline checks, attempt limits, target exclusions, session archive retention and concurrency. The script prepares and gates work; an agent must still supply and review the C.
+
+## Follow-up
+
+The deferred function was subsequently resolved with indexed C under the unchanged recipe, followed by ten more matching functions. The current total is 25 C functions / 1,432 bytes. The compiler matrix now covers all 25. See [the loop investigation and batch learnings](reconstruction-learnings.md); the results above describe the earlier pilot.
