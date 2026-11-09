@@ -16,12 +16,16 @@ from overlay_rebuild import prepare_objdiff_units
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--summary", action="store_true", help="Summarize the existing batch report")
+    parser.add_argument("--image", help="SCUS_943.58 or one overlay BIN")
+    parser.add_argument("--unit", help="Prepare only this namespaced C unit")
     args = parser.parse_args()
+    if args.unit and not args.image:
+        parser.error("--unit requires --image")
     if args.summary:
         report = json.loads((ROOT / "reports/objdiff.json").read_text())
         details = ROOT / "reports/objdiff"
         details.mkdir(exist_ok=True)
-        for unit in report["units"]:
+        for unit in report.get("units", []):
             measures = unit["measures"]
             print(f"{unit['name']}: {measures.get('fuzzy_match_percent', 0):.2f}% "
                   f"({measures.get('matched_functions', 0)}/{measures.get('total_functions', 0)} functions)")
@@ -55,57 +59,63 @@ def main():
         print(f"C units only: {measures.get('matched_code', 0)}/{measures.get('total_code', 0)} code bytes matching.")
         print("Details: reports/objdiff.json. Run make for full-file boot and overlay checks.")
         return
-    _, expected, _ = reference()
-    directory = ROOT / "build/objdiff"
-    directory.mkdir(parents=True, exist_ok=True)
-    (ROOT / "reports").mkdir(exist_ok=True)
-    # Split independently of reconstructed C, preserving the reviewed boundaries
-    # and symbols. Never obtain target bytes from the current compiled objects.
-    config = yaml.safe_load((ROOT / "scus_943.58.yaml").read_text())
-    names = []
-    for segment in config["segments"]:
-        if isinstance(segment, dict):
-            for subsegment in segment.get("subsegments", []):
-                if isinstance(subsegment, list) and subsegment[1] == "c":
-                    names.append(subsegment[2])
-                    subsegment[1] = "asm"
-    if not names:
-        raise RuntimeError("No C units found in the Splat configuration")
-    config["options"].update(
-        base_path=str(ROOT), asm_path="build/objdiff/target", build_path=".",
-        asset_path="build/objdiff/assets", cache_path="build/objdiff/splat-cache",
-        ld_script_path="build/objdiff/reference.ld", ld_dependencies=False,
-        elf_path="build/objdiff/reference.elf",
-        undefined_funcs_auto_path="build/objdiff/undefined_funcs.txt",
-        undefined_syms_auto_path="build/objdiff/undefined_syms.txt",
-    )
-    split_config = directory / "splat.yaml"
-    split_config.write_text(yaml.safe_dump(config, sort_keys=False))
-    run([sys.executable, "-m", "splat", "split", split_config])
-    run([sys.executable, "-c",
-         "from pathlib import Path; from splat.util import conf,file_presets; "
-         "conf.load([Path('build/objdiff/splat.yaml')]); file_presets.write_all_files()"])
-    script = directory / "reference.ld"
-    objects = list(dict.fromkeys(re.findall(r"([^\s()]+\.o)\(", script.read_text())))
-    for name in objects:
-        run([str(PREFIX) + "as", "-EL", "-march=r3000", "-mtune=r3000", "-mabi=32",
-             "-G0", "-no-pad-sections", "-I", "build/include", "-o", name,
-             Path(name).with_suffix(".s")])
-    run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
-         "-T", directory / "undefined_funcs.txt", "-T", directory / "undefined_syms.txt",
-         "-o", directory / "reference.elf"])
-    binary = directory / "SCUS_943.58"
-    run([str(PREFIX) + "objcopy", "-O", "binary", directory / "reference.elf", binary])
-    if binary.read_bytes() != expected:
-        raise RuntimeError("Original-disassembly objdiff reference rebuild differs from the pinned EXE")
-    recipe = json.loads((ROOT / "config/compiler.json").read_text())
     units = []
-    for name in names:
-        base = f"build/src/{name}.o"
-        compile_c(base, recipe)
-        units.append({"name": name, "target_path": f"build/objdiff/target/{name}.o",
-                      "base_path": base, "metadata": {"source_path": f"src/{name}.c"}})
-    units.extend(prepare_objdiff_units())
+    if args.image in (None, "SCUS_943.58"):
+        _, expected, _ = reference()
+        directory = ROOT / "build/objdiff"
+        directory.mkdir(parents=True, exist_ok=True)
+        (ROOT / "reports").mkdir(exist_ok=True)
+        # Split independently of reconstructed C, preserving the reviewed boundaries
+        # and symbols. Never obtain target bytes from the current compiled objects.
+        config = yaml.safe_load((ROOT / "scus_943.58.yaml").read_text())
+        names = []
+        for segment in config["segments"]:
+            if isinstance(segment, dict):
+                for subsegment in segment.get("subsegments", []):
+                    if isinstance(subsegment, list) and subsegment[1] == "c":
+                        names.append(subsegment[2])
+                        subsegment[1] = "asm"
+        if not names:
+            raise RuntimeError("No C units found in the Splat configuration")
+        config["options"].update(
+            base_path=str(ROOT), asm_path="build/objdiff/target", build_path=".",
+            asset_path="build/objdiff/assets", cache_path="build/objdiff/splat-cache",
+            ld_script_path="build/objdiff/reference.ld", ld_dependencies=False,
+            elf_path="build/objdiff/reference.elf",
+            undefined_funcs_auto_path="build/objdiff/undefined_funcs.txt",
+            undefined_syms_auto_path="build/objdiff/undefined_syms.txt",
+        )
+        split_config = directory / "splat.yaml"
+        split_config.write_text(yaml.safe_dump(config, sort_keys=False))
+        run([sys.executable, "-m", "splat", "split", split_config])
+        run([sys.executable, "-c",
+             "from pathlib import Path; from splat.util import conf,file_presets; "
+             "conf.load([Path('build/objdiff/splat.yaml')]); file_presets.write_all_files()"])
+        script = directory / "reference.ld"
+        objects = list(dict.fromkeys(re.findall(r"([^\s()]+\.o)\(", script.read_text())))
+        for name in objects:
+            run([str(PREFIX) + "as", "-EL", "-march=r3000", "-mtune=r3000", "-mabi=32",
+                 "-G0", "-no-pad-sections", "-I", "build/include", "-o", name,
+                 Path(name).with_suffix(".s")])
+        run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
+             "-T", directory / "undefined_funcs.txt", "-T", directory / "undefined_syms.txt",
+             "-o", directory / "reference.elf"])
+        binary = directory / "SCUS_943.58"
+        run([str(PREFIX) + "objcopy", "-O", "binary", directory / "reference.elf", binary])
+        if binary.read_bytes() != expected:
+            raise RuntimeError("Original-disassembly objdiff reference rebuild differs from the pinned EXE")
+        recipe = json.loads((ROOT / "config/compiler.json").read_text())
+        for name in names:
+            if args.unit and name != args.unit:
+                continue
+            base = f"build/src/{name}.o"
+            compile_c(base, recipe)
+            units.append({"name": name, "target_path": f"build/objdiff/target/{name}.o",
+                          "base_path": base, "metadata": {"source_path": f"src/{name}.c"}})
+    if args.image != "SCUS_943.58":
+        units.extend(prepare_objdiff_units(args.image, args.unit))
+    if args.unit and not any(u["name"] == args.unit for u in units):
+        raise RuntimeError("Selected C unit is not configured in the selected image")
     project = {
         "$schema": "https://raw.githubusercontent.com/encounter/objdiff/v3.8.3/config.schema.json",
         "min_version": "3.8.3", "custom_make": "make",

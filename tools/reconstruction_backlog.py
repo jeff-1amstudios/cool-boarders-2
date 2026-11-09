@@ -92,14 +92,37 @@ def prepare(root, row, report):
         findings['no_containing_assembly_span'] = row['build_config']
     neighbours = []
     for pc in range(max(0,row['file_offset']-32), min(len(data)-3,row['file_offset']+row['body_bytes']+32),4):
+        if row['file_offset'] <= pc < row['file_offset'] + row['body_bytes']:
+            continue
         neighbours.append(f'{pc+base:08X}: ' + rabbitizer.Instruction(int.from_bytes(data[pc:pc+4],'little'), pc+base, rabbitizer.InstrCategory.R3000GTE).disassemble())
     pointers = []
     for offset in range(0, len(data)-3, 4):
         value = int.from_bytes(data[offset:offset+4], 'little')
         if any(a <= value < b for a,b in ranges):
             pointers.append({'at': f'0x{offset+base:08X}', 'value': f'0x{value:08X}'})
+    dependencies = []
+    requested = [(image, r['owner'].rsplit(':', 1)[1]) for r in incoming[:4]]
+    requested += [(image, r['to']) for r in calls if r['kind'] == 'call'][:8]
+    seen = set()
+    for preferred, address in requested:
+        dep = next((r for r in report['targets'] if r['image'] == preferred and int(r['address'],16) == int(address,16)), None)
+        if dep is None and preferred != 'SCUS_943.58':
+            dep = next((r for r in report['targets'] if r['image'] == 'SCUS_943.58' and int(r['address'],16) == int(address,16)), None)
+        if not dep or key(dep) in seen or key(dep) == key(row):
+            continue
+        seen.add(key(dep))
+        raw = (root / 'orig/disc/files' / dep['image']).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != dep['reference_sha256']:
+            raise RuntimeError('Dependency image fingerprint changed')
+        listing = []
+        if dep['status'] != 'sdk':
+            for offset in range(dep['file_offset'], min(len(raw)-3, dep['file_offset'] + min(dep['body_bytes'],48)),4):
+                pc = int(dep['address'],16) + offset - dep['file_offset']
+                listing.append(f'{pc:08X}: ' + rabbitizer.Instruction(int.from_bytes(raw[offset:offset+4],'little'), pc, rabbitizer.InstrCategory.R3000GTE).disassemble())
+        dependencies.append({'identity':key(dep), 'name':dep['name'], 'sdk_name':dep.get('sdk_name'),
+                             'body_bytes':dep['body_bytes'], 'source':dep.get('source'), 'entry_listing':listing})
     return {**row, 'ghidra_name': row['name'], 'name': symbol, 'possible_pointer_words': pointers, 'offset' : row['file_offset'], 'size': row['body_bytes'],
             'body': '\n'.join(lines), 'containing_span': span, 'incoming': incoming,
             'control_references': calls, 'neighbour_listing': neighbours,
-            'source_directory': source_dir(row), 'boundary_findings': findings,
+            'dependencies': dependencies, 'source_directory': source_dir(row), 'boundary_findings': findings,
             'boundary_review': 'deferred' if findings else 'requires_agent_review'}

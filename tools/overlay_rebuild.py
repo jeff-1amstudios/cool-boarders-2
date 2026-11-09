@@ -196,10 +196,15 @@ def rebuild_all(only=None):
     return aggregate
 
 
-def prepare_objdiff_units():
+def prepare_objdiff_units(image=None, unit_name=None):
     """Independently rebuild assembly-only references for overlay C diagnostics."""
     units = []
-    for name, item in configs().items():
+    catalog = configs()
+    if image is not None and image not in catalog:
+        raise ValueError("Unknown overlay: " + image)
+    for name, item in catalog.items():
+        if image is not None and name != image:
+            continue
         _, original_config = image_config(name, item)
         names = c_units(original_config)
         if not names:
@@ -215,6 +220,8 @@ def prepare_objdiff_units():
         split(name, item)
         recipe = json.loads((ROOT / item.get("compiler_config", "config/compiler.json")).read_text())
         for unit in names:
+            if unit_name and unit.as_posix() != unit_name:
+                continue
             base = Path("build/src") / unit.with_suffix(".o")
             target = Path(reference["options"]["asm_path"]) / unit.with_suffix(".o")
             compile_c(base, recipe)

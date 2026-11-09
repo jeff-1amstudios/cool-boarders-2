@@ -33,7 +33,7 @@ PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
              "config/overlays.json", "tools/overlays.py", "tools/ghidra_scripts/ImportOverlays.java",
              "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
              "tools/ghidra_scripts/AuditOverlayReferences.java", "tools/overlay_rebuild.py",
-             "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/reconstruction_backlog.py", "Makefile") + tuple(
+             "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/reconstruction_backlog.py", "tools/reconstruction_step.py", "tools/reconstruction_runtime.py", "Makefile") + tuple(
                  p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file())
 
 
@@ -96,7 +96,7 @@ def content_hashes(paths):
     return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths}
 
 
-def command(arguments, name, timeout=300, directory=None, input_text=None, env=None):
+def command(arguments, name, timeout=300, directory=None, input_text=None, env=None, progress_path=None, stall_seconds=0):
     path = (directory or STATE.parent) / f"{name}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
@@ -108,7 +108,8 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
                                    stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
                                    text=True, env=env)
         try:
-            process.communicate(input=input_text, timeout=timeout)
+            from reconstruction_runtime import communicate
+            communicate(process, input_text, timeout, progress_path, stall_seconds)
             code = process.returncode
         except BaseException as error:
             import os
@@ -119,7 +120,9 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
                 pass
             process.wait()
             if isinstance(error, subprocess.TimeoutExpired):
-                raise CommandTimeout(f"Command timed out; inspect {path}") from error
+                from reconstruction_runtime import Stalled
+                detail = str(error) if isinstance(error, Stalled) else "Command timed out"
+                raise CommandTimeout(f"{detail}; inspect {path}") from error
             raise
     if code:
         raise RuntimeError(f"Command failed ({code}); inspect {path}")
@@ -295,12 +298,14 @@ def choose(report, session, address=None):
         raise NoTarget("C matching is paused by the boundary-audit policy; review config/reconstruction.json")
     if "targets" in report:
         from reconstruction_backlog import key
+        from reconstruction_runtime import cached_structural
         excluded = {key(r) for r in session["completed"] + session["deferred"]}
-        candidates = [r for r in report["targets"] if r["status"] == "needs_review" and key(r) not in excluded]
+        candidates = [r for r in report["targets"] if r["status"] == "needs_review" and key(r) not in excluded
+                      and (address or session.get("retry_structural") or not cached_structural(ROOT, r, report))]
         if address:
             candidates = [r for r in candidates if key(r) == address]
         if not candidates:
-            raise NoTarget("Complete backlog exhausted for this session")
+            raise NoTarget("No remaining uncached targets for this session")
         return candidates[0]
     excluded = {r["address"] for r in session["completed"] + session["deferred"]}
     candidates = [r for r in report["functions"] if r["status"] == "assembly"
@@ -344,7 +349,7 @@ def next_target(session, address=None):
     recipe = "config/compiler.json"
     if row.get("image", "SCUS_943.58") != "SCUS_943.58":
         recipe = read(ROOT / "config/overlays.json")["overlays"][row["image"]].get("compiler_config", recipe)
-    write(directory / "context.json", {**row, "compiler_config": recipe, "compiler": read(ROOT / recipe)})
+    write(directory / "context.json", {**{k: v for k, v in row.items() if k != "body"}, "compiler_config": recipe, "compiler": read(ROOT / recipe)})
     (directory / "instructions.md").write_text(
         f"Reconstruct {row['name']} ({row['size']} bytes).\n\n"
         "Review callers, data types and both split boundaries before integration.\n"
@@ -363,6 +368,11 @@ def next_target(session, address=None):
     print(json.dumps(session["active"], indent=2))
 
 
+def validation_command(active):
+    return ["make", "validate", *(["IMAGE=" + active["image"]] if "image" in active else []),
+            *(["UNIT=" + active["unit"]] if "image" in active and active.get("unit") else [])]
+
+
 def validate(session):
     check_session(session)
     active = session["active"]
@@ -376,7 +386,7 @@ def validate(session):
     attempt.mkdir(parents=True, exist_ok=True)
     archive_edits(attempt)
     try:
-        command(["make", "validate"], "validate", directory=attempt,
+        command(validation_command(active), "validate", directory=attempt,
                 timeout=min(300, max(1, session["deadline"] - time.time())))
     finally:
         for name in ("objdiff.json", "boot-rebuild.json", "overlay-rebuild.json"):
@@ -389,23 +399,25 @@ def validate(session):
         overlays = ROOT / "reports/overlay-rebuild"
         if overlays.exists():
             shutil.copytree(overlays, attempt / "overlay-rebuild", dirs_exist_ok=True)
-    report = read(ROOT / "reports/boot-rebuild.json")
-    _, original, sha = reference()
-    if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:
-        raise RuntimeError("Full executable gate failed")
+    image = active.get("image", "SCUS_943.58")
+    if image == "SCUS_943.58":
+        report = read(ROOT / "reports/boot-rebuild.json")
+        _, original, sha = reference()
+        if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:
+            raise RuntimeError("Full executable gate failed")
+    else:
+        from overlays import load
+        catalog, _ = load()
+        spec = catalog['overlays'][image]
+        report = read(ROOT / 'reports/overlay-rebuild' / (Path(spec['build_config']).stem + '.json'))
+        rebuilt = ROOT / 'build/overlays' / Path(spec['build_config']).stem / image
+        if not report['identical'] or rebuilt.read_bytes() != (ROOT / 'orig/disc/files' / image).read_bytes():
+            raise RuntimeError('Full overlay gate failed: ' + image)
     current = inventory()
     from reconstruction_backlog import key
     target = next((r for r in current.get("targets", current.get("functions", [])) if key(r) == key(active)), None)
     if target is None or target.get("reconstruction", target["status"]) != "c" or target.get("body_bytes", target.get("size")) != active["size"]:
         raise RuntimeError("Target was not converted to C at its original boundary")
-    if "identity" in active:
-        from overlays import load
-        catalog, _ = load()
-        for image, spec in catalog['overlays'].items():
-            slug = Path(spec['build_config']).stem
-            rebuilt = ROOT / 'build/overlays' / slug / image
-            if rebuilt.read_bytes() != (ROOT / 'orig/disc/files' / image).read_bytes():
-                raise RuntimeError('Full overlay gate failed: ' + image)
     print(f"Exact full-file match; {active['name']} is integrated as C.")
     return current
 
@@ -528,9 +540,15 @@ def main():
     batch.add_argument("--minutes", type=int, default=120)
     batch.add_argument("--agent-seconds", type=int, default=900)
     batch.add_argument("--agent-command", help="Full launcher argv, shell-quoted; prompt on stdin, no shell")
+    batch.add_argument("--stall-seconds", type=int, default=300, help="Stop after this long without object-score improvement; 0 disables")
+    batch.add_argument("--retry-structural", action="store_true", help="Revisit unchanged cached structural blockers")
+    detached = sub.add_parser("start", help="Run a detached Python batch without a supervising chat")
+    for action in batch._actions[1:]:
+        detached._add_action(action)
     next_parser = sub.add_parser("next")
     next_parser.add_argument("--address")
-    sub.add_parser("status")
+    status_parser = sub.add_parser("status")
+    status_parser.add_argument("--verbose", action="store_true")
     sub.add_parser("check")
     finish = sub.add_parser("finish")
     finish.add_argument("--paths", nargs="+", required=True)
@@ -540,6 +558,9 @@ def main():
     args = parser.parse_args()
     if args.command == "inventory":
         legacy_inventory()
+    elif args.command == "start":
+        from reconstruction_runtime import start
+        start(ROOT, args)
     elif args.command == "run":
         from reconstruct_run import run_batch
         run_batch(args, sys.modules[__name__])
@@ -547,7 +568,17 @@ def main():
         begin_session(args.limit, args.attempts, args.minutes)
         print("Session ready; run next to prepare one target.")
     elif args.command == "status":
-        print(json.dumps(state(), indent=2))
+        session = state()
+        if args.verbose:
+            result = session
+        else:
+            active = session.get("active") or {}
+            result = {"directory": session.get("directory"), "head": session["head"],
+                      "completed": len(session["completed"]), "deferred": len(session["deferred"]),
+                      "active": {k: active[k] for k in ("identity", "address", "phase", "context") if k in active},
+                      "stop_reason": session.get("stop_reason"),
+                      "summary": str(STATE.parent / "summary.json")}
+        print(json.dumps(result, indent=2))
     else:
         session = state()
         if args.command == "next":
@@ -580,8 +611,11 @@ if __name__ == "__main__":
         def interrupted(signum, frame):
             raise KeyboardInterrupt
         signal.signal(signal.SIGTERM, interrupted)
-        with exclusive_worker(STATE.parent):
+        if len(sys.argv) > 1 and sys.argv[1] == "start":
             main()
+        else:
+            with exclusive_worker(STATE.parent):
+                main()
     except KeyboardInterrupt:
         print("Stopped: interrupted; inspect reconstruction state and archived edits.", file=sys.stderr)
         sys.exit(130)

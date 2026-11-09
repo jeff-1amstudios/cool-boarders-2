@@ -4,7 +4,7 @@ PYTHON := tools/.venv/bin/python
 all: verify
 
 verify validate: objdiff-install
-	$(PYTHON) tools/validate.py
+	$(PYTHON) tools/validate.py $(if $(IMAGE),--image $(IMAGE)) $(if $(UNIT),--unit $(UNIT))
 
 split:
 	$(PYTHON) -m splat split scus_943.58.yaml

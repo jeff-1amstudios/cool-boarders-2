@@ -98,6 +98,8 @@ class Runner:
     def __init__(self, worker, args):
         self.w = worker
         self.args = args
+        if getattr(args, "stall_seconds", 300) < 0:
+            raise RuntimeError("Plateau budget must be nonnegative")
         if min(args.limit, args.minutes, args.agent_seconds) < 1:
             raise RuntimeError("Budgets must be positive")
         try:
@@ -186,7 +188,11 @@ class Runner:
             "Use readable C. No inline assembly, embedded instruction bytes, section attributes, or preprocessor tricks.\n"
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
             "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
-            "Iterate using make objdiff or make validate, and inspect the JSON instruction/relocation diagnostics.\n"
+            "Keep reads focused on this context, selected span and relevant callers/callees. Do not dump whole configs, all sources or full build logs.\n"
+            "Use tools/.venv/bin/python tools/reconstruction_step.py for every compile/edit iteration. It compiles only your unit and prints a short diff.\n"
+            f"The helper saves progress.json. Plateau timeout: {getattr(self.args, 'stall_seconds', 300)} seconds without score improvement (0 disables). Leave the best candidate in place.\n"
+            "Once the object matches, finish your response; Python independently validates the entire containing EXE/BIN. Optional: reconstruction_step.py --validate.\n"
+            "Do not repeatedly run whole-project objdiff or all-image validation. Read object-diff.json when the compact diff is insufficient.\n"
             "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, switch branches, reset, clean or spawn agents.\n"
             "Leave your candidate edits in place. Python independently validates and decides whether to commit.\n"
             "If blocked, leave the best candidate and explain the blocker in your final response.\n")
@@ -208,7 +214,12 @@ class Runner:
                      "--sandbox", "workspace-write", "--json", "--output-last-message",
                      env["CB2_AGENT_REPORT"], "-"]
         self.w.write(directory / "launcher.json", {"argv": argv, "timeout_seconds": seconds})
-        self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
+        try:
+            self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env,
+                           progress_path=directory / "progress.json", stall_seconds=getattr(self.args, "stall_seconds", 300))
+        finally:
+            from reconstruction_runtime import usage
+            self.w.write(directory / "usage.json", usage(directory / "agent.log"))
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
@@ -234,6 +245,8 @@ class Runner:
             raise Rejected("Existing symbol definitions were changed")
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
         subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)
+        if "image" in active:
+            active["unit"] = entry.removeprefix("src/").removesuffix(".c")
         expected_hashes = self.w.content_hashes(paths)
         current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
         now_c = coverage(current)
@@ -288,7 +301,7 @@ class Runner:
         self.invariant(session)
         if self.w.changes():
             raise RuntimeError("main checkout is not clean after switching from the function branch")
-        self.w.command(["make", "validate"], "restored-baseline", directory=archive)
+        self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
         session["deferred"].append({**active, "reason": reason})
         session["active"] = None
@@ -331,7 +344,8 @@ class Runner:
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
         self.w.refresh_boundary_evidence()
         session = self.w.begin_session(self.args.limit, 1, self.args.minutes)
-        session.update(mode="automatic", branch="main", integration_branch="main", integration_head=session["head"])
+        session.update(mode="automatic", branch="main", integration_branch="main", integration_head=session["head"],
+                       retry_structural=getattr(self.args, "retry_structural", False))
         self.w.save_state(session)
         reason = "target limit reached"
         while len(session["completed"]) + len(session["deferred"]) < session["limit"]:
@@ -352,10 +366,13 @@ class Runner:
             before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
             old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
             tracked = set(self.w.git("ls-files").splitlines())
-            prior_c = coverage(self.w.inventory())
+            current_inventory = self.w.inventory()
+            prior_c = coverage(current_inventory)
             launched = False
             try:
                 if session["active"].get("boundary_findings"):
+                    from reconstruction_runtime import save_structural
+                    save_structural(self.w.ROOT, session["active"], current_inventory)
                     launched = True
                     raise Rejected("Selected-target structural review: " + json.dumps(session["active"]["boundary_findings"]))
                 self.launch(session)
@@ -375,10 +392,23 @@ class Runner:
             # Commit errors leave the candidate/index available for inspection.
             # They must never trigger rollback after Git may have committed.
             self.accept(session, paths, expected_hashes)
-        session["stop_reason"] = reason
+        self.invariant(session)
+        session.update(phase="batch_final_validation", stop_reason=reason, full_validation_passed=False)
         self.w.save_state(session)
+        try:
+            self.w.command(["make", "validate"], "batch-final", directory=self.w.ROOT / session["directory"])
+            session.update(full_validation_passed=True, phase="finished")
+        except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
+            session.update(stop_reason="Final all-image validation failed: " + str(error), phase="validation_failed")
+            raise
+        finally:
+            from reconstruction_runtime import summary
+            self.w.save_state(session)
+            result = summary(self.w.ROOT, session)
+            self.w.write(self.w.ROOT / session["directory"] / "summary.json", result)
+            self.w.write(self.w.STATE.parent / "summary.json", result)
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
-              f"{len(session['deferred'])} deferred. State: {self.w.STATE}", flush=True)
+              f"{len(session['deferred'])} deferred. Summary: {self.w.STATE.parent / 'summary.json'}", flush=True)
         if reason.startswith("agent launcher failed"):
             raise RuntimeError(reason)
 

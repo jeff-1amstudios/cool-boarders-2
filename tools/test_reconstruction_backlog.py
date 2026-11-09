@@ -148,6 +148,9 @@ for name in ('a','b'):
     output = Path('build/overlays',name,image)
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_bytes(expected if matched else b'!'+expected[1:])
+    details = Path('reports/overlay-rebuild')
+    details.mkdir(exist_ok=True)
+    (details/(name+'.json')).write_text(json.dumps({'identical':matched}))
     passed = passed and matched
 sys.exit(0 if passed else 1)
 ''')
@@ -190,6 +193,42 @@ value = 8 if r['image']=='A.BIN' else 7
         self.assertFalse((self.root/'src/overlays/a/entry.c').exists())
         self.assertTrue((self.root/'src/overlays/b/entry.c').is_file())
         self.assertNotEqual(state['deferred'][0]['branch'],state['completed'][0]['branch'])
+
+    def test_structural_cache_and_progress_reset_only_when_evidence_improves(self):
+        from reconstruction_runtime import cached_structural, save_structural
+        from reconstruction_step import progress
+        rows = self.rows()
+        row = {**rows[0], 'boundary_findings':{'shared_entry':['0x80010004']}, 'context':'reports/selected'}
+        report = {'targets':rows}
+        self.assertFalse(cached_structural(self.root,row,report))
+        save_structural(self.root,row,report)
+        self.assertTrue(cached_structural(self.root,row,report))
+        self.assertFalse(cached_structural(self.root,rows[1],report))
+        changed = copy.deepcopy(report)
+        changed['targets'][0]['body_sha256'] = 'changed'
+        self.assertFalse(cached_structural(self.root,changed['targets'][0],changed))
+        first = progress({},90,100)
+        self.assertEqual(progress(first,89,200)['improved_at'],100)
+        self.assertEqual(progress(first,91,200)['improved_at'],200)
+        self.assertEqual(worker.validation_command(row),['make','validate','IMAGE=A.BIN'])
+
+    def test_plateau_kills_child_and_preserves_no_false_success(self):
+        with self.assertRaisesRegex(worker.CommandTimeout,'No object-score improvement'):
+            worker.command([sys.executable,'-c','import time; time.sleep(10)'],
+                           'plateau',timeout=2,directory=self.root/'reports',stall_seconds=.1)
+
+    def test_detached_start_returns_pid_and_log_without_model_supervision(self):
+        from reconstruction_runtime import start
+        args = self.fixture.runner().args
+        args.stall_seconds, args.retry_structural = 300, False
+        with patch('reconstruction_runtime.subprocess.Popen') as spawn:
+            spawn.return_value.pid = 123
+            start(self.root,args)
+            self.assertTrue(spawn.call_args.kwargs['start_new_session'])
+            self.assertIn('--stall-seconds',spawn.call_args.args[0])
+        launch = json.loads((self.root/'reports/reconstruction/launch.json').read_text())
+        self.assertEqual(launch['pid'],123)
+        self.assertTrue((self.root/launch['log']).is_file())
 
 
 if __name__ == '__main__':
