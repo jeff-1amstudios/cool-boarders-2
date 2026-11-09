@@ -44,7 +44,7 @@ class WorkerTests(unittest.TestCase):
     def test_selection_excludes_hardware_sdk_and_completed_targets(self):
         base = {"status": "assembly", "contiguous": True, "hardware_or_gp": False,
                 "classification": "unknown", "size": 32, "features": [],
-                "boundary_reviewed": False, "calls": []}
+                "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {}, "calls": []}
         rows = [{**base, "address": "0x80010000", "hardware_or_gp": True},
                 {**base, "address": "0x80010004", "classification": "sdk"},
                 {**base, "address": "0x80010008"},
@@ -55,6 +55,51 @@ class WorkerTests(unittest.TestCase):
             self.assertEqual(worker.choose({"functions": rows}, session)["address"], "0x8001000C")
             with self.assertRaises(RuntimeError):
                 worker.choose({"functions": rows}, session, "80010000")
+
+    def test_selection_requires_reviewed_standalone_and_honors_pause(self):
+        base = {"status": "assembly", "contiguous": True, "hardware_or_gp": False,
+                "classification": "unknown", "size": 32, "features": [], "calls": [],
+                "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {}}
+        session = {"completed": [], "deferred": []}
+        with patch.object(worker, "read", return_value={"pilot": []}):
+            for fields in [{"boundary_reviewed": False}, {"boundary_kind": "multi_entry"},
+                           {"boundary_findings": {"control_leaves_span": ["0x80010020"]}}]:
+                with self.subTest(fields=fields), self.assertRaises(worker.NoTarget):
+                    worker.choose({"functions": [{**base, "address": "0x80010000", **fields}]}, session)
+        with patch.object(worker, "read", return_value={"matching_paused": True}):
+            with self.assertRaisesRegex(worker.NoTarget, "paused"):
+                worker.choose({"functions": [{**base, "address": "0x80010000"}]}, session, "80010000")
+
+    def test_library_leads_are_excluded_and_references_prioritized_not_required(self):
+        base = {"status": "assembly", "contiguous": True, "hardware_or_gp": False,
+                "classification": "unknown", "size": 32, "features": [], "calls": [],
+                "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {}}
+        library = {**base, "address": "0x80010000", "library_candidate": True}
+        unreferenced = {**base, "address": "0x80010020"}
+        called = {**base, "address": "0x80010040", "callers": ["caller"]}
+        session = {"completed": [], "deferred": []}
+        with patch.object(worker, "read", return_value={"pilot": []}):
+            self.assertEqual(worker.choose({"functions": [library, unreferenced, called]}, session), called)
+            self.assertEqual(worker.choose({"functions": [unreferenced]}, session), unreferenced)
+            with self.assertRaises(worker.NoTarget):
+                worker.choose({"functions": [library]}, session)
+        with patch.object(worker, "read", return_value={"pilot": [], "include_library_candidates": True}):
+            self.assertEqual(worker.choose({"functions": [library]}, session), library)
+
+    def test_accepted_plugin_sdk_entries_exclude_containing_spans(self):
+        base = {"status": "assembly", "contiguous": True, "hardware_or_gp": False,
+                "classification": "unknown", "size": 64, "features": [], "calls": [],
+                "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {}}
+        sdk_span = {**base, "address": "0x80010000"}
+        game_span = {**base, "address": "0x80010040"}
+        worker.apply_sdk_identifications([sdk_span, game_span], {
+            "version": "3.7.0", "functions": {"0x80010020": "DrawSyncCallback"}})
+        self.assertEqual(sdk_span["sdk_names"], ["DrawSyncCallback"])
+        self.assertEqual(sdk_span["classification"], "sdk")
+        self.assertEqual(game_span["classification"], "unknown")
+        with patch.object(worker, "read", return_value={"pilot": [], "include_library_candidates": True}):
+            self.assertEqual(worker.choose({"functions": [sdk_span, game_span]},
+                                           {"completed": [], "deferred": []}), game_span)
 
     def test_assembly_context_must_match_reference_bytes(self):
         directory = worker.ROOT / "tools/tmp"

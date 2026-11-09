@@ -45,3 +45,46 @@ func_8002E158 = 0x8002E158; // type:func size:0x10
 D_8005AB3C = 0x8005AB3C; // type:s16 size:0x2
 func_8002ECA0 = 0x8002ECA0; // type:func size:0x10
 D_8005AB24 = 0x8005AB24; // type:s32 size:0x4
+
+// Reviewed boundary corrections; names remain address-based.
+func_80024CC0 = 0x80024CC0; // type:func size:0x37C
+func_80024CC8 = 0x80024CC8; // type:alabel
+func_800250C0 = 0x800250C0; // type:func size:0x40C
+func_800250C8 = 0x800250C8; // type:alabel
+func_80037BF8 = 0x80037BF8; // type:func size:0x320
+func_80037C00 = 0x80037C00; // type:alabel
+func_80037F68 = 0x80037F68; // type:func size:0x3AC
+func_80037F70 = 0x80037F70; // type:alabel
+func_80038378 = 0x80038378; // type:func size:0x428
+func_80038380 = 0x80038380; // type:alabel
+func_800387F8 = 0x800387F8; // type:func size:0x490
+func_80038800 = 0x80038800; // type:alabel
+func_80038D18 = 0x80038D18; // type:func size:0x4DC
+func_80038D20 = 0x80038D20; // type:alabel
+func_80039268 = 0x80039268; // type:func size:0x56C
+func_80039270 = 0x80039270; // type:alabel
+func_8001F9C8 = 0x8001F9C8; // type:func size:0x70
+func_8001F9DC = 0x8001F9DC; // type:alabel
+func_8001FA08 = 0x8001FA08; // type:alabel
+func_8003CBBC = 0x8003CBBC; // type:func size:0xC
+func_8003CBCC = 0x8003CBCC; // type:func size:0x10
+func_80044600 = 0x80044600; // type:func size:0xC
+func_80044610 = 0x80044610; // type:func size:0x58
+func_80044968 = 0x80044968; // type:func size:0xC
+func_80044978 = 0x80044978; // type:func size:0xC
+func_80044998 = 0x80044998; // type:func size:0xC
+func_800449A8 = 0x800449A8; // type:func size:0xC
+func_800449B8 = 0x800449B8; // type:func size:0xC
+func_800449C8 = 0x800449C8; // type:func size:0xC
+func_800449F8 = 0x800449F8; // type:func size:0xC
+func_80044A08 = 0x80044A08; // type:func size:0xC
+func_80044A18 = 0x80044A18; // type:func size:0xC
+func_80044A28 = 0x80044A28; // type:func
+D_8003D0B8 = 0x8003D0B8; // type:u32 size:0x10
+D_8003D0C8 = 0x8003D0C8; // type:u32 size:0xC
+
+// BIOS entries previously hidden by following non-code metadata.
+func_8003CA7C = 0x8003CA7C; // type:func size:0xC
+D_8003CA88 = 0x8003CA88; // type:u32 size:0xC
+func_80044938 = 0x80044938; // type:func size:0xC
+D_80044944 = 0x80044944; // type:u32 size:0xC

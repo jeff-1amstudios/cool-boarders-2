@@ -1,0 +1,45 @@
+# Initial retained-assembly split; code/data boundary is provisional.
+name: SBC2.BIN
+sha1: de507a57a03cac067bf15b0006757b0944d4a9a0
+options:
+  basename: overlay_sbc2
+  target_path: orig/disc/files/SBC2.BIN
+  base_path: ../..
+  platform: psx
+  compiler: PSYQ
+  generated_asm_macros_directory: build/include
+  asm_path: asm
+  src_path: src
+  build_path: build
+  asset_path: build/assets/overlays/sbc2
+  cache_path: build/overlays/sbc2/splat-cache
+  elf_path: build/overlays/sbc2/overlay.elf
+  ld_script_path: build/overlays/sbc2/overlay.ld
+  ld_dependencies: false
+  find_file_boundaries: false
+  gp_value: 0x80050274
+  o_as_suffix: true
+  use_legacy_include_asm: false
+  migrate_rodata_to_functions: false
+  section_order: [.rodata, .text, .data, .bss]
+  symbol_addrs_path: [config/overlays/sbc2.symbols.txt]
+  reloc_addrs_path: []
+  undefined_funcs_auto_path: build/overlays/sbc2/undefined_funcs.txt
+  undefined_syms_auto_path: build/overlays/sbc2/undefined_syms.txt
+  ld_align_section_vram_end: false
+  subalign: 2
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 0
+  data_string_guesser_level: 0
+segments:
+- name: sbc2
+  type: code
+  dir: overlays/sbc2
+  start: 0x0
+  vram: 0x8005ab68
+  subsegments:
+  - [0x0, rodata, header]
+  - [0x4, asm, body]
+  - [0x32240, data, data]
+- [0x40e28]

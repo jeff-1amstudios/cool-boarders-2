@@ -1,0 +1,1365 @@
+{
+  "schema_version": 1,
+  "reference_sha256": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+  "scope": "Curated boot EXE reconstruction units, synchronized with reviewed Ghidra metadata. Function entries and shared reconstruction regions are distinct. SDK names are leads unless separately verified; unlisted units remain unreviewed.",
+  "regions": {
+    "0x800120FC": {
+      "address": "0x800120FC",
+      "size": 168,
+      "end_exclusive": "0x800121A4",
+      "instruction_sha256": "745b0ec42dd152a291a98645b68211901d825879effc76b9da0da04c32ed97d7",
+      "kind": "startup",
+      "reviewed": true,
+      "evidence": [
+        "Entry establishes SP/GP/FP and calls boot_main. Ordinary function-entry and return assumptions do not apply; a potential continuation into inline stack-options data remains unresolved under the conservative returning-call model. No new startup boundary is asserted."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x800121A4": {
+      "address": "0x800121A4",
+      "size": 20,
+      "end_exclusive": "0x800121B8",
+      "bytes_sha256": "06540dd802bc44642641b4e345cd91f49445fddeaf64a18ae88ddc887583e25b",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "Existing boot_stack_options table, referenced as data by startup; ends at boot_main."
+      ]
+    },
+    "0x80013B30": {
+      "address": "0x80013B30",
+      "size": 48,
+      "end_exclusive": "0x80013B60",
+      "instruction_sha256": "7e4107389f8dc40341d97fe3bc72475a64667b54f0c31f47861ae02e376c5b2c",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/queue_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80014388": {
+      "address": "0x80014388",
+      "size": 88,
+      "end_exclusive": "0x800143E0",
+      "instruction_sha256": "bd879d2df6ea795e21619e4e2923501283b64eea64d89497ceccb7f39fd551b6",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/poll_loop.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80015F68": {
+      "address": "0x80015F68",
+      "size": 48,
+      "end_exclusive": "0x80015F98",
+      "instruction_sha256": "b61c07c91a69f325f616c5fd0b06a5061a5057e25b27530a687a35c7605c3516",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/flag_acquire.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80015F98": {
+      "address": "0x80015F98",
+      "size": 48,
+      "end_exclusive": "0x80015FC8",
+      "instruction_sha256": "3c65513fe080a368a346f38adfa9a69b4852aa082b47fe59163ca0a081d67d1e",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/flag_release.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x800166A4": {
+      "address": "0x800166A4",
+      "size": 56,
+      "end_exclusive": "0x800166DC",
+      "instruction_sha256": "e064285235addb4425deee754e533026634a522b262b6ea990382c9eb6f22055",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/fill_slots.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80017044": {
+      "address": "0x80017044",
+      "size": 48,
+      "end_exclusive": "0x80017074",
+      "instruction_sha256": "28100e7e9a454100a107b8ceace55ac86e4a8b1228f5c0c047162b79524abd43",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/queue_word.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001728C": {
+      "address": "0x8001728C",
+      "size": 44,
+      "end_exclusive": "0x800172B8",
+      "instruction_sha256": "bfcc41dcfbb8d84d5bc6e79c3de5eb8079d5ef4a0487a5a8899fd09c01bdfb8f",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/command_reset.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001742C": {
+      "address": "0x8001742C",
+      "size": 68,
+      "end_exclusive": "0x80017470",
+      "instruction_sha256": "9e00b1c59a77551f4afb3bd93b729c6af5c916ce6425eb5a0ec150ccf660a7cf",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/state_transition.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001787C": {
+      "address": "0x8001787C",
+      "size": 48,
+      "end_exclusive": "0x800178AC",
+      "instruction_sha256": "ef9bd6c293171f2841b154965045c7add6b57b201f4e5cb5ab31ac9d08ea6767",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/sdk_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x800178AC": {
+      "address": "0x800178AC",
+      "size": 32,
+      "end_exclusive": "0x800178CC",
+      "instruction_sha256": "2ca6407fcfa0fe3c666d6e621bd6d5439269be368be4dbe8767ac1317d8deed2",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/sdk_single_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80017A00": {
+      "address": "0x80017A00",
+      "size": 88,
+      "end_exclusive": "0x80017A58",
+      "instruction_sha256": "2fcadf92f3f437e473e98e65a65a0b5990a221aaa917d1dc8e866af86c236077",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/word_call_loop.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80017AC0": {
+      "address": "0x80017AC0",
+      "size": 88,
+      "end_exclusive": "0x80017B18",
+      "instruction_sha256": "f7605139c0d01cf0e8a8668488ab92d1e5d5d3c6417511665801b4369fe0eafc",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/word_find_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80017B18": {
+      "address": "0x80017B18",
+      "size": 76,
+      "end_exclusive": "0x80017B64",
+      "instruction_sha256": "02dfeada6162442b7339d5c5a04fab0a403ceea8ab6e46f1eec59dfc56f3b43c",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/four_word_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x800181D4": {
+      "address": "0x800181D4",
+      "size": 92,
+      "end_exclusive": "0x80018230",
+      "instruction_sha256": "9d9061777bf05d323f1282c1f5029554c0f470328834e5a6e4e8f27f454be7ab",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/byte_fold.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001A3DC": {
+      "address": "0x8001A3DC",
+      "size": 52,
+      "end_exclusive": "0x8001A410",
+      "instruction_sha256": "659001938d06f36ef30f871dd29fd9a5de3c863c2771b41705a3090edc939503",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/copy_bytes.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001ADC8": {
+      "address": "0x8001ADC8",
+      "size": 76,
+      "end_exclusive": "0x8001AE14",
+      "instruction_sha256": "5fa622299298ecaa2339bd5bfffaa6a81570a935fc28ac4e072b861e18d4ab04",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/copy_record_payload.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001B59C": {
+      "address": "0x8001B59C",
+      "size": 24,
+      "end_exclusive": "0x8001B5B4",
+      "instruction_sha256": "ab8450b718272d5045b9c94040896d1dc458da75b5f307119f8f06051755fff4",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/clear_globals.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001B5B4": {
+      "address": "0x8001B5B4",
+      "size": 28,
+      "end_exclusive": "0x8001B5D0",
+      "instruction_sha256": "c501645f2dce5cc1c42dd188c83fc0c517e85d0ba7d0319c6d1ee2c9e13c81f0",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/table_exchange.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001BF08": {
+      "address": "0x8001BF08",
+      "size": 64,
+      "end_exclusive": "0x8001BF48",
+      "instruction_sha256": "2ba5bc60e1f930d89f0f1411ea305ecceefd9ec375a97e443517a2127feffac7",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/two_command_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001C0D4": {
+      "address": "0x8001C0D4",
+      "size": 32,
+      "end_exclusive": "0x8001C0F4",
+      "instruction_sha256": "1aa71fe92137072baaebd034ab582b110012eda6217a00c3c4cf1268a9362da4",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/clear_words.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001C0F4": {
+      "address": "0x8001C0F4",
+      "size": 60,
+      "end_exclusive": "0x8001C130",
+      "instruction_sha256": "cf16d67a02bd9cbdf72eb9b994e2ed8c0cd9a2125d1f1e1d8fe8aef6a47829dd",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/clear_words_flag.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001DA98": {
+      "address": "0x8001DA98",
+      "size": 60,
+      "end_exclusive": "0x8001DAD4",
+      "instruction_sha256": "55569d8fed6f3216991819b9bb116be6113e5424e70b4165ff5ec2826bf01a3a",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/record_find_greater.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001DAD4": {
+      "address": "0x8001DAD4",
+      "size": 60,
+      "end_exclusive": "0x8001DB10",
+      "instruction_sha256": "a6b5aef1e04b4bc0d990b0eed46eed22753efffafc21fbd65d45130fe2dae6cd",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/record_find_less.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001E560": {
+      "address": "0x8001E560",
+      "size": 76,
+      "end_exclusive": "0x8001E5AC",
+      "instruction_sha256": "bbd8cdb5a3fed2bd2ed2362e1736aac19423d95f1435524399d5cc9dd8b51e58",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/copy_bounded_name.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001EC68": {
+      "address": "0x8001EC68",
+      "size": 16,
+      "end_exclusive": "0x8001EC78",
+      "instruction_sha256": "dbfb72e566176e05dae4927b9c1ccd2ffc3a4b26da76d8b5ce69e596c948a4fe",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8001EC68.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8001F81C": {
+      "address": "0x8001F81C",
+      "size": 8,
+      "end_exclusive": "0x8001F824",
+      "bytes_sha256": "f88b8cad3157619ce0c754806c0b6637a052a70bced9aea79c5304ad74c5547a",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "Non-code words after the preceding return/delay slot and before the next routine. Similar inline library metadata occurs after two BIOS entries; the encoded format is not asserted."
+      ]
+    },
+    "0x8001F9C8": {
+      "address": "0x8001F9C8",
+      "size": 112,
+      "end_exclusive": "0x8001FA38",
+      "instruction_sha256": "a72ecf0f6f56107d5ef9acf0aaee8dedcf645977df91ab750093672fb0f198a1",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "The first entry branches over a second entry into the final wrapper tail; that tail restores RA from a3 across a helper call, a custom preservation contract outside the ordinary C ABI. Ghidra separately labels VectorNormalS/VectorNormal/VectorNormalSS, but these ranges cannot be treated as three isolated C extents."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x8001F9C8",
+          "role": "word_to_short_entry"
+        },
+        {
+          "address": "0x8001F9DC",
+          "role": "word_to_word_entry"
+        },
+        {
+          "address": "0x8001FA08",
+          "role": "short_to_short_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "VectorNormalS",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80024CC0": {
+      "address": "0x80024CC0",
+      "size": 892,
+      "end_exclusive": "0x8002503C",
+      "instruction_sha256": "7f25e9f34f0472a02a11a858ee804d41994c85f5d32598966f460c7c885de983",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80024CC0",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80024CC8",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyFT3",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x8002503C": {
+      "address": "0x8002503C",
+      "size": 124,
+      "end_exclusive": "0x800250B8",
+      "instruction_sha256": "7040e54485ea82c33098bf9b19012dfcd74d99a9c20ce0730376fe6604dbc2bd",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVFT3A_OBJ_37C",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800250C0": {
+      "address": "0x800250C0",
+      "size": 1036,
+      "end_exclusive": "0x800254CC",
+      "instruction_sha256": "74137f85233a8fc0dead5e84c4f159b87aa938e1cea361d41385ceb56da00ef8",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x800250C0",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x800250C8",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyGT3",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800254CC": {
+      "address": "0x800254CC",
+      "size": 148,
+      "end_exclusive": "0x80025560",
+      "instruction_sha256": "13986f78d2adcd56c6d416347cf4e95f662aaf9f6e09a8bf450943526ef7e65a",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVGT3A_OBJ_40C",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800296D0": {
+      "address": "0x800296D0",
+      "size": 16,
+      "end_exclusive": "0x800296E0",
+      "instruction_sha256": "67d4cbe3b5f7b4f5367142f51057c6925d534d564829f724288cd6b938ccce17",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_800296D0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x800296E0": {
+      "address": "0x800296E0",
+      "size": 16,
+      "end_exclusive": "0x800296F0",
+      "instruction_sha256": "4fd03cb51b262f95cea7709f0faa6cc2a8c44d915f44ba5269b7fe220b9fed19",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_800296E0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8002C3BC": {
+      "address": "0x8002C3BC",
+      "size": 16,
+      "end_exclusive": "0x8002C3CC",
+      "instruction_sha256": "ba8e58e7eab21b66e39ff6462578e7e67209e15ccce38410777bf9404933b6a7",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8002C3BC.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8002E158": {
+      "address": "0x8002E158",
+      "size": 16,
+      "end_exclusive": "0x8002E168",
+      "instruction_sha256": "522167f87c27f6a7ce5a826e4ac1cd2b1dc7cd5fcc655f58c6839b88473b8f14",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8002E158.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8002ECA0": {
+      "address": "0x8002ECA0",
+      "size": 16,
+      "end_exclusive": "0x8002ECB0",
+      "instruction_sha256": "b3907a2b33bbfc631f2fd9b1c6c789c483578d1d864cde2911004ad7c17c7fd5",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8002ECA0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8002F750": {
+      "address": "0x8002F750",
+      "size": 16,
+      "end_exclusive": "0x8002F760",
+      "instruction_sha256": "0ffea28becc8fffee469978c927a534469e783a8a1836296973dea39753547a5",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Single word store of a0 and normal return; preceding function returns at 8002F748 with its slot through 8002F74C. Next unit begins at 8002F760. Ghidra has no entry here; local control flow, not tool agreement, supports this boundary. No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8002FCEC": {
+      "address": "0x8002FCEC",
+      "size": 28,
+      "end_exclusive": "0x8002FD08",
+      "instruction_sha256": "6112de18f2d0e9c2a0dc06fdbbcb175a1c9e6e1edd5fd1e8764e21b8d7f8ec5c",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/positive_bit_length.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80037BF8": {
+      "address": "0x80037BF8",
+      "size": 800,
+      "end_exclusive": "0x80037F18",
+      "instruction_sha256": "2fe71745802ebeb89c716794eb50c6846bc893f76670f6dba1087eb5bed1406a",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80037BF8",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80037C00",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyF3",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80037F18": {
+      "address": "0x80037F18",
+      "size": 76,
+      "end_exclusive": "0x80037F64",
+      "instruction_sha256": "aaa63571b826ac754193ecf36e9055afa7b5974975aa703db9c41b347602169c",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVF3A_OBJ_320",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80037F68": {
+      "address": "0x80037F68",
+      "size": 940,
+      "end_exclusive": "0x80038314",
+      "instruction_sha256": "7cbfb94f12cd1e83a12ef9487960ae53ec1e6c2b6d892c7d12c1b0fc2ab952d7",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80037F68",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80037F70",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyG3",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80038314": {
+      "address": "0x80038314",
+      "size": 100,
+      "end_exclusive": "0x80038378",
+      "instruction_sha256": "6144eb5852eca1acb41cf1192a8d785f0210f8d024ade1659114cbf1c7d6b50c",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVG3A_OBJ_3AC",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80038378": {
+      "address": "0x80038378",
+      "size": 1064,
+      "end_exclusive": "0x800387A0",
+      "instruction_sha256": "60615ade52ec0e00c96dbcc59fbb2923b1f42c6f0de37727224344bf8a255fe0",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80038378",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80038380",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyF4",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800387A0": {
+      "address": "0x800387A0",
+      "size": 84,
+      "end_exclusive": "0x800387F4",
+      "instruction_sha256": "c22417d72ca011d16b3f678cb188f7848cf90ea1fee3bdbdddbc69e4d296df8a",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVF4A_OBJ_428",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800387F8": {
+      "address": "0x800387F8",
+      "size": 1168,
+      "end_exclusive": "0x80038C88",
+      "instruction_sha256": "13579489152d4700aae6f073165bb7da34a5faf508572ff0f8bcf7dc1f0a2f3b",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x800387F8",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80038800",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyFT4",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80038C88": {
+      "address": "0x80038C88",
+      "size": 140,
+      "end_exclusive": "0x80038D14",
+      "instruction_sha256": "f260cf09c5c9d8d095254e97bafc18e46a4f188da5f3c8e0218cb9b9b8fa4305",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVFT4A_OBJ_490",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80038D18": {
+      "address": "0x80038D18",
+      "size": 1244,
+      "end_exclusive": "0x800391F4",
+      "instruction_sha256": "7959346e28a63c0100f29f654534b858276beb18fd9f5dd0cdf82a3dcab27950",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80038D18",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80038D20",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyG4",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800391F4": {
+      "address": "0x800391F4",
+      "size": 116,
+      "end_exclusive": "0x80039268",
+      "instruction_sha256": "e6f088e6bf3aa3ce76c35d37081aff452aee5baa6a98e077216ec30678258861",
+      "kind": "nonstandard_abi_helper",
+      "reviewed": true,
+      "evidence": [
+        "Returns within its span but reads entry temporary-register values (t-register inputs) before defining them. Callers establish these values in shared polygon routines. This is not automatically eligible under the ordinary C ABI; original source language is unconfirmed."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "DIVG4A_OBJ_4DC",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80039268": {
+      "address": "0x80039268",
+      "size": 1388,
+      "end_exclusive": "0x800397D4",
+      "instruction_sha256": "7ba4d2f382a7b6e60b09517eb1164895e7bc2d83e6e2c443f3f283324bcafc8e",
+      "kind": "multi_entry",
+      "reviewed": true,
+      "evidence": [
+        "Two setup instructions fall through into the following body. That body has its own direct-call/recursive entry or existing Ghidra export label. Both labels are preserved inside one byte-bound reconstruction region. No claim that this is one original C function or that the source was handwritten."
+      ],
+      "source_language": "unconfirmed",
+      "entries": [
+        {
+          "address": "0x80039268",
+          "role": "setup_entry"
+        },
+        {
+          "address": "0x80039270",
+          "role": "body_entry"
+        }
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "RCpolyGT4",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x8003C098": {
+      "address": "0x8003C098",
+      "size": 16,
+      "end_exclusive": "0x8003C0A8",
+      "instruction_sha256": "d11e41afe930daaadb42717b0301848dc5a96555fe8ae694e932b218808ef07e",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Single unsigned halfword load, followed by return and nop slot; preceding frame closes at 8003C094 and next unit begins at 8003C0A8. Three direct calls target this entry; Ghidra agrees on the extent (CheckCallback name is a lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CheckCallback",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x8003CA3C": {
+      "address": "0x8003CA3C",
+      "size": 16,
+      "end_exclusive": "0x8003CA4C",
+      "instruction_sha256": "b77d90e1d57d92a2e70a522e1631cf396b2eaca69ac70e262262055261860450",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Single word load, normal return and nop slot; predecessor returns through 8003CA38 and next BIOS entry begins at 8003CA4C. Four direct calls target this entry. Ghidra agrees on extent. No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8003CA7C": {
+      "address": "0x8003CA7C",
+      "size": 12,
+      "end_exclusive": "0x8003CA88",
+      "instruction_sha256": "069d69bbe3437a869fba0234a94c0c3ccd061833fb108f2276c0fa79c2c30381",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "Constant BIOS-vector load, non-linking jump and service-number delay slot. Ghidra agrees on this exact extent. Following non-code words previously made Splat emit the entire span as data; explicit size recovers the entry without interpreting the following metadata as instructions."
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "_bu_init",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x8003CA88": {
+      "address": "0x8003CA88",
+      "size": 12,
+      "end_exclusive": "0x8003CA94",
+      "bytes_sha256": "057b1aa9d0dd1e9b8a9ce3cf2a98319df387ff97b75c2ce631e1c05abad61a59",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "One padding word and two non-code metadata words after the closed BIOS entry; next entry is at 8003CA94."
+      ]
+    },
+    "0x8003CBBC": {
+      "address": "0x8003CBBC",
+      "size": 12,
+      "end_exclusive": "0x8003CBC8",
+      "instruction_sha256": "5679de6d872f74c1cf6e01a3593fcbf41172e1f626c0c21341d455839067f641",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "ChangeClearRCnt",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x8003CBCC": {
+      "address": "0x8003CBCC",
+      "size": 16,
+      "end_exclusive": "0x8003CBDC",
+      "instruction_sha256": "ad82fa54c068bad6de2ab7a005951e8662723f75c276d20baa79eea610f791ca",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Word setter newly separated from the preceding BIOS tail trampoline, whose jump and delay slot cannot fall through here. Return closes at 8003CBD8; next getter begins at 8003CBDC. Ghidra independently names this SetInitPadFlag; name remains a lead. No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "SetInitPadFlag",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x8003CBDC": {
+      "address": "0x8003CBDC",
+      "size": 16,
+      "end_exclusive": "0x8003CBEC",
+      "instruction_sha256": "7f2b038ef904c4ccf1c8cf460dbaaf6e00b535df40556f2ccc20455ac0c70c15",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Word getter between a closed setter and next unit at 8003CBEC; return at 8003CBE4 and slot at 8003CBE8. Ghidra agrees on extent (ReadInitPadFlag lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "ReadInitPadFlag",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x8003D0B8": {
+      "address": "0x8003D0B8",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "size": 28,
+      "end_exclusive": "0x8003D0D4",
+      "bytes_sha256": "350e92bba6f402a6549c4cf9de319fce4b6dd8f75a785d30ce19ce02381c59f3",
+      "template_size": 16,
+      "following_zero_bytes": 12,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "func_8003D03C reads four words from 8003D0B8 up to (excluding) 8003D0C8 and writes each to two patch destinations. Its own return and delay slot precede the template. No transfer into this storage is established. Data remains at its original text-section position; no source byte is changed."
+      ]
+    },
+    "0x8003D14C": {
+      "address": "0x8003D14C",
+      "size": 8,
+      "end_exclusive": "0x8003D154",
+      "instruction_sha256": "6d64edf91449c1b17746c1ef18afa2eb25c70bdf1322ab3df5a2630993b7e2f1",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8003D14C.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8003E15C": {
+      "address": "0x8003E15C",
+      "size": 8,
+      "end_exclusive": "0x8003E164",
+      "instruction_sha256": "207819bf4ebe30789debac4affc1a07c833e14f530eef04dc87a6cf369209b43",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8003E15C.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8003E164": {
+      "address": "0x8003E164",
+      "size": 8,
+      "end_exclusive": "0x8003E16C",
+      "instruction_sha256": "207819bf4ebe30789debac4affc1a07c833e14f530eef04dc87a6cf369209b43",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8003E164.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x8003E2F8": {
+      "address": "0x8003E2F8",
+      "size": 8,
+      "end_exclusive": "0x8003E300",
+      "instruction_sha256": "207819bf4ebe30789debac4affc1a07c833e14f530eef04dc87a6cf369209b43",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Existing matching C unit src/func_8003E2F8.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80040688": {
+      "address": "0x80040688",
+      "size": 16,
+      "end_exclusive": "0x80040698",
+      "instruction_sha256": "4f892c1a97987d2e435d77c93bc133a0304b6f11b11446044c9150676a8fb7f1",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Unsigned-byte getter; preceding frame and return close through 80040684. Next unit at 80040698 follows this return/slot. Direct calls target the entry; Ghidra extent agrees (CdStatus lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CdStatus",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80040698": {
+      "address": "0x80040698",
+      "size": 16,
+      "end_exclusive": "0x800406A8",
+      "instruction_sha256": "211449c42c863bf6be7df6efcc3d8c33d084f300c0b3392f3053942822621604",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Unsigned-byte getter between closed getter at 80040688 and next at 800406A8. Direct call targets entry; return slot belongs to this span. Ghidra extent agrees (CdMode lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CdMode",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800406A8": {
+      "address": "0x800406A8",
+      "size": 16,
+      "end_exclusive": "0x800406B8",
+      "instruction_sha256": "10981e2360197f14b4efd84726ee7d460b9a15053c807d8976f9384ee17afeee",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Unsigned-byte getter between closed neighbors; return/slot ends at 800406B8. No direct caller established, so absence of callers is not used to reject it. Ghidra extent agrees (CdLastCom lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CdLastCom",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800406B8": {
+      "address": "0x800406B8",
+      "size": 16,
+      "end_exclusive": "0x800406C8",
+      "instruction_sha256": "25aa3cb6d23d4ceeeccacb210ff7250c6393c9c595c230db8c93f10c0b3dda6f",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Address-returning leaf; preceding return closes before entry, own return/slot closes at 800406C8. Two direct calls target entry. Ghidra extent agrees (CdLastPos lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CdLastPos",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800423E8": {
+      "address": "0x800423E8",
+      "size": 16,
+      "end_exclusive": "0x800423F8",
+      "instruction_sha256": "6359c0361c37291ecfdb7c151ffe319d970cce3d4ae60a97e4005182f488df6d",
+      "kind": "standalone",
+      "reviewed": true,
+      "evidence": [
+        "Single word setter; preceding function returns through 800423E4, own return/slot ends at 800423F8. Ghidra extent agrees (CD_set_test_parmnum lead). No interior direct transfer or possible aligned pointer-word reference was found."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "CD_set_test_parmnum",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80044600": {
+      "address": "0x80044600",
+      "size": 12,
+      "end_exclusive": "0x8004460C",
+      "instruction_sha256": "0bbe6cf1439cc86c67d4825252e8eec60a5f1959bcecab6e9c206f41278de0f8",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "StopCARD2",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80044610": {
+      "address": "0x80044610",
+      "size": 88,
+      "end_exclusive": "0x80044668",
+      "instruction_sha256": "4d2688c16a4ff2edb59b4586aedc0d073bf54c103c2297e23818891c5fb76439",
+      "kind": "indirect_tail_region",
+      "reviewed": true,
+      "evidence": [
+        "Following the closed StopCARD2 BIOS entry, this code loads an internal address and jumps to it. The internal path can return or tail-jump through saved state. Retain this 88-byte region for dedicated ABI/control-flow review; do not infer a normal C function from its prologue."
+      ],
+      "source_language": "unconfirmed"
+    },
+    "0x80044938": {
+      "address": "0x80044938",
+      "size": 12,
+      "end_exclusive": "0x80044944",
+      "instruction_sha256": "d8fcf49b3617b308d46baa593e6665d34fab35e9b2ebb5cee8494c93b2f3df7e",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "Constant BIOS-vector load, non-linking jump and service-number delay slot. Ghidra agrees on this exact extent. Following non-code words previously made Splat emit the entire span as data; explicit size recovers the entry without interpreting the following metadata as instructions."
+      ],
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "exit",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80044944": {
+      "address": "0x80044944",
+      "size": 12,
+      "end_exclusive": "0x80044950",
+      "bytes_sha256": "d47acaed6d4ba1970fbffd3afa265021972f0d502e1cff610a18855af261cd5e",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "One padding word and two non-code metadata words after the closed BIOS entry; next entry is at 80044950."
+      ]
+    },
+    "0x80044968": {
+      "address": "0x80044968",
+      "size": 12,
+      "end_exclusive": "0x80044974",
+      "instruction_sha256": "0428ca0065f41fa0156f03a0626338006565f78c83f051dd0bcea81252136e5e",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "setjmp",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80044978": {
+      "address": "0x80044978",
+      "size": 12,
+      "end_exclusive": "0x80044984",
+      "instruction_sha256": "67605f8a2752259efa7205a1130ded95d6b9c63f6cef61d4e17342c1d0095513",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "strcat",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80044998": {
+      "address": "0x80044998",
+      "size": 12,
+      "end_exclusive": "0x800449A4",
+      "instruction_sha256": "5f8e2740bce1fc31af093633c11289f67ea4eca0926849a3a951612516d41efb",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "strncmp",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800449A8": {
+      "address": "0x800449A8",
+      "size": 12,
+      "end_exclusive": "0x800449B4",
+      "instruction_sha256": "e920b48b8ffc89dc112ed9402a2880876d4654cbf215e0ecc3e47a016560f197",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "strcpy",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800449B8": {
+      "address": "0x800449B8",
+      "size": 12,
+      "end_exclusive": "0x800449C4",
+      "instruction_sha256": "9b43b77c5973b779161d6023dd1eb3e629d2aa60aa1efeaf828361bb1cf3c862",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "strlen",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x800449C8": {
+      "address": "0x800449C8",
+      "size": 12,
+      "end_exclusive": "0x800449D4",
+      "instruction_sha256": "2aa8646552ae17ada0051a3620196e0cf4b4608ee32803592285fec4a5e78320",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "bzero",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x800449F8": {
+      "address": "0x800449F8",
+      "size": 12,
+      "end_exclusive": "0x80044A04",
+      "instruction_sha256": "db6da1122438031261cce8eaabe41b8050249f6a6fe2133f8447ea15eba6cffa",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "rand",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80044A08": {
+      "address": "0x80044A08",
+      "size": 12,
+      "end_exclusive": "0x80044A14",
+      "instruction_sha256": "cc10814f3017ef65c652e0e81949c196ba54adb13691f218d354e144d8790747",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "srand",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x80044A18": {
+      "address": "0x80044A18",
+      "size": 12,
+      "end_exclusive": "0x80044A24",
+      "instruction_sha256": "698f6afd1bb5f561402d0aaf8212cde9ffe42f4e5d56589177383701bec561bd",
+      "kind": "bios_trampoline",
+      "reviewed": true,
+      "evidence": [
+        "Three-instruction BIOS dispatch: constant A0/B0/C0 vector, non-linking jump through t2, service number in the delay slot. Return is through the incoming RA, so following aligned code is not a fall-through continuation. Excluded from ordinary C selection; SDK names remain separate leads."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "printf",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "IMPORTED",
+        "signature_verified": false
+      }
+    },
+    "0x80044A28": {
+      "address": "0x80044A28",
+      "size": 2140,
+      "end_exclusive": "0x80045284",
+      "instruction_sha256": "8ee3137ca25223f0d1d54d2143c86fc0a179248ee3e779124825f75ed8b77734",
+      "kind": "unresolved_code_region",
+      "reviewed": true,
+      "evidence": [
+        "The printf BIOS trampoline ends before this entry. The following sprintf/helper region contains indirect dispatch and multiple Ghidra labels, some potentially internal cases. Its internal function extents remain unresolved; the generator is not forced to a guessed size."
+      ],
+      "source_language": "unconfirmed",
+      "library_candidate": true,
+      "sdk_name_lead": {
+        "name": "sprintf",
+        "evidence": "Saved Ghidra analysis name; no per-function signature score/comment available.",
+        "symbol_source": "USER_DEFINED",
+        "signature_verified": false
+      }
+    },
+    "0x8004534C": {
+      "address": "0x8004534C",
+      "size": 92,
+      "end_exclusive": "0x800453A8",
+      "bytes_sha256": "d427f8f2ffc5b413ca429713b24e328f9cf17d8877d8aa984e6d5fae1d625099",
+      "kind": "embedded_data",
+      "reviewed": true,
+      "source_language": "unconfirmed",
+      "evidence": [
+        "Existing trailing data labels through the configured text/data boundary; preserve data representation rather than interpreting valid-looking words as instructions."
+      ]
+    }
+  }
+}

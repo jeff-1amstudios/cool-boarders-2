@@ -102,49 +102,89 @@
       "note": "Signed positive-input arithmetic-shift loop; zero/negative return zero."
     },
     "0x80024CC0": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x800250C0": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x80037BF8": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x80037F68": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x80038378": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x800387F8": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x80038D18": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x80039268": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+      "note": "Reviewed shared-entry region: setup prefix falls through into separately referenced body. Kept together with both entry labels. Ghidra RCpoly family name is an SDK lead, not proof of original source language; excluded from standalone C queue."
     },
     "0x8003D0B8": {
-      "classification": "handwritten",
+      "classification": "unknown",
       "hold": true,
-      "note": "Reviewed automatic-queue exclusion: four-byte AND patch fragment copied by func_8003D03C; no return or callable-function body. Preserve as assembly rather than compiling an invented standalone function."
+      "note": "Reclassified as a 16-byte copied patch template, followed by twelve zero bytes; no standalone function. Source language unconfirmed. See docs/function-boundaries.md."
+    },
+    "0x8001F9C8": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Three entry paths share the normalization helper/tail. Original 112-byte span is not one ordinary ABI C function. Ghidra VectorNormal* names are leads; retain shared unit and all entry labels."
+    },
+    "0x8002503C": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x800254CC": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x80037F18": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x80038314": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x800387A0": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x80038C88": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
+    },
+    "0x800391F4": {
+      "classification": "unknown",
+      "hold": true,
+      "note": "Reviewed nonstandard ABI helper with temporary-register inputs; see config/function-boundaries.json. Original source language unconfirmed; excluded from ordinary standalone C queue."
     }
   },
   "batch_2": [
@@ -158,5 +198,8 @@
     "0x8001C0F4",
     "0x8001E560",
     "0x8002FCEC"
-  ]
+  ],
+  "matching_paused": true,
+  "pause_reason": "Boundary audit: matching is paused until deliberately resumed. Automatic targets additionally require byte-bound standalone reviews in config/function-boundaries.json.",
+  "include_library_candidates": false
 }

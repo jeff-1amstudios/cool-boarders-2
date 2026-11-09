@@ -1,0 +1,45 @@
+# Initial retained-assembly split; code/data boundary is provisional.
+name: OMT.BIN
+sha1: a60f029670a28dec634cab5ffef32e17bf3f52d9
+options:
+  basename: overlay_omt
+  target_path: orig/disc/files/OMT.BIN
+  base_path: ../..
+  platform: psx
+  compiler: PSYQ
+  generated_asm_macros_directory: build/include
+  asm_path: asm
+  src_path: src
+  build_path: build
+  asset_path: build/assets/overlays/omt
+  cache_path: build/overlays/omt/splat-cache
+  elf_path: build/overlays/omt/overlay.elf
+  ld_script_path: build/overlays/omt/overlay.ld
+  ld_dependencies: false
+  find_file_boundaries: false
+  gp_value: 0x80050274
+  o_as_suffix: true
+  use_legacy_include_asm: false
+  migrate_rodata_to_functions: false
+  section_order: [.rodata, .text, .data, .bss]
+  symbol_addrs_path: [config/overlays/omt.symbols.txt]
+  reloc_addrs_path: []
+  undefined_funcs_auto_path: build/overlays/omt/undefined_funcs.txt
+  undefined_syms_auto_path: build/overlays/omt/undefined_syms.txt
+  ld_align_section_vram_end: false
+  subalign: 2
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 0
+  data_string_guesser_level: 0
+segments:
+- name: omt
+  type: code
+  dir: overlays/omt
+  start: 0x0
+  vram: 0x8005ab68
+  subsegments:
+  - [0x0, rodata, header]
+  - [0x4, asm, body]
+  - [0x370a0, data, data]
+- [0x415c0]

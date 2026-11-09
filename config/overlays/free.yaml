@@ -1,0 +1,45 @@
+# Initial retained-assembly split; code/data boundary is provisional.
+name: FREE.BIN
+sha1: 7404e46da33e1bf32364a2d8719910364d8715d0
+options:
+  basename: overlay_free
+  target_path: orig/disc/files/FREE.BIN
+  base_path: ../..
+  platform: psx
+  compiler: PSYQ
+  generated_asm_macros_directory: build/include
+  asm_path: asm
+  src_path: src
+  build_path: build
+  asset_path: build/assets/overlays/free
+  cache_path: build/overlays/free/splat-cache
+  elf_path: build/overlays/free/overlay.elf
+  ld_script_path: build/overlays/free/overlay.ld
+  ld_dependencies: false
+  find_file_boundaries: false
+  gp_value: 0x80050274
+  o_as_suffix: true
+  use_legacy_include_asm: false
+  migrate_rodata_to_functions: false
+  section_order: [.rodata, .text, .data, .bss]
+  symbol_addrs_path: [config/overlays/free.symbols.txt]
+  reloc_addrs_path: []
+  undefined_funcs_auto_path: build/overlays/free/undefined_funcs.txt
+  undefined_syms_auto_path: build/overlays/free/undefined_syms.txt
+  ld_align_section_vram_end: false
+  subalign: 2
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 0
+  data_string_guesser_level: 0
+segments:
+- name: free
+  type: code
+  dir: overlays/free
+  start: 0x0
+  vram: 0x8005ab68
+  subsegments:
+  - [0x0, rodata, header]
+  - [0x4, asm, body]
+  - [0x3b59c, data, data]
+- [0x49258]

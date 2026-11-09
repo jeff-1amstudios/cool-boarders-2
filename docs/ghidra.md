@@ -2,7 +2,7 @@
 
 Ghidra now runs in Docker. The earlier native macOS installation, downloaded archives, and local Gradle/application caches have been removed from this checkout after a successful container decompiler check. About 1.63 GiB of local Ghidra files was removed; Docker Desktop still stores the image and its build cache separately.
 
-Use the [Docker setup guide](ghidra-docker.md) for building, container paths, and headless commands.
+Use the [Docker setup guide](ghidra-docker.md) for building, container paths, headless commands and the interactive browser desktop.
 
 ```sh
 ./tools/ghidra.sh headless
@@ -18,4 +18,4 @@ Container settings and caches live in the Docker volume `coolboarders2-ghidra-st
 
 Validation reopened the existing boot project and decompiled entrypoint `0x800120FC` through the PSX language. Its program database files retained their hashes. Ghidra refreshed some project index/journal housekeeping files while opening the project, even with the program processed read-only. See `reports/ghidra-docker-validation.txt` and `reports/ghidra-docker-migration.json`.
 
-This setup provides headless analysis. A browser GUI is a separate optional container feature; no host X11 application was installed.
+For interactive analysis, build the optional browser image with `./tools/ghidra.sh web-build`, then run `./tools/ghidra.sh web` and open [the desktop](http://127.0.0.1:6080/vnc.html?autoconnect=true&resize=scale). It opens the existing project. Save and close Ghidra before returning to headless analysis on that project. No host X11 application is required.

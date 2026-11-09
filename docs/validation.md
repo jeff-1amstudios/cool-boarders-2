@@ -1,5 +1,7 @@
 # Local verification
 
+The default `make` / `make validate` gate now covers the boot EXE **and all 14 overlay BINs**. Full overlay results are in `reports/overlay-rebuild.json` and per-image reports under `reports/overlay-rebuild/`; object diagnostics for configured overlay C units share `reports/objdiff.json` with namespaced unit names. The exact retained-assembly overlay baseline includes the complete header/data and MAIN_SEL's two-byte tail. No overlay C reconstructions are retained. Earlier boot-only results below are historical. See [overlay matching](overlays.md#matching-overlays).
+
 9 November 2026, macOS arm64, AppleClang 21.0.0, Python 3.13.
 
 - Built mkpsxiso and dumpsxiso 2.30 from the commit pinned in `tools/bootstrap.sh`. `file` confirmed dumpsxiso is a native arm64 Mach-O executable.
@@ -72,3 +74,7 @@ The detailed `fill_slots` object diff retains a relocation-expression difference
 ## Automatic ten-function batch
 
 Following reviewed exclusions for noncallable handwritten fragments, the serial automatic workflow committed and integrated ten of ten targets, adding 128 bytes of C. The current total is **35 C functions / 1,560 bytes**, with 763 detected retained assembly functions and overlays still unmeasured. Each matching commit passed independent controller validation; the final executable is still exactly 266,240 bytes with the pinned SHA-256 above. All ten function branches remain intact, `main` contains their commits, and the initial rejected WIP checkpoints remain unmerged. See [the batch results and queue learnings](reconstruction-learnings.md#completed-automatic-ten-function-batch). The compiler discrimination matrix remains the earlier 25-function / 1,800-trial study.
+
+## Boundary audit
+
+C coverage remains 35 functions / 1,560 bytes. Reviewed boundary corrections preserve the exact pinned boot EXE, including shared entry labels and an embedded data template in its original text-section position. The saved Ghidra project was snapshotted, reconciled with the curated review catalog and verified without changing initialized bytes. The audit also checks non-code gaps omitted by function parsing and rejects stale/partial Ghidra exports. Matching is paused; unreviewed units and library leads cannot silently enter the ordinary queue. See [function boundaries](function-boundaries.md) for findings, scope, test evidence and unresolved regions.

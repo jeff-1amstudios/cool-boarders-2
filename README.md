@@ -2,7 +2,7 @@
 
 Starting point for a PS1 matching decompilation. This repository contains project-authored C reconstructions, analysis configuration, build/install recipes and documentation. Game images, extracted assets, raw disassembly, BIOS/SDK binaries, downloaded tools and generated tool headers are not committed.
 
-Current state (9 November 2026): the USA boot executable rebuilds byte for byte, with 35 functions (1,560 bytes) compiled from C and the remaining code retained as assembly. Both original and rebuilt `SCUS_943.58` have SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`. A tested GCC 2.7.2 PSX recipe is pinned, but the original compiler/flags are not uniquely established. Overlays and runtime behavior remain to be validated. See [matching build and compiler evidence](docs/compiler-identification.md) and [reconstruction learnings](docs/reconstruction-learnings.md).
+Current state (9 November 2026): the USA boot executable rebuilds byte for byte, with 35 functions (1,560 bytes) compiled from C and the remaining code retained as assembly. Both original and rebuilt `SCUS_943.58` have SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`. A tested GCC 2.7.2 PSX recipe is pinned, but the original compiler/flags are not uniquely established. All 14 known overlays also rebuild byte for byte from retained assembly; runtime behavior remains to be validated. See [matching build and compiler evidence](docs/compiler-identification.md) and [reconstruction learnings](docs/reconstruction-learnings.md).
 
 Project tools live under `tools/`, including the Python environment, downloaded source, build outputs, and bootstrap caches/temporary files. Ghidra is the user-authorized exception: its installation, Java runtime, build cache and application state live in Docker Desktop's storage. Only its small Docker recipe, launcher and version lock remain under `tools/`. The bootstrap uses existing host prerequisites; it does not install system packages or change shell profiles.
 
@@ -17,6 +17,10 @@ make
 This regenerates assembly, compiles the C functions with the pinned historical compiler and maspsx, links the boot EXE, then checks every byte against the unchanged reference. Output is `build/SCUS_943.58`, with a comparison report at `reports/boot-rebuild.json`. A mismatch makes the command fail. The supplied source images/extraction are already present; the steps below describe setup on a fresh checkout.
 
 ### Headless C reconstruction loop
+
+Run `make target-list` to rebuild the complete image-qualified backlog: 3,967 detected instances across 15 images, including 1,047 SDK entries, 30 non-SDK entries covered by C, and 2,890 remaining non-SDK instances. Review boundaries when each target is selected; duplicate detection is deferred. See the [complete backlog and runner transition](docs/reconstruction-worker.md#complete-target-backlog).
+
+**The legacy automatic boot-only worker remains paused until it is connected to the complete backlog.** The [boundary audit](docs/function-boundaries.md) records corrected shared entries, embedded data, BIOS boundaries, SDK leads, and the reviewed Ghidra/export workflow. Use `make boundary-audit` to refresh it. Automatic selection now requires a byte-bound standalone review; library candidates are excluded by default.
 
 Add or edit a function in `src/`; for a new C unit, replace its reviewed `asm` subsegment with a `c` subsegment in `scus_943.58.yaml`, preserving the original boundaries. Then run:
 
@@ -70,7 +74,11 @@ Reference objects come from an independent all-assembly Splat split of the finge
 
 See [tools and workflow](docs/workflow.md) for the milestones and native-port experiment.
 
-Ghidra and the PSX extension run headlessly in Docker. Use `./tools/ghidra.sh headless` to print CLI usage; see [Ghidra Docker setup](docs/ghidra-docker.md) for the saved project, container paths and verification command. The previous unpacked host installation and archives have been removed.
+Ghidra and the PSX extension run in Docker. For an interactive browser desktop, run `./tools/ghidra.sh web-build` once, then `./tools/ghidra.sh web` and open [Ghidra](http://127.0.0.1:6080/vnc.html?autoconnect=true&resize=scale). Use `./tools/ghidra.sh headless` to print CLI usage; see [Ghidra Docker setup](docs/ghidra-docker.md) for session controls, the saved project, container paths and verification command. The previous unpacked host installation and archives have been removed.
+
+The [overlay workflow](docs/overlays.md) maps all 14 known raw code BINs into the existing Ghidra program as native overlay blocks, applies the PSX plugin, and produces a combined SDK-excluded function inventory. Run `make overlays` with the project closed in the GUI, or `make overlay-report` to summarize the completed analysis.
+
+`make validate` rebuilds and byte-compares the boot EXE and all 14 raw overlay BINs. `make overlay-validate OVERLAY=init` checks one overlay; overlay C units participate in the same headless objdiff workflow. All overlay code currently remains retained assembly. See [overlay matching](docs/overlays.md#matching-overlays) for split configs and reports.
 
 ## Working rules
 

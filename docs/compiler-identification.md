@@ -28,7 +28,7 @@ These tools provide evidence and comparison, rather than a universal compiler/fl
 - **The project's compiler matrix** compiles proposed C, links it at the original address with known external addresses, and compares the entire function's bytes. Candidate selection and C/type reconstruction still need analysis.
 - **[decomp-permuter](https://github.com/simonlindholm/decomp-permuter)** can search C source variations against a target once a compile command exists. It is not installed here yet and does not by itself establish the original compiler/flags.
 
-PsyQ 3.7.0 is a useful SDK lead, not a guarantee of one compiler for all game objects and libraries. Different translation units, linked libraries and handwritten routines may require different settings.
+We accept the PSX plugin's **PsyQ 3.7.0** detection for the boot executable. Its existing SDK identifications are recorded in `config/psyq-sdk.json` and excluded from the reconstruction queue, including `DrawSyncCallback` at `0x800296F0`. This uses the plugin's result directly; no independent version/signature audit is required for this selection policy. It does not establish one compiler for all game objects and libraries. Different translation units, linked libraries and handwritten routines may require different settings.
 
 ## Empirical results
 

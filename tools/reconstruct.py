@@ -14,15 +14,27 @@ from pathlib import Path
 import yaml
 
 from rebuild import ROOT, reference
+from boundary_audit import (audit_rows, review_matches, prepare_ghidra_export,
+                            check_export_complete, check_review_export)
 
 STATE = ROOT / "reports/reconstruction/state.json"
 INVENTORY = ROOT / "reports/reconstruction/inventory.json"
 REVIEW = ROOT / "config/reconstruction.json"
+BOUNDARIES = ROOT / "config/function-boundaries.json"
+SDK = ROOT / "config/psyq-sdk.json"
 FUNCTION = re.compile(r"^glabel (\w+)\n(.*?)^endlabel \1\s*$", re.M | re.S)
 INSTRUCTION = re.compile(r"/\* ([0-9A-F]+) ([0-9A-F]+) ([0-9A-F]{8}) \*/\s*(.*)")
 PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
-             "tools/reconstruct_run.py", "Makefile")
+             "tools/reconstruct_run.py", "tools/boundary_audit.py",
+             "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
+             "tools/ghidra-docker.sh",
+             "config/function-boundaries.json", "config/reconstruction.json", "config/psyq-sdk.json",
+             "config/overlays.json", "tools/overlays.py", "tools/ghidra_scripts/ImportOverlays.java",
+             "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
+             "tools/ghidra_scripts/AuditOverlayReferences.java", "tools/overlay_rebuild.py",
+             "tools/splat_ext/bytes.py", "tools/target_queue.py", "Makefile") + tuple(
+                 p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file())
 
 
 class NoTarget(RuntimeError):
@@ -154,8 +166,24 @@ def parse_functions(path, target):
     return rows
 
 
+def refresh_boundary_evidence():
+    """A batch starts from a fresh saved-Ghidra review export, never a stale log."""
+    directory = ROOT / "reports/boundary-audit/ghidra"
+    prepare_ghidra_export(directory)
+    command([ROOT / "tools/ghidra-docker.sh", "headless", "/projects", "CB2_USA",
+             "-process", "SCUS_943.58", "-noanalysis", "-readOnly", "-scriptPath", "/scripts",
+             "-postScript", "ExportBoundaryEvidence.java", "/reports/boundary-audit/ghidra",
+             "-log", "/home/ghidra/boundary-export.log"], "ghidra-boundaries")
+    _, target, _ = reference()
+    check_export_complete(directory, target)
+    check_review_export(read(BOUNDARIES), directory / "reviewed-units.json", required=True)
+
+
 def inventory():
     _, target, sha = reference()
+    sdk = read(SDK)
+    if sdk["reference_sha256"] != sha:
+        raise RuntimeError("PsyQ identifications do not match the pinned reference")
     # Fresh independent split and byte-checked all-assembly reference.
     command([sys.executable, "tools/objdiff.py"], "inventory")
     review = read(REVIEW)
@@ -185,15 +213,52 @@ def inventory():
     for row in rows:
         row["callers"] = [r["name"] for r in rows if row["name"] in r["calls"]]
     rows.sort(key=lambda r: int(r["address"], 16))
-    report = {"reference_sha256": sha, "scope": "Splat-detected boot EXE functions; boundaries provisional unless reviewed; overlays excluded",
+    boundaries = read(BOUNDARIES)
+    if boundaries.get("reference_sha256") != sha:
+        raise RuntimeError("Boundary reviews do not match the pinned reference")
+    exported = ROOT / "reports/boundary-audit/ghidra"
+    check_export_complete(exported, target)
+    check_review_export(boundaries, exported / "reviewed-units.json", required=True)
+    diagnostics = {r["address"]: r for r in audit_rows(rows, target)}
+    for row in rows:
+        diagnosis = diagnostics[row["address"]]
+        reviewed = boundaries.get("regions", {}).get(row["address"], {})
+        row.update(boundary_reviewed=review_matches(diagnosis, reviewed),
+                   boundary_kind=reviewed.get("kind", "unreviewed"),
+                   library_candidate=reviewed.get("library_candidate", False),
+                   sdk_name_lead=reviewed.get("sdk_name_lead"),
+                   boundary_findings=diagnosis["findings"],
+                   instruction_sha256=diagnosis["instruction_sha256"],
+                   address_reference_seen=bool(diagnosis["possible_pointer_words_to_entry"]),
+                   end_exclusive=diagnosis["end_exclusive"])
+    apply_sdk_identifications(rows, sdk)
+    report = {"reference_sha256": sha, "scope": "Splat boot EXE code units, including multi-entry regions; unreviewed boundaries are provisional, overlays excluded. Legacy function-count keys count generated spans, not original source functions.",
               "summary": {"detected_functions": len(rows),
+                          "detected_code_units": len(rows),
                           "c_functions": sum(r["status"] == "c" for r in rows),
                           "c_bytes": sum(r["size"] for r in rows if r["status"] == "c"),
-                          "retained_assembly_functions": sum(r["status"] == "assembly" for r in rows)},
+                          "retained_assembly_functions": sum(r["status"] == "assembly" for r in rows),
+                          "sdk_identified_units": sum(r["classification"] == "sdk" for r in rows),
+                          "sdk_identified_c_units": sum(r["classification"] == "sdk" and r["status"] == "c" for r in rows),
+                          "reviewed_standalone_assembly_units": sum(r["status"] == "assembly" and r["boundary_reviewed"] for r in rows)},
               "functions": rows}
     write(INVENTORY, report)
     print(json.dumps(report["summary"], indent=2))
     return report
+
+
+def apply_sdk_identifications(rows, sdk):
+    """Trust accepted plugin names; also exclude spans containing an SDK entry."""
+    entries = [(int(address, 16), name) for address, name in sdk["functions"].items()]
+    for row in rows:
+        start = int(row["address"], 16)
+        names = [name for address, name in entries if start <= address < start + row["size"]]
+        if names:
+            row.update(classification="sdk", library_candidate=True,
+                       sdk_names=names, sdk_version=sdk["version"],
+                       sdk_identification="accepted_psx_plugin",
+                       note=(row.get("note", "") + " Accepted PSX plugin SDK identification: "
+                             + ", ".join(names) + "; excluded from C reconstruction.").strip())
 
 
 def state():
@@ -214,17 +279,25 @@ def check_session(session):
 
 
 def choose(report, session, address=None):
+    policy = read(REVIEW)
+    if policy.get("matching_paused", False):
+        raise NoTarget("C matching is paused by the boundary-audit policy; review config/reconstruction.json")
     excluded = {r["address"] for r in session["completed"] + session["deferred"]}
     candidates = [r for r in report["functions"] if r["status"] == "assembly"
                   and r["contiguous"] and not r["hardware_or_gp"]
                   and not r.get("hold", False)
+                  and (policy.get("include_library_candidates", False) or not r.get("library_candidate", False))
+                  and r.get("boundary_reviewed") is True
+                  and r.get("boundary_kind") == "standalone"
+                  and not r.get("boundary_findings", {})
                   and r["classification"] not in ("sdk", "handwritten")
                   and r["address"] not in excluded and r["size"] <= 160
                   and "indirect-control" not in r["features"]]
     if address:
         candidates = [r for r in candidates if r["address"] == f"0x{int(address, 16):08X}"]
-    order = read(REVIEW).get("pilot", [])
+    order = policy.get("pilot", [])
     candidates.sort(key=lambda r: (order.index(r["address"]) if r["address"] in order else len(order),
+                                   not bool(r.get("callers") or r.get("address_reference_seen")),
                                    not r["boundary_reviewed"], bool(r["calls"]), r["size"], r["address"]))
     if not candidates:
         raise NoTarget("No eligible target; review the inventory or expand the policy")
@@ -251,7 +324,7 @@ def next_target(session, address=None):
         "Review callers, data types and both split boundaries before integration.\n"
         "Use readable C; do not embed assembly or target bytes. Keep the reference and recipe fixed.\n"
         "Run tools/.venv/bin/python tools/reconstruct.py check for each integrated attempt.\n"
-        "Inspect reports/objdiff.json, reports/objdiff/<unit>.json and reports/boot-rebuild.json.\n"
+        "Inspect reports/objdiff.json, reports/objdiff/<unit>.json, reports/boot-rebuild.json and reports/overlay-rebuild.json.\n"
         "Use defer --reason when blocked; archive edits and restore the passing baseline before next.\n"
         "Use finish --paths <explicit authored files> --message <commit message> after review.\n")
     session["active"] = {"address": row["address"], "name": row["name"], "size": row["size"],
@@ -277,13 +350,16 @@ def validate(session):
         command(["make", "validate"], "validate", directory=attempt,
                 timeout=min(300, max(1, session["deadline"] - time.time())))
     finally:
-        for name in ("objdiff.json", "boot-rebuild.json"):
+        for name in ("objdiff.json", "boot-rebuild.json", "overlay-rebuild.json"):
             path = ROOT / "reports" / name
             if path.exists():
                 shutil.copy2(path, attempt / name)
         details = ROOT / "reports/objdiff"
         if details.exists() and (attempt / "objdiff.json").exists():
             shutil.copytree(details, attempt / "objdiff", dirs_exist_ok=True)
+        overlays = ROOT / "reports/overlay-rebuild"
+        if overlays.exists():
+            shutil.copytree(overlays, attempt / "overlay-rebuild", dirs_exist_ok=True)
     report = read(ROOT / "reports/boot-rebuild.json")
     _, original, sha = reference()
     if not report["identical"] or report["reference_sha256"] != sha or (ROOT / "build/SCUS_943.58").read_bytes() != original:

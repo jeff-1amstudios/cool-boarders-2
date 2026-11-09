@@ -1,0 +1,135 @@
+{
+  "boot_sha256": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+  "gp": "0x80050274",
+  "psyq_version": "3.7.0",
+  "load_evidence": "Boot func_800123F8 at 0x800124BC selects a file by index and at 0x800124C4 loads the fixed destination from [0x80010030] = 0x8005AB68, then queues the read via 0x80013B60. boot_main calls 0x8005AB6C. All 14 file lengths plus this base, rounded to four bytes, match the respective end-address table at 0x800100B0. Direct local calls corroborate this base. Static mapping; no runtime breakpoint trace claimed.",
+  "scope": "All 14 raw root BIN overlays in the supplied USA disc, imported as named native overlay memory blocks in the existing CB2_USA SCUS_943.58 program. First word retained as data, not interpreted as a load-address index.",
+  "overlays": {
+    "BDEDIT.BIN": {
+      "size": 34464,
+      "sha256": "1dfa57a92188ebc15370de2eb6f583283c4225ab6aca6d5fb4377e5a18fff6bc",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 7,
+      "build_config": "config/overlays/bdedit.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "BP.BIN": {
+      "size": 283488,
+      "sha256": "b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/bp.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "COMB.BIN": {
+      "size": 308128,
+      "sha256": "f0ca82e2b50e12013001893d481df64e8037d97f9461b0361b1e3d110ceeb0b4",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/comb.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "ENDING.BIN": {
+      "size": 108172,
+      "sha256": "4aebf02df55c2a9cfb4bd1d86c297e4bddb705f6823377b3f056cb2c66404312",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/ending.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "FREE.BIN": {
+      "size": 299608,
+      "sha256": "3160df738e593c2a8c695c5a97b223074bc99342006d10c59af222929f4b832e",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/free.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "HP.BIN": {
+      "size": 266504,
+      "sha256": "9e041531c37cb497cc505dd579aa4cb1c90de7a20b13966d373c1affc0bb8757",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/hp.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "INIT.BIN": {
+      "size": 19496,
+      "sha256": "870537bf4310495e022e10b6870e0429a9b468441f5420879b05826adb4d959f",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 4,
+      "build_config": "config/overlays/init.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "MAIN_SEL.BIN": {
+      "size": 139850,
+      "sha256": "4504dbff01a927157b76e4d366c81690a0817a4d0bb0e292cc498b19e22fecde",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 6,
+      "build_config": "config/overlays/main_sel.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "MODE_SEL.BIN": {
+      "size": 164120,
+      "sha256": "5f817fa3170159e4d193bd25a2e277844f0268bf15a9a433966c702e73c10334",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 5,
+      "build_config": "config/overlays/mode_sel.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "OMT.BIN": {
+      "size": 267712,
+      "sha256": "59f677326310d0c0c90391e20b2f61d9420bd60debf71bcfa433a88f109f9f52",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/omt.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "SBC1.BIN": {
+      "size": 221832,
+      "sha256": "8474cc337395402dfa3c910aaa3e8f2c781accfcc38b66b86a96b66204a44af5",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/sbc1.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "SBC2.BIN": {
+      "size": 265768,
+      "sha256": "1837f2d8ca994310346c7ed6644d995c85280dcf4043f2621766416b12fa157b",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/sbc2.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "TM.BIN": {
+      "size": 291432,
+      "sha256": "86a2ad48d483eabbffaafdc6b321ad3ab4cd5f11807befd5bb164647c441a927",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/tm.yaml",
+      "compiler_config": "config/compiler.json"
+    },
+    "VS.BIN": {
+      "size": 297720,
+      "sha256": "034388773372b829104acb024fe4f846bd998553fcad414e89a57a281c092642",
+      "load_address": "0x8005AB68",
+      "entrypoint": "0x8005AB6C",
+      "header_word": 8,
+      "build_config": "config/overlays/vs.yaml",
+      "compiler_config": "config/compiler.json"
+    }
+  }
+}

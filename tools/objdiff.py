@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 
 from rebuild import ROOT, PREFIX, compile_c, reference, run
+from overlay_rebuild import prepare_objdiff_units
 
 
 def main():
@@ -52,7 +53,7 @@ def main():
             print(f"  Instruction/relocation details: {output.relative_to(ROOT)}")
         measures = report["measures"]
         print(f"C units only: {measures.get('matched_code', 0)}/{measures.get('total_code', 0)} code bytes matching.")
-        print("Details: reports/objdiff.json. Run make for the full-executable byte check.")
+        print("Details: reports/objdiff.json. Run make for full-file boot and overlay checks.")
         return
     _, expected, _ = reference()
     directory = ROOT / "build/objdiff"
@@ -104,18 +105,20 @@ def main():
         compile_c(base, recipe)
         units.append({"name": name, "target_path": f"build/objdiff/target/{name}.o",
                       "base_path": base, "metadata": {"source_path": f"src/{name}.c"}})
+    units.extend(prepare_objdiff_units())
     project = {
         "$schema": "https://raw.githubusercontent.com/encounter/objdiff/v3.8.3/config.schema.json",
         "min_version": "3.8.3", "custom_make": "make",
         "build_target": False, "build_base": True,
-        "watch_patterns": ["*.c", "*.h", "config/compiler.json", "tools/rebuild.py", "Makefile"],
+        "watch_patterns": ["*.c", "*.h", "config/compiler.json", "config/overlays/**", "config/overlays.json",
+                           "tools/rebuild.py", "tools/overlay_rebuild.py", "Makefile"],
         "ignore_patterns": ["build/**", "orig/**", "asm/**", "reports/**", "tools/vendor/**",
                             "tools/.venv/**", "tools/cache/**", "tools/tmp/**"],
         "units": units,
     }
     (ROOT / "objdiff.json").write_text(json.dumps(project, indent=2) + "\n")
-    print(f"Prepared {len(units)} C units; full original-disassembly reference matches the pinned EXE.")
-    print("objdiff scores are debugging aids. Run make for the complete executable correctness check.")
+    print(f"Prepared {len(units)} boot/overlay C units; assembly-only references match their pinned files.")
+    print("objdiff scores are debugging aids. Run make for full-file boot and overlay correctness checks.")
 
 
 if __name__ == "__main__":

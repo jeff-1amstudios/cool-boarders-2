@@ -1,0 +1,48 @@
+# Initial retained-assembly split; code/data boundary is provisional.
+# Preserve the final two bytes explicitly; the word disassembler omits them.
+name: MAIN_SEL.BIN
+sha1: 238c3ee1b8c2bbce6b01685e83ee567e8a70c0aa
+options:
+  basename: overlay_main_sel
+  target_path: orig/disc/files/MAIN_SEL.BIN
+  base_path: ../..
+  platform: psx
+  compiler: PSYQ
+  generated_asm_macros_directory: build/include
+  asm_path: asm
+  src_path: src
+  build_path: build
+  asset_path: build/assets/overlays/main_sel
+  cache_path: build/overlays/main_sel/splat-cache
+  elf_path: build/overlays/main_sel/overlay.elf
+  ld_script_path: build/overlays/main_sel/overlay.ld
+  ld_dependencies: false
+  find_file_boundaries: false
+  gp_value: 0x80050274
+  o_as_suffix: true
+  use_legacy_include_asm: false
+  migrate_rodata_to_functions: false
+  section_order: [.rodata, .text, .data, .bss]
+  symbol_addrs_path: [config/overlays/main_sel.symbols.txt]
+  reloc_addrs_path: []
+  undefined_funcs_auto_path: build/overlays/main_sel/undefined_funcs.txt
+  undefined_syms_auto_path: build/overlays/main_sel/undefined_syms.txt
+  ld_align_section_vram_end: false
+  subalign: 2
+  string_encoding: ASCII
+  data_string_encoding: ASCII
+  rodata_string_guesser_level: 0
+  data_string_guesser_level: 0
+  extensions_path: tools/splat_ext
+segments:
+- name: main_sel
+  type: code
+  dir: overlays/main_sel
+  start: 0x0
+  vram: 0x8005ab68
+  subsegments:
+  - [0x0, rodata, header]
+  - [0x4, asm, body]
+  - [0x1f2e0, data, data]
+  - [0x22248, bytes, tail]
+- [0x2224a]

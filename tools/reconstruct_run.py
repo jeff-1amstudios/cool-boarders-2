@@ -29,12 +29,14 @@ def review_split(before, after, target):
         for i, row in enumerate(rows[:-1]):
             if not isinstance(row, list) or row[1] != "asm":
                 continue
-            low, high = row[0], rows[i + 1][0]
+            following = rows[i + 1]
+            low = row[0]
+            high = following[0] if isinstance(following, list) else following["start"]
             if not low <= start < end <= high:
                 continue
             try:
                 proposed = after["segments"][index]["subsegments"]
-                selected = next(r for r in proposed if r[0] == start and r[1] == "c")
+                selected = next(r for r in proposed if isinstance(r, list) and r[0] == start and r[1] == "c")
             except (KeyError, IndexError, TypeError, StopIteration) as error:
                 raise Rejected("Selected function needs its own C subsegment") from error
             if len(selected) != 3 or not re.fullmatch(r"[A-Za-z_]\w*", str(selected[2])):
@@ -44,7 +46,7 @@ def review_split(before, after, target):
                 replacement.append(row)
             replacement.append(selected)
             if end < high:
-                suffix = next((r for r in proposed if r[0] == end), None)
+                suffix = next((r for r in proposed if isinstance(r, list) and r[0] == end), None)
                 if (not isinstance(suffix, list) or len(suffix) != 3 or suffix[1] != "asm"
                         or not re.fullmatch(r"[A-Za-z_]\w*", str(suffix[2]))):
                     raise Rejected("Retained assembly must resume at the original function end")
@@ -306,6 +308,9 @@ class Runner:
     def run(self):
         if self.w.git("branch", "--show-current") != "main":
             raise RuntimeError("Automatic batches must start on the main integration branch")
+        if self.w.read(self.w.REVIEW).get("matching_paused", False):
+            raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
+        self.w.refresh_boundary_evidence()
         session = self.w.begin_session(self.args.limit, 1, self.args.minutes)
         session.update(mode="automatic", branch="main", integration_branch="main", integration_head=session["head"])
         self.w.save_state(session)

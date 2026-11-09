@@ -76,6 +76,7 @@ class RunTests(unittest.TestCase):
             self.stack.enter_context(patch.object(worker, name, value))
         self.stack.enter_context(patch.object(worker, "reference", side_effect=self.reference))
         self.stack.enter_context(patch.object(worker, "inventory", side_effect=self.inventory))
+        self.refresh_boundary_evidence = self.stack.enter_context(patch.object(worker, "refresh_boundary_evidence"))
         self.agent = self.root / "tools/tmp/agent.py"
         self.agent.write_text(textwrap.dedent(r'''
             import json, os, subprocess, sys, yaml
@@ -140,7 +141,8 @@ class RunTests(unittest.TestCase):
             functions.append({"name": f"func_{0x80010000 + offset:08X}", "address": f"0x{0x80010000 + offset:08X}",
                 "offset": offset, "size": 8, "status": "c" if row[1] == "c" else "assembly",
                 "contiguous": True, "hardware_or_gp": False, "features": [], "classification": "unknown",
-                "boundary_reviewed": True, "calls": [], "callers": [], "references": [], "body": "fixture target\n"})
+                "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {},
+                "calls": [], "callers": [], "references": [], "body": "fixture target\n"})
         report = {"functions": functions}
         worker.write(worker.INVENTORY, report)
         return report
@@ -148,6 +150,16 @@ class RunTests(unittest.TestCase):
     def runner(self, mode="match", limit=2):
         return Runner(worker, SimpleNamespace(limit=limit, minutes=2, agent_seconds=10,
             agent_command=shlex.join([sys.executable, str(self.agent), mode])))
+
+    def test_paused_policy_stops_before_session_or_agent_launch(self):
+        (self.root / "config/reconstruction.json").write_text('{"matching_paused": true}\n')
+        with patch.object(worker, "begin_session") as begin:
+            with self.assertRaisesRegex(RuntimeError, "paused.*no batch started"):
+                self.runner().run()
+            begin.assert_not_called()
+        self.assertFalse((self.root / "reports/agents.jsonl").exists())
+        self.refresh_boundary_evidence.assert_not_called()
+        self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
 
     def test_two_functions_use_distinct_processes_and_commits(self):
         self.runner().run()
@@ -407,6 +419,21 @@ class RunTests(unittest.TestCase):
         (self.root / "src/new_unit.c").write_text('int func(void) {unsigned char bytes[]={8,0,224,3}; return 7;}')
         with self.assertRaisesRegex(Rejected, "Initialized arrays"):
             review_source(self.root, ["src/new_unit.c"], "src/new_unit.c", "func")
+
+    def test_split_preserves_embedded_data_dictionary_and_its_position(self):
+        before = copy.deepcopy(self.config)
+        data = {"start": 8, "type": "data", "name": "template",
+                "linker_section": ".text", "linker_section_order": ".text"}
+        before["segments"][0]["subsegments"] = [[0, "asm", "first"], data,
+                                                     [12, "asm", "second"], [20, "data", "data"]]
+        # A target immediately before a data island and one after it both work.
+        for offset, index in [(0, 0), (12, 2)]:
+            proposed = copy.deepcopy(before)
+            proposed["segments"][0]["subsegments"][index] = [offset, "c", "unit"]
+            self.assertEqual(review_split(before, proposed, {"offset": offset, "size": 8}), "src/unit.c")
+            proposed["segments"][0]["subsegments"][1]["linker_section"] = ".data"
+            with self.assertRaises(Rejected):
+                review_split(before, proposed, {"offset": offset, "size": 8})
 
 
 if __name__ == "__main__":

@@ -32,6 +32,8 @@ The payload begins with a game build string dated 17 September 1997. Embedded SD
 
 The other 14 entries in that table and the raw BIN headers need mapping to scene transitions. Do not assume every BIN loads at INIT's address or has the same lifetime. Several table entries share an address, suggesting reused memory, but runtime confirmation is needed.
 
+Subsequent static mapping established that all 14 root BINs use the fixed destination at table entry zero, `0x8005AB68`; the loader does not index that table using the BIN's first word. All 14 rounded file ends match the end-address table at `0x800100B0`. They are now covered by the [native overlay analysis workflow](overlays.md); the observations above describe the initial investigation.
+
 ## Code-bearing BIN candidates
 
 All 14 root BINs start with a small word followed immediately by plausible MIPS function prologues. They have no PS-X EXE header. The first word's meaning has not been established.

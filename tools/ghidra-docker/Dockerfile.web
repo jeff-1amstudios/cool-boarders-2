@@ -1,0 +1,13 @@
+# Extend the existing pinned analysis image; keep the headless image unchanged.
+FROM coolboarders2/ghidra-psx:12.1.4-2026.10.03-arm64
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb x11-utils x11vnc openbox novnc websockify \
+    && rm -rf /var/lib/apt/lists/*
+COPY ghidra-docker/entrypoint.sh /usr/local/bin/ghidra-project
+COPY ghidra-docker/web-entrypoint.sh /usr/local/bin/ghidra-web
+RUN chmod +x /usr/local/bin/ghidra-project /usr/local/bin/ghidra-web
+USER ghidra
+ENV DISPLAY=:1 GHIDRA_GUI=1 GHIDRA_GUI_MAXMEM=2G
+EXPOSE 6080
+ENTRYPOINT ["/usr/local/bin/ghidra-web"]

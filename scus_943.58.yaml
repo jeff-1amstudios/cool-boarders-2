@@ -120,6 +120,14 @@ segments:
       - [0x1F4B0, asm, after_func_8002ECA0]
       - [0x204EC, c, positive_bit_length]
       - [0x20508, asm, after_positive_bit_length]
+      # Copied 16-byte patch template and 12 following zero bytes, not a function.
+      - start: 0x2D8B8
+        type: data
+        name: event_patch_template
+        # Data embedded in the original text section, at its original position.
+        linker_section: .text
+        linker_section_order: .text
+      - [0x2D8D4, asm, after_event_patch_template]
       - [0x2D94C, c, func_8003D14C]
       - [0x2D954, asm, after_func_8003D14C]
       - [0x2E95C, c, func_8003E15C]
