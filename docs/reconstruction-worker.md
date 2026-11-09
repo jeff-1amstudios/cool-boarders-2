@@ -1,18 +1,18 @@
 # Bounded reconstruction worker
 
-`tools/reconstruct.py` owns target selection, context preparation, budgets, validation and audited commits. Its `run` command launches one fresh agent process per function and automatically advances the queue. The manual commands below remain available for supervised work. Both modes proceed serially in the current checkout, with one active target and a clean baseline between targets.
+`tools/reconstruct.py` owns target selection, context preparation, budgets, validation and audited commits. Its `run` command launches one fresh agent process per function on a separate Git branch and automatically advances the queue. `main` is the integration branch. The manual commands below remain available for supervised work. Work proceeds serially in the current checkout; the runner switches branches rather than creating extra worktrees.
 
 ## Automatic batches
 
-From a clean checkout, with the existing Codex CLI installed and authenticated:
+From a clean checkout on `main`, with the existing Codex CLI installed and authenticated:
 
 ```sh
 tools/.venv/bin/python tools/reconstruct.py run --limit 10
 ```
 
-This starts a new session, verifies the baseline, selects one eligible target, prepares its context, and launches a fresh `codex exec` process with the prompt on stdin. There is no session resume or shared conversation between functions. The launcher uses `--ephemeral`, `--sandbox workspace-write`, `--ask-for-approval never`, JSON event logs and a final-message file. These flags follow the [official OpenAI noninteractive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) and the installed CLI's help. It reuses the existing CLI account/configuration and does not install anything. Temporary files, diagnostic logs and SQLite job state are routed under ignored `tools/tmp/` and `tools/cache/` using per-process overrides documented in the [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference); user settings are not edited.
+This starts a new session, verifies the baseline, selects one eligible target, prepares its context, creates `codex/match-<address>` from the latest passing `main`, and launches a fresh `codex exec` process with the prompt on stdin. There is no session resume or shared conversation between functions. The launcher uses `--ephemeral`, `--sandbox workspace-write`, `--ask-for-approval never`, JSON event logs and a final-message file. These flags follow the [official OpenAI noninteractive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) and the installed CLI's help. It reuses the existing CLI account/configuration and does not install anything. Temporary files, diagnostic logs and SQLite job state are routed under ignored `tools/tmp/` and `tools/cache/` using per-process overrides documented in the [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference); user settings are not edited.
 
-The agent may use `make objdiff` and `make validate` while refining its C. When it exits, Python checks its source and split edits and runs **fresh `make validate` independently**. It verifies the actual rebuilt bytes, selected C address/size and unchanged previous C coverage. Agent messages and reports do not authorize a commit. Candidate content hashes must remain unchanged across validation, and staged blobs must have those same hashes. Python stages the audited paths and commits each accepted function separately.
+The agent may use `make objdiff` and `make validate` while refining its C. When it exits, Python checks its source and split edits and runs **fresh `make validate` independently**. It verifies the actual rebuilt bytes, selected C address/size and unchanged previous C coverage. Agent messages and reports do not authorize a commit. Candidate content hashes must remain unchanged across validation, and staged blobs must have those same hashes. Python stages the audited paths, commits the matching function on its own branch, then switches to `main` and fast-forwards it to that exact validated commit. The function branch is retained.
 
 The defaults are ten selected targets, a two-hour session and fifteen minutes per agent. Override them explicitly:
 
@@ -21,13 +21,13 @@ tools/.venv/bin/python tools/reconstruct.py run \
   --limit 5 --minutes 60 --agent-seconds 600
 ```
 
-`run` performs one final controller validation per candidate. Its agent's local compile/edit loop is bounded by wall time; the manual `begin --attempts` counter does not count those local build commands. Rejected or timed-out candidates count toward the target limit. Python archives the candidate, restores only the permitted edits, validates the restored baseline, then selects the next function. Cleanup may extend beyond the session deadline so the checkout can be returned to a verified state. A launcher/authentication error stops the batch after recovery instead of repeatedly consuming targets. No available target ends the batch normally.
+`run` performs one final controller validation per candidate. Its agent's local compile/edit loop is bounded by wall time; the manual `begin --attempts` counter does not count those local build commands. Rejected or timed-out candidates count toward the target limit. Python archives the candidate and creates a clearly marked WIP checkpoint on its function branch. It switches back to unchanged `main`, validates that baseline, then selects the next function. Cleanup may extend beyond the session deadline so the checkout can be returned to a verified state. A launcher/authentication error stops the batch after recovery instead of repeatedly consuming targets. No available target ends the batch normally.
 
 Automatic edits are restricted to one new `src/*.c` translation unit, new local `src/*.h` files, splitting the selected assembly span in `scus_943.58.yaml`, and appending to `symbol_addrs.txt`. Existing source files, options, unrelated boundaries, previous symbols, the reference and compiler/build tools must remain unchanged. Basic source checks reject inline assembly, instruction/byte embedding directives, section attributes, initialized arrays, macro tricks and includes outside the local source headers. Only simple header guards and quoted local includes are accepted. These are conservative checks, not a proof of source readability; candidates requiring broader changes should use the manual workflow.
 
-If the agent changes HEAD, stages files, changes a protected file or makes an out-of-scope edit, the batch stops with the candidate preserved for inspection. It does not reset unexpected changes. Do not edit the checkout concurrently. Ctrl-C/SIGTERM during agent work kills its process group, archives its candidate and restores a verified baseline when the edits are within scope. Interruption or failure during Git commit leaves the candidate/index for inspection because the commit may already have happened. A hard process kill can leave an active target; inspect `status`, logs and any running launcher before using the manual recovery commands or starting a new session.
+If the agent changes HEAD, switches branches, moves `main`, stages files, changes a protected file or makes an out-of-scope edit, the batch stops with the candidate preserved for inspection. It does not reset unexpected changes. Do not edit the checkout concurrently. Ctrl-C/SIGTERM during agent work kills its process group, checkpoints its in-scope candidate on the function branch, and returns to verified `main`. Interruption or failure during Git commit or integration leaves the recorded phase, branches and candidate/index for inspection because the operation may already have happened. A hard process kill can leave an active target; inspect `status`, logs and any running launcher before using the manual recovery commands or starting a new session.
 
-Prompts, launcher arguments, agent logs/final messages, candidate patches/sources and controller validation reports live under `reports/reconstruction/sessions/<session>/<address>/`. Session state includes each accepted commit, deferred reason and the final stop reason. `status` prints the latest session. A new automatic batch preserves previous session directories; session deferrals reset between batches, while curated `hold: true` entries stay excluded.
+Prompts, launcher arguments, agent logs/final messages, candidate patches/sources and controller validation reports live under `reports/reconstruction/sessions/<session>/<address>/`. Session state includes the integration tip, each function branch and base commit, accepted commit or WIP checkpoint, deferred reason, transaction phase and final stop reason. `status` prints the latest session. A new automatic batch preserves previous session directories; session deferrals reset between batches, while curated `hold: true` entries stay excluded.
 
 A different launcher can be supplied as a shell-quoted argv string. Python executes it directly, with no shell expansion, substitution or pipelines:
 
@@ -36,9 +36,34 @@ tools/.venv/bin/python tools/reconstruct.py run --limit 1 \
   --agent-command '/absolute/path/to/agent-wrapper --noninteractive'
 ```
 
-The full prompt is supplied on stdin and the working directory is the repository root. `CB2_RECONSTRUCTION_CONTEXT` names the target's absolute `context.json` path and `CB2_AGENT_REPORT` names an optional final-message output file. Exit zero when the agent has finished its candidate, including an ordinary blocked attempt; nonzero indicates a launcher/runtime failure. Custom launchers must supply their own authentication, sandbox, ephemeral-session and local-cache settings. They must not stage or commit files. Python still applies every acceptance gate.
+The full prompt is supplied on stdin and the working directory is the repository root. `CB2_RECONSTRUCTION_CONTEXT` names the target's absolute `context.json` path and `CB2_AGENT_REPORT` names an optional final-message output file. Exit zero when the agent has finished its candidate, including an ordinary blocked attempt; nonzero indicates a launcher/runtime failure. Custom launchers must supply their own authentication, sandbox, ephemeral-session and local-cache settings. They must not stage, commit, switch branches or update `main`. Python still applies every acceptance gate.
+
+## Function branches and recovery
+
+`run` requires `main` at startup and leaves it checked out after every ordinary accepted or deferred target. It never deletes or force-updates a function branch. If `codex/match-80017A00` already exists, a new attempt uses `codex/match-80017A00-2`, then `-3`, and so on, always starting from the latest passing `main`. It does not resume or overwrite an old attempt automatically.
+
+Matching commits are the only reconstruction commits the runner integrates into `main`. The user-authorized exception for nonmatching **WIP checkpoint commits applies only to the function branches**. A WIP records the address, baseline commit and blocker in its commit message; its source need not compile or match. It is excluded from matching progress and is never merged into `main`. Empty blocked attempts receive an empty WIP commit so the blocker remains available in Git.
+
+Checkpoints still obey the repository boundary. Raw assembly, byte embeddings, binary source and other rejected source forms stay only in the ignored local patch/source archive. In that case, the branch receives an empty WIP marker explaining the exclusion. Out-of-scope edits, unexpected index changes and changed Git refs cause a stop with the checkout preserved instead of an automatic checkpoint/reset.
+
+To list and restore a checkpoint, first make sure the checkout is clean:
+
+```sh
+git branch --list 'codex/match-*'
+git switch codex/match-80017A00
+git log -1
+make validate
+```
+
+This restores the authored source/configuration from that attempt's baseline. Logs and diagnostics remain in `reports/reconstruction/`; they are not committed. Run validation after switching branches because existing reports/build outputs describe the last build, not necessarily the current branch.
+
+To integrate recovered WIP work, copy or squash its candidate onto a **new branch from current `main`**, validate it, then create a single matching commit. Do not merge the WIP history: an otherwise matching tip would bring unvalidated checkpoint commits into `main`. Old function branches remain available for comparison and recovery.
+
+Branch creation, checkpointing and integration phases are recorded in `status`. If a Git operation fails or the process is killed mid-transaction, inspect the recorded commit IDs, current branch and index before continuing manually. The runner intentionally does not guess whether an interrupted commit/merge completed.
 
 ## Manual sessions
+
+Manual commands do not automate this branch lifecycle. Create or switch to the intended function branch yourself before beginning a manual session. A manual `finish` creates a validated commit on that branch; it does not integrate it into `main`.
 
 ```sh
 tools/.venv/bin/python tools/reconstruct.py inventory

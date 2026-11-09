@@ -205,6 +205,8 @@ def state():
 def check_session(session):
     if git("rev-parse", "HEAD") != session["head"]:
         raise RuntimeError("HEAD changed outside the worker; begin a new session")
+    if session.get("branch") and git("branch", "--show-current") != session["branch"]:
+        raise RuntimeError("Current branch changed outside the worker")
     if fingerprints() != session["protected"]:
         raise RuntimeError("Reference/build gate/compiler changed; review outside the function worker")
     if time.time() > session["deadline"]:
@@ -348,16 +350,22 @@ def begin_session(limit, attempts, minutes):
     return session
 
 
-def commit_changes(session, paths, message, expected_hashes=None):
-    """Commit only after the caller has performed fresh validation and source review."""
-    check_session(session)
+def commit_files(paths, message, expected_hashes=None, *, checkpoint=False):
+    """Stage audited files; checkpoint commits are explicitly unvalidated WIP."""
+    if checkpoint and not git("branch", "--show-current").startswith("codex/match-"):
+        raise RuntimeError("WIP checkpoints require a function branch; main must remain validated")
     if git("diff", "--cached", "--name-only"):
         raise RuntimeError("Commit requires an empty index")
-    audit_paths(paths, changes())
+    if paths:
+        audit_paths(paths, changes())
+    elif not checkpoint or changes():
+        raise RuntimeError("Only a clean WIP checkpoint may have no changed files")
     if expected_hashes is not None and content_hashes(paths) != expected_hashes:
         raise RuntimeError("Candidate contents changed after validation")
-    subprocess.run(["git", "diff", "--check"], cwd=ROOT, check=True)
-    subprocess.run(["git", "add", "--", *paths], cwd=ROOT, check=True)
+    if not checkpoint:
+        subprocess.run(["git", "diff", "--check"], cwd=ROOT, check=True)
+    if paths:
+        subprocess.run(["git", "add", "--", *paths], cwd=ROOT, check=True)
     staged = set(git("diff", "--cached", "--name-only").splitlines())
     if staged != set(paths):
         raise RuntimeError("Staged file audit failed")
@@ -367,9 +375,27 @@ def commit_changes(session, paths, message, expected_hashes=None):
             if hashlib.sha256(data).hexdigest() != expected_hashes[name]:
                 raise RuntimeError("Staged contents differ from the validated candidate")
     print("Audited staged paths:", ", ".join(sorted(staged)), flush=True)
-    subprocess.run(["git", "commit", "-m", message], cwd=ROOT, check=True)
-    session["completed"].append({**session["active"], "commit": git("rev-parse", "HEAD")})
-    session["head"] = git("rev-parse", "HEAD")
+    parent = git("rev-parse", "HEAD")
+    subprocess.run(["git", "commit", *(["--allow-empty"] if checkpoint else []), "-m", message], cwd=ROOT, check=True)
+    commit = git("rev-parse", "HEAD")
+    if git("rev-list", "--parents", "-n", "1", commit).split() != [commit, parent]:
+        raise RuntimeError("Commit history changed unexpectedly; inspect the function branch")
+    if set(git("diff", "--name-only", parent, commit).splitlines()) != set(paths):
+        raise RuntimeError("Committed file list differs from the audited candidate")
+    if expected_hashes is not None:
+        for name in paths:
+            data = subprocess.check_output(["git", "show", f"{commit}:{name}"], cwd=ROOT)
+            if hashlib.sha256(data).hexdigest() != expected_hashes[name]:
+                raise RuntimeError("Committed contents differ from the audited candidate")
+    return commit
+
+
+def commit_changes(session, paths, message, expected_hashes=None):
+    """Manual workflow: commit after fresh validation and source review."""
+    check_session(session)
+    commit = commit_files(paths, message, expected_hashes)
+    session["completed"].append({**session["active"], "commit": commit})
+    session["head"] = commit
     session["active"] = None
     save_state(session)
 

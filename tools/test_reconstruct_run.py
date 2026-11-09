@@ -63,7 +63,7 @@ class RunTests(unittest.TestCase):
             sys.exit(0 if passed else 1)
         ''').lstrip())
         (self.root / "Makefile").write_text(f"validate:\n\t@{sys.executable} tools/fake_validate.py\n")
-        self.git("init", "-q")
+        self.git("init", "-q", "--initial-branch=main")
         self.git("config", "user.name", "Worker fixture")
         self.git("config", "user.email", "fixture@example.invalid")
         self.git("config", "commit.gpgsign", "false")
@@ -78,14 +78,16 @@ class RunTests(unittest.TestCase):
         self.stack.enter_context(patch.object(worker, "inventory", side_effect=self.inventory))
         self.agent = self.root / "tools/tmp/agent.py"
         self.agent.write_text(textwrap.dedent(r'''
-            import json, os, sys, yaml
+            import json, os, subprocess, sys, yaml
             from pathlib import Path
             mode = sys.argv[1]
             prompt = sys.stdin.read()
             context = json.loads(Path(os.environ['CB2_RECONSTRUCTION_CONTEXT']).read_text())
             address = context['address']
             with Path('reports/agents.jsonl').open('a') as out:
-                out.write(json.dumps({'pid': os.getpid(), 'address': address, 'prompt': prompt})+'\n')
+                out.write(json.dumps({'pid': os.getpid(), 'address': address, 'prompt': prompt,
+                    'branch': subprocess.check_output(['git', 'branch', '--show-current'], text=True).strip(),
+                    'main': subprocess.check_output(['git', 'rev-parse', 'main'], text=True).strip()})+'\n')
             if mode == 'exit': sys.exit(3)
             if mode == 'timeout' and address == '0x80010000':
                 import time
@@ -93,6 +95,11 @@ class RunTests(unittest.TestCase):
             if mode == 'blocked' and address == '0x80010000': sys.exit(0)
             if mode == 'outside': Path('README.md').write_text('unexpected edit\n')
             if mode == 'protected': Path('config/compiler.json').write_text('changed\n')
+            if mode == 'branch': subprocess.run(['git', 'switch', '-c', 'unexpected'], check=True)
+            if mode == 'move-main':
+                rogue = subprocess.check_output(['git', 'commit-tree', 'HEAD^{tree}', '-p', 'HEAD'],
+                    input='Unexpected main update\n', text=True).strip()
+                subprocess.run(['git', 'update-ref', 'refs/heads/main', rogue], check=True)
             config = yaml.safe_load(Path('scus_943.58.yaml').read_text())
             unit = 'unit_' + address[2:]
             row = next(r for r in config['segments'][0]['subsegments'] if r[0] == context['offset'])
@@ -102,6 +109,7 @@ class RunTests(unittest.TestCase):
                 out.write(context['name']+' = '+address+'; // type:func size:0x8\n')
             result = 8 if mode in ('lie', 'mixed') and address == '0x80010000' else 7
             extra = '__asm__("nop");' if mode == 'assembly' else ''
+            Path('src').mkdir(exist_ok=True)
             Path('src', unit+'.c').write_text('int '+context['name']+'(void) {'+extra+'return '+str(result)+';}\n')
             if mode == 'lie':
                 Path('reports/boot-rebuild.json').write_text('{"identical": true}')
@@ -149,11 +157,17 @@ class RunTests(unittest.TestCase):
         events = [json.loads(line) for line in (self.root / "reports/agents.jsonl").read_text().splitlines()]
         self.assertEqual(len({e["pid"] for e in events}), 2)
         self.assertEqual(len({e["address"] for e in events}), 2)
+        self.assertEqual([e["branch"] for e in events], ["codex/match-80010000", "codex/match-80010008"])
+        self.assertEqual(events[0]["main"], self.base)
+        self.assertEqual(events[1]["main"], session["completed"][0]["commit"])
+        self.assertEqual(self.git("branch", "--show-current"), "main")
         self.assertEqual(self.git("rev-list", "--count", f"{self.base}..HEAD"), "2")
         self.assertFalse(worker.changes())
         self.assertEqual((self.root / "build/SCUS_943.58").read_bytes(), self.original)
         for completed in session["completed"]:
             self.assertTrue((self.root / completed["context"] / "attempt-1/boot-rebuild.json").is_file())
+            self.assertEqual(self.git("rev-parse", completed["branch"]), completed["commit"])
+            self.assertEqual(self.git("rev-parse", completed["commit"] + "^"), completed["base_commit"])
 
     def test_mismatch_is_archived_restored_and_next_function_commits(self):
         self.runner("mixed").run()
@@ -166,6 +180,11 @@ class RunTests(unittest.TestCase):
         self.assertFalse((self.root / "src/unit_80010000.c").exists())
         self.assertTrue((self.root / "src/unit_80010008.c").exists())
         self.assertFalse(worker.changes())
+        deferred = session["deferred"][0]
+        self.assertEqual(self.git("rev-parse", deferred["branch"]), deferred["checkpoint"])
+        self.assertIn("return 8", self.git("show", deferred["branch"] + ":src/unit_80010000.c"))
+        self.assertNotIn(deferred["checkpoint"], self.git("rev-list", "main").splitlines())
+        self.assertEqual(self.git("branch", "--show-current"), "main")
 
     def test_agent_claim_and_forged_success_do_not_authorize_commit(self):
         self.runner("lie", limit=1).run()
@@ -179,6 +198,9 @@ class RunTests(unittest.TestCase):
         self.assertIn("embedding", worker.state()["deferred"][0]["reason"])
         self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
         self.assertFalse(worker.changes())
+        deferred = worker.state()["deferred"][0]
+        self.assertIn("checkpoint_excluded", deferred)
+        self.assertEqual(self.git("ls-tree", "-r", "--name-only", deferred["branch"], "src"), "")
 
     def test_blocked_function_does_not_contaminate_next_target(self):
         self.runner("blocked").run()
@@ -225,6 +247,74 @@ class RunTests(unittest.TestCase):
         self.assertNotEqual(self.git("rev-parse", "HEAD"), self.base)
         self.assertEqual(self.git("log", "-1", "--format=%s"), "Unauthorized agent commit")
         self.assertIsNotNone(worker.state()["active"])
+        self.assertEqual(self.git("rev-parse", "main"), self.base)
+
+    def test_agent_branch_switch_at_same_head_stops(self):
+        with self.assertRaisesRegex(RuntimeError, "changed branch"):
+            self.runner("branch").run()
+        self.assertEqual(self.git("branch", "--show-current"), "unexpected")
+        self.assertEqual(self.git("rev-parse", "main"), self.base)
+
+    def test_unexpected_main_update_is_not_overwritten(self):
+        with self.assertRaisesRegex(RuntimeError, "main moved"):
+            self.runner("move-main").run()
+        self.assertNotEqual(self.git("rev-parse", "main"), self.base)
+        self.assertEqual(self.git("log", "-1", "--format=%s", "main"), "Unexpected main update")
+        self.assertEqual(self.git("branch", "--show-current"), "codex/match-80010000")
+
+    def test_wip_helper_refuses_main(self):
+        with self.assertRaisesRegex(RuntimeError, "WIP checkpoints require"):
+            worker.commit_files([], "WIP", {}, checkpoint=True)
+        self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
+
+    def test_failed_fast_forward_keeps_validated_function_branch(self):
+        git = worker.git
+        def failed_merge(*args):
+            if args[:1] == ("merge",):
+                raise RuntimeError("Fixture merge failure")
+            return git(*args)
+        with patch.object(worker, "git", side_effect=failed_merge), self.assertRaisesRegex(RuntimeError, "merge failure"):
+            self.runner(limit=1).run()
+        session = worker.state()
+        self.assertEqual(session["active"]["phase"], "integrating")
+        self.assertEqual(self.git("rev-parse", session["active"]["branch"]), session["active"]["commit"])
+        self.assertEqual(self.git("rev-parse", "main"), self.base)
+        self.assertEqual(self.git("branch", "--show-current"), "main")
+        self.assertFalse(session["completed"])
+        self.assertFalse(worker.changes())
+
+    def test_commit_hook_cannot_change_validated_contents_and_reach_main(self):
+        hook = self.root / ".git/hooks/pre-commit"
+        hook.write_text("#!/bin/sh\n" + shlex.quote(sys.executable) + " - <<'PY'\n"
+            "from pathlib import Path\n"
+            "p=Path('src/unit_80010000.c')\n"
+            "p.write_text(p.read_text().replace('return 7', 'return 8'))\n"
+            "PY\ngit add -- src/unit_80010000.c\n")
+        hook.chmod(0o755)
+        with self.assertRaisesRegex(RuntimeError, "Committed contents differ"):
+            self.runner(limit=1).run()
+        self.assertEqual(self.git("rev-parse", "main"), self.base)
+        self.assertEqual(self.git("branch", "--show-current"), "codex/match-80010000")
+        self.assertIn("return 8", self.git("show", "HEAD:src/unit_80010000.c"))
+        self.assertFalse(worker.state()["completed"])
+
+    def test_retry_preserves_old_wip_and_starts_from_latest_main(self):
+        self.runner("mixed").run()
+        previous = worker.state()["deferred"][0]
+        updated_main = self.git("rev-parse", "main")
+        self.runner("match", limit=1).run()
+        accepted = worker.state()["completed"][0]
+        self.assertEqual(accepted["branch"], "codex/match-80010000-2")
+        self.assertEqual(accepted["base_commit"], updated_main)
+        self.assertEqual(self.git("rev-parse", previous["branch"]), previous["checkpoint"])
+        self.assertNotIn(previous["checkpoint"], self.git("rev-list", "main").splitlines())
+        self.assertEqual(self.git("branch", "--show-current"), "main")
+
+    def test_batch_cannot_start_on_function_branch(self):
+        self.git("switch", "-c", "codex/manual")
+        with self.assertRaisesRegex(RuntimeError, "main integration"):
+            self.runner().run()
+        self.assertFalse(worker.STATE.exists())
 
     def test_interruption_archives_and_restores_candidate(self):
         runner = self.runner()
@@ -287,7 +377,9 @@ class RunTests(unittest.TestCase):
         runner.args.agent_command = None
         runner.launcher = ["codex"]
         session = worker.begin_session(1, 1, 2)
+        session.update(branch="main", integration_branch="main", integration_head=session["head"])
         worker.next_target(session)
+        runner.start_branch(session)
         with patch.object(worker, "command") as command:
             runner.launch(session)
         argv = command.call_args.args[0]

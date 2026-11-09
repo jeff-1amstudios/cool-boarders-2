@@ -56,11 +56,11 @@ def review_split(before, after, target):
     raise Rejected("Target is outside a reviewed assembly span")
 
 
-def review_source(root, paths, entry, symbol):
+def review_source(root, paths, entry, symbol, *, checkpoint=False):
     """Conservative syntax checks, not a proof of readability or semantic C."""
-    if entry not in paths:
+    if not checkpoint and entry not in paths:
         raise Rejected("Selected C translation unit was not added")
-    if any(Path(p).suffix == ".c" and p != entry for p in paths):
+    if not checkpoint and any(Path(p).suffix == ".c" and p != entry for p in paths):
         raise Rejected("Automatic candidates may add only the selected C translation unit")
     pending = [root / p for p in paths if Path(p).suffix in (".c", ".h")]
     seen = set()
@@ -72,6 +72,8 @@ def review_source(root, paths, entry, symbol):
         if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to((root / "src").resolve()):
             raise Rejected(f"Source include leaves the project source tree: {path}")
         text = path.read_text()
+        if re.search(r"/\*\s*[0-9A-Fa-f]+\s+8[0-9A-Fa-f]{7}\s+[0-9A-Fa-f]{8}\s*\*/", text):
+            raise Rejected(f"Raw disassembly comments in {path.name}")
         clean = re.sub(r"/\*.*?\*/|//[^\n]*", " ", text.replace("\\\n", ""), flags=re.S)
         if re.search(r"\b(?:asm|__asm|__asm__|INCLUDE_ASM|GLOBAL_ASM|__attribute__)\b|\.(?:incbin|word|byte)\b|##", clean):
             raise Rejected(f"Assembly/byte embedding or section attributes in {path.name}")
@@ -85,7 +87,7 @@ def review_source(root, paths, entry, symbol):
                 pending.append(path.parent / include[1])
             elif not re.fullmatch(r"\s*#\s*(?:ifndef\s+\w+|define\s+\w+|endif)\s*", line):
                 raise Rejected(f"Unsupported preprocessor directive in {path.name}")
-        if path == root / entry and not re.search(r"\b" + re.escape(symbol) + r"\s*\([^;{}]*\)\s*\{", clean):
+        if not checkpoint and path == root / entry and not re.search(r"\b" + re.escape(symbol) + r"\s*\([^;{}]*\)\s*\{", clean):
             raise Rejected("Selected function definition is missing from its C unit")
 
 
@@ -106,11 +108,42 @@ class Runner:
         # Cleanup must remain possible after the time budget expires.
         if self.w.git("rev-parse", "HEAD") != session["head"]:
             raise RuntimeError("Agent changed HEAD; stopping without resetting the checkout")
+        if self.w.git("branch", "--show-current") != session["branch"]:
+            raise RuntimeError("Agent changed branch; stopping without resetting the checkout")
+        if self.w.git("rev-parse", "refs/heads/main") != session["integration_head"]:
+            raise RuntimeError("main moved unexpectedly; stopping without updating it")
         if self.w.fingerprints() != session["protected"]:
             raise RuntimeError("Protected build/reference/recipe changed; stopping without resetting the checkout")
         self.w.reference()
         if self.w.git("diff", "--cached", "--name-only"):
             raise RuntimeError("Agent changed the index; stopping without resetting the checkout")
+
+    def switch(self, session, branch, head):
+        self.w.git("switch", branch)
+        if self.w.git("rev-parse", "HEAD") != head:
+            raise RuntimeError(f"Unexpected tip for {branch}; inspect the recorded branch state")
+        session.update(branch=branch, head=head)
+        self.w.save_state(session)
+
+    def start_branch(self, session):
+        self.invariant(session)
+        if session["branch"] != "main" or self.w.changes():
+            raise RuntimeError("Function branches must start from clean main")
+        base = f"codex/match-{session['active']['address'][2:]}"
+        existing = set(self.w.git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines())
+        if "codex" in existing:
+            raise RuntimeError("Branch codex blocks the codex/ function branch namespace")
+        branch, number = base, 2
+        while branch in existing or any(b.startswith(branch + "/") for b in existing):
+            branch, number = f"{base}-{number}", number + 1
+        session["active"].update(branch=branch, base_commit=session["integration_head"], phase="creating_branch")
+        self.w.save_state(session)
+        self.w.git("switch", "-c", branch, "main")
+        session["branch"] = branch
+        session["active"]["phase"] = "working"
+        self.w.save_state(session)
+        self.invariant(session)
+        print(f"Function branch: {branch} (base {session['integration_head'][:12]})", flush=True)
 
     def paths(self, tracked):
         changed = self.w.changes()
@@ -133,6 +166,7 @@ class Runner:
             raise Rejected("Session time budget expired before agent launch")
         prompt = (
             f"Implement exactly {active['name']} at {active['address']} ({active['size']} bytes) as matching C.\n"
+            f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, split only this function into a new C unit and preserve all other configuration.\n"
@@ -142,7 +176,7 @@ class Runner:
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
             "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
             "Iterate using make objdiff or make validate, and inspect the JSON instruction/relocation diagnostics.\n"
-            "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, reset, clean or spawn agents.\n"
+            "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, switch branches, reset, clean or spawn agents.\n"
             "Leave your candidate edits in place. Python independently validates and decides whether to commit.\n"
             "If blocked, leave the best candidate and explain the blocker in your final response.\n")
         (directory / "agent-prompt.md").write_text(prompt)
@@ -178,6 +212,7 @@ class Runner:
         if not symbols.startswith(old_symbols):
             raise Rejected("Existing symbol definitions were changed")
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
+        subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)
         expected_hashes = self.w.content_hashes(paths)
         current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
         now_c = {r["address"]: r["size"] for r in current["functions"] if r["status"] == "c"}
@@ -201,23 +236,78 @@ class Runner:
         # Never erase unexpected edits, index changes, or another process's commits.
         self.invariant(session)
         paths = self.paths(tracked)
-        for name in paths:
-            path = self.w.ROOT / name
-            if name in tracked:
-                path.write_bytes(subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=self.w.ROOT))
-            else:
-                path.unlink()
+        try:
+            # A WIP may be incomplete/nonmatching, but it must still obey the
+            # repository boundary: never put assembly dumps or binaries in Git.
+            review_source(self.w.ROOT, paths, "", active["name"], checkpoint=True)
+        except (Rejected, UnicodeError) as error:
+            active["checkpoint_excluded"] = str(error)
+            for name in paths:
+                path = self.w.ROOT / name
+                if name in tracked:
+                    path.write_bytes(subprocess.check_output(["git", "show", f"HEAD:{name}"], cwd=self.w.ROOT))
+                else:
+                    path.unlink()
+            paths = []
+        active["phase"] = "checkpointing"
+        self.w.save_state(session)
+        message = (f"WIP: {active['name']} (not validated for main)\n\n"
+                   f"Target: {active['address']}\nBaseline: {active['base_commit']}\n"
+                   f"Blocker: {reason.replace(str(self.w.ROOT), '.')[:2000]}")
+        if active.get("checkpoint_excluded"):
+            message += f"\nCandidate kept only in local archive: {active['checkpoint_excluded']}"
+        checkpoint = self.w.commit_files(paths, message, self.w.content_hashes(paths), checkpoint=True)
+        active.update(checkpoint=checkpoint, phase="checkpointed")
+        session["head"] = checkpoint
+        self.w.save_state(session)
+        self.invariant(session)
+        self.switch(session, "main", session["integration_head"])
+        active["phase"] = "restoring_main"
+        self.w.save_state(session)
+        self.invariant(session)
         if self.w.changes():
-            raise RuntimeError("Checkout did not return to the passing baseline")
+            raise RuntimeError("main checkout is not clean after switching from the function branch")
         self.w.command(["make", "validate"], "restored-baseline", directory=archive)
+        active["phase"] = "deferred"
         session["deferred"].append({**active, "reason": reason})
         session["active"] = None
         self.w.save_state(session)
-        print(f"Deferred {active['name']}: {reason}", flush=True)
+        print(f"Deferred {active['name']} on {active['branch']} ({checkpoint[:12]}): {reason}", flush=True)
+
+    def accept(self, session, paths, expected_hashes):
+        # Git/merge errors deliberately preserve the phase, branch, candidate and
+        # index for inspection. Never turn a partially completed commit into WIP.
+        active = session["active"]
+        self.w.check_session(session)
+        self.invariant(session)
+        active["phase"] = "committing_match"
+        self.w.save_state(session)
+        commit = self.w.commit_files(paths, f"Match {active['name']} from bounded agent run", expected_hashes)
+        session["head"] = commit
+        active.update(commit=commit, phase="validated_commit")
+        self.w.save_state(session)
+        self.invariant(session)
+        self.switch(session, "main", session["integration_head"])
+        active["phase"] = "integrating"
+        self.w.save_state(session)
+        self.invariant(session)
+        self.w.git("merge", "--ff-only", commit)
+        if self.w.git("rev-parse", "HEAD") != commit or self.w.git("branch", "--show-current") != "main":
+            raise RuntimeError("Unexpected integration result; inspect main and the validated function branch")
+        session.update(head=commit, integration_head=commit)
+        self.invariant(session)
+        if self.w.changes():
+            raise RuntimeError("Integration left unexpected checkout changes")
+        session["completed"].append({**active, "phase": "integrated"})
+        session["active"] = None
+        self.w.save_state(session)
+        print(f"Integrated {active['branch']} into main at {commit[:12]}", flush=True)
 
     def run(self):
+        if self.w.git("branch", "--show-current") != "main":
+            raise RuntimeError("Automatic batches must start on the main integration branch")
         session = self.w.begin_session(self.args.limit, 1, self.args.minutes)
-        session["mode"] = "automatic"
+        session.update(mode="automatic", branch="main", integration_branch="main", integration_head=session["head"])
         self.w.save_state(session)
         reason = "target limit reached"
         while len(session["completed"]) + len(session["deferred"]) < session["limit"]:
@@ -234,6 +324,7 @@ class Runner:
                     reason = "session time budget exhausted"
                     break
                 raise
+            self.start_branch(session)
             before = yaml.safe_load((self.w.ROOT / "scus_943.58.yaml").read_text())
             old_symbols = (self.w.ROOT / "symbol_addrs.txt").read_text()
             tracked = set(self.w.git("ls-files").splitlines())
@@ -256,7 +347,7 @@ class Runner:
                 continue
             # Commit errors leave the candidate/index available for inspection.
             # They must never trigger rollback after Git may have committed.
-            self.w.commit_changes(session, paths, f"Match {session['active']['name']} from bounded agent run", expected_hashes)
+            self.accept(session, paths, expected_hashes)
         session["stop_reason"] = reason
         self.w.save_state(session)
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
