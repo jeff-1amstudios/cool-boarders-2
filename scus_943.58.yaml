@@ -66,7 +66,8 @@ segments:
       # 0x283C..0x28F4 is a pointer table, not code. First code is a return stub.
       - [0x28F4, asm, boot]
       - [0x29B8, c, boot_main]
-      - [0x2A8C, asm, after_boot_main]
+      - [0x2A8C, c, func_8001228C]
+      - [0x2B78, asm, after_boot_main]
       - [0x4330, c, queue_call]
       - [0x4360, asm, boot_after_queue]
       - [0x4B88, c, poll_loop]
