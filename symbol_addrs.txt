@@ -129,3 +129,5 @@ D_80058E10 = 0x80058E10; // type:s32 size:0x4
 D_80058E18 = 0x80058E18; // type:s32 size:0x4
 
 func_80012868 = 0x80012868; // type:func size:0xE8
+
+func_80012950 = 0x80012950; // type:func size:0x98
