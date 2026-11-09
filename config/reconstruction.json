@@ -100,6 +100,51 @@
     "0x8002FCEC": {
       "boundary_reviewed": true,
       "note": "Signed positive-input arithmetic-shift loop; zero/negative return zero."
+    },
+    "0x80024CC0": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x800250C0": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x80037BF8": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x80037F68": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x60; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x80038378": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x800387F8": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x80038D18": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x80039268": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: eight-byte fall-through entry (addi a3,a1,0x78; addiu a2,zero,0), without its own return. Preserve the shared assembly body; not an independent C reconstruction target."
+    },
+    "0x8003D0B8": {
+      "classification": "handwritten",
+      "hold": true,
+      "note": "Reviewed automatic-queue exclusion: four-byte AND patch fragment copied by func_8003D03C; no return or callable-function body. Preserve as assembly rather than compiling an invented standalone function."
     }
   },
   "batch_2": [

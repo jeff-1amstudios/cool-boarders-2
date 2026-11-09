@@ -96,3 +96,9 @@ One diagnostic distinction remains: `reports/objdiff/fill_slots.json` scores its
 8. **Validate and record before advancing.** Keep the original fingerprint fixed, run `make validate`, inspect `reports/objdiff.json`, per-unit JSON and `reports/boot-rebuild.json`, and document both successful forms and failed hypotheses. Local trial sources/logs remain ignored; reviewed C, configuration and these learnings belong in Git.
 
 Remaining discrimination gaps include switches, division, floating point, inlining across functions and independently identified library objects. This batch supplies more signed/unsigned access and loop evidence, but does not close those gaps.
+
+## Automatic queue follow-up
+
+The first automatic run after this work selected a four-byte copied patch fragment (`0x8003D0B8`) and short handwritten fall-through entries (`0x80024CC0`, `0x800250C0`). None has an independent return, and a standalone C wrapper changes the shared control flow and byte extent. The controller correctly rejected them, retained WIP checkpoints on their function branches and restored matching `main`. The run was interrupted cleanly as it reached another equivalent entry, `0x80037BF8`.
+
+Reviewed persistent exclusions now cover the copied fragment and eight observed `addi a3,a1,offset; addiu a2,zero,0` fall-through entries, including those at `0x80037F68`, `0x80038378`, `0x800387F8`, `0x80038D18` and `0x80039268`. They remain retained assembly, not matching C. This uses the existing queue's classification/hold mechanism; no comparator, compiler recipe or worker acceptance rule changed. Automatic session deferrals alone are temporary, so curated exclusions are necessary to prevent the next run repeating these unsuitable targets.
