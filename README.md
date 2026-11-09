@@ -30,7 +30,7 @@ For agent work: inspect `reports/objdiff.json`, the relevant `reports/objdiff/<u
 
 `make objdiff` (or `make objdiff-report`) runs just the batch object diagnostics without the final EXE link/check, for faster iteration. `make build/src/queue_call.o` recompiles a single unit. No workflow opens a GUI or an interactive viewer.
 
-For bounded agent batches, see the [reconstruction worker](docs/reconstruction-worker.md). It prepares one target's assembly/caller/data context, limits attempts, preserves blocked work, and permits an audited commit only after fresh full-file validation. The agent supplies the C and reviews split boundaries.
+For an automatic batch with one fresh agent process per function, run `tools/.venv/bin/python tools/reconstruct.py run --limit 10` from a clean checkout. Python selects each target, launches the existing Codex CLI, independently validates its candidate, and commits a match or archives and restores a rejected attempt before continuing. See the [reconstruction worker](docs/reconstruction-worker.md) for time budgets, custom launchers, logs and the manual workflow.
 
 The [objdiff](https://github.com/encounter/objdiff) CLI is pinned to v3.8.3 with its upstream SHA-256 digest in `tools/objdiff.lock.json`. The installer currently supports macOS ARM64 and keeps the binary under `tools/objdiff/bin/`; downloads stay under `tools/downloads/`. No host packages are installed.
 

@@ -21,7 +21,16 @@ REVIEW = ROOT / "config/reconstruction.json"
 FUNCTION = re.compile(r"^glabel (\w+)\n(.*?)^endlabel \1\s*$", re.M | re.S)
 INSTRUCTION = re.compile(r"/\* ([0-9A-F]+) ([0-9A-F]+) ([0-9A-F]{8}) \*/\s*(.*)")
 PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
-             "tools/validate.py", "tools/objdiff.py", "Makefile")
+             "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
+             "tools/reconstruct_run.py", "Makefile")
+
+
+class NoTarget(RuntimeError):
+    pass
+
+
+class CommandTimeout(RuntimeError):
+    pass
 
 
 def read(path):
@@ -71,7 +80,11 @@ def fingerprints():
     return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in PROTECTED}
 
 
-def command(arguments, name, timeout=300, directory=None):
+def content_hashes(paths):
+    return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths}
+
+
+def command(arguments, name, timeout=300, directory=None, input_text=None, env=None):
     path = (directory or STATE.parent) / f"{name}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
@@ -79,15 +92,23 @@ def command(arguments, name, timeout=300, directory=None):
         # Kill the whole build process group on timeout so compilers cannot
         # continue writing artifacts after this worker has stopped.
         process = subprocess.Popen(list(map(str, arguments)), cwd=ROOT, stdout=log,
-                                   stderr=subprocess.STDOUT, start_new_session=True)
+                                   stderr=subprocess.STDOUT, start_new_session=True,
+                                   stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
+                                   text=True, env=env)
         try:
-            code = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
+            process.communicate(input=input_text, timeout=timeout)
+            code = process.returncode
+        except BaseException as error:
             import os
             import signal
-            os.killpg(process.pid, signal.SIGKILL)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
             process.wait()
-            raise RuntimeError(f"Build timed out; inspect {path}")
+            if isinstance(error, subprocess.TimeoutExpired):
+                raise CommandTimeout(f"Command timed out; inspect {path}") from error
+            raise
     if code:
         raise RuntimeError(f"Command failed ({code}); inspect {path}")
 
@@ -204,7 +225,7 @@ def choose(report, session, address=None):
     candidates.sort(key=lambda r: (order.index(r["address"]) if r["address"] in order else len(order),
                                    not r["boundary_reviewed"], bool(r["calls"]), r["size"], r["address"]))
     if not candidates:
-        raise RuntimeError("No eligible target; review the inventory or expand the policy")
+        raise NoTarget("No eligible target; review the inventory or expand the policy")
     return candidates[0]
 
 
@@ -232,7 +253,8 @@ def next_target(session, address=None):
         "Use defer --reason when blocked; archive edits and restore the passing baseline before next.\n"
         "Use finish --paths <explicit authored files> --message <commit message> after review.\n")
     session["active"] = {"address": row["address"], "name": row["name"], "size": row["size"],
-                         "attempts": 0, "context": str(directory.relative_to(ROOT))}
+                         "offset": row["offset"], "attempts": 0,
+                         "context": str(directory.relative_to(ROOT))}
     save_state(session)
     print(json.dumps(session["active"], indent=2))
 
@@ -269,6 +291,7 @@ def validate(session):
     if target is None or target["status"] != "c" or target["size"] != active["size"]:
         raise RuntimeError("Target was not converted to C at its original boundary")
     print(f"Exact full-file match; {active['name']} is integrated as C.")
+    return current
 
 
 def archive_edits(directory):
@@ -276,8 +299,17 @@ def archive_edits(directory):
     sources = {}
     for name in changes():
         path = ROOT / name
-        if path.is_file() and name.startswith("src/"):
-            sources[name] = path.read_text()
+        if name.startswith("src/"):
+            if path.is_symlink():
+                sources[name] = {"symlink": str(path.readlink())}
+            elif path.is_file():
+                try:
+                    sources[name] = path.read_text()
+                except UnicodeDecodeError:
+                    archived = directory / "files" / name
+                    archived.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(path, archived)
+                    sources[name] = {"binary_file": str(archived.relative_to(directory))}
     write(directory / "sources.json", sources)
 
 
@@ -297,6 +329,51 @@ def audit_paths(requested, changed):
     return sorted(paths)
 
 
+def begin_session(limit, attempts, minutes):
+    if min(limit, attempts, minutes) < 1:
+        raise RuntimeError("Budgets must be positive")
+    if STATE.exists() and state().get("active"):
+        raise RuntimeError("Defer or finish the active target before replacing the session")
+    if changes() or git("diff", "--cached", "--name-only"):
+        raise RuntimeError("Begin requires a clean checkout and index")
+    directory = STATE.parent / "sessions" / str(time.time_ns())
+    command(["make", "validate"], "baseline", directory=directory)
+    if STATE.exists() and "directory" not in state():
+        write(STATE.parent / "sessions" / f"legacy-{time.time_ns()}" / "state.json", state())
+    session = {"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
+               "directory": str(directory.relative_to(ROOT)),
+               "deadline": time.time() + minutes * 60, "limit": limit,
+               "attempt_limit": attempts, "completed": [], "deferred": [], "active": None}
+    save_state(session)
+    return session
+
+
+def commit_changes(session, paths, message, expected_hashes=None):
+    """Commit only after the caller has performed fresh validation and source review."""
+    check_session(session)
+    if git("diff", "--cached", "--name-only"):
+        raise RuntimeError("Commit requires an empty index")
+    audit_paths(paths, changes())
+    if expected_hashes is not None and content_hashes(paths) != expected_hashes:
+        raise RuntimeError("Candidate contents changed after validation")
+    subprocess.run(["git", "diff", "--check"], cwd=ROOT, check=True)
+    subprocess.run(["git", "add", "--", *paths], cwd=ROOT, check=True)
+    staged = set(git("diff", "--cached", "--name-only").splitlines())
+    if staged != set(paths):
+        raise RuntimeError("Staged file audit failed")
+    if expected_hashes is not None:
+        for name in paths:
+            data = subprocess.check_output(["git", "show", f":{name}"], cwd=ROOT)
+            if hashlib.sha256(data).hexdigest() != expected_hashes[name]:
+                raise RuntimeError("Staged contents differ from the validated candidate")
+    print("Audited staged paths:", ", ".join(sorted(staged)), flush=True)
+    subprocess.run(["git", "commit", "-m", message], cwd=ROOT, check=True)
+    session["completed"].append({**session["active"], "commit": git("rev-parse", "HEAD")})
+    session["head"] = git("rev-parse", "HEAD")
+    session["active"] = None
+    save_state(session)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -305,6 +382,11 @@ def main():
     begin.add_argument("--limit", type=int, default=10)
     begin.add_argument("--attempts", type=int, default=6)
     begin.add_argument("--minutes", type=int, default=120)
+    batch = sub.add_parser("run", help="Launch one fresh agent per function; validate and commit from Python")
+    batch.add_argument("--limit", type=int, default=10)
+    batch.add_argument("--minutes", type=int, default=120)
+    batch.add_argument("--agent-seconds", type=int, default=900)
+    batch.add_argument("--agent-command", help="Full launcher argv, shell-quoted; prompt on stdin, no shell")
     next_parser = sub.add_parser("next")
     next_parser.add_argument("--address")
     sub.add_parser("status")
@@ -317,22 +399,11 @@ def main():
     args = parser.parse_args()
     if args.command == "inventory":
         inventory()
+    elif args.command == "run":
+        from reconstruct_run import run_batch
+        run_batch(args, sys.modules[__name__])
     elif args.command == "begin":
-        if min(args.limit, args.attempts, args.minutes) < 1:
-            raise RuntimeError("Budgets must be positive")
-        if STATE.exists() and state().get("active"):
-            raise RuntimeError("Defer or finish the active target before replacing the session")
-        if changes() or git("diff", "--cached", "--name-only"):
-            raise RuntimeError("Begin requires a clean checkout and index")
-        directory = STATE.parent / "sessions" / str(time.time_ns())
-        command(["make", "validate"], "baseline", directory=directory)
-        # Preserve pre-session-format state from older worker versions too.
-        if STATE.exists() and "directory" not in state():
-            write(STATE.parent / "sessions" / f"legacy-{time.time_ns()}" / "state.json", state())
-        save_state({"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
-                      "directory": str(directory.relative_to(ROOT)),
-                      "deadline": time.time() + args.minutes * 60, "limit": args.limit,
-                      "attempt_limit": args.attempts, "completed": [], "deferred": [], "active": None})
+        begin_session(args.limit, args.attempts, args.minutes)
         print("Session ready; run next to prepare one target.")
     elif args.command == "status":
         print(json.dumps(state(), indent=2))
@@ -357,26 +428,22 @@ def main():
             if git("diff", "--cached", "--name-only"):
                 raise RuntimeError("Finish requires an empty index")
             paths = audit_paths(args.paths, changes())
+            expected_hashes = content_hashes(paths)
             validate(session)  # Always rerun: earlier reports cannot authorize a commit.
-            check_session(session)
-            audit_paths(paths, changes())
-            subprocess.run(["git", "diff", "--check"], cwd=ROOT, check=True)
-            subprocess.run(["git", "add", "--", *paths], cwd=ROOT, check=True)
-            staged = set(git("diff", "--cached", "--name-only").splitlines())
-            if staged != set(paths):
-                raise RuntimeError("Staged file audit failed")
-            print("Audited staged paths:", ", ".join(sorted(staged)), flush=True)
-            subprocess.run(["git", "commit", "-m", args.message], cwd=ROOT, check=True)
-            session["completed"].append({**session["active"], "commit": git("rev-parse", "HEAD")})
-            session["head"] = git("rev-parse", "HEAD")
-            session["active"] = None
-            save_state(session)
+            commit_changes(session, paths, args.message, expected_hashes)
 
 
 if __name__ == "__main__":
     try:
+        import signal
+        def interrupted(signum, frame):
+            raise KeyboardInterrupt
+        signal.signal(signal.SIGTERM, interrupted)
         with exclusive_worker(STATE.parent):
             main()
-    except (RuntimeError, subprocess.CalledProcessError) as error:
+    except KeyboardInterrupt:
+        print("Stopped: interrupted; inspect reconstruction state and archived edits.", file=sys.stderr)
+        sys.exit(130)
+    except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
         print(f"Stopped: {error}", file=sys.stderr)
         sys.exit(1)
