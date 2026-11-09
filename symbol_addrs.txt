@@ -93,3 +93,20 @@ func_8001228C = 0x8001228C; // type:func size:0xEC
 D_80058C0A = 0x80058C0A; // type:s16 size:0x2
 D_80058C0E = 0x80058C0E; // type:s16 size:0x2
 func_80012378 = 0x80012378; // type:func size:0x80
+
+// Reviewed state snapshot function and its external data extents.
+func_80012508 = 0x80012508; // type:func size:0x134
+D_80058BA0 = 0x80058BA0; // size:0x5C
+D_80058E68 = 0x80058E68; // size:0x5C
+D_80058C00 = 0x80058C00; // size:0x14
+D_80058EC8 = 0x80058EC8; // size:0x14
+D_80058F70 = 0x80058F70; // size:0x8
+D_8005AA90 = 0x8005AA90; // size:0x8
+D_80058030 = 0x80058030; // size:0x2
+D_80058032 = 0x80058032; // size:0x2
+D_80058034 = 0x80058034; // size:0x2
+D_80058036 = 0x80058036; // size:0x2
+D_80058ADC = 0x80058ADC; // size:0x2
+D_80058ADE = 0x80058ADE; // size:0x2
+D_80058B00 = 0x80058B00; // size:0x2
+D_80058B02 = 0x80058B02; // size:0x2
