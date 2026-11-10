@@ -1,0 +1,50 @@
+{
+  "image": "SCUS_943.58",
+  "address": "0x800121B8",
+  "ranges": [
+    [
+      "0x800121B8",
+      "0x8001228C"
+    ]
+  ],
+  "body_sha256": "3b0b242ec5858656e95bc72a8793c0efbcf9e32df0cc704c18907b38b6f83c35",
+  "schema_version": 1,
+  "references": {
+    "SCUS_943.58": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+    "BDEDIT.BIN": "1dfa57a92188ebc15370de2eb6f583283c4225ab6aca6d5fb4377e5a18fff6bc",
+    "BP.BIN": "b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797",
+    "COMB.BIN": "f0ca82e2b50e12013001893d481df64e8037d97f9461b0361b1e3d110ceeb0b4",
+    "ENDING.BIN": "4aebf02df55c2a9cfb4bd1d86c297e4bddb705f6823377b3f056cb2c66404312",
+    "FREE.BIN": "3160df738e593c2a8c695c5a97b223074bc99342006d10c59af222929f4b832e",
+    "HP.BIN": "9e041531c37cb497cc505dd579aa4cb1c90de7a20b13966d373c1affc0bb8757",
+    "INIT.BIN": "870537bf4310495e022e10b6870e0429a9b468441f5420879b05826adb4d959f",
+    "MAIN_SEL.BIN": "4504dbff01a927157b76e4d366c81690a0817a4d0bb0e292cc498b19e22fecde",
+    "MODE_SEL.BIN": "5f817fa3170159e4d193bd25a2e277844f0268bf15a9a433966c702e73c10334",
+    "OMT.BIN": "59f677326310d0c0c90391e20b2f61d9420bd60debf71bcfa433a88f109f9f52",
+    "SBC1.BIN": "8474cc337395402dfa3c910aaa3e8f2c781accfcc38b66b86a96b66204a44af5",
+    "SBC2.BIN": "1837f2d8ca994310346c7ed6644d995c85280dcf4043f2621766416b12fa157b",
+    "TM.BIN": "86a2ad48d483eabbffaafdc6b321ad3ab4cd5f11807befd5bb164647c441a927",
+    "VS.BIN": "034388773372b829104acb024fe4f846bd998553fcad414e89a57a281c092642"
+  },
+  "name": "boot_main",
+  "declarations": "\n\n\n\n \n\ntypedef struct CdlLOC {\n    unsigned char minute;\n    unsigned char second;\n    unsigned char sector;\n    unsigned char track;\n} CdlLOC;\n\ntypedef struct CdlFILE {\n    CdlLOC pos;\n    unsigned long size;\n    char name[16];\n} CdlFILE;\n\n\nextern void boot_noop(void);\nextern void func_8001228C(void);\nextern void func_80015814(void);\nextern void func_80016EE4(void);\nextern void func_8001B9A4(void);\nextern CdlFILE *CdSearchFile(CdlFILE *file, char *name);\nextern int func_8001C0F4(int *state, int enabled);\nextern int func_800123F8(int overlay, int size);\nextern void func_800142F0(int mode);\nextern void func_80012508(void);\nextern void func_8001B59C(void);\nextern int func_8005AB6C(int *state);\nextern void func_8001B64C(void);\nextern void func_8001263C(void);\nextern void func_80044938(void);\nextern char init_filename[];\nextern unsigned int D_800580A8;\nextern unsigned long D_800580AC;\nvoid boot_main(void);\ntypedef unsigned int CB2GlobalType_D_800580A8;\ntypedef unsigned long CB2GlobalType_D_800580AC;",
+  "globals": [
+    {
+      "image": "SCUS_943.58",
+      "address": "0x800580A8",
+      "name": "D_800580A8",
+      "evidence": "Authored extern unsigned int; receives a single 32-bit load of CdlFILE.pos, containing the four packed CdlLOC minute/second/sector/track bytes, followed by a word store at 0x8001220C. This is resident CD-position storage, not overlay data.",
+      "type_alias": "CB2GlobalType_D_800580A8"
+    },
+    {
+      "image": "SCUS_943.58",
+      "address": "0x800580AC",
+      "name": "D_800580AC",
+      "evidence": "Authored extern unsigned long, 32 bits on the target; receives CdlFILE.size from stack offset 0x54 via a word store at 0x80012214. The SDK export identifies size as u_long. This is resident CD-file size storage.",
+      "type_alias": "CB2GlobalType_D_800580AC"
+    }
+  ],
+  "function_evidence": "boot_main takes no observed arguments and has no observed return value: startup calls it without preparing argument registers, and its epilogue does not establish v0. Current Ghidra pseudocode was adapted with its SDK CdlFILE/CdlLOC layouts. The initializer at 0x8001C0F4 accepts a0 pointing to sixteen writable 32-bit words and a1=1; it clears all 64 bytes and returns 3, ignored here. The loader at 0x800123F8 receives state[0] and state[1] in a0/a1 and returns a 32-bit size/address value stored to state[1]. The loaded overlay entry at 0x8005AB6C receives the state pointer in a0 and returns the next mode in v0; INIT.BIN confirms pointer use and returns 6, while the caller exits on -1. Other state-word meanings and the signed/address interpretation of state[1] remain uncertain. CdSearchFile receives a 24-byte CdlFILE and the existing INIT.BIN path; the position is copied as one packed word. Boundaries are 0x800121B8 inclusive through 0x8001228C exclusive: preceding startup metadata is separate, the sole incoming call targets the entry, and the next function starts its own prologue. SDK exit retains its existing resident build symbol func_80044938. Focused object diagnostics report 100 percent; containing-file acceptance is reserved for the supervisor.",
+  "sequence": 1794302983521117000,
+  "identity": "SCUS_943.58:0x800121B8"
+}
