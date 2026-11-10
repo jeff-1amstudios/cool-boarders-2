@@ -26,4 +26,32 @@ typedef struct OverlayHeapStarts {
     char *entries[14];
 } OverlayHeapStarts;
 
+typedef struct RECT {
+    short x, y, w, h;
+} RECT;
+
+typedef struct DR_ENV {
+    unsigned long tag;
+    unsigned long code[15];
+} DR_ENV;
+
+typedef struct DRAWENV {
+    RECT clip;
+    short ofs[2];
+    RECT tw;
+    unsigned short tpage;
+    unsigned char dtd, dfe;
+    unsigned char isbg;
+    unsigned char r0, g0, b0;
+    DR_ENV dr_env;
+} DRAWENV;
+
+typedef struct DISPENV {
+    RECT disp;
+    RECT screen;
+    unsigned char isinter;
+    unsigned char isrgb24;
+    unsigned char pad0, pad1;
+} DISPENV;
+
 #endif

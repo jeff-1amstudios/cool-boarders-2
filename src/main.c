@@ -38,6 +38,21 @@ extern char *overlay_load_addresses[15];
 extern int func_80013B60(int file_index, char *destination, int offset, int flags);
 extern void func_8001F150(char *heap_start, char *heap_end);
 
+extern DRAWENV D_80058BA0;
+extern DRAWENV D_80058E68;
+extern DISPENV D_80058C00;
+extern DISPENV D_80058EC8;
+extern RECT D_80058F70;
+extern RECT D_8005AA90;
+extern short D_80058030;
+extern short D_80058032;
+extern short D_80058034;
+extern short D_80058036;
+extern short D_80058ADC;
+extern short D_80058ADE;
+extern short D_80058B00;
+extern short D_80058B02;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -97,4 +112,16 @@ int func_800123F8(int overlay, int size)
     heap_end = (char *)0x801F1E00 - size;
     func_8001F150(heap_starts.entries[overlay], heap_end);
     return (int)heap_end;
+}
+
+// FUNCTION: SCUS_943.58:0x80012508
+void func_80012508(void)
+{
+    D_80058E68 = D_80058BA0;
+    D_80058EC8 = D_80058C00;
+    D_8005AA90 = D_80058F70;
+    D_80058ADC = D_80058030;
+    D_80058ADE = D_80058032;
+    D_80058B00 = D_80058034;
+    D_80058B02 = D_80058036;
 }
