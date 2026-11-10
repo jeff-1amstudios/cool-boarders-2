@@ -342,6 +342,7 @@ class Runner:
         result = attempt_result(self.w.ROOT, active, "deferred", reason)
         self.w.write(self.w.ROOT / active["context"] / "result.json", result)
         session["deferred"].append({**active, "reason": reason})
+        self.w.remember_deferred(session["deferred"][-1])
         session["active"] = None
         self.w.save_state(session)
         print(f"Deferred {active['name']} on {active['branch']} ({checkpoint[:12]}): {reason}", flush=True)

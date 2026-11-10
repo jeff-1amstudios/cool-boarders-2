@@ -115,6 +115,7 @@ class RunTests(unittest.TestCase):
                 source = Path('src/main.c')
                 source.write_text(source.read_text().replace('return 7', 'return 8', 1))
             if mode == 'lie':
+                Path('build').mkdir(exist_ok=True)
                 Path('reports/boot-rebuild.json').write_text('{"identical": true}')
                 Path('build/SCUS_943.58').write_bytes(Path('orig/disc/files/SCUS_943.58').read_bytes())
             Path(os.environ['CB2_AGENT_REPORT']).write_text('Everything matches; commit it.')
@@ -326,6 +327,7 @@ class RunTests(unittest.TestCase):
         self.runner("mixed").run()
         previous = worker.state()["deferred"][0]
         updated_main = self.git("rev-parse", "main")
+        worker.retry_deferred(previous["identity"])
         self.runner("match", limit=1).run()
         accepted = worker.state()["completed"][0]
         self.assertEqual(accepted["branch"], "codex/match-SCUS_943_58_0x80010000")
@@ -333,6 +335,27 @@ class RunTests(unittest.TestCase):
         self.assertEqual(self.git("rev-parse", previous["branch"]), accepted["commit"])
         self.assertNotIn(previous["checkpoint"], self.git("rev-list", "main").splitlines())
         self.assertEqual(self.git("branch", "--show-current"), "main")
+
+    def test_next_batch_skips_persisted_deferral(self):
+        self.runner("mixed", limit=1).run()
+        previous = worker.state()["deferred"][0]
+        self.assertIn(previous["identity"], worker.deferred_targets())
+        self.runner("match", limit=1).run()
+        self.assertEqual(worker.state()["completed"][0]["identity"], "SCUS_943.58:0x80010008")
+        self.runner("match", limit=1).run()
+        self.assertEqual(worker.state()["stop_reason"], "eligible queue exhausted")
+        self.assertFalse(worker.state()["completed"])
+        worker.retry_deferred()
+        self.runner("match", limit=1).run()
+        self.assertEqual(worker.state()["completed"][0]["identity"], previous["identity"])
+
+    def test_last_batch_deferrals_migrate_before_state_is_replaced(self):
+        self.runner("mixed", limit=1).run()
+        previous = worker.state()["deferred"][0]
+        (worker.STATE.parent / "deferred.json").unlink()
+        self.runner("match", limit=1).run()
+        self.assertIn(previous["identity"], worker.deferred_targets())
+        self.assertEqual(worker.state()["completed"][0]["identity"], "SCUS_943.58:0x80010008")
 
     def test_batch_cannot_start_on_function_branch(self):
         self.git("switch", "-c", "codex/manual")
@@ -395,6 +418,13 @@ class RunTests(unittest.TestCase):
             with self.subTest(text=text), self.assertRaises(RuntimeError):
                 Runner(worker, args)
         self.assertFalse(worker.STATE.exists())
+
+    def test_batch_start_does_not_build_or_check_matching(self):
+        with patch.object(worker, "command") as command:
+            session = worker.begin_batch(1, 2)
+        command.assert_not_called()
+        self.assertEqual(worker.state(), session)
+        self.assertFalse(session["active"])
 
     def test_default_launcher_is_fresh_ephemeral_and_sandboxed(self):
         runner = self.runner()

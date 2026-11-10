@@ -51,6 +51,43 @@ def save_state(session):
     write(STATE, session)
 
 
+def deferred_targets():
+    path = STATE.parent / "deferred.json"
+    return read(path) if path.exists() else {}
+
+
+def remember_deferred(row):
+    from reconstruction_backlog import key
+    entries = deferred_targets()
+    entries[key(row)] = {k: row[k] for k in
+                         ("identity", "image", "address", "name", "reason", "branch", "checkpoint", "context")
+                         if k in row}
+    write(STATE.parent / "deferred.json", entries)
+
+
+def retry_deferred(identity=None):
+    initialize_deferred()
+    entries = deferred_targets()
+    if identity is not None:
+        if identity not in entries:
+            raise RuntimeError(f"Target is not deferred: {identity}")
+        del entries[identity]
+    else:
+        entries.clear()
+    write(STATE.parent / "deferred.json", entries)
+
+
+def initialize_deferred():
+    # Upgrade the last pre-persistence batch before its state is replaced.
+    path = STATE.parent / "deferred.json"
+    if not path.exists():
+        rows = state().get("deferred", []) if STATE.exists() else []
+        for row in rows:
+            remember_deferred(row)
+        if not path.exists():
+            write(path, {})
+
+
 @contextmanager
 def exclusive_worker(directory):
     import fcntl
@@ -154,6 +191,7 @@ def choose(report, session, identity=None):
         raise NoTarget("C matching is paused by config/reconstruction.json")
     from reconstruction_backlog import key
     attempted = {key(r) for r in session["completed"] + session["deferred"]}
+    attempted.update(deferred_targets())
     for row in report["targets"]:
         if row["status"] == "needs_review" and key(row) not in attempted and (identity is None or key(row) == identity):
             return row
@@ -281,8 +319,8 @@ def begin_batch(limit, minutes):
         raise RuntimeError("Inspect the recorded active attempt before starting another batch")
     if changes() or git("diff", "--cached", "--name-only"):
         raise RuntimeError("Batch requires a clean checkout and index")
+    initialize_deferred()
     directory = STATE.parent / "sessions" / str(time.time_ns())
-    command(["make", "validate"], "baseline", directory=directory)
     session = {"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
                "directory": str(directory.relative_to(ROOT)),
                "deadline": time.time() + minutes * 60, "limit": limit,
@@ -341,11 +379,21 @@ def main():
     batch.add_argument("--verbose", action="store_true", help="Also print echoed compiler/assembler commands")
     batch.add_argument("--agent-command", help="Custom launcher argv; prompt on stdin, no shell")
     sub.add_parser("status", help="Show the current or last batch")
+    retry = sub.add_parser("retry-deferred", help="Return deferred targets to the eligible queue")
+    selection = retry.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--target", help="Image-qualified identity, e.g. INIT.BIN:0x8005AB6C")
+    selection.add_argument("--all", action="store_true", help="Requeue every deferred target")
     args = parser.parse_args()
-    if args.command == "status":
+    if args.command == "retry-deferred":
+        if STATE.exists() and state().get("active"):
+            raise RuntimeError("Finish or inspect the active attempt before requeueing targets")
+        retry_deferred(args.target)
+        print("Requeued deferred targets: " + (args.target or "all"))
+    elif args.command == "status":
         session = state()
         print(json.dumps({"directory":session['directory'], "head":session['head'],
                          "completed":len(session['completed']), "deferred":len(session['deferred']),
+                         "persistent_deferred":len(deferred_targets()),
                          "active":session.get('active'), "stop_reason":session.get('stop_reason'),
                          "result":session.get('result')},indent=2))
     else:
