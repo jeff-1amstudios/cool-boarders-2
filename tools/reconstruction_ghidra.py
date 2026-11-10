@@ -56,10 +56,17 @@ def export(worker, active):
     context = worker.read(directory / 'context.json')
     context['ghidra'] = result
     worker.write(directory / 'context.json', context)
+    active['ghidra_literals'] = sorted(literal_tokens((directory / 'ghidra/target.ghidra.c').read_text()))
 
 
 def strip_comments(text):
     return re.sub(r'/\*.*?\*/|//[^\n]*', ' ', text, flags=re.S)
+
+
+def literal_tokens(text):
+    # Ignore comments and character constants; retain exact C string spelling.
+    pattern = r'''"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|/\*.*?\*/|//[^\n]*'''
+    return {m[0] for m in re.finditer(pattern, text, re.S) if m[0].startswith('"')}
 
 
 def declarations(root, active):

@@ -80,6 +80,11 @@ def main():
                     if isinstance(subsegment, list) and subsegment[1] == "c":
                         names.append(subsegment[2])
                         subsegment[1] = "asm"
+                    elif isinstance(subsegment, list) and subsegment[1] == ".rodata":
+                        # C emits this literal storage in its own object. The
+                        # independent assembly reference needs a real rodata
+                        # object rather than an ungenerated C-owned section.
+                        subsegment[1] = "rodata"
         config["options"].update(
             base_path=str(ROOT), asm_path="build/objdiff/target", build_path=".",
             asset_path="build/objdiff/assets", cache_path="build/objdiff/splat-cache",
