@@ -204,6 +204,9 @@ class Runner:
             f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes) as matching C.\n"
             f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
+            f"Start from the CURRENT Ghidra pseudocode in {directory / 'ghidra/target.ghidra.c'}, with named SDK calls and typed variables.\n"
+            f"Read {directory / 'ghidra/ghidra-types.h'} for relevant layouts/prototypes and context.json ghidra metadata for parameter storage and callees.\n"
+            "Adapt that pseudocode to compilable matching C. Use assembly to resolve uncertainty and refine compiler output; do not reconstruct the function from assembly alone.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, give only this function a C subsegment and preserve all other configuration.\n"
             "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
@@ -219,9 +222,11 @@ class Runner:
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
             "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
             "Keep reads focused on this context, selected span and relevant callers/callees. Do not dump whole configs, all sources or full build logs.\n"
+            f"Write {directory / 'ghidra-update.json'} with exactly {{\"function_evidence\": \"observed argument/return evidence and remaining uncertainty\", \"globals\": []}}.\n"
+            "For each newly recovered global type, add a globals entry with image, address (hex string), name and evidence. It must have an authored extern declaration and matching symbol address in the selected image's symbols. Use the resident image for resident globals. Headers and the selected prototype are imported automatically after acceptance. Do not copy unrelated or speculative types.\n"
             "Use tools/.venv/bin/python tools/reconstruction_step.py for every compile/edit iteration. It compiles only your unit and prints a short diff.\n"
             "Use the hard time allowance sensibly. Restore your best candidate before finishing; if blocked, explain why and stop.\n"
-            "Once the object matches, finish your response; Python independently validates the entire containing EXE/BIN. Optional: reconstruction_step.py --validate.\n"
+            "Your scope is the selected function: once its object matches and the feedback proposal is written, finish. Python independently validates the entire containing EXE/BIN and updates Ghidra. Do not run whole-file validation yourself.\n"
             "Do not repeatedly run whole-project objdiff or all-image validation. Read object-diff.json when the compact diff is insufficient.\n"
             "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, switch branches, reset, clean or spawn agents.\n"
             "Leave your candidate edits in place. Python independently validates and decides whether to commit.\n"
@@ -293,6 +298,11 @@ class Runner:
         if self.w.content_hashes(paths) != expected_hashes:
             raise Rejected("Candidate contents changed during acceptance validation")
         self.w.check_session(session)
+        from reconstruction_ghidra import prepare_update
+        prepare_update(self.w, active)
+        self.invariant(session)
+        if self.w.content_hashes(paths) != expected_hashes:
+            raise Rejected("Candidate changed during Ghidra feedback planning")
         return paths, expected_hashes
 
     def reject(self, session, tracked, reason):
@@ -353,6 +363,12 @@ class Runner:
         active = session["active"]
         self.w.check_session(session)
         self.invariant(session)
+        from reconstruction_ghidra import record, apply
+        payload = self.w.read(self.w.ROOT / active['context'] / 'ghidra-feedback/request.json')
+        feedback_path = record(self.w, active, payload)
+        paths = [*paths, feedback_path]
+        expected_hashes = {**expected_hashes, **self.w.content_hashes([feedback_path])}
+        active['ghidra_record'] = feedback_path
         active["phase"] = "committing_match"
         self.w.save_state(session)
         commit = self.w.commit_files(paths, f"Match {active['name']} from bounded agent run", expected_hashes)
@@ -371,6 +387,11 @@ class Runner:
         self.invariant(session)
         if self.w.changes():
             raise RuntimeError("Integration left unexpected checkout changes")
+        active['phase'] = 'syncing_ghidra'
+        self.w.save_state(session)
+        # A failure here stops the batch with the accepted commit and pending
+        # record intact. Never launch another worker using stale analysis.
+        apply(self.w, active, payload)
         from reconstruction_runtime import attempt_result
         self.w.write(self.w.ROOT / active["context"] / "result.json", attempt_result(self.w.ROOT, active, "matched"))
         session["completed"].append({**active, "phase": "integrated"})
@@ -404,6 +425,16 @@ class Runner:
             active = session["active"]
             number = len(session["completed"]) + len(session["deferred"]) + 1
             print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)
+            if not active.get('boundary_findings'):
+                from reconstruction_ghidra import export
+                try:
+                    export(self.w, active)
+                except BaseException:
+                    # An unavailable/locked Ghidra project is infrastructure
+                    # failure, not evidence against reconstructing this target.
+                    session.update(active=None, stop_reason='Fresh Ghidra export failed before agent launch')
+                    self.w.save_state(session)
+                    raise
             self.start_branch(session)
             before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
             old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()

@@ -1,5 +1,7 @@
 # Local verification
 
+10 November 2026 fresh-start update: all 15 files validate byte for byte with zero C translation units. Old matching bodies, provisional headers, matching branches and attempt records were cleared. Earlier entries below are historical and do not describe current C coverage. Fresh Ghidra exports and transactional feedback were checked headlessly, including persisted struct/global fields on a disposable project copy.
+
 The default `make` / `make validate` gate now covers the boot EXE **and all 14 overlay BINs**. Full overlay results are in `reports/overlay-rebuild.json` and per-image reports under `reports/overlay-rebuild/`; object diagnostics for configured overlay C units share `reports/objdiff.json` with namespaced unit names. The exact retained-assembly overlay baseline includes the complete header/data and MAIN_SEL's two-byte tail. No overlay C reconstructions are retained. Earlier boot-only results below are historical. See [overlay matching](overlays.md#matching-overlays).
 
 9 November 2026, macOS arm64, AppleClang 21.0.0, Python 3.13.
@@ -57,7 +59,7 @@ Reports are `reports/boot-rebuild.json`, `reports/boot-negative-control.json`, `
 
 ## Bounded reconstruction pilot
 
-The [ten-target pilot](reconstruction-pilot.md) added nine matching C functions (436 bytes), bringing the total to fourteen functions and 672 bytes. One 88-byte function was deferred with register-allocation differences and remains assembly. Each C commit passed fresh full-file validation; the final executable retains the pinned hash above. Worker guard tests passed, and blocked-attempt restoration recovered the matching baseline before continuing. No compiler-recipe or reference changes were needed. Overlay mapping and runtime validation remain outstanding.
+The ten-target pilot added nine matching C functions (436 bytes), bringing the total to fourteen functions and 672 bytes. One 88-byte function was deferred with register-allocation differences and remains assembly. Each C commit passed fresh full-file validation; the final executable retains the pinned hash above. Worker guard tests passed, and blocked-attempt restoration recovered the matching baseline before continuing. No compiler-recipe or reference changes were needed. Overlay mapping and runtime validation remain outstanding.
 
 ## Commit preparation
 
@@ -67,13 +69,13 @@ Removed the generated Splat macro headers from the source tree. The build now re
 
 ## Deferred-loop resolution and second batch
 
-The deferred `0x80017A00` now matches using indexed access under the unchanged compiler flags. Ten further functions also match, for 25 C functions / 1,432 bytes total. `make validate` reports 25/25 matching functions in its aggregate object report and zero full-file differences, retaining the original 266,240-byte size and SHA-256 above. A failed first batch attempt retained diagnostics; source-shape refinements recovered the match without changing the reference or gate. The compiler matrix has been expanded to all 25 functions. See [reconstruction learnings](reconstruction-learnings.md) and [current compiler results](compiler-identification.md).
+The deferred `0x80017A00` now matches using indexed access under the unchanged compiler flags. Ten further functions also match, for 25 C functions / 1,432 bytes total. `make validate` reports 25/25 matching functions in its aggregate object report and zero full-file differences, retaining the original 266,240-byte size and SHA-256 above. A failed first batch attempt retained diagnostics; source-shape refinements recovered the match without changing the reference or gate. The compiler matrix has been expanded to all 25 functions. See historical reconstruction learnings and [current compiler results](compiler-identification.md).
 
 The detailed `fill_slots` object diff retains a relocation-expression difference (`D_80058D07` versus `D_80058CC8 + 63`), scoring that symbol at 99.28571%. Both resolve to the same address and identical final bytes; see the learnings for why this does not invalidate the full-file match.
 
 ## Automatic ten-function batch
 
-Following reviewed exclusions for noncallable handwritten fragments, the serial automatic workflow committed and integrated ten of ten targets, adding 128 bytes of C. The current total is **35 C functions / 1,560 bytes**, with 763 detected retained assembly functions and overlays still unmeasured. Each matching commit passed independent controller validation; the final executable is still exactly 266,240 bytes with the pinned SHA-256 above. All ten function branches remain intact, `main` contains their commits, and the initial rejected WIP checkpoints remain unmerged. See [the batch results and queue learnings](reconstruction-learnings.md#completed-automatic-ten-function-batch). The compiler discrimination matrix remains the earlier 25-function / 1,800-trial study.
+Following reviewed exclusions for noncallable handwritten fragments, the serial automatic workflow committed and integrated ten of ten targets, adding 128 bytes of C. The current total is **35 C functions / 1,560 bytes**, with 763 detected retained assembly functions and overlays still unmeasured. Each matching commit passed independent controller validation; the final executable is still exactly 266,240 bytes with the pinned SHA-256 above. All ten function branches remain intact, `main` contains their commits, and the initial rejected WIP checkpoints remain unmerged. See the historical batch results. The compiler discrimination matrix remains the earlier 25-function / 1,800-trial study.
 
 ## Boundary audit
 

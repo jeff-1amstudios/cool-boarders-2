@@ -17,9 +17,9 @@ STATE = ROOT / "reports/reconstruction/state.json"
 REVIEW = ROOT / "config/reconstruction.json"
 PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
-             "tools/reconstruct_run.py", "tools/boundary_audit.py",
+             "tools/reconstruct_run.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
-             "tools/ghidra-docker.sh",
+             "tools/ghidra-docker.sh", "tools/ghidra.sh",
              "config/function-boundaries.json", "config/reconstruction.json", "config/psyq-sdk.json",
              "config/overlays.json", "tools/overlays.py", "tools/ghidra_scripts/ImportOverlays.java",
              "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
@@ -302,6 +302,7 @@ def audit_paths(requested, changed):
     for name in paths:
         path = Path(name)
         allowed = (name in ("scus_943.58.yaml", "symbol_addrs.txt")
+                   or (len(path.parts) == 3 and path.parts[:2] == ('config', 'ghidra') and path.suffix == '.json')
                    or (name.startswith("config/overlays/") and path.suffix in (".yaml", ".txt"))
                    or (len(path.parts) > 1 and path.parts[0] == "src" and path.suffix in (".c", ".h"))
 )
@@ -379,17 +380,30 @@ def main():
     batch.add_argument("--verbose", action="store_true", help="Also print echoed compiler/assembler commands")
     batch.add_argument("--agent-command", help="Custom launcher argv; prompt on stdin, no shell")
     sub.add_parser("status", help="Show the current or last batch")
+    sub.add_parser("recover-ghidra", help="Finish Ghidra feedback for an already accepted commit")
+    sub.add_parser("replay-ghidra", help="Replay committed analysis records into the saved Ghidra project")
     retry = sub.add_parser("retry-deferred", help="Return deferred targets to the eligible queue")
     selection = retry.add_mutually_exclusive_group(required=True)
     selection.add_argument("--target", help="Image-qualified identity, e.g. INIT.BIN:0x8005AB6C")
     selection.add_argument("--all", action="store_true", help="Requeue every deferred target")
     args = parser.parse_args()
-    if args.command == "retry-deferred":
+    if args.command in ('recover-ghidra', 'replay-ghidra'):
+        from reconstruction_ghidra import recover, replay
+        if args.command == 'recover-ghidra':
+            recover(sys.modules[__name__])
+        else:
+            if changes() or git('diff', '--cached', '--name-only') or (STATE.exists() and state().get('active')):
+                raise RuntimeError('Replay requires a clean checkout with no active attempt')
+            replay(sys.modules[__name__])
+    elif args.command == "retry-deferred":
         if STATE.exists() and state().get("active"):
             raise RuntimeError("Finish or inspect the active attempt before requeueing targets")
         retry_deferred(args.target)
         print("Requeued deferred targets: " + (args.target or "all"))
     elif args.command == "status":
+        if not STATE.exists():
+            print(json.dumps({'status': 'not_started', 'active': None, 'completed': 0, 'deferred': 0}, indent=2))
+            return
         session = state()
         print(json.dumps({"directory":session['directory'], "head":session['head'],
                          "completed":len(session['completed']), "deferred":len(session['deferred']),

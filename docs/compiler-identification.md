@@ -1,5 +1,7 @@
 # Matching build and compiler evidence
 
+Historical compiler evidence from before the 10 November 2026 fresh-start reset. The current checkout has zero reconstructed C functions; the source paths and coverage counts below describe earlier experiments. The provisional compiler recipe was preserved.
+
 The USA boot executable now rebuilds byte for byte, including its PS-X EXE header and data. Thirty-five functions (1,560 bytes) are compiled from reconstructed C after resolving the deferred loop, completing the next ten targets and integrating a subsequent automatic ten-function batch; all other executable code remains assembly. The compiler matrix below covers the 25-function probe set from the preceding batch; the latest ten have full-file validation but have not been added to that matrix. This establishes a matching boot rebuild, not a complete game decompilation.
 
 ## Repeat the build
@@ -52,7 +54,7 @@ GNU as:    -EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections
 
 1,620 trials reached byte comparison. Another 180 G8 trials failed linking with GP displacement errors across six reconstructions (`flag_acquire`, `flag_release`, `fill_slots`, `clear_globals`, `two_command_calls`, `copy_bounded_name`): with the proposed scalar declarations, some GP-relative addresses exceed the available signed displacement. Those failures are recorded separately from byte mismatches. G8 trials preserve positive `.extern` size metadata through a common-symbol shim for maspsx; unknown-size arrays are not treated as small data. These results depend on the proposed declarations and do not establish a project-wide `-G0` policy. The retained assembly also contains a small group of GP-relative stores around `0x80020F00` that needs separate analysis.
 
-Full scores, failed commands, source hashes and trial artifacts are under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`. The earlier five-function matrix scored 5/5, 3/5 and 1/5 respectively; the expanded sample strengthens the PSX 2.7.2 lead but preserves the O2/O3 tie. Selection remains source-dependent because these C reconstructions were developed against the working recipe. See [reconstruction learnings](reconstruction-learnings.md) for the controlled indexed-versus-pointer loop experiment and the next ten functions.
+Before the reset, full scores and trial artifacts were recorded under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`. The earlier five-function matrix scored 5/5, 3/5 and 1/5 respectively; the expanded sample strengthens the PSX 2.7.2 lead but preserves the O2/O3 tie. Selection remains source-dependent because these C reconstructions were developed against the working recipe. The old matching sources, generated trial artifacts and reconstruction notes were cleared in the 10 November fresh-start reset; Git history retains the earlier experiments.
 
 ## First five C functions
 

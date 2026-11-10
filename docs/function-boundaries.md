@@ -1,5 +1,7 @@
 # Function-boundary audit
 
+The counts below describe the historical boundary review. On 10 November the authored C and attempt records were reset to zero for fresh Ghidra-based matching; reviewed boundaries and SDK analysis were preserved. Broad boundary exports remain explicit, while the reconstruction supervisor now asks Ghidra for current typed pseudocode before every worker and saves accepted analysis feedback afterward.
+
 9 November 2026. C reconstruction is paused. This pass corrected analysis and selection; it added no C functions. The boot executable still rebuilds to the pinned 266,240 bytes and SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`. The C total remains 35 functions / 1,560 bytes. SDK identification, original source language and overlay coverage are separate questions.
 
 ## Which representation is authoritative?

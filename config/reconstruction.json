@@ -9,66 +9,6 @@
       "classification": "handwritten",
       "note": "Startup and stack/GP initialization."
     },
-    "0x80015F68": {
-      "note": "Halfword test/set with conditional result; inspect paired release and callers."
-    },
-    "0x80015F98": {
-      "note": "Halfword test/clear paired with 80015F68."
-    },
-    "0x80017044": {
-      "note": "Indexed word address passed to command 22."
-    },
-    "0x8001728C": {
-      "note": "Command 9 then global clear."
-    },
-    "0x800178AC": {
-      "note": "Single SDK call wrapper; wrapper C remains distinct from SDK recognition."
-    },
-    "0x80017A00": {
-      "note": "Resolved: indexed words[i] gives the exact pointer walk and saved-register allocation under the unchanged recipe; explicit *words++ does not. See docs/reconstruction-learnings.md."
-    },
-    "0x8001BF08": {
-      "note": "Global clear followed by two three-argument calls."
-    },
-    "0x8001C0D4": {
-      "note": "Descending sixteen-word clear loop."
-    },
-    "0x8001DA98": {
-      "note": "Three unsigned comparisons at twelve-byte strides, greater-than search."
-    },
-    "0x8001DAD4": {
-      "note": "Paired less-than search at twelve-byte strides."
-    },
-    "0x800166A4": {
-      "note": "64-byte backward fill: local unsigned-char value and base pointer recover hoisting/register allocation."
-    },
-    "0x8001742C": {
-      "note": "States 1/2 to 3; signed halfword promoted into word. Adjacent returns reviewed."
-    },
-    "0x80017AC0": {
-      "note": "Four-word early-exit search; indexed argument preserves pointer increment after successful-call test."
-    },
-    "0x80017B18": {
-      "note": "Four indexed calls; results discarded, no extra API semantics inferred."
-    },
-    "0x800181D4": {
-      "note": "Unsigned byte fold; two LEFT shifts with explicit masks, not an assumed rotate."
-    },
-    "0x8001A3DC": {
-      "note": "Unsigned-count forward byte copy, including zero-count path."
-    },
-    "0x8001ADC8": {
-      "note": "16-byte unknown prefix, 256 halfwords, 8192 bytes. Indexed second source fixes first-loop register allocation."
-    },
-    "0x8001C0F4": {
-      "note": "Sixteen-word clear followed by first-three-word initialization and result 3."
-    },
-    "0x8001E560": {
-      "note": "Bounded 256-byte copy reloads source after potentially aliasing store; no forced NUL at limit."
-    },
-    "0x8002FCEC": {
-      "note": "Signed positive-input arithmetic-shift loop; zero/negative return zero."
-    },
     "0x80024CC0": {
       "classification": "unknown",
       "hold": true,

@@ -61,7 +61,11 @@ def main():
         print("Details: reports/objdiff.json. Run make for full-file boot and overlay checks.")
         return
     units = []
-    if args.image in (None, "SCUS_943.58"):
+    boot_config = yaml.safe_load((ROOT / "scus_943.58.yaml").read_text())
+    boot_has_c = any(isinstance(row, list) and row[1] == 'c'
+                     for segment in boot_config['segments'] if isinstance(segment, dict)
+                     for row in segment.get('subsegments', []))
+    if args.image in (None, "SCUS_943.58") and boot_has_c:
         _, expected, _ = reference()
         directory = ROOT / "build/objdiff"
         directory.mkdir(parents=True, exist_ok=True)
@@ -76,8 +80,6 @@ def main():
                     if isinstance(subsegment, list) and subsegment[1] == "c":
                         names.append(subsegment[2])
                         subsegment[1] = "asm"
-        if not names:
-            raise RuntimeError("No C units found in the Splat configuration")
         config["options"].update(
             base_path=str(ROOT), asm_path="build/objdiff/target", build_path=".",
             asset_path="build/objdiff/assets", cache_path="build/objdiff/splat-cache",
