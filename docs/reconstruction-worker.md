@@ -4,7 +4,7 @@
 tools/.venv/bin/python tools/reconstruct.py start --limit 2
 ```
 
-The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Run from clean `main`; do not edit the checkout concurrently.
+The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Run from clean `main`; do not edit the checkout concurrently.
 
 The loop is: select target → prepare context/branch → run agent → check edits → compare the entire containing file → commit a match or preserve WIP → continue. Python owns Git and acceptance; the agent only edits C, the selected Splat span and appended symbols. A custom `--agent-command` accepts shell-quoted argv and receives its prompt on stdin without a shell.
 

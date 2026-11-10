@@ -4,26 +4,31 @@ import json
 
 class Output:
     """Render agent JSON events for humans while retaining raw JSON in the log."""
-    def __init__(self, agent=False):
-        self.agent, self.pending = agent, ''
+    def __init__(self, agent=False, verbose=False):
+        self.agent, self.verbose, self.pending = agent, verbose, ''
 
     def write(self, chunk):
-        if not self.agent:
-            print(chunk, end='', flush=True)
-            return
         self.pending += chunk
         while '\n' in self.pending:
             line, self.pending = self.pending.split('\n', 1)
             self.line(line)
 
+    def text(self, text):
+        for line in text.splitlines(keepends=True):
+            if self.verbose or not line.startswith('+ '):
+                print(line, end='', flush=True)
+
     def line(self, line):
+        if not self.agent:
+            self.text(line + '\n')
+            return
         try:
             event = json.loads(line)
         except ValueError:
-            print(line, flush=True)
+            self.text(line + '\n')
             return
         if not isinstance(event, dict):
-            print(line, flush=True)
+            self.text(line + '\n')
             return
         item = event.get('item', {})
         if event.get('type') == 'item.completed' and item.get('type') == 'agent_message':
@@ -32,7 +37,7 @@ class Output:
             if event.get('type') == 'item.started':
                 print('$ ' + item.get('command', ''), flush=True)
             elif event.get('type') == 'item.completed':
-                print(item.get('aggregated_output', ''), end='', flush=True)
+                self.text(item.get('aggregated_output', ''))
         elif event.get('type') == 'error':
             print('Agent error: ' + str(event.get('message', 'unknown error')), flush=True)
         elif event.get('type') == 'turn.failed':
@@ -44,9 +49,9 @@ class Output:
             self.pending = ''
 
 
-def follow_log(path, done, agent=False):
+def follow_log(path, done, agent=False, verbose=False):
     """Tee child output without competing with communicate() for its pipes."""
-    output = Output(agent)
+    output = Output(agent, verbose)
     with path.open(errors='replace') as stream:
         while not done.is_set():
             chunk = stream.read(8192)

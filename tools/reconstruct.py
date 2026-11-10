@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import time
@@ -98,13 +99,12 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
         from reconstruction_runtime import follow_log
         import threading
         done = threading.Event()
-        output = threading.Thread(target=follow_log, args=(path, done, name == "agent"), daemon=True)
+        output = threading.Thread(target=follow_log, args=(path, done, name == "agent", os.environ.get("CB2_VERBOSE") == "1"), daemon=True)
         output.start()
         try:
             process.communicate(input=input_text, timeout=timeout)
             code = process.returncode
         except BaseException as error:
-            import os
             import signal
             try:
                 os.killpg(process.pid, signal.SIGKILL)
@@ -338,6 +338,7 @@ def main():
     batch.add_argument("--limit", type=int, default=10)
     batch.add_argument("--minutes", type=int, default=120)
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout per agent")
+    batch.add_argument("--verbose", action="store_true", help="Also print echoed compiler/assembler commands")
     batch.add_argument("--agent-command", help="Custom launcher argv; prompt on stdin, no shell")
     sub.add_parser("status", help="Show the current or last batch")
     args = parser.parse_args()
@@ -348,6 +349,8 @@ def main():
                          "active":session.get('active'), "stop_reason":session.get('stop_reason'),
                          "result":session.get('result')},indent=2))
     else:
+        if args.verbose:
+            os.environ["CB2_VERBOSE"] = "1"
         from reconstruct_run import run_batch
         run_batch(args, sys.modules[__name__])
 
