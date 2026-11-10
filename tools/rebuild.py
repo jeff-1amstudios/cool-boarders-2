@@ -32,6 +32,22 @@ def reference():
     return original, target, expected
 
 
+def absolute_symbols_script():
+    """Supply runtime addresses Splat treats as already defined, not auto-undefined."""
+    output = ROOT / "build/absolute_symbols.ld"
+    definitions = []
+    for line in (ROOT / "symbol_addrs.txt").read_text().splitlines():
+        declaration, _, attributes = line.partition("//")
+        if not re.search(r"\babsolute:True\b", attributes) or not declaration.strip():
+            continue
+        if not re.fullmatch(r"\s*\w+\s*=\s*0x[0-9A-Fa-f]+;\s*", declaration):
+            raise ValueError(f"Unsupported absolute symbol declaration: {declaration}")
+        definitions.append(declaration.strip())
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(definitions) + "\n")
+    return output
+
+
 def compile_c(name, recipe, config=None):
     """Build one C object, also used by objdiff's per-object make targets."""
     relative = Path(name).relative_to("build")
@@ -84,6 +100,7 @@ def main():
             run([str(PREFIX) + "as", "-EL", "-march=r3000", "-mtune=r3000", "-mabi=32",
                  "-G0", "-no-pad-sections", "-I", "build/include", "-o", name, source])
     run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
+         "-T", absolute_symbols_script(),
          "-T", "build/undefined_funcs_auto.txt", "-T", "build/undefined_syms_auto.txt",
          "-Map", "build/scus_943.58.map", "-o", "build/scus_943.58.elf"])
     rebuilt = ROOT / "build/SCUS_943.58"

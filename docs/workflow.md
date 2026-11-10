@@ -57,3 +57,37 @@ OpenBIOS is the framework's documented default, with a compatible dumped retail 
 ## First deliverable after receiving the disc
 
 A verified disc manifest, executable/overlay map, reviewed initial split, and reproducible unchanged executable rebuild. Native recompilation can then be assessed against the same emulator baseline. A booting native executable alone does not satisfy those decompilation milestones.
+
+## Splat diagnostics during matching
+
+The boot configuration retains one independent rodata span and does not yet model
+BSS as a linker section. Startup clears `0x80050278..0x8005AB68` (end exclusive),
+while the file-backed main segment ends at `0x80050800`, including file padding.
+Declared data addresses beyond that file-backed span are marked `absolute:True`
+in `symbol_addrs.txt`. Assigning them `segment:main` would claim ownership outside
+that segment's configured range. A complete BSS model must also preserve the
+original padding bytes and the overlay boundary; extending ROM-backed data is
+not a substitute.
+
+Splat 0.50.1 considers absolute symbols already defined and excludes them from
+its auto-undefined linker output. `tools/rebuild.py` generates
+`build/absolute_symbols.ld` from those declarations, and both the assembly-only
+reference link and the C reconstruction link use it. New runtime-only symbol
+declarations should use the same attribute. The source symbol file remains the
+single source for their addresses.
+
+Separately named fields inside `D_80058BA0` (DRAWENV, 0x5C), `D_80058C00`
+(DISPENV, 0x14) and `D_80058F70` (RECT, 0x8) intentionally alias their parent
+objects. Their absolute base symbols omit Splat's range sizes to avoid claiming
+independent overlapping allocations. The reviewed full extents remain documented
+in the symbol file and represented by their C types.
+
+`pair_rodata_to_text: False` disables ownership suggestions because rodata migration
+is already disabled and original object ownership is unreviewed. The PSX jump-table
+alignment heuristic still suggests rodata splits at file offsets `0x1554`,
+`0x1A88`, `0x2024` and `0x22E0`, even with `find_file_boundaries: False`.
+In this pinned Splat version that heuristic runs independently of that option.
+These are analysis leads, not proof of exact object boundaries or binary mismatch;
+keep them visible until corroborated. The same hints can appear twice because
+validation independently splits the assembly-only reference and the C build.
+Only the pinned full-file byte comparison establishes matching.

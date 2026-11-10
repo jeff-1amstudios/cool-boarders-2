@@ -25,6 +25,8 @@ options:
   o_as_suffix: True
   use_legacy_include_asm: False
   migrate_rodata_to_functions: False
+  # Keep rodata independent until original object ownership is reviewed.
+  pair_rodata_to_text: False
 
   section_order: [".rodata", ".text", ".data", ".bss"]
   # auto_link_sections: [".data", ".rodata", ".bss"]

@@ -9,7 +9,7 @@ from pathlib import Path
 
 import yaml
 
-from rebuild import ROOT, PREFIX, compile_c, reference, run
+from rebuild import ROOT, PREFIX, absolute_symbols_script, compile_c, reference, run
 from overlay_rebuild import prepare_objdiff_units
 from c_sources import source_path
 
@@ -101,6 +101,7 @@ def main():
                  "-G0", "-no-pad-sections", "-I", "build/include", "-o", name,
                  Path(name).with_suffix(".s")])
         run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
+             "-T", absolute_symbols_script(),
              "-T", directory / "undefined_funcs.txt", "-T", directory / "undefined_syms.txt",
              "-o", directory / "reference.elf"])
         binary = directory / "SCUS_943.58"
