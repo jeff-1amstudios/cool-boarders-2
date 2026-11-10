@@ -139,9 +139,11 @@ class Runner:
         existing = set(self.w.git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines())
         if "codex" in existing:
             raise RuntimeError("Branch codex blocks the codex/ function branch namespace")
-        branch, number = base, 2
-        while branch in existing or any(b.startswith(branch + "/") for b in existing):
-            branch, number = f"{base}-{number}", number + 1
+        # Failed attempts are disposable: reuse the name, starting from main.
+        for old in sorted(existing):
+            if old == base or re.fullmatch(re.escape(base) + r"-\d+", old):
+                self.w.git("branch", "-D", old)
+        branch = base
         session["active"].update(branch=branch, base_commit=session["integration_head"], phase="creating_branch")
         self.w.save_state(session)
         self.w.git("switch", "-c", branch, "main")
@@ -178,7 +180,7 @@ class Runner:
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, split only this function into a new C unit and preserve all other configuration.\n"
             "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
-            "Prior attempts and archived candidate sources may be reused from reports/reconstruction/sessions after review and fresh validation.\n"
+            "Start from current main. Do not restore candidates from earlier failed attempts.\n"
             f"Add C/headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
             "Explain boundary/dependency conclusions and any concrete blocker in your final response. No review forms are required.\n"
             "boundary_warnings are heuristic review hints, not proof that C is impossible. Curated holds and factual split blockers remain excluded.\n"

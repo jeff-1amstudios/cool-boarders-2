@@ -26,7 +26,7 @@ Python accepts only a new C unit and local headers, the exact selected asm/c/asm
 
 Plain `make validate` checks the boot EXE and all 14 overlays at batch start and end. A nonmatching candidate cannot enter `main`. Object diagnostics and full-file failure reports remain available for the next edit. No interactive diff viewer is used.
 
-Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores and validates `main` before continuing. Function branches are never overwritten; retries use numeric suffixes. WIP commits never enter `main`.
+Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores and validates `main` before continuing. Retries discard the selected function's old failed branches and recreate its original branch name from current `main`, starting from scratch. WIP commits never enter `main`.
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/reconstruction/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 
