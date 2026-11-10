@@ -81,17 +81,15 @@ Subsequent SDK selection policy: we now accept the PSX plugin's PsyQ 3.7.0 detec
 
 Ghidra names such as `CloseEvent`, `CheckCallback`, `RCpolyFT3`, `CdStatus` and `VectorNormalS` are useful library leads. The saved project provides no per-function signature score or explanatory comment for these examples. `IMPORTED` and `USER_DEFINED` symbol-source tags are not treated as independent proof of a library/version match or of manual review. No SDK identity is established from an address cutoff.
 
-Curated library candidates are excluded from ordinary game-code selection unless `include_library_candidates` is deliberately enabled. The eight library-looking future leaf candidates keep their boundary reviews but are deprioritized by this separate provenance policy. Two reviewed future candidates remain outside that library-candidate category; this does not establish game authorship for either.
+During the historical audit, curated library leads were separated from other candidates. Current selection trusts the accepted plugin SDK catalog and curated holds; an unconfirmed library lead alone does not establish provenance or change backlog order.
 
-The static reference report has 408 units with direct calls, another 115 with possible address/reference uses, and 275 with no known static reference. The latter are not proven unused: callbacks, interrupts, function pointers, computed calls and unloaded overlays can reach code without a direct boot-EXE call. Referenced code receives higher priority. Unreferenced code remains preserved in the exact rebuild even when it receives lower reconstruction priority.
+The static reference report has 408 units with direct calls, another 115 with possible address/reference uses, and 275 with no known static reference. The latter are not proven unused: callbacks, interrupts, function pointers, computed calls and unloaded overlays can reach code without a direct boot-EXE call. The current backlog processes recorded order without prioritizing direct references. Unreferenced code remains preserved in the exact rebuild.
 
-## Queue policy
+## Current queue policy
 
-`matching_paused: true` in [config/reconstruction.json](../config/reconstruction.json) stops a new automatic batch before session creation or agent launch. No matching agents were run during this audit.
+The counts and filtered candidates above describe the historical boot audit, not the current complete backlog. Matching has resumed. Normal batches process the image-qualified saved Ghidra backlog in recorded order, excluding accepted SDK entries and curated holds. Unknown does not establish game authorship.
 
-Once matching is deliberately resumed, selection requires a reviewed `standalone` disposition with the same address, size, end and instruction SHA-256, plus no outstanding structural findings. Multi-entry groups, templates, custom-ABI helpers and unreviewed spans cannot enter the ordinary queue. The catalog, analysis scripts and policy are protected from matching-agent edits. A batch first refreshes the saved Ghidra review export and checks its agreement with the versioned catalog; subsequent inventories also check that complete export.
-
-There are 236 candidates under the old size/hardware filters. Only ten have standalone boundary reviews, and eight of those are library candidates excluded by default. The remaining 226 require review. The pause is independent of all these filters and remains enabled.
+CFG findings are review hints, not proof of a boundary error or a reason to reject ordinary C automatically. Known shared-entry regions, data templates and custom-ABI holds remain protected. Each selected target is reviewed on demand; the pinned containing-file comparison is the acceptance gate. Ghidra exports and this build-span audit are refreshed explicitly with `make boundary-audit`, rather than on every matching batch. See [the batch workflow](reconstruction-worker.md).
 
 ## Reproduce and continue the audit
 

@@ -31,8 +31,7 @@ overlay-validate:
 boundary-audit: objdiff-install
 	$(PYTHON) tools/boundary_audit.py --prepare-ghidra-export
 	./tools/ghidra-docker.sh headless /projects CB2_USA -process SCUS_943.58 -noanalysis -readOnly -scriptPath /scripts -postScript ExportBoundaryEvidence.java /reports/boundary-audit/ghidra -log /home/ghidra/boundary-export.log
-	$(PYTHON) tools/reconstruct.py inventory
-	$(PYTHON) tools/boundary_audit.py --require-ghidra
+	$(PYTHON) tools/boundary_audit.py --refresh-inventory --require-ghidra
 
 objdiff-install:
 	$(PYTHON) tools/install_objdiff.py

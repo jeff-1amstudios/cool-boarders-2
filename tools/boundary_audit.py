@@ -423,17 +423,97 @@ def check_export_complete(directory, target):
             raise RuntimeError(f"Incomplete or changed Ghidra export file: {name}")
 
 
+FUNCTION = re.compile(r"^glabel (\w+)\n(.*?)^endlabel \1\s*$", re.M | re.S)
+
+def parse_functions(path, target):
+    rows = []
+    text = path.read_text()
+    for match in FUNCTION.finditer(text):
+        instructions = INSTRUCTION.findall(match[2])
+        if not instructions:
+            continue
+        offsets = [int(i[0], 16) for i in instructions]
+        addresses = [int(i[1], 16) for i in instructions]
+        contiguous = (offsets == list(range(offsets[0], offsets[0] + 4 * len(offsets), 4))
+                      and addresses == list(range(addresses[0], addresses[0] + 4 * len(addresses), 4)))
+        raw = bytes.fromhex("".join(i[2] for i in instructions))
+        if target[offsets[0]:offsets[0] + len(raw)] != raw:
+            raise RuntimeError(f"Stale or invalid assembly context: {match[1]}")
+        body = match[2]
+        ops = [i[3].split()[0] for i in instructions]
+        calls = sorted(set(re.findall(r"\bjal\s+(\w+)", body)))
+        refs = sorted(set(re.findall(r"\b(?:func_[0-9A-F]+|D_[0-9A-F]+)\b", body)))
+        hardware = bool(re.search(r"\$(?:gp|k0|k1)|\b(?:[ml][ft]c[02]|[ls]wc2|syscall|break|rfe)\b", body))
+        # Also exclude GTE instructions whose mnemonics are not ordinary MIPS.
+        hardware |= any(int.from_bytes(bytes.fromhex(i[2]), "little") >> 26 in (16, 18)
+                        for i in instructions)
+        features = []
+        if any(o in ops for o in ("lb", "lh")):
+            features.append("signed-load")
+        if any(o in ops for o in ("lbu", "lhu")):
+            features.append("unsigned-load")
+        if any(o in ops for o in ("div", "divu", "mult", "multu")):
+            features.append("multiply-divide")
+        if any(o.startswith("b") for o in ops):
+            features.append("branch")
+        if "jalr" in ops or re.search(r"\bjr\s+\$(?!ra\b)", body):
+            features.append("indirect-control")
+        rows.append({"name": match[1], "address": f"0x{addresses[0]:08X}",
+                     "offset": offsets[0], "size": len(raw), "contiguous": contiguous,
+                     "assembly": str(path.relative_to(ROOT)), "calls": calls,
+                     "references": refs, "hardware_or_gp": hardware,
+                     "features": features, "body": match[0]})
+    return rows
+
+
+
+def build_inventory(path):
+    """Rebuild the separate boot Splat-span inventory for this offline audit."""
+    import subprocess
+    import sys
+    subprocess.run([sys.executable, 'tools/objdiff.py'], cwd=ROOT, check=True)
+    _, target, sha = reference()
+    config = yaml.safe_load((ROOT / 'scus_943.58.yaml').read_text())
+    policy = json.loads((ROOT / 'config/reconstruction.json').read_text())
+    sdk = json.loads((ROOT / 'config/psyq-sdk.json').read_text())
+    if sdk['reference_sha256'] != sha:
+        raise RuntimeError('SDK catalog differs from reference')
+    units = {r[2]:r[1] for segment in config['segments'] if isinstance(segment,dict)
+             for r in segment.get('subsegments',[]) if isinstance(r,list) and r[1] in ('asm','c')}
+    rows = []
+    for source in sorted((ROOT / 'build/objdiff/target').glob('*.s')):
+        if source.stem not in units:
+            continue
+        for row in parse_functions(source,target):
+            review = policy.get('functions',{}).get(row['address'],{})
+            start = int(row['address'],16)
+            is_sdk = any(start <= int(address,16) < start + row['size'] for address in sdk['functions'])
+            row.update(unit=source.stem, status='c' if units[source.stem]=='c' else 'assembly',
+                       classification='sdk' if is_sdk else review.get('classification','unknown'),
+                       hold=review.get('hold',False))
+            rows.append(row)
+    if len({r['address'] for r in rows}) != len(rows):
+        raise RuntimeError('Overlapping boot spans')
+    result = {'reference_sha256':sha, 'scope':'Boot Splat build spans; not the complete function backlog.',
+              'functions':sorted(rows,key=lambda r:r['address'])}
+    path.parent.mkdir(parents=True,exist_ok=True)
+    path.write_text(json.dumps(result,indent=2)+'\n')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--inventory", type=Path, default=ROOT / "reports/reconstruction/inventory.json")
     parser.add_argument("--require-ghidra", action="store_true", help="Require matching saved Ghidra payload and reviewed-unit export")
     parser.add_argument("--prepare-ghidra-export", action="store_true", help="Remove old generated export files so a failed headless script cannot reuse stale evidence")
+    parser.add_argument("--refresh-inventory", action="store_true", help="Rebuild the boot build-span inventory before auditing")
     args = parser.parse_args()
     directory = ROOT / "reports/boundary-audit"
     if args.prepare_ghidra_export:
         prepare_ghidra_export(directory / "ghidra")
         return
     _, target, sha = reference()
+    if args.refresh_inventory:
+        build_inventory(args.inventory)
     inventory = json.loads(args.inventory.read_text())
     if inventory["reference_sha256"] != sha:
         raise RuntimeError("Inventory fingerprint differs from pinned reference")

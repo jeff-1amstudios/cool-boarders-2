@@ -10,7 +10,7 @@ from target_queue import rebuild
 
 
 def key(row):
-    return row.get('identity', row['address'])
+    return row['identity']
 
 
 def slug(row):
@@ -24,7 +24,7 @@ def source_dir(row):
 
 
 def coverage(report):
-    return {key(r): r.get('body_bytes', r.get('size')) for r in report.get('targets', report.get('functions', []))
+    return {key(r): r.get('body_bytes', r.get('size')) for r in report['targets']
             if r['status'] == 'c' or r.get('reconstruction') == 'c'}
 
 
@@ -60,8 +60,7 @@ def prepare(root, row, report):
             code[pc] = decode(word, pc)
             text = rabbitizer.Instruction(word, pc, rabbitizer.InstrCategory.R3000GTE).disassemble()
             lines.append(f'/* {pc-base:X} {pc:08X} {raw.hex().upper()} */ {text}')
-    if code and not findings:
-        findings.update(analyze_cfg(code, start)['findings'])
+    warnings = analyze_cfg(code, start)['findings'] if code and not findings else {}
     incoming, calls = [], []
     # Scan only byte-checked Ghidra code ranges in this image, not arbitrary data.
     for other in report['targets']:
@@ -124,5 +123,5 @@ def prepare(root, row, report):
     return {**row, 'ghidra_name': row['name'], 'name': symbol, 'possible_pointer_words': pointers, 'offset' : row['file_offset'], 'size': row['body_bytes'],
             'body': '\n'.join(lines), 'containing_span': span, 'incoming': incoming,
             'control_references': calls, 'neighbour_listing': neighbours,
-            'dependencies': dependencies, 'source_directory': source_dir(row), 'boundary_findings': findings,
-            'boundary_review': 'deferred' if findings else 'requires_agent_review'}
+            'dependencies': dependencies, 'source_directory': source_dir(row), 'boundary_findings': findings, 'boundary_warnings': warnings,
+            'boundary_review': 'blocked_split' if findings else 'review_required'}

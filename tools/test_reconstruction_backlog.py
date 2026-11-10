@@ -82,7 +82,7 @@ class BacklogTests(unittest.TestCase):
         rows = self.rows()
         row = {**rows[0], 'ranges': [['0x80010000','0x80010004'],['0x80010008','0x8001000C']]}
         result = prepare(self.root,row,{'targets':rows})
-        self.assertEqual(result['boundary_review'],'deferred')
+        self.assertEqual(result['boundary_review'],'blocked_split')
         self.assertIn('noncontiguous_or_unaligned_body',result['boundary_findings'])
         # A second entry jumps into the selected return's delay slot.
         raw = bytes.fromhex('0800e003070002240140000800000000')
@@ -114,23 +114,6 @@ class BacklogTests(unittest.TestCase):
         other.write_text(other.read_text()+'\n')
         with self.assertRaisesRegex(RuntimeError,'Out-of-scope'):
             runner.paths(tracked, active)
-
-    def test_missing_or_deferred_review_cannot_reach_validation(self):
-        row = self.rows()[0]
-        directory = self.root/'reports/selected'
-        directory.mkdir()
-        active = {**row,'context':'reports/selected','offset':0,'size':8}
-        session = {'active':active}
-        runner = self.fixture.runner()
-        with patch.object(worker,'validate') as gate:
-            with self.assertRaisesRegex(Rejected,'Missing selected-target'):
-                runner.candidate(session,set(),{},'',{})
-            (directory/'boundary-decision.json').write_text(json.dumps({
-                'identity':key(row),'body_sha256':row['body_sha256'],
-                'decision':'deferred','evidence':'Shared tail needs a grouped strategy'}))
-            with self.assertRaisesRegex(Rejected,'Shared tail'):
-                runner.candidate(session,set(),{},'',{})
-            gate.assert_not_called()
 
     def test_overlay_process_gate_failure_then_equal_address_integration(self):
         rows = self.rows()
@@ -194,41 +177,14 @@ value = 8 if r['image']=='A.BIN' else 7
         self.assertTrue((self.root/'src/overlays/b/entry.c').is_file())
         self.assertNotEqual(state['deferred'][0]['branch'],state['completed'][0]['branch'])
 
-    def test_structural_cache_and_progress_reset_only_when_evidence_improves(self):
-        from reconstruction_runtime import cached_structural, save_structural
-        from reconstruction_step import progress
+    def test_analyzer_limit_is_advisory_and_does_not_block_selection(self):
         rows = self.rows()
-        row = {**rows[0], 'boundary_findings':{'shared_entry':['0x80010004']}, 'context':'reports/selected'}
-        report = {'targets':rows}
-        self.assertFalse(cached_structural(self.root,row,report))
-        save_structural(self.root,row,report)
-        self.assertTrue(cached_structural(self.root,row,report))
-        self.assertFalse(cached_structural(self.root,rows[1],report))
-        changed = copy.deepcopy(report)
-        changed['targets'][0]['body_sha256'] = 'changed'
-        self.assertFalse(cached_structural(self.root,changed['targets'][0],changed))
-        first = progress({},90,100)
-        self.assertEqual(progress(first,89,200)['improved_at'],100)
-        self.assertEqual(progress(first,91,200)['improved_at'],200)
-        self.assertEqual(worker.validation_command(row),['make','validate','IMAGE=A.BIN'])
-
-    def test_plateau_kills_child_and_preserves_no_false_success(self):
-        with self.assertRaisesRegex(worker.CommandTimeout,'No object-score improvement'):
-            worker.command([sys.executable,'-c','import time; time.sleep(10)'],
-                           'plateau',timeout=2,directory=self.root/'reports',stall_seconds=.1)
-
-    def test_detached_start_returns_pid_and_log_without_model_supervision(self):
-        from reconstruction_runtime import start
-        args = self.fixture.runner().args
-        args.stall_seconds, args.retry_structural = 300, False
-        with patch('reconstruction_runtime.subprocess.Popen') as spawn:
-            spawn.return_value.pid = 123
-            start(self.root,args)
-            self.assertTrue(spawn.call_args.kwargs['start_new_session'])
-            self.assertIn('--stall-seconds',spawn.call_args.args[0])
-        launch = json.loads((self.root/'reports/reconstruction/launch.json').read_text())
-        self.assertEqual(launch['pid'],123)
-        self.assertTrue((self.root/launch['log']).is_file())
+        with patch('reconstruction_backlog.analyze_cfg',return_value={'findings':{'analysis_state_limit':['0x80010000']}}):
+            reviewed = prepare(self.root,rows[0],{'targets':rows})
+        self.assertFalse(reviewed['boundary_findings'])
+        self.assertIn('analysis_state_limit',reviewed['boundary_warnings'])
+        with patch.object(worker,'read',return_value={}):
+            self.assertEqual(worker.choose({'targets':rows},{'completed':[],'deferred':[]}),rows[0])
 
     def test_foreground_start_blocks_and_streams_two_targets_in_order(self):
         import io

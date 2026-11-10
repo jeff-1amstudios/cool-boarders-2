@@ -98,8 +98,6 @@ class Runner:
     def __init__(self, worker, args):
         self.w = worker
         self.args = args
-        if getattr(args, "stall_seconds", 300) < 0:
-            raise RuntimeError("Plateau budget must be nonnegative")
         if min(args.limit, args.minutes, args.agent_seconds) < 1:
             raise RuntimeError("Budgets must be positive")
         try:
@@ -182,22 +180,21 @@ class Runner:
             "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
             "Prior attempts and archived candidate sources may be reused from reports/reconstruction/sessions after review and fresh validation.\n"
             f"Add C/headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
-            "Write boundary-decision.json in the context directory: identity, body_sha256, decision (standalone or deferred), and evidence (nonempty text explaining boundaries, callers and data dependencies).\n"
-            "Structural evidence is conservative; if the function cannot safely stand alone, record a concrete blocker and stop.\n"
+            "Explain boundary/dependency conclusions and any concrete blocker in your final response. No review forms are required.\n"
+            "boundary_warnings are heuristic review hints, not proof that C is impossible. Curated holds and factual split blockers remain excluded.\n"
             "Do not edit existing source files, build tools, the reference, compiler recipe, docs or queue metadata.\n"
             "Use readable C. No inline assembly, embedded instruction bytes, section attributes, or preprocessor tricks.\n"
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
             "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
             "Keep reads focused on this context, selected span and relevant callers/callees. Do not dump whole configs, all sources or full build logs.\n"
             "Use tools/.venv/bin/python tools/reconstruction_step.py for every compile/edit iteration. It compiles only your unit and prints a short diff.\n"
-            f"The helper saves progress.json. Plateau timeout: {getattr(self.args, 'stall_seconds', 300)} seconds without score improvement (0 disables). Leave the best candidate in place.\n"
+            "Use the hard time allowance sensibly. Restore your best candidate before finishing; if blocked, explain why and stop.\n"
             "Once the object matches, finish your response; Python independently validates the entire containing EXE/BIN. Optional: reconstruction_step.py --validate.\n"
             "Do not repeatedly run whole-project objdiff or all-image validation. Read object-diff.json when the compact diff is insufficient.\n"
             "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, switch branches, reset, clean or spawn agents.\n"
             "Leave your candidate edits in place. Python independently validates and decides whether to commit.\n"
             "If blocked, leave the best candidate and explain the blocker in your final response.\n")
         (directory / "agent-prompt.md").write_text(prompt)
-        (directory / "instructions.md").write_text(prompt)
         env = os.environ.copy()
         temporary = self.w.ROOT / "tools/tmp/reconstruction-agents"
         temporary.mkdir(parents=True, exist_ok=True)
@@ -211,27 +208,11 @@ class Runner:
             argv += ["--no-daemon", "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
                      "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}",
                      "--ask-for-approval", "never", "exec", "--ephemeral",
-                     "--sandbox", "workspace-write", "--json", "--output-last-message",
-                     env["CB2_AGENT_REPORT"], "-"]
-        self.w.write(directory / "launcher.json", {"argv": argv, "timeout_seconds": seconds})
-        try:
-            self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env,
-                           progress_path=directory / "progress.json", stall_seconds=getattr(self.args, "stall_seconds", 300))
-        finally:
-            from reconstruction_runtime import usage
-            self.w.write(directory / "usage.json", usage(directory / "agent.log"))
+                     "--sandbox", "workspace-write", "--json", "-"]
+        self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
-        if "identity" in active:
-            decision_path = self.w.ROOT / active["context"] / "boundary-decision.json"
-            if not decision_path.is_file():
-                raise Rejected("Missing selected-target boundary decision")
-            decision = self.w.read(decision_path)
-            if (decision.get("identity") != key(active) or decision.get("body_sha256") != active["body_sha256"]
-                    or decision.get("decision") != "standalone" or not isinstance(decision.get("evidence"), str)
-                    or not decision["evidence"].strip()):
-                raise Rejected("Boundary review deferred: " + str(decision.get("evidence", "invalid review")))
         paths = self.paths(tracked, session["active"])
         if not paths:
             raise Rejected("Agent left no candidate edits")
@@ -262,7 +243,7 @@ class Runner:
 
     def reject(self, session, tracked, reason):
         active = session["active"]
-        archive = self.w.ROOT / active["context"] / "rejected"
+        archive = self.w.ROOT / active["context"] / "candidate"
         archive.mkdir(parents=True, exist_ok=True)
         self.w.archive_edits(archive)
         active["failure"] = reason
@@ -303,6 +284,9 @@ class Runner:
             raise RuntimeError("main checkout is not clean after switching from the function branch")
         self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
+        from reconstruction_runtime import attempt_result
+        result = attempt_result(self.w.ROOT, active, "deferred", reason)
+        self.w.write(self.w.ROOT / active["context"] / "result.json", result)
         session["deferred"].append({**active, "reason": reason})
         session["active"] = None
         self.w.save_state(session)
@@ -332,6 +316,8 @@ class Runner:
         self.invariant(session)
         if self.w.changes():
             raise RuntimeError("Integration left unexpected checkout changes")
+        from reconstruction_runtime import attempt_result
+        self.w.write(self.w.ROOT / active["context"] / "result.json", attempt_result(self.w.ROOT, active, "matched"))
         session["completed"].append({**active, "phase": "integrated"})
         session["active"] = None
         self.w.save_state(session)
@@ -342,10 +328,8 @@ class Runner:
             raise RuntimeError("Automatic batches must start on the main integration branch")
         if self.w.read(self.w.REVIEW).get("matching_paused", False):
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
-        self.w.refresh_boundary_evidence()
-        session = self.w.begin_session(self.args.limit, 1, self.args.minutes)
-        session.update(mode="automatic", branch="main", integration_branch="main", integration_head=session["head"],
-                       retry_structural=getattr(self.args, "retry_structural", False))
+        session = self.w.begin_batch(self.args.limit, self.args.minutes)
+        session.update(branch="main", integration_head=session["head"])
         self.w.save_state(session)
         reason = "target limit reached"
         while len(session["completed"]) + len(session["deferred"]) < session["limit"]:
@@ -353,7 +337,7 @@ class Runner:
                 reason = "session time budget exhausted"
                 break
             try:
-                self.w.next_target(session)
+                current_inventory = self.w.next_target(session)
             except self.w.NoTarget:
                 reason = "eligible queue exhausted"
                 break
@@ -369,22 +353,20 @@ class Runner:
             before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
             old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
             tracked = set(self.w.git("ls-files").splitlines())
-            current_inventory = self.w.inventory()
             prior_c = coverage(current_inventory)
             launched = False
             try:
                 if session["active"].get("boundary_findings"):
-                    from reconstruction_runtime import save_structural
-                    save_structural(self.w.ROOT, session["active"], current_inventory)
                     launched = True
-                    raise Rejected("Selected-target structural review: " + json.dumps(session["active"]["boundary_findings"]))
+                    raise Rejected("Selected-target split blocker: " + json.dumps(session["active"]["boundary_findings"]))
                 self.launch(session)
                 launched = True
                 self.invariant(session)
                 paths, expected_hashes = self.candidate(session, tracked, before, old_symbols, prior_c)
             except KeyboardInterrupt:
                 self.reject(session, tracked, "Interrupted during agent/validation; candidate archived")
-                raise
+                reason = "interrupted"
+                break
             except (RuntimeError, subprocess.CalledProcessError, OSError, UnicodeError) as error:
                 self.reject(session, tracked, str(error))
                 if not launched and not isinstance(error, self.w.CommandTimeout):
@@ -408,10 +390,13 @@ class Runner:
             from reconstruction_runtime import summary
             self.w.save_state(session)
             result = summary(self.w.ROOT, session)
-            self.w.write(self.w.ROOT / session["directory"] / "summary.json", result)
-            self.w.write(self.w.STATE.parent / "summary.json", result)
+            session["result"] = session["directory"] + "/result.json"
+            self.w.write(self.w.ROOT / session["result"], result)
+            self.w.save_state(session)
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
-              f"{len(session['deferred'])} deferred. Summary: {self.w.STATE.parent / 'summary.json'}", flush=True)
+              f"{len(session['deferred'])} deferred. Result: {session['result']}", flush=True)
+        if reason == "interrupted":
+            raise KeyboardInterrupt
         if reason.startswith("agent launcher failed"):
             raise RuntimeError(reason)
 

@@ -71,12 +71,10 @@ class RunTests(unittest.TestCase):
         self.git("commit", "-qm", "Fixture baseline")
         self.base = self.git("rev-parse", "HEAD")
         for name, value in {"ROOT": self.root, "STATE": self.root / "reports/reconstruction/state.json",
-                            "INVENTORY": self.root / "reports/reconstruction/inventory.json",
                             "REVIEW": self.root / "config/reconstruction.json"}.items():
             self.stack.enter_context(patch.object(worker, name, value))
         self.stack.enter_context(patch.object(worker, "reference", side_effect=self.reference))
         self.stack.enter_context(patch.object(worker, "inventory", side_effect=self.inventory))
-        self.refresh_boundary_evidence = self.stack.enter_context(patch.object(worker, "refresh_boundary_evidence"))
         self.agent = self.root / "tools/tmp/agent.py"
         self.agent.write_text(textwrap.dedent(r'''
             import json, os, subprocess, sys, yaml
@@ -139,12 +137,16 @@ class RunTests(unittest.TestCase):
         for i, offset in enumerate((0, 8)):
             row = next(r for r in rows if r[0] == offset)
             functions.append({"name": f"func_{0x80010000 + offset:08X}", "address": f"0x{0x80010000 + offset:08X}",
-                "offset": offset, "size": 8, "status": "c" if row[1] == "c" else "assembly",
+                "offset": offset, "size": 8, "status": "c" if row[1] == "c" else "needs_review",
+                "identity": f"SCUS_943.58:0x{0x80010000 + offset:08X}", "image":"SCUS_943.58",
+                "build_config":"scus_943.58.yaml", "symbol_file":"symbol_addrs.txt",
+                "file_offset":offset, "body_bytes":8, "reference_sha256":self.sha,
+                "body_sha256":hashlib.sha256(self.original[offset:offset+8]).hexdigest(),
+                "ranges":[[f"0x{0x80010000+offset:08X}", f"0x{0x80010008+offset:08X}"]],
                 "contiguous": True, "hardware_or_gp": False, "features": [], "classification": "unknown",
                 "boundary_reviewed": True, "boundary_kind": "standalone", "boundary_findings": {},
                 "calls": [], "callers": [], "references": [], "body": "fixture target\n"})
-        report = {"functions": functions}
-        worker.write(worker.INVENTORY, report)
+        report = {"targets": functions}
         return report
 
     def runner(self, mode="match", limit=2):
@@ -153,12 +155,11 @@ class RunTests(unittest.TestCase):
 
     def test_paused_policy_stops_before_session_or_agent_launch(self):
         (self.root / "config/reconstruction.json").write_text('{"matching_paused": true}\n')
-        with patch.object(worker, "begin_session") as begin:
+        with patch.object(worker, "begin_batch") as begin:
             with self.assertRaisesRegex(RuntimeError, "paused.*no batch started"):
                 self.runner().run()
             begin.assert_not_called()
         self.assertFalse((self.root / "reports/agents.jsonl").exists())
-        self.refresh_boundary_evidence.assert_not_called()
         self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
 
     def test_two_functions_use_distinct_processes_and_commits(self):
@@ -169,7 +170,7 @@ class RunTests(unittest.TestCase):
         events = [json.loads(line) for line in (self.root / "reports/agents.jsonl").read_text().splitlines()]
         self.assertEqual(len({e["pid"] for e in events}), 2)
         self.assertEqual(len({e["address"] for e in events}), 2)
-        self.assertEqual([e["branch"] for e in events], ["codex/match-80010000", "codex/match-80010008"])
+        self.assertEqual([e["branch"] for e in events], ["codex/match-SCUS_943_58_0x80010000", "codex/match-SCUS_943_58_0x80010008"])
         self.assertEqual(events[0]["main"], self.base)
         self.assertEqual(events[1]["main"], session["completed"][0]["commit"])
         self.assertEqual(self.git("branch", "--show-current"), "main")
@@ -177,7 +178,7 @@ class RunTests(unittest.TestCase):
         self.assertFalse(worker.changes())
         self.assertEqual((self.root / "build/SCUS_943.58").read_bytes(), self.original)
         for completed in session["completed"]:
-            self.assertTrue((self.root / completed["context"] / "attempt-1/boot-rebuild.json").is_file())
+            self.assertTrue((self.root / completed["context"] / "validation.json").is_file())
             self.assertEqual(self.git("rev-parse", completed["branch"]), completed["commit"])
             self.assertEqual(self.git("rev-parse", completed["commit"] + "^"), completed["base_commit"])
 
@@ -187,8 +188,8 @@ class RunTests(unittest.TestCase):
         self.assertEqual(len(session["deferred"]), 1)
         self.assertEqual(len(session["completed"]), 1)
         failed = self.root / session["deferred"][0]["context"]
-        self.assertIn("return 8", (failed / "rejected/sources.json").read_text())
-        self.assertFalse(worker.read(failed / "attempt-1/boot-rebuild.json")["identical"])
+        self.assertIn("return 8", (failed / "candidate/sources.json").read_text())
+        self.assertFalse(worker.read(failed / "validation.json")["identical"])
         self.assertFalse((self.root / "src/unit_80010000.c").exists())
         self.assertTrue((self.root / "src/unit_80010008.c").exists())
         self.assertFalse(worker.changes())
@@ -272,7 +273,7 @@ class RunTests(unittest.TestCase):
             self.runner("move-main").run()
         self.assertNotEqual(self.git("rev-parse", "main"), self.base)
         self.assertEqual(self.git("log", "-1", "--format=%s", "main"), "Unexpected main update")
-        self.assertEqual(self.git("branch", "--show-current"), "codex/match-80010000")
+        self.assertEqual(self.git("branch", "--show-current"), "codex/match-SCUS_943_58_0x80010000")
 
     def test_wip_helper_refuses_main(self):
         with self.assertRaisesRegex(RuntimeError, "WIP checkpoints require"):
@@ -306,7 +307,7 @@ class RunTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "Committed contents differ"):
             self.runner(limit=1).run()
         self.assertEqual(self.git("rev-parse", "main"), self.base)
-        self.assertEqual(self.git("branch", "--show-current"), "codex/match-80010000")
+        self.assertEqual(self.git("branch", "--show-current"), "codex/match-SCUS_943_58_0x80010000")
         self.assertIn("return 8", self.git("show", "HEAD:src/unit_80010000.c"))
         self.assertFalse(worker.state()["completed"])
 
@@ -316,7 +317,7 @@ class RunTests(unittest.TestCase):
         updated_main = self.git("rev-parse", "main")
         self.runner("match", limit=1).run()
         accepted = worker.state()["completed"][0]
-        self.assertEqual(accepted["branch"], "codex/match-80010000-2")
+        self.assertEqual(accepted["branch"], "codex/match-SCUS_943_58_0x80010000-2")
         self.assertEqual(accepted["base_commit"], updated_main)
         self.assertEqual(self.git("rev-parse", previous["branch"]), previous["checkpoint"])
         self.assertNotIn(previous["checkpoint"], self.git("rev-list", "main").splitlines())
@@ -388,7 +389,7 @@ class RunTests(unittest.TestCase):
         runner = self.runner()
         runner.args.agent_command = None
         runner.launcher = ["codex"]
-        session = worker.begin_session(1, 1, 2)
+        session = worker.begin_batch(1, 2)
         session.update(branch="main", integration_branch="main", integration_head=session["head"])
         worker.next_target(session)
         runner.start_branch(session)

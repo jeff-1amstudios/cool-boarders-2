@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import time
 from itertools import zip_longest
 
 import yaml
@@ -32,13 +31,6 @@ def selected_unit(context):
     if len(spans) != 1:
         raise RuntimeError('Split exactly the selected function into a C unit first')
     return spans[0]['source'].removeprefix('src/').removesuffix('.c')
-
-
-def progress(previous, score, now):
-    improved = previous.get('best_score') is None or score > previous['best_score']
-    return {'score': score, 'best_score': score if improved else previous['best_score'],
-            'improved_at': now if improved else previous['improved_at'],
-            'checks': previous.get('checks', 0) + 1, 'updated_at': now}
 
 
 def check(context_path, full=False):
@@ -85,10 +77,6 @@ def check(context_path, full=False):
                        cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
     report = json.loads(report_path.read_text())
     score = report['units'][0]['measures'].get('fuzzy_match_percent', 0)
-    progress_path = directory / 'progress.json'
-    previous = json.loads(progress_path.read_text()) if progress_path.exists() else {}
-    write(progress_path, {**progress(previous, score, time.time()), 'identity': context['identity'],
-                          'unit': unit, 'source_sha256': digest(ROOT / ('src/' + unit + '.c'))})
     print(f'{unit}: {score:.3f}% (diagnostic only)')
     diff = json.loads(diff_path.read_text())
     right = {s['name']: s for s in diff.get('right', {}).get('symbols', [])}
