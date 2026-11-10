@@ -278,7 +278,12 @@ class Runner:
             new_shared, new_blocks = sections(text)
             review_shared_extension(shared, new_shared)
             identity = key(active)
-            if new_blocks != {**blocks, identity: new_blocks.get(identity)} or identity in blocks:
+            # Appending a FUNCTION marker can add separator whitespace to the
+            # preceding block. Ignore only that trailing whitespace; preserve
+            # exact comparisons of all declarations and function contents.
+            preserved = {name: block.rstrip(' \t\r\n') for name, block in blocks.items()}
+            proposed = {name: block.rstrip(' \t\r\n') for name, block in new_blocks.items()}
+            if proposed != {**preserved, identity: proposed.get(identity)} or identity in blocks:
                 raise Rejected('Existing overlay source or unrelated function blocks changed')
             function_source(text, identity)
         except ValueError as error:
