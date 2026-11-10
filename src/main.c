@@ -19,6 +19,19 @@ extern char init_filename[];
 extern unsigned int D_800580A8;
 extern unsigned long D_800580AC;
 
+extern CdlCB CdSyncCallback(CdlCB callback);
+extern CdlCB CdReadyCallback(CdlCB callback);
+extern unsigned long DrawSyncCallback(void (*callback)(void));
+extern void SpuSetKey(long on_off, unsigned long voice_bits);
+extern void func_8003F094(void);
+extern void func_8001BA78(void);
+extern int ResetGraph(int mode);
+extern void CdFlush(void);
+extern void StopPAD(void);
+extern void func_800178AC(void);
+extern void PadStop(void);
+extern int StopCallback(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -46,4 +59,21 @@ void boot_main(void)
         func_8001263C();
     } while (mode != -1);
     func_80044938();
+}
+
+// FUNCTION: SCUS_943.58:0x80012378
+void func_80012378(void)
+{
+    CdSyncCallback(0);
+    CdReadyCallback(0);
+    DrawSyncCallback(0);
+    SpuSetKey(0, 0xFFFFFF);
+    func_8003F094();
+    func_8001BA78();
+    ResetGraph(3);
+    CdFlush();
+    StopPAD();
+    func_800178AC();
+    PadStop();
+    StopCallback();
 }

@@ -16,4 +16,6 @@ typedef struct CdlFILE {
     char name[16];
 } CdlFILE;
 
+typedef void (*CdlCB)(unsigned char status, unsigned char *result);
+
 #endif

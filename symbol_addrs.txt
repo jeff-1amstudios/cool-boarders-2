@@ -145,3 +145,13 @@ overlay_heap_starts = 0x800100B0; // size:0x38
 CdSearchFile = 0x800424DC; // type:func size:0xF8
 D_800580A8 = 0x800580A8; // size:0x4
 D_800580AC = 0x800580AC; // type:u32 size:0x4
+
+CdSyncCallback = 0x80040814; // type:func
+CdReadyCallback = 0x8004082C; // type:func
+DrawSyncCallback = 0x800296F0; // type:func
+SpuSetKey = 0x8003F3F4; // type:func
+ResetGraph = 0x80029328; // type:func
+CdFlush = 0x80040734; // type:func
+StopPAD = 0x8003CD34; // type:func
+PadStop = 0x8003BD40; // type:func
+StopCallback = 0x8003C038; // type:func

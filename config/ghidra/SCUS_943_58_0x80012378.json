@@ -1,0 +1,35 @@
+{
+  "image": "SCUS_943.58",
+  "address": "0x80012378",
+  "ranges": [
+    [
+      "0x80012378",
+      "0x800123F8"
+    ]
+  ],
+  "body_sha256": "72aef78058fec9db22c922865c394c61be1fe6652b580fd9657e1a0725856e6a",
+  "schema_version": 1,
+  "references": {
+    "SCUS_943.58": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+    "BDEDIT.BIN": "1dfa57a92188ebc15370de2eb6f583283c4225ab6aca6d5fb4377e5a18fff6bc",
+    "BP.BIN": "b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797",
+    "COMB.BIN": "f0ca82e2b50e12013001893d481df64e8037d97f9461b0361b1e3d110ceeb0b4",
+    "ENDING.BIN": "4aebf02df55c2a9cfb4bd1d86c297e4bddb705f6823377b3f056cb2c66404312",
+    "FREE.BIN": "3160df738e593c2a8c695c5a97b223074bc99342006d10c59af222929f4b832e",
+    "HP.BIN": "9e041531c37cb497cc505dd579aa4cb1c90de7a20b13966d373c1affc0bb8757",
+    "INIT.BIN": "870537bf4310495e022e10b6870e0429a9b468441f5420879b05826adb4d959f",
+    "MAIN_SEL.BIN": "4504dbff01a927157b76e4d366c81690a0817a4d0bb0e292cc498b19e22fecde",
+    "MODE_SEL.BIN": "5f817fa3170159e4d193bd25a2e277844f0268bf15a9a433966c702e73c10334",
+    "OMT.BIN": "59f677326310d0c0c90391e20b2f61d9420bd60debf71bcfa433a88f109f9f52",
+    "SBC1.BIN": "8474cc337395402dfa3c910aaa3e8f2c781accfcc38b66b86a96b66204a44af5",
+    "SBC2.BIN": "1837f2d8ca994310346c7ed6644d995c85280dcf4043f2621766416b12fa157b",
+    "TM.BIN": "86a2ad48d483eabbffaafdc6b321ad3ab4cd5f11807befd5bb164647c441a927",
+    "VS.BIN": "034388773372b829104acb024fe4f846bd998553fcad414e89a57a281c092642"
+  },
+  "name": "func_80012378",
+  "declarations": "\n\n\n\n \n\ntypedef struct CdlLOC {\n    unsigned char minute;\n    unsigned char second;\n    unsigned char sector;\n    unsigned char track;\n} CdlLOC;\n\ntypedef struct CdlFILE {\n    CdlLOC pos;\n    unsigned long size;\n    char name[16];\n} CdlFILE;\n\ntypedef void (*CdlCB)(unsigned char status, unsigned char *result);\n\n\nextern void boot_noop(void);\nextern void func_8001228C(void);\nextern void func_80015814(void);\nextern void func_80016EE4(void);\nextern void func_8001B9A4(void);\nextern CdlFILE *CdSearchFile(CdlFILE *file, char *name);\nextern int func_8001C0F4(int *state, int enabled);\nextern int func_800123F8(int overlay, int size);\nextern void func_800142F0(int mode);\nextern void func_80012508(void);\nextern void func_8001B59C(void);\nextern int func_8005AB6C(int *state);\nextern void func_8001B64C(void);\nextern void func_8001263C(void);\nextern void func_80044938(void);\nextern char init_filename[];\nextern unsigned int D_800580A8;\nextern unsigned long D_800580AC;\nextern CdlCB CdSyncCallback(CdlCB callback);\nextern CdlCB CdReadyCallback(CdlCB callback);\nextern unsigned long DrawSyncCallback(void (*callback)(void));\nextern void SpuSetKey(long on_off, unsigned long voice_bits);\nextern void func_8003F094(void);\nextern void func_8001BA78(void);\nextern int ResetGraph(int mode);\nextern void CdFlush(void);\nextern void StopPAD(void);\nextern void func_800178AC(void);\nextern void PadStop(void);\nextern int StopCallback(void);\nvoid func_80012378(void);",
+  "globals": [],
+  "function_evidence": "Current Ghidra pseudocode and all 32 generated instructions agree on void func_80012378(void): no incoming argument registers are read, no parameters are required, and all callee return values are discarded. No incoming callers are recorded in the context or retained assembly references. The routine clears CdSyncCallback and CdReadyCallback with typed null CdlCB callbacks (void callback(unsigned char, unsigned char *)), clears DrawSyncCallback with a null void callback(void), calls SpuSetKey(long, unsigned long) with key-off 0 and the 24-voice mask 0xFFFFFF, and calls ResetGraph(int) with mode 3. CdFlush, PadStop and StopCallback retain the supplied SDK signatures; StopPAD and the three unnamed callees take no observed arguments. Inspection of func_8003F094, func_8001BA78 and func_800178AC confirms no entry-argument dependence; their unused return types remain unproven, and void declarations describe the use here. The selected function has no global accesses, assignments, local storage, casts or raw copies requiring global type propagation. Its 0x80012378 entry follows the preceding return/delay slot at 0x80012370/0x80012374; its return/delay slot at 0x800123F0/0x800123F4 ends immediately before the independent prologue at 0x800123F8. Only its existing 128-byte subsegment was changed to C. The selected-object diagnostic reports 100.000%; containing-image acceptance remains the supervisor's responsibility.",
+  "sequence": 1794306675208093000,
+  "identity": "SCUS_943.58:0x80012378"
+}
