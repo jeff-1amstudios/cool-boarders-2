@@ -18,38 +18,6 @@ class Rejected(RuntimeError):
     """An ordinary unsuccessful candidate, which can be archived and restored."""
 
 
-def review_literal_split(expected, after, unit):
-    """Allow one existing rodata span to supply the selected C object's literals."""
-    candidates = [(i, j, row) for i, segment in enumerate(after['segments']) if isinstance(segment, dict)
-                  for j, row in enumerate(segment.get('subsegments', []))
-                  if isinstance(row, list) and len(row) == 3 and row[1:] == ['.rodata', unit]]
-    if not candidates:
-        return
-    if len(candidates) != 1:
-        raise Rejected('The selected C object needs one contiguous literal rodata span')
-    index, position, literal = candidates[0]
-    proposed = after['segments'][index]['subsegments']
-    if position + 1 >= len(proposed):
-        raise Rejected('Literal rodata needs an explicit end boundary')
-    following = proposed[position + 1]
-    end = following.get('start') if isinstance(following, dict) else following[0]
-    rows = expected['segments'][index].get('subsegments', [])
-    for i, row in enumerate(rows[:-1]):
-        next_row = rows[i + 1]
-        high = next_row.get('start') if isinstance(next_row, dict) else next_row[0]
-        if not (isinstance(row, list) and row[1] == 'rodata' and row[0] <= literal[0] < end <= high):
-            continue
-        replacement = ([row] if row[0] < literal[0] else []) + [literal]
-        if end < high:
-            if (not isinstance(following, list) or len(following) != 3 or following[1] != 'rodata'
-                    or not re.fullmatch(r'[A-Za-z_]\w*', str(following[2]))):
-                raise Rejected('Retained rodata must resume at the literal end')
-            replacement.append(following)
-        rows[i:i + 1] = replacement
-        return
-    raise Rejected('Literal ownership must split one existing retained rodata span')
-
-
 def review_split(before, after, target):
     """Permit only splitting the containing assembly span around the selected C unit."""
     expected = copy.deepcopy(before)
@@ -86,7 +54,6 @@ def review_split(before, after, target):
                     raise Rejected("Retained assembly must resume at the original function end")
                 replacement.append(suffix)
             expected["segments"][index]["subsegments"][i:i + 1] = replacement
-            review_literal_split(expected, after, selected[2])
             if after != expected:
                 raise Rejected("Split changed options, unrelated segments or boundaries")
             return source_file(target)
@@ -241,7 +208,6 @@ class Runner:
             f"Read {directory / 'ghidra/ghidra-types.h'} for relevant layouts/prototypes and context.json ghidra metadata for parameter storage and callees.\n"
             "Adapt that pseudocode to compilable matching C. Use assembly to resolve uncertainty and refine compiler output; do not reconstruct the function from assembly alone.\n"
             "Propagate all known types, including recovered game types, through assignments, initializers, arguments, returns and field accesses. When an unknown local, global or field receives a value of known type, use that type as the destination's inferred type and check its other uses for conflicting evidence. For example, if a global receives file.pos of type CdlLOC, try declaring the global as CdlLOC and assigning file.pos directly; do not default to an integer global with a pointer cast or raw-word copy. Apply the same reasoning to game structs and other known types. Distinguish value assignment from intentional conversion, serialization, byte copying or overlapping storage; preserve uncertainty where uses conflict. Check the selected object's generated instructions. If the inferred typed form cannot match, explain the concrete mismatch and retain the type evidence rather than treating a byte match as proof of a scalar type.\n"
-            "Preserve Ghidra string literals as C literals; do not replace them with extern address symbols to sidestep rodata ownership. You may split one existing retained rodata span into retained rodata / .rodata for this C unit / retained rodata, keeping all original offsets and unrelated boundaries. The .rodata name must equal your C subsegment name; include an explicit following boundary.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
             "Review both boundaries, give only this function a C subsegment and preserve all other configuration.\n"
             "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
@@ -315,9 +281,6 @@ class Runner:
             if new_blocks != {**blocks, identity: new_blocks.get(identity)} or identity in blocks:
                 raise Rejected('Existing overlay source or unrelated function blocks changed')
             function_source(text, identity)
-            from reconstruction_ghidra import literal_tokens
-            if set(active.get('ghidra_literals', [])) - literal_tokens(new_blocks[identity]):
-                raise Rejected('Preserve Ghidra string literals in the selected C function; do not substitute extern address symbols')
         except ValueError as error:
             raise Rejected(str(error)) from error
         subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)

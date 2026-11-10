@@ -15,6 +15,7 @@ extern int func_8005AB6C(int *state);
 extern void func_8001B64C(void);
 extern void func_8001263C(void);
 extern void func_80044938(void); /* SDK exit */
+extern char init_filename[];
 extern unsigned int D_800580A8;
 extern unsigned long D_800580AC;
 
@@ -31,7 +32,7 @@ void boot_main(void)
     func_80015814();
     func_80016EE4();
     func_8001B9A4();
-    CdSearchFile(&file, "\\INIT.BIN;1");
+    CdSearchFile(&file, init_filename);
     D_800580A8 = *(unsigned int *)&file.pos;
     D_800580AC = file.size;
     func_8001C0F4(state, 1);

@@ -91,8 +91,6 @@ def split(name, item, *, reference=False):
             for sub in segment.get("subsegments", []):
                 if isinstance(sub, list) and len(sub) > 1 and sub[1] == "c":
                     sub[1] = "asm"
-                elif isinstance(sub, list) and len(sub) > 1 and sub[1] == ".rodata":
-                    sub[1] = "rodata"
                 elif isinstance(sub, dict) and sub.get("type") == "c":
                     sub["type"] = "asm"
         directory = "build/overlays/" + slug(name) + "/reference"

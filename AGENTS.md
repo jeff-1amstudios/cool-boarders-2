@@ -26,6 +26,4 @@ Use a headless edit → validate → inspect → iterate workflow. Add/edit C an
 
 For automatic batches, start each worker from a fresh headless Ghidra decompilation with SDK names/types and current accepted analysis. The worker iterates only on its selected function with `reconstruction_step.py`; the supervisor owns containing-file validation, commits and transactional Ghidra feedback. Persist accepted types, global typings and prototypes for subsequent decompilations. Failed candidates must not update the saved analysis.
 
-Preserve string literals shown in Ghidra pseudocode as C string literals. Do not replace them with extern symbols merely to avoid compiler-emitted rodata. Assign reviewed literal storage to the owning C object's rodata at its original file position, and retain the exact full-file gate.
-
 Do not add or run unit tests unless the user explicitly requests them. Verify changes with focused headless Ghidra runs and the required exact binary comparisons.
