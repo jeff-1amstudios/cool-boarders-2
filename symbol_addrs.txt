@@ -138,3 +138,6 @@ func_80012AE8 = 0x80012AE8; // type:func size:0x84
 
 func_80012B6C = 0x80012B6C; // type:func size:0xC4
 func_80013340 = 0x80013340; // type:func size:0x314
+func_800123F8 = 0x800123F8; // type:func size:0x110
+overlay_file_indices = 0x80010078; // size:0x38
+overlay_heap_starts = 0x800100B0; // size:0x38
