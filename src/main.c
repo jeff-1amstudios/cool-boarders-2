@@ -32,6 +32,12 @@ extern void func_800178AC(void);
 extern void PadStop(void);
 extern int StopCallback(void);
 
+extern OverlayFileIndices overlay_file_indices;
+extern OverlayHeapStarts overlay_heap_starts;
+extern char *overlay_load_addresses[15];
+extern int func_80013B60(int file_index, char *destination, int offset, int flags);
+extern void func_8001F150(char *heap_start, char *heap_end);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -76,4 +82,19 @@ void func_80012378(void)
     func_800178AC();
     PadStop();
     StopCallback();
+}
+
+// FUNCTION: SCUS_943.58:0x800123F8
+int func_800123F8(int overlay, int size)
+{
+    OverlayFileIndices file_indices;
+    OverlayHeapStarts heap_starts;
+    char *heap_end;
+
+    file_indices = overlay_file_indices;
+    heap_starts = overlay_heap_starts;
+    func_80013B60(file_indices.entries[overlay], overlay_load_addresses[0], 0, 1);
+    heap_end = (char *)0x801F1E00 - size;
+    func_8001F150(heap_starts.entries[overlay], heap_end);
+    return (int)heap_end;
 }

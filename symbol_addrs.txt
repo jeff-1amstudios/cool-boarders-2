@@ -155,3 +155,5 @@ CdFlush = 0x80040734; // type:func
 StopPAD = 0x8003CD34; // type:func
 PadStop = 0x8003BD40; // type:func
 StopCallback = 0x8003C038; // type:func
+func_80013B60 = 0x80013B60; // type:func size:0xC4
+func_8001F150 = 0x8001F150; // type:func size:0x50

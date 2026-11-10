@@ -18,4 +18,12 @@ typedef struct CdlFILE {
 
 typedef void (*CdlCB)(unsigned char status, unsigned char *result);
 
+typedef struct OverlayFileIndices {
+    int entries[14];
+} OverlayFileIndices;
+
+typedef struct OverlayHeapStarts {
+    char *entries[14];
+} OverlayHeapStarts;
+
 #endif

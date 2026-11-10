@@ -69,7 +69,7 @@ segments:
       - [0x29B8, c, boot_main]
       - [0x2A8C, asm, func_8001228C]
       - [0x2B78, c, func_80012378]
-      - [0x2BF8, asm, func_800123F8]
+      - [0x2BF8, c, func_800123F8]
       - [0x2D08, asm, func_80012508]
       - [0x2E3C, asm, func_8001263C]
       - [0x2F70, asm, func_80012770]

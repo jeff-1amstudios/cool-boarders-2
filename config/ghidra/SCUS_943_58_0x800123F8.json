@@ -1,0 +1,57 @@
+{
+  "image": "SCUS_943.58",
+  "address": "0x800123F8",
+  "ranges": [
+    [
+      "0x800123F8",
+      "0x80012508"
+    ]
+  ],
+  "body_sha256": "0a1f8274286585e428fa2d8d1b6f6be50e602fd1ac2d7d7f90b41e025e9ee801",
+  "schema_version": 1,
+  "references": {
+    "SCUS_943.58": "5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4",
+    "BDEDIT.BIN": "1dfa57a92188ebc15370de2eb6f583283c4225ab6aca6d5fb4377e5a18fff6bc",
+    "BP.BIN": "b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797",
+    "COMB.BIN": "f0ca82e2b50e12013001893d481df64e8037d97f9461b0361b1e3d110ceeb0b4",
+    "ENDING.BIN": "4aebf02df55c2a9cfb4bd1d86c297e4bddb705f6823377b3f056cb2c66404312",
+    "FREE.BIN": "3160df738e593c2a8c695c5a97b223074bc99342006d10c59af222929f4b832e",
+    "HP.BIN": "9e041531c37cb497cc505dd579aa4cb1c90de7a20b13966d373c1affc0bb8757",
+    "INIT.BIN": "870537bf4310495e022e10b6870e0429a9b468441f5420879b05826adb4d959f",
+    "MAIN_SEL.BIN": "4504dbff01a927157b76e4d366c81690a0817a4d0bb0e292cc498b19e22fecde",
+    "MODE_SEL.BIN": "5f817fa3170159e4d193bd25a2e277844f0268bf15a9a433966c702e73c10334",
+    "OMT.BIN": "59f677326310d0c0c90391e20b2f61d9420bd60debf71bcfa433a88f109f9f52",
+    "SBC1.BIN": "8474cc337395402dfa3c910aaa3e8f2c781accfcc38b66b86a96b66204a44af5",
+    "SBC2.BIN": "1837f2d8ca994310346c7ed6644d995c85280dcf4043f2621766416b12fa157b",
+    "TM.BIN": "86a2ad48d483eabbffaafdc6b321ad3ab4cd5f11807befd5bb164647c441a927",
+    "VS.BIN": "034388773372b829104acb024fe4f846bd998553fcad414e89a57a281c092642"
+  },
+  "name": "func_800123F8",
+  "declarations": "\n\n\n\n \n\ntypedef struct CdlLOC {\n    unsigned char minute;\n    unsigned char second;\n    unsigned char sector;\n    unsigned char track;\n} CdlLOC;\n\ntypedef struct CdlFILE {\n    CdlLOC pos;\n    unsigned long size;\n    char name[16];\n} CdlFILE;\n\ntypedef void (*CdlCB)(unsigned char status, unsigned char *result);\n\ntypedef struct OverlayFileIndices {\n    int entries[14];\n} OverlayFileIndices;\n\ntypedef struct OverlayHeapStarts {\n    char *entries[14];\n} OverlayHeapStarts;\n\n\nextern void boot_noop(void);\nextern void func_8001228C(void);\nextern void func_80015814(void);\nextern void func_80016EE4(void);\nextern void func_8001B9A4(void);\nextern CdlFILE *CdSearchFile(CdlFILE *file, char *name);\nextern int func_8001C0F4(int *state, int enabled);\nextern int func_800123F8(int overlay, int size);\nextern void func_800142F0(int mode);\nextern void func_80012508(void);\nextern void func_8001B59C(void);\nextern int func_8005AB6C(int *state);\nextern void func_8001B64C(void);\nextern void func_8001263C(void);\nextern void func_80044938(void);\nextern char init_filename[];\nextern unsigned int D_800580A8;\nextern unsigned long D_800580AC;\nextern CdlCB CdSyncCallback(CdlCB callback);\nextern CdlCB CdReadyCallback(CdlCB callback);\nextern unsigned long DrawSyncCallback(void (*callback)(void));\nextern void SpuSetKey(long on_off, unsigned long voice_bits);\nextern void func_8003F094(void);\nextern void func_8001BA78(void);\nextern int ResetGraph(int mode);\nextern void CdFlush(void);\nextern void StopPAD(void);\nextern void func_800178AC(void);\nextern void PadStop(void);\nextern int StopCallback(void);\nextern OverlayFileIndices overlay_file_indices;\nextern OverlayHeapStarts overlay_heap_starts;\nextern char *overlay_load_addresses[15];\nextern int func_80013B60(int file_index, char *destination, int offset, int flags);\nextern void func_8001F150(char *heap_start, char *heap_end);\nint func_800123F8(int overlay, int size);\ntypedef OverlayFileIndices CB2GlobalType_overlay_file_indices;\ntypedef OverlayHeapStarts CB2GlobalType_overlay_heap_starts;\ntypedef char *CB2GlobalType_overlay_load_addresses[15];",
+  "globals": [
+    {
+      "image": "SCUS_943.58",
+      "address": "0x80010078",
+      "name": "overlay_file_indices",
+      "evidence": "Authored extern OverlayFileIndices overlay_file_indices; the 56-byte global contains fourteen int entries 0 through 13, copied by value and indexed to supply func_80013B60 file_index. Its callee scales that index by eight to access file metadata. OverlayFileIndices is an array wrapper, not evidence of additional fields.",
+      "type_alias": "CB2GlobalType_overlay_file_indices"
+    },
+    {
+      "image": "SCUS_943.58",
+      "address": "0x800100B0",
+      "name": "overlay_heap_starts",
+      "evidence": "Authored extern OverlayHeapStarts overlay_heap_starts; fourteen char * entries occupy 56 bytes and are copied by value. The selected pointer is passed directly as heap_start to func_8001F150, which aligns it and writes a heap header there. Data values also agree with rounded overlay ends. No specific heap-header pointee layout is inferred.",
+      "type_alias": "CB2GlobalType_overlay_heap_starts"
+    },
+    {
+      "image": "SCUS_943.58",
+      "address": "0x80010030",
+      "name": "overlay_load_addresses",
+      "evidence": "Authored extern char *overlay_load_addresses[15]; the existing 60-byte symbol holds fifteen resident RAM addresses. This function passes element zero (0x8005AB68) directly as the queued overlay-read destination to func_80013B60. The remaining entries are likewise RAM addresses; no more specific pointee type is established.",
+      "type_alias": "CB2GlobalType_overlay_load_addresses"
+    }
+  ],
+  "function_evidence": "func_800123F8(int overlay, int size): caller boot_main supplies state[0] as the index and state[1] as the size, and stores the returned address word back in state[1]. Both 14-entry tables are copied by value to local aggregates; overlay selects an int file index and a char * heap start. func_80013B60 receives the file index, overlay_load_addresses[0] as a byte-addressable destination, zero, and one. Its body queues the arguments and returns a file size or -1; the precise meaning and signedness of its third argument remain uncertain. func_8001F150 aligns both address arguments and writes the initial heap header, supporting char * heap_start and char * heap_end. The selected function subtracts the byte count from fixed address 0x801F1E00 and intentionally converts that pointer to int to preserve the existing caller contract. Pointer pointee layouts and original table aggregate syntax remain unknown; the authored structs wrap the observed arrays for value copying. Entry 0x800123F8 follows a complete return; the return and delay slot end at 0x80012508, where the next independent function starts. No external branch enters the selected interior. The generated 68 instructions, including complete saved-register restoration, match the 272-byte selected object at 100%.",
+  "sequence": 1794329217348863000,
+  "identity": "SCUS_943.58:0x800123F8"
+}
