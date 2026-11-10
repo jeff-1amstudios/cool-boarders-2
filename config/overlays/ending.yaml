@@ -2,6 +2,7 @@
 name: ENDING.BIN
 sha1: 4aa99bebf0caa4fe34cadefebc134f8f5064fb96
 options:
+  create_c_files: false
   basename: overlay_ending
   target_path: orig/disc/files/ENDING.BIN
   base_path: ../..

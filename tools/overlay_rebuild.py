@@ -12,6 +12,7 @@ import sys
 import yaml
 
 from rebuild import ROOT, PREFIX, compile_c, run
+from c_sources import source_path
 from overlays import load
 
 SUMMARY = ROOT / "reports/overlay-rebuild.json"
@@ -122,8 +123,8 @@ def build_objects(config, recipe, *, reference=False):
         path = Path(name)
         (ROOT / path).parent.mkdir(parents=True, exist_ok=True)
         if not reference and path.parts[:2] == ("build", "src"):
-            compile_c(name, recipe)
-            sources.append(path.relative_to("build").with_suffix(".c").as_posix())
+            compile_c(name, recipe, config)
+            sources.append(source_path(path.relative_to("build/src").with_suffix('')).as_posix())
         else:
             source = path.with_suffix(".s") if reference else path.relative_to("build").with_suffix(".s")
             run([str(PREFIX) + "as", *ASM_FLAGS, "-o", name, source])
@@ -224,9 +225,9 @@ def prepare_objdiff_units(image=None, unit_name=None):
                 continue
             base = Path("build/src") / unit.with_suffix(".o")
             target = Path(reference["options"]["asm_path"]) / unit.with_suffix(".o")
-            compile_c(base, recipe)
+            compile_c(base, recipe, original_config)
             units.append({"name": unit.as_posix(), "target_path": target.as_posix(), "base_path": base.as_posix(),
-                          "metadata": {"source_path": (Path("src") / unit.with_suffix(".c")).as_posix()}})
+                          "metadata": {"source_path": source_path(unit).as_posix()}})
     return units
 
 
@@ -246,7 +247,7 @@ def main():
         _, config = image_config(name, catalog[name])
         if path.relative_to("build/src").with_suffix("") not in c_units(config):
             raise ValueError("Object is not a configured overlay C unit")
-        compile_c(path, json.loads((ROOT / catalog[name].get("compiler_config", "config/compiler.json")).read_text()))
+        compile_c(path, json.loads((ROOT / catalog[name].get("compiler_config", "config/compiler.json")).read_text()), config)
         return 0
     report = rebuild_all(args.overlay)
     return 0 if report["identical"] else 1

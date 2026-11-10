@@ -15,7 +15,7 @@ from rebuild import ROOT, reference
 
 STATE = ROOT / "reports/reconstruction/state.json"
 REVIEW = ROOT / "config/reconstruction.json"
-PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
+PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
              "tools/reconstruct_run.py", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",

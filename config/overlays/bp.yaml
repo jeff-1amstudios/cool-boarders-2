@@ -2,6 +2,7 @@
 name: BP.BIN
 sha1: 65cf986efe1c735dd0618c7939fc316815c06d44
 options:
+  create_c_files: false
   basename: overlay_bp
   target_path: orig/disc/files/BP.BIN
   base_path: ../..

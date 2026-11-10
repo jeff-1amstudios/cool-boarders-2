@@ -63,7 +63,7 @@ class TargetQueueTest(unittest.TestCase):
                                'dir': 'overlays/init', 'subsegments':
                                [[0, 'rodata', 'header'], [4, 'c', 'example'], [12, 'asm', 'rest']]}]}
         self.assertEqual(c_spans(config), [{'address': 0x8005AB6C, 'end': 0x8005AB74,
-                                           'source': 'src/overlays/init/example.c'}])
+                                           'source': 'src/overlays/init.c', 'unit': 'overlays/init/example'}])
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 name: TM.BIN
 sha1: 66c620b602a715f70994bc2019fbc1587cc7cf8b
 options:
+  create_c_files: false
   basename: overlay_tm
   target_path: orig/disc/files/TM.BIN
   base_path: ../..

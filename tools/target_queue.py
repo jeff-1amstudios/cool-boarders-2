@@ -9,6 +9,7 @@ import yaml
 
 from rebuild import ROOT
 from overlays import load, summarize
+from c_sources import source_path
 
 OUTPUT = ROOT / 'reports/reconstruction/targets.json'
 
@@ -28,8 +29,9 @@ def c_spans(config):
                 raise RuntimeError('C unit needs an explicit following boundary')
             start = segment['vram'] + row[0] - segment['start']
             prefix = segment.get('dir', '')
-            source = '/'.join(p for p in ('src', prefix, row[2] + '.c') if p)
-            spans.append({'address': start, 'end': start + end - row[0], 'source': source})
+            unit = '/'.join(p for p in (prefix, row[2]) if p)
+            spans.append({'address': start, 'end': start + end - row[0],
+                          'source': str(source_path(unit)), 'unit': unit})
     return spans
 
 

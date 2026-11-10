@@ -7,6 +7,7 @@ import json
 import re
 import subprocess
 import sys
+from c_sources import object_source, source_path
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = ROOT / "tools/toolchain/bin/mipsel-linux-gnu-"
@@ -31,18 +32,20 @@ def reference():
     return original, target, expected
 
 
-def compile_c(name, recipe):
+def compile_c(name, recipe, config=None):
     """Build one C object, also used by objdiff's per-object make targets."""
     relative = Path(name).relative_to("build")
     if relative.parts[0] != "src" or ".." in relative.parts:
         raise ValueError(f"Not a C object path: {name}")
     compiler = ROOT / "tools/compilers" / recipe["compiler"]
-    source = relative.with_suffix(".c")
+    authored, text = object_source(name, config)
     (ROOT / name).parent.mkdir(parents=True, exist_ok=True)
+    source = ROOT / Path(name).with_suffix(".c")
+    source.write_text(text)
     preprocessed = ROOT / Path(name).with_suffix(".i")
     psyq = ROOT / Path(name).with_suffix(".psyq.s")
     gas = ROOT / Path(name).with_suffix(".gas.s")
-    run([compiler / "cpp", "-P", "-undef", "-nostdinc", source, preprocessed])
+    run([compiler / "cpp", "-P", "-undef", "-nostdinc", "-I", ROOT / authored.parent, source, preprocessed])
     run([compiler / "cc1", "-quiet", *recipe["cc1_flags"], "-o", psyq, preprocessed])
     run([sys.executable, ROOT / "tools/vendor/maspsx/maspsx.py", *recipe["maspsx_flags"], "-G0"],
         input_text=psyq.read_text(), output_path=gas)
@@ -73,7 +76,7 @@ def main():
         relative = Path(name).relative_to("build")
         (ROOT / name).parent.mkdir(parents=True, exist_ok=True)
         if relative.parts[0] == "src":
-            source = relative.with_suffix(".c")
+            source = source_path(relative.relative_to('src').with_suffix(''))
             compile_c(name, recipe)
             c_sources.append(str(source))
         else:
@@ -96,9 +99,10 @@ def main():
         "reference_size": len(target), "rebuilt_size": len(actual),
         "identical": target == actual, "different_bytes": difference_count,
         "first_different_offsets": [f"0x{x:X}" for x in differences[:32]],
-        "c_sources": c_sources,
+        "c_sources": list(dict.fromkeys(c_sources)),
+        "c_objects": len(c_sources),
         "compiler_recipe": recipe,
-        "scope": f"Whole boot executable with {len(c_sources)} C translation units; remaining executable code retained as assembly",
+        "scope": f"Whole boot executable with {len(c_sources)} independently compiled C functions in {len(set(c_sources))} source files; remaining executable code retained as assembly",
     }
     (ROOT / "reports").mkdir(exist_ok=True)
     (ROOT / "reports/boot-rebuild.json").write_text(json.dumps(report, indent=2) + "\n")

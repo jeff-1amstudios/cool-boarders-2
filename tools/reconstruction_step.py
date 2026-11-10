@@ -30,7 +30,7 @@ def selected_unit(context):
              and r['end'] - r['address'] == context['size']]
     if len(spans) != 1:
         raise RuntimeError('Split exactly the selected function into a C unit first')
-    return spans[0]['source'].removeprefix('src/').removesuffix('.c')
+    return spans[0]['unit']
 
 
 def check(context_path, full=False):
@@ -42,6 +42,7 @@ def check(context_path, full=False):
     inputs = [context['build_config'], context['symbol_file'], recipe_path,
               'config/usa-disc.json', 'config/overlays.json', 'tools/objdiff.py',
               'tools/rebuild.py', 'tools/overlay_rebuild.py', 'tools/reconstruction_step.py',
+              'tools/c_sources.py',
               'orig/disc/files/' + context['image']]
     signature = {p: digest(ROOT / p) for p in inputs}
     cache_path = directory / 'object-reference.json'

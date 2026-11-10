@@ -70,7 +70,7 @@ class BacklogTests(unittest.TestCase):
         before = yaml.safe_load((self.root/rows[0]['build_config']).read_text())
         after = copy.deepcopy(before)
         after['segments'][0]['subsegments'][0] = [0,'c','entry']
-        self.assertEqual(review_split(before,after,first),'src/overlays/a/entry.c')
+        self.assertEqual(review_split(before,after,first),'src/overlays/a.c')
         after['segments'][0]['dir'] = 'overlays/b'
         with self.assertRaises(Rejected):
             review_split(before,after,first)
@@ -106,10 +106,10 @@ class BacklogTests(unittest.TestCase):
         tracked = set(self.fixture.git('ls-files').splitlines())
         selected = self.root/rows[0]['build_config']
         selected.write_text(selected.read_text()+'\n')
-        directory = self.root/'src/overlays/a'
+        directory = self.root/'src/overlays'
         directory.mkdir(parents=True)
-        (directory/'entry.c').write_text('int entry(void){return 7;}')
-        self.assertEqual(set(runner.paths(tracked, active)),{rows[0]['build_config'],'src/overlays/a/entry.c'})
+        (directory/'a.c').write_text('int entry(void){return 7;}')
+        self.assertEqual(set(runner.paths(tracked, active)),{rows[0]['build_config'],'src/overlays/a.c'})
         other = self.root/rows[1]['build_config']
         other.write_text(other.read_text()+'\n')
         with self.assertRaisesRegex(RuntimeError,'Out-of-scope'):
@@ -127,7 +127,7 @@ for name in ('a','b'):
     config = yaml.safe_load(Path('config/overlays/'+name+'.yaml').read_text())
     units = [r[2] for r in config['segments'][0]['subsegments'] if r[1]=='c']
     expected = Path('orig/disc/files',image).read_bytes()
-    matched = all('return 7;' in Path('src/overlays',name,n+'.c').read_text() for n in units)
+    matched = all('return 7;' in Path('src/overlays',name+'.c').read_text() for n in units)
     output = Path('build/overlays',name,image)
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_bytes(expected if matched else b'!'+expected[1:])
@@ -150,7 +150,7 @@ config_path.write_text(yaml.safe_dump(config))
 directory = Path(r['source_directory'])
 directory.mkdir(parents=True,exist_ok=True)
 value = 8 if r['image']=='A.BIN' else 7
-(directory/'entry.c').write_text('int func_80010000(void){return '+str(value)+';}')
+(directory/(config_path.stem+'.c')).write_text('// FUNCTION: '+r['identity']+'\\nint func_80010000(void){return '+str(value)+';}')
 (context_path.parent/'boundary-decision.json').write_text(json.dumps({
     'identity':r['identity'],'body_sha256':r['body_sha256'],'decision':'standalone',
     'evidence':'Single normal return and its delay slot; no callers or data dependencies.'}))
@@ -173,8 +173,8 @@ value = 8 if r['image']=='A.BIN' else 7
         self.assertIn('Command failed',state['deferred'][0]['reason'])
         self.assertEqual(self.fixture.git('branch','--show-current'),'main')
         self.assertFalse(worker.changes())
-        self.assertFalse((self.root/'src/overlays/a/entry.c').exists())
-        self.assertTrue((self.root/'src/overlays/b/entry.c').is_file())
+        self.assertFalse((self.root/'src/overlays/a.c').exists())
+        self.assertTrue((self.root/'src/overlays/b.c').is_file())
         self.assertNotEqual(state['deferred'][0]['branch'],state['completed'][0]['branch'])
 
     def test_analyzer_limit_is_advisory_and_does_not_block_selection(self):

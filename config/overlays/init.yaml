@@ -2,6 +2,7 @@
 name: INIT.BIN
 sha1: 95001d77cb82fa9b91cd9fd251b9293fa47f5749
 options:
+  create_c_files: false
   basename: overlay_init
   target_path: orig/disc/files/INIT.BIN
   base_path: ../..

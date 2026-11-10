@@ -8,6 +8,7 @@ import json
 import re
 import subprocess
 import sys
+from c_sources import object_source
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = str(ROOT / "tools/toolchain/bin/mipsel-linux-gnu-")
@@ -29,7 +30,9 @@ def trial(compiler_name, optimization, small_data, aspsx, probe):
     directory = ROOT / "build/compiler-probes" / name
     directory.mkdir(parents=True, exist_ok=True)
     compiler = ROOT / "tools/compilers" / compiler_name
-    source = ROOT / "src" / (probe["name"] + ".c")
+    authored, text = object_source('build/src/' + probe['name'] + '.o')
+    source = directory / 'probe.c'
+    source.write_text(text)
     address = int(probe["address"], 16)
     expected = REFERENCE[address - 0x80010000 + 0x800:address - 0x80010000 + 0x800 + probe["size"]]
     record = {"compiler": compiler_name, "optimization": optimization, "G": small_data,
@@ -38,7 +41,7 @@ def trial(compiler_name, optimization, small_data, aspsx, probe):
     with (directory / "commands.log").open("w") as log:
         try:
             preprocessed = directory / "probe.i"
-            command([compiler / "cpp", "-P", "-undef", "-nostdinc", source, preprocessed], log)
+            command([compiler / "cpp", "-P", "-undef", "-nostdinc", "-I", ROOT / authored.parent, source, preprocessed], log)
             raw = directory / "probe.psyq.s"
             command([compiler / "cc1", "-quiet", "-" + optimization, f"-G{small_data}",
                      "-mips1", "-o", raw, preprocessed], log)

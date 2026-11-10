@@ -65,7 +65,8 @@ class GateTests(unittest.TestCase):
             (root / "reports").mkdir()
             for name in ("objdiff.json", "boot-rebuild.json"):
                 (root / "reports" / name).write_text("stale success")
-            with patch.object(validation, "ROOT", root), patch.object(validation, "clear_reports") as clear, \
+            with patch.object(sys, "argv", ['validate.py']), \
+                 patch.object(validation, "ROOT", root), patch.object(validation, "clear_reports") as clear, \
                  patch.object(validation, "run"), patch.object(validation.subprocess, "run", side_effect=[
                      subprocess.CompletedProcess([], 0), subprocess.CompletedProcess([], 1)]) as build:
                 self.assertEqual(validation.main(), 1)
@@ -87,7 +88,7 @@ class CIntegrationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(prefix="overlay-c-", dir=temporary) as tmp:
             directory = Path(tmp)
             unit = directory.name.replace("-", "_")
-            source = overlay.ROOT / "src/overlays/tm" / (unit + ".c")
+            source = overlay.ROOT / "src/overlays/tm.c"
             source.parent.mkdir(parents=True, exist_ok=True)
             self.assertFalse(source.exists())
             sections = config["segments"][0]["subsegments"]
@@ -100,7 +101,7 @@ class CIntegrationTests(unittest.TestCase):
             log = overlay.ROOT / "reports/overlays/c-build-smoke.log"
             log.parent.mkdir(parents=True, exist_ok=True)
             try:
-                source.write_text("void func_80062E84(void) {}\n")
+                source.write_text("// FUNCTION: TM.BIN:0x80062E84\nvoid func_80062E84(void) {}\n")
                 with log.open("w") as output, contextlib.redirect_stdout(output), \
                      patch.object(overlay, "configs", return_value={"TM.BIN": item}):
                     units = overlay.prepare_objdiff_units()
@@ -120,7 +121,7 @@ class CIntegrationTests(unittest.TestCase):
                     symbols = json.loads(diff.read_text())["left"]["symbols"]
                     function = next(s for s in symbols if s["name"] == "func_80062E84")
                     self.assertEqual(function["match_percent"], 100)
-                    source.write_text("int func_80062E84(void) { return 1; }\n")
+                    source.write_text("// FUNCTION: TM.BIN:0x80062E84\nint func_80062E84(void) { return 1; }\n")
                     mismatch = overlay.rebuild_image("TM.BIN", item)
                     self.assertFalse(mismatch["identical"])
                     self.assertGreater(mismatch["different_bytes"], 0)

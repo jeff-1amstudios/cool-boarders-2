@@ -2,6 +2,7 @@
 name: SBC1.BIN
 sha1: ea7393462b18c63663d55837f92b6e193154e26f
 options:
+  create_c_files: false
   basename: overlay_sbc1
   target_path: orig/disc/files/SBC1.BIN
   base_path: ../..

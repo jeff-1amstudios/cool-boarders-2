@@ -3,6 +3,7 @@
 name: MAIN_SEL.BIN
 sha1: 238c3ee1b8c2bbce6b01685e83ee567e8a70c0aa
 options:
+  create_c_files: false
   basename: overlay_main_sel
   target_path: orig/disc/files/MAIN_SEL.BIN
   base_path: ../..

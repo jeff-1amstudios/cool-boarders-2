@@ -2,6 +2,7 @@
 name: OMT.BIN
 sha1: a60f029670a28dec634cab5ffef32e17bf3f52d9
 options:
+  create_c_files: false
   basename: overlay_omt
   target_path: orig/disc/files/OMT.BIN
   base_path: ../..

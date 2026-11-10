@@ -2,6 +2,7 @@
 name: MODE_SEL.BIN
 sha1: fad07af8be0e8f6867adee86d69179e95511b139
 options:
+  create_c_files: false
   basename: overlay_mode_sel
   target_path: orig/disc/files/MODE_SEL.BIN
   base_path: ../..

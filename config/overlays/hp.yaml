@@ -2,6 +2,7 @@
 name: HP.BIN
 sha1: 0efcbf867d8bf45618a168099eed351f99feb710
 options:
+  create_c_files: false
   basename: overlay_hp
   target_path: orig/disc/files/HP.BIN
   base_path: ../..

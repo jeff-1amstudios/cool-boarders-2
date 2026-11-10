@@ -10,7 +10,8 @@ import time
 from pathlib import Path
 
 import yaml
-from reconstruction_backlog import key, slug, source_dir, coverage
+from reconstruction_backlog import key, slug, source_dir, source_file, coverage
+from c_sources import sections, function_source
 
 
 class Rejected(RuntimeError):
@@ -55,16 +56,16 @@ def review_split(before, after, target):
             expected["segments"][index]["subsegments"][i:i + 1] = replacement
             if after != expected:
                 raise Rejected("Split changed options, unrelated segments or boundaries")
-            return f"{source_dir(target)}/{selected[2]}.c"
+            return source_file(target)
     raise Rejected("Target is outside a reviewed assembly span")
 
 
 def review_source(root, paths, entry, symbol, *, checkpoint=False):
     """Conservative syntax checks, not a proof of readability or semantic C."""
     if not checkpoint and entry not in paths:
-        raise Rejected("Selected C translation unit was not added")
+        raise Rejected("Selected overlay C source was not edited")
     if not checkpoint and any(Path(p).suffix == ".c" and p != entry for p in paths):
-        raise Rejected("Automatic candidates may add only the selected C translation unit")
+        raise Rejected("Automatic candidates may edit only the selected overlay C source")
     pending = [root / p for p in paths if Path(p).suffix in (".c", ".h")]
     seen = set()
     while pending:
@@ -78,6 +79,13 @@ def review_source(root, paths, entry, symbol, *, checkpoint=False):
         if re.search(r"/\*\s*[0-9A-Fa-f]+\s+8[0-9A-Fa-f]{7}\s+[0-9A-Fa-f]{8}\s*\*/", text):
             raise Rejected(f"Raw disassembly comments in {path.name}")
         clean = re.sub(r"/\*.*?\*/|//[^\n]*", " ", text.replace("\\\n", ""), flags=re.S)
+        if path.suffix == '.c' and re.search(r'\b(?:struct|union)\s*(?:[A-Za-z_]\w*\s*)?\{', clean):
+            raise Rejected(f"Struct and union definitions belong in shared headers: {path.name}")
+        if path.suffix == '.c':
+            _, blocks = sections(text)
+            body = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', ''.join(blocks.values()), flags=re.S)
+            if re.search(r'\bextern\b', body):
+                raise Rejected(f"Extern declarations belong at the top before FUNCTION annotations: {path.name}")
         if re.search(r"\b(?:asm|__asm|__asm__|INCLUDE_ASM|GLOBAL_ASM|__attribute__)\b|\.(?:incbin|word|byte)\b|##", clean):
             raise Rejected(f"Assembly/byte embedding or section attributes in {path.name}")
         if re.search(r'\[[^\]]*\]\s*=\s*(?:\{|")', clean):
@@ -92,6 +100,24 @@ def review_source(root, paths, entry, symbol, *, checkpoint=False):
                 raise Rejected(f"Unsupported preprocessor directive in {path.name}")
         if not checkpoint and path == root / entry and not re.search(r"\b" + re.escape(symbol) + r"\s*\([^;{}]*\)\s*\{", clean):
             raise Rejected("Selected function definition is missing from its C unit")
+
+
+def review_header_extension(before, after):
+    """Allow new types before the closing guard without changing established layouts."""
+    closing = re.search(r'(?m)^#endif[^\S\n]*\n?\Z', before)
+    if (closing is None or not after.startswith(before[:closing.start()])
+            or not after.endswith(before[closing.start():])):
+        raise Rejected('Existing header declarations or guard changed; append before the final #endif')
+
+
+def review_shared_extension(before, after):
+    """Permit new top-level externs/includes while protecting established declarations."""
+    if not after.startswith(before):
+        raise Rejected('Existing shared declarations changed')
+    added = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', after[len(before):], flags=re.S)
+    added = re.sub(r'\bextern\s+[^;{}=]+;|#[ \t]*include[ \t]+"[A-Za-z_]\w*\.h"', '', added)
+    if added.strip():
+        raise Rejected('Only extern declarations and local includes may be added before FUNCTION annotations')
 
 
 class Runner:
@@ -158,9 +184,10 @@ class Runner:
         changed = self.w.changes()
         for name in changed:
             path = Path(name)
-            allowed = (name in (active.get("build_config", "scus_943.58.yaml"), active.get("symbol_file", "symbol_addrs.txt"))
+            allowed = (name in (source_file(active), str(Path(source_file(active)).with_suffix('.h')),
+                               active.get("build_config", "scus_943.58.yaml"), active.get("symbol_file", "symbol_addrs.txt"))
                        or (name not in tracked and path.parent == directory
-                           and path.suffix in (".c", ".h")))
+                           and path.suffix == ".h"))
             candidate = self.w.ROOT / path
             if (not allowed or path.is_absolute() or ".." in path.parts or candidate.is_symlink()
                     or not candidate.is_file() or not candidate.resolve().is_relative_to(self.w.ROOT)):
@@ -178,13 +205,16 @@ class Runner:
             f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
-            "Review both boundaries, split only this function into a new C unit and preserve all other configuration.\n"
+            "Review both boundaries, give only this function a C subsegment and preserve all other configuration.\n"
             "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
             "Start from current main. Do not restore candidates from earlier failed attempts.\n"
-            f"Add C/headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
+            f"Append the function to {source_file(active)}, starting with // FUNCTION: {key(active)}.\n"
+            "Keep all extern declarations together at the top, before the first FUNCTION annotation. Reuse existing declarations; append new externs to that shared block. Each annotation owns only the function text until the next annotation.\n"
+            f"Define structs and unions once in headers. Reuse existing types in {Path(source_file(active)).with_suffix('.h')}; add new types before its final #endif or create a guarded local header. Do not duplicate layouts in C.\n"
+            f"Add headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
             "Explain boundary/dependency conclusions and any concrete blocker in your final response. No review forms are required.\n"
             "boundary_warnings are heuristic review hints, not proof that C is impossible. Curated holds and factual split blockers remain excluded.\n"
-            "Do not edit existing source files, build tools, the reference, compiler recipe, docs or queue metadata.\n"
+            "Preserve existing annotated blocks, shared declarations and header definitions exactly. Add only externs/local includes at the end of the shared top block, and append new types before the image header's final #endif. Do not edit other existing source files, build tools, the reference, compiler recipe, docs or queue metadata.\n"
             "Use readable C. No inline assembly, embedded instruction bytes, section attributes, or preprocessor tricks.\n"
             "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
             "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
@@ -227,9 +257,31 @@ class Runner:
         if not symbols.startswith(old_symbols):
             raise Rejected("Existing symbol definitions were changed")
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
+        for name in paths:
+            if name in tracked and Path(name).suffix == '.h':
+                previous_header = subprocess.check_output(['git', 'show', f'HEAD:{name}'], cwd=self.w.ROOT).decode()
+                review_header_extension(previous_header, (self.w.ROOT / name).read_text())
+        text = (self.w.ROOT / entry).read_text()
+        try:
+            previous = ''
+            # Read bytes directly: git() strips whitespace, which is significant here.
+            if entry in tracked:
+                previous = subprocess.check_output(['git', 'show', f'HEAD:{entry}'], cwd=self.w.ROOT).decode()
+            shared, blocks = sections(previous)
+            new_shared, new_blocks = sections(text)
+            review_shared_extension(shared, new_shared)
+            identity = key(active)
+            if new_blocks != {**blocks, identity: new_blocks.get(identity)} or identity in blocks:
+                raise Rejected('Existing overlay source or unrelated function blocks changed')
+            function_source(text, identity)
+        except ValueError as error:
+            raise Rejected(str(error)) from error
         subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)
         if "image" in active:
-            active["unit"] = entry.removeprefix("src/").removesuffix(".c")
+            active["unit"] = next('/'.join(p for p in (s.get('dir', ''), r[2]) if p)
+                                  for s in after['segments'] if isinstance(s, dict)
+                                  for r in s.get('subsegments', []) if isinstance(r, list)
+                                  and r[1] == 'c' and s['vram'] + r[0] - s['start'] == int(active['address'], 16))
         expected_hashes = self.w.content_hashes(paths)
         current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
         now_c = coverage(current)

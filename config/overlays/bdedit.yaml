@@ -2,6 +2,7 @@
 name: BDEDIT.BIN
 sha1: 161420f506831dbce8824daf3e152c05765c8c63
 options:
+  create_c_files: false
   basename: overlay_bdedit
   target_path: orig/disc/files/BDEDIT.BIN
   base_path: ../..

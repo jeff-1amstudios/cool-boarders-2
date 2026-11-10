@@ -16,7 +16,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import reconstruct as worker
-from reconstruct_run import Runner, Rejected, review_source, review_split
+from reconstruct_run import Runner, Rejected, review_source, review_split, review_header_extension, review_shared_extension
 
 
 class RunTests(unittest.TestCase):
@@ -50,14 +50,14 @@ class RunTests(unittest.TestCase):
             config = yaml.safe_load(Path('scus_943.58.yaml').read_text())
             units = [r[2] for r in config['segments'][0]['subsegments'] if r[1] == 'c']
             expected = Path('orig/disc/files/SCUS_943.58').read_bytes()
-            passed = all(re.search(r'\breturn\s+7\s*;', Path('src', n+'.c').read_text()) for n in units)
+            passed = all(re.search(r'\breturn\s+7\s*;', Path('src/main.c').read_text().split('// FUNCTION: SCUS_943.58:0x'+n.removeprefix('unit_'))[1].split('// FUNCTION:')[0]) for n in units)
             actual = expected if passed else b'!' + expected[1:]
             Path('build').mkdir(exist_ok=True)
             Path('reports').mkdir(exist_ok=True)
             Path('build/SCUS_943.58').write_bytes(actual)
             report = {'identical': passed, 'different_bytes': int(not passed),
                       'reference_sha256': hashlib.sha256(expected).hexdigest(),
-                      'c_sources': ['src/'+n+'.c' for n in units]}
+                      'c_sources': ['src/main.c'] if units else []}
             Path('reports/boot-rebuild.json').write_text(json.dumps(report))
             Path('reports/objdiff.json').write_text(json.dumps({'units': []}))
             sys.exit(0 if passed else 1)
@@ -109,7 +109,11 @@ class RunTests(unittest.TestCase):
             result = 8 if mode in ('lie', 'mixed') and address == '0x80010000' else 7
             extra = '__asm__("nop");' if mode == 'assembly' else ''
             Path('src').mkdir(exist_ok=True)
-            Path('src', unit+'.c').write_text('int '+context['name']+'(void) {'+extra+'return '+str(result)+';}\n')
+            with Path('src/main.c').open('a') as out:
+                out.write('// FUNCTION: '+context['identity']+'\nint '+context['name']+'(void) {'+extra+'return '+str(result)+';}\n')
+            if mode == 'tamper':
+                source = Path('src/main.c')
+                source.write_text(source.read_text().replace('return 7', 'return 8', 1))
             if mode == 'lie':
                 Path('reports/boot-rebuild.json').write_text('{"identical": true}')
                 Path('build/SCUS_943.58').write_bytes(Path('orig/disc/files/SCUS_943.58').read_bytes())
@@ -190,14 +194,21 @@ class RunTests(unittest.TestCase):
         failed = self.root / session["deferred"][0]["context"]
         self.assertIn("return 8", (failed / "candidate/sources.json").read_text())
         self.assertFalse(worker.read(failed / "validation.json")["identical"])
-        self.assertFalse((self.root / "src/unit_80010000.c").exists())
-        self.assertTrue((self.root / "src/unit_80010008.c").exists())
+        self.assertNotIn("func_80010000", (self.root / "src/main.c").read_text())
+        self.assertTrue((self.root / "src/main.c").exists())
         self.assertFalse(worker.changes())
         deferred = session["deferred"][0]
         self.assertEqual(self.git("rev-parse", deferred["branch"]), deferred["checkpoint"])
-        self.assertIn("return 8", self.git("show", deferred["branch"] + ":src/unit_80010000.c"))
+        self.assertIn("return 8", self.git("show", deferred["branch"] + ":src/main.c"))
         self.assertNotIn(deferred["checkpoint"], self.git("rev-list", "main").splitlines())
         self.assertEqual(self.git("branch", "--show-current"), "main")
+
+    def test_existing_function_block_is_protected_in_shared_source(self):
+        self.runner(limit=1).run()
+        previous = (self.root / 'src/main.c').read_text()
+        self.runner('tamper', limit=1).run()
+        self.assertEqual((self.root / 'src/main.c').read_text(), previous)
+        self.assertIn('Existing overlay source', worker.state()['deferred'][0]['reason'])
 
     def test_agent_claim_and_forged_success_do_not_authorize_commit(self):
         self.runner("lie", limit=1).run()
@@ -300,26 +311,26 @@ class RunTests(unittest.TestCase):
         hook = self.root / ".git/hooks/pre-commit"
         hook.write_text("#!/bin/sh\n" + shlex.quote(sys.executable) + " - <<'PY'\n"
             "from pathlib import Path\n"
-            "p=Path('src/unit_80010000.c')\n"
+            "p=Path('src/main.c')\n"
             "p.write_text(p.read_text().replace('return 7', 'return 8'))\n"
-            "PY\ngit add -- src/unit_80010000.c\n")
+            "PY\ngit add -- src/main.c\n")
         hook.chmod(0o755)
         with self.assertRaisesRegex(RuntimeError, "Committed contents differ"):
             self.runner(limit=1).run()
         self.assertEqual(self.git("rev-parse", "main"), self.base)
         self.assertEqual(self.git("branch", "--show-current"), "codex/match-SCUS_943_58_0x80010000")
-        self.assertIn("return 8", self.git("show", "HEAD:src/unit_80010000.c"))
+        self.assertIn("return 8", self.git("show", "HEAD:src/main.c"))
         self.assertFalse(worker.state()["completed"])
 
-    def test_retry_preserves_old_wip_and_starts_from_latest_main(self):
+    def test_retry_reuses_branch_and_starts_from_latest_main(self):
         self.runner("mixed").run()
         previous = worker.state()["deferred"][0]
         updated_main = self.git("rev-parse", "main")
         self.runner("match", limit=1).run()
         accepted = worker.state()["completed"][0]
-        self.assertEqual(accepted["branch"], "codex/match-SCUS_943_58_0x80010000-2")
+        self.assertEqual(accepted["branch"], "codex/match-SCUS_943_58_0x80010000")
         self.assertEqual(accepted["base_commit"], updated_main)
-        self.assertEqual(self.git("rev-parse", previous["branch"]), previous["checkpoint"])
+        self.assertEqual(self.git("rev-parse", previous["branch"]), accepted["commit"])
         self.assertNotIn(previous["checkpoint"], self.git("rev-list", "main").splitlines())
         self.assertEqual(self.git("branch", "--show-current"), "main")
 
@@ -357,7 +368,7 @@ class RunTests(unittest.TestCase):
         validate = worker.validate
         def changed_after_build(session):
             result = validate(session)
-            source = self.root / "src/unit_80010000.c"
+            source = self.root / "src/main.c"
             source.write_text(source.read_text().replace("return 7", "return 8"))
             return result
         with patch.object(worker, "validate", side_effect=changed_after_build):
@@ -413,13 +424,42 @@ class RunTests(unittest.TestCase):
     def test_unrelated_boundary_and_raw_array_rejected(self):
         proposed = copy.deepcopy(self.config)
         proposed["segments"][0]["subsegments"][0] = [0, "c", "new_unit"]
-        self.assertEqual(review_split(self.config, proposed, {"offset": 0, "size": 8}), "src/new_unit.c")
+        self.assertEqual(review_split(self.config, proposed, {"offset": 0, "size": 8}), "src/main.c")
         proposed["options"]["compiler"] = "different"
         with self.assertRaises(Rejected):
             review_split(self.config, proposed, {"offset": 0, "size": 8})
         (self.root / "src/new_unit.c").write_text('int func(void) {unsigned char bytes[]={8,0,224,3}; return 7;}')
         with self.assertRaisesRegex(Rejected, "Initialized arrays"):
             review_source(self.root, ["src/new_unit.c"], "src/new_unit.c", "func")
+
+    def test_struct_definitions_live_in_headers_and_existing_layouts_are_protected(self):
+        header = '#ifndef TYPES_H\n#define TYPES_H\ntypedef struct { int x; } Point;\n\n#endif\n'
+        extended = header.removesuffix('#endif\n') + 'typedef struct { Point start; } Line;\n\n#endif\n'
+        review_header_extension(header, extended)
+        with self.assertRaisesRegex(Rejected, 'Existing header'):
+            review_header_extension(header, extended.replace('int x;', 'short x;'))
+        source = self.root / 'src/example.c'
+        source.write_text('typedef struct { int x; } Point;\nint example(void) {return 7;}\n')
+        with self.assertRaisesRegex(Rejected, 'belong in shared headers'):
+            review_source(self.root, ['src/example.c'], 'src/example.c', 'example')
+        (self.root / 'src/types.h').write_text(extended)
+        source.write_text('#include "types.h"\nint example(void) {Point p; p.x = 7; return p.x;}\n')
+        review_source(self.root, ['src/example.c', 'src/types.h'], 'src/example.c', 'example')
+
+    def test_externs_are_shared_at_top_and_existing_declarations_are_protected(self):
+        shared = 'extern int existing;\n\n'
+        review_shared_extension(shared, shared + 'extern int added;\n\n')
+        with self.assertRaisesRegex(Rejected, 'Existing shared declarations'):
+            review_shared_extension(shared, shared.replace('int existing', 'short existing'))
+        with self.assertRaisesRegex(Rejected, 'Only extern declarations'):
+            review_shared_extension(shared, shared + 'int definition = 7;\n')
+        source = self.root / 'src/example.c'
+        block = '// FUNCTION: SCUS_943.58:0x80010000\nint example(void) {return existing;}\n'
+        source.write_text(shared + block)
+        review_source(self.root, ['src/example.c'], 'src/example.c', 'example')
+        source.write_text('// FUNCTION: SCUS_943.58:0x80010000\n' + shared + 'int example(void) {return existing;}\n')
+        with self.assertRaisesRegex(Rejected, 'Extern declarations belong at the top'):
+            review_source(self.root, ['src/example.c'], 'src/example.c', 'example')
 
     def test_split_preserves_embedded_data_dictionary_and_its_position(self):
         before = copy.deepcopy(self.config)
@@ -431,7 +471,7 @@ class RunTests(unittest.TestCase):
         for offset, index in [(0, 0), (12, 2)]:
             proposed = copy.deepcopy(before)
             proposed["segments"][0]["subsegments"][index] = [offset, "c", "unit"]
-            self.assertEqual(review_split(before, proposed, {"offset": offset, "size": 8}), "src/unit.c")
+            self.assertEqual(review_split(before, proposed, {"offset": offset, "size": 8}), "src/main.c")
             proposed["segments"][0]["subsegments"][1]["linker_section"] = ".data"
             with self.assertRaises(Rejected):
                 review_split(before, proposed, {"offset": offset, "size": 8})

@@ -22,7 +22,7 @@ Run `make target-list` to rebuild the complete image-qualified backlog: 3,967 de
 
 **The legacy automatic boot-only worker remains paused until it is connected to the complete backlog.** The [boundary audit](docs/function-boundaries.md) records corrected shared entries, embedded data, BIOS boundaries, SDK leads, and the reviewed Ghidra/export workflow. Use `make boundary-audit` to refresh it. Automatic selection now requires a byte-bound standalone review; library candidates are excluded by default.
 
-Add or edit a function in `src/`; for a new C unit, replace its reviewed `asm` subsegment with a `c` subsegment in `scus_943.58.yaml`, preserving the original boundaries. Then run:
+Add or edit functions in `src/main.c` for the boot executable, or `src/overlays/<overlay>.c` for an overlay. Start each function block with `// FUNCTION: <image>:0x<ADDRESS>` (for example `// FUNCTION: SCUS_943.58:0x800121B8`). Keep all extern declarations together at the top, before the first function annotation; define structs once in guarded headers and reuse them. `src/main.h` holds the boot layouts and is included before the first annotation so every extracted function sees them. Text before the first annotation is shared. Do not create per-function source files. The build extracts blocks into generated C and keeps independent objects and diagnostics to preserve matching compiler output. For a new C function, replace its reviewed `asm` subsegment with a `c` subsegment in the image's Splat configuration, preserving the original boundaries. The subsegment name identifies the object, not an authored source file. Then run:
 
 ```sh
 make validate        # also the default make / make verify workflow

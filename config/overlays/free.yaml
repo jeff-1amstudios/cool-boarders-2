@@ -2,6 +2,7 @@
 name: FREE.BIN
 sha1: 7404e46da33e1bf32364a2d8719910364d8715d0
 options:
+  create_c_files: false
   basename: overlay_free
   target_path: orig/disc/files/FREE.BIN
   base_path: ../..

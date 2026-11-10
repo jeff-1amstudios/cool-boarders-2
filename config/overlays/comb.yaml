@@ -2,6 +2,7 @@
 name: COMB.BIN
 sha1: f38029bda31b0958cb4cea8878bb52eb8eaeca40
 options:
+  create_c_files: false
   basename: overlay_comb
   target_path: orig/disc/files/COMB.BIN
   base_path: ../..

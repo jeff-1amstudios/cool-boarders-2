@@ -20,7 +20,7 @@ for (i = 0; i < 8; i++) {
 
 Under our working recipe this has the right 88-byte size, but ten bytes differ. The pointer occupies `$s1` and the counter `$s0`; the original uses the opposite allocation. That affects the prologue and loop operand encodings. Functional plausibility and the earlier 97.64% object score were insufficient.
 
-The matching reconstruction in [word_call_loop.c](../src/word_call_loop.c) uses:
+The matching reconstruction in [word_call_loop.c](../src/main.c) uses:
 
 ```c
 for (i = 0; i < 8; i++) {
@@ -63,16 +63,16 @@ All ten are integrated C and pass full-file comparison. The aggregate objdiff re
 
 | Address | Source | Bytes | Useful evidence |
 | --- | --- | ---: | --- |
-| `0x800166A4` | [fill_slots.c](../src/fill_slots.c) | 56 | Local byte value and local base pointer recover the backward fill's address hoisting and allocation. |
-| `0x8001742C` | [state_transition.c](../src/state_transition.c) | 68 | `state == 1 || state == 2` becomes a range check; signed halfword is extended into a word. |
-| `0x80017AC0` | [word_find_call.c](../src/word_find_call.c) | 88 | Indexed early-exit search keeps pointer advancement after the nonzero-result test. |
-| `0x80017B18` | [four_word_calls.c](../src/four_word_calls.c) | 76 | Indexing recovers another call loop's saved-register choices. |
-| `0x800181D4` | [byte_fold.c](../src/byte_fold.c) | 92 | Unsigned byte loads, explicit shift masks, unsigned loop bound and seed constant. |
-| `0x8001A3DC` | [copy_bytes.c](../src/copy_bytes.c) | 52 | Forward copy with unsigned count and zero-count guard. |
-| `0x8001ADC8` | [copy_record_payload.c](../src/copy_record_payload.c) | 76 | Indexed second source fixes the first loop's destination-pointer register. |
-| `0x8001C0F4` | [clear_words_flag.c](../src/clear_words_flag.c) | 60 | Descending word clear, conditional initialization, constant return. |
-| `0x8001E560` | [copy_bounded_name.c](../src/copy_bounded_name.c) | 76 | Potential aliasing requires a second source load after the store. |
-| `0x8002FCEC` | [positive_bit_length.c](../src/positive_bit_length.c) | 28 | Signed arithmetic shift; zero and negative inputs return zero. |
+| `0x800166A4` | [fill_slots.c](../src/main.c) | 56 | Local byte value and local base pointer recover the backward fill's address hoisting and allocation. |
+| `0x8001742C` | [state_transition.c](../src/main.c) | 68 | `state == 1 || state == 2` becomes a range check; signed halfword is extended into a word. |
+| `0x80017AC0` | [word_find_call.c](../src/main.c) | 88 | Indexed early-exit search keeps pointer advancement after the nonzero-result test. |
+| `0x80017B18` | [four_word_calls.c](../src/main.c) | 76 | Indexing recovers another call loop's saved-register choices. |
+| `0x800181D4` | [byte_fold.c](../src/main.c) | 92 | Unsigned byte loads, explicit shift masks, unsigned loop bound and seed constant. |
+| `0x8001A3DC` | [copy_bytes.c](../src/main.c) | 52 | Forward copy with unsigned count and zero-count guard. |
+| `0x8001ADC8` | [copy_record_payload.c](../src/main.c) | 76 | Indexed second source fixes the first loop's destination-pointer register. |
+| `0x8001C0F4` | [clear_words_flag.c](../src/main.c) | 60 | Descending word clear, conditional initialization, constant return. |
+| `0x8001E560` | [copy_bounded_name.c](../src/main.c) | 76 | Potential aliasing requires a second source load after the store. |
+| `0x8002FCEC` | [positive_bit_length.c](../src/main.c) | 28 | Signed arithmetic shift; zero and negative inputs return zero. |
 
 These ten add **672 bytes**; the resolved deferred function adds another **88 bytes**. Seven of the ten matched their first full validation attempt. Three required refinement:
 

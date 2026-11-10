@@ -35,7 +35,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/queue_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object queue_call (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -47,7 +47,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/poll_loop.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object poll_loop (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -59,7 +59,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/flag_acquire.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object flag_acquire (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -71,7 +71,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/flag_release.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object flag_release (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -83,7 +83,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/fill_slots.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object fill_slots (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -95,7 +95,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/queue_word.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object queue_word (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -107,7 +107,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/command_reset.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object command_reset (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -119,7 +119,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/state_transition.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object state_transition (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -131,7 +131,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/sdk_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object sdk_calls (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -143,7 +143,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/sdk_single_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object sdk_single_call (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -155,7 +155,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/word_call_loop.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object word_call_loop (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -167,7 +167,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/word_find_call.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object word_find_call (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -179,7 +179,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/four_word_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object four_word_calls (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -191,7 +191,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/byte_fold.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object byte_fold (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -203,7 +203,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/copy_bytes.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object copy_bytes (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -215,7 +215,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/copy_record_payload.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object copy_record_payload (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -227,7 +227,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/clear_globals.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object clear_globals (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -239,7 +239,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/table_exchange.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object table_exchange (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -251,7 +251,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/two_command_calls.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object two_command_calls (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -263,7 +263,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/clear_words.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object clear_words (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -275,7 +275,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/clear_words_flag.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object clear_words_flag (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -287,7 +287,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/record_find_greater.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object record_find_greater (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -299,7 +299,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/record_find_less.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object record_find_less (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -311,7 +311,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/copy_bounded_name.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object copy_bounded_name (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -323,7 +323,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8001EC68.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8001EC68 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -476,7 +476,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_800296D0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_800296D0 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -488,7 +488,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_800296E0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_800296E0 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -500,7 +500,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8002C3BC.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8002C3BC (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -512,7 +512,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8002E158.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8002E158 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -524,7 +524,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8002ECA0.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8002ECA0 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -548,7 +548,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/positive_bit_length.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object positive_bit_length (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -962,7 +962,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8003D14C.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8003D14C (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -974,7 +974,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8003E15C.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8003E15C (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -986,7 +986,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8003E164.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8003E164 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },
@@ -998,7 +998,7 @@
       "kind": "standalone",
       "reviewed": true,
       "evidence": [
-        "Existing matching C unit src/func_8003E2F8.c has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
+        "Existing matching C object func_8003E2F8 (source src/main.c) has one exported function at this extent. Reachable normal returns restore entry SP/RA/callee-saved identities, including integer load and branch delay handling; no incoming direct transfer to an interior instruction. The unchanged full-file gate passes; original source spelling is not established."
       ],
       "source_language": "unconfirmed"
     },

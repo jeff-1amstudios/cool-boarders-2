@@ -18,9 +18,13 @@ def slug(row):
 
 
 def source_dir(row):
+    return str(Path(source_file(row)).parent)
+
+
+def source_file(row):
     if row.get('image', 'SCUS_943.58') == 'SCUS_943.58':
-        return 'src'
-    return 'src/overlays/' + Path(row['build_config']).stem
+        return 'src/main.c'
+    return 'src/overlays/' + Path(row['build_config']).stem + '.c'
 
 
 def coverage(report):

@@ -11,6 +11,7 @@ import yaml
 
 from rebuild import ROOT, PREFIX, compile_c, reference, run
 from overlay_rebuild import prepare_objdiff_units
+from c_sources import source_path
 
 
 def main():
@@ -111,7 +112,7 @@ def main():
             base = f"build/src/{name}.o"
             compile_c(base, recipe)
             units.append({"name": name, "target_path": f"build/objdiff/target/{name}.o",
-                          "base_path": base, "metadata": {"source_path": f"src/{name}.c"}})
+                          "base_path": base, "metadata": {"source_path": str(source_path(name))}})
     if args.image != "SCUS_943.58":
         units.extend(prepare_objdiff_units(args.image, args.unit))
     if args.unit and not any(u["name"] == args.unit for u in units):
@@ -121,7 +122,7 @@ def main():
         "min_version": "3.8.3", "custom_make": "make",
         "build_target": False, "build_base": True,
         "watch_patterns": ["*.c", "*.h", "config/compiler.json", "config/overlays/**", "config/overlays.json",
-                           "tools/rebuild.py", "tools/overlay_rebuild.py", "Makefile"],
+                           "tools/rebuild.py", "tools/overlay_rebuild.py", "tools/c_sources.py", "Makefile"],
         "ignore_patterns": ["build/**", "orig/**", "asm/**", "reports/**", "tools/vendor/**",
                             "tools/.venv/**", "tools/cache/**", "tools/tmp/**"],
         "units": units,

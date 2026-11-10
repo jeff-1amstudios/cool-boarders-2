@@ -2,6 +2,7 @@
 name: VS.BIN
 sha1: c948ef61d61ca2efbc65cdddab3f70897526de51
 options:
+  create_c_files: false
   basename: overlay_vs
   target_path: orig/disc/files/VS.BIN
   base_path: ../..

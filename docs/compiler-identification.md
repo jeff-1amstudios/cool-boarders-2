@@ -58,11 +58,11 @@ Full scores, failed commands, source hashes and trial artifacts are under ignore
 
 | Address | Source | Bytes |
 | --- | --- | ---: |
-| `0x80013B30` | `src/queue_call.c` | 48 |
-| `0x80014388` | `src/poll_loop.c` | 88 |
-| `0x8001787C` | `src/sdk_calls.c` | 48 |
-| `0x8001B59C` | `src/clear_globals.c` | 24 |
-| `0x8001B5B4` | `src/table_exchange.c` | 28 |
+| `0x80013B30` | `src/main.c` (`queue_call`) | 48 |
+| `0x80014388` | `src/main.c` (`poll_loop`) | 88 |
+| `0x8001787C` | `src/main.c` (`sdk_calls`) | 48 |
+| `0x8001B59C` | `src/main.c` (`clear_globals`) | 24 |
+| `0x8001B5B4` | `src/main.c` (`table_exchange`) | 28 |
 
 These total **236 bytes of compiled C functions**, linked into their original places by Splat's generated linker script. Types and descriptive filenames remain provisional. Retained assembly and SDK signature matches are not counted as reconstructed C. No full-game percentage is asserted because overlay code and the denominator still need mapping.
 
