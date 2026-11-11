@@ -105,4 +105,21 @@ typedef struct DR_TPAGE {
     unsigned long code[1];
 } DR_TPAGE;
 
+typedef struct POLY_FT4 {
+    unsigned long tag;
+    unsigned char r0, g0, b0, code;
+    short x0, y0;
+    unsigned char u0, v0;
+    unsigned short clut;
+    short x1, y1;
+    unsigned char u1, v1;
+    unsigned short tpage;
+    short x2, y2;
+    unsigned char u2, v2;
+    unsigned short pad1;
+    short x3, y3;
+    unsigned char u3, v3;
+    unsigned short pad2;
+} POLY_FT4;
+
 #endif

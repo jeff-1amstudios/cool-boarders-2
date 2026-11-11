@@ -77,6 +77,9 @@ static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_
     return next;
 }
 
+extern int rsin(int angle);
+extern int rcos(int angle);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -442,5 +445,59 @@ unsigned char *func_800130F0(unsigned long *ordering_table, unsigned char *packe
     tpage = ((((unsigned short)texture->y >> 8) & 1) << 4) |
             (((unsigned short)texture->x & 0x3FF) >> 6);
     packet = (unsigned char *)append_draw_tpage(ordering_table, (DR_TPAGE *)packet, tpage);
+    return packet;
+}
+
+// FUNCTION: SCUS_943.58:0x80013340
+POLY_FT4 *func_80013340(unsigned long *ordering_table, POLY_FT4 *packet,
+                      SpriteTexture *texture, int x, int y, int angle,
+                      int scale, CVECTOR *color)
+{
+    int left = -((texture->w / 2) * scale) >> 8;
+    int right = (((texture->w + 1) / 2) * scale) >> 8;
+    int top = -((texture->h / 2) * scale) >> 8;
+    int bottom = (((texture->h + 1) / 2) * scale) >> 8;
+    int sine = rsin(angle);
+    int cosine = rcos(angle);
+    POLY_FT4 *primitive = packet++;
+    int left_cos, top_sin, right_cos, bottom_sin;
+    int left_sin, top_cos, right_sin, bottom_cos;
+
+    ((PrimitiveTag *)primitive)->length = 9;
+    primitive->code = 0x2C;
+    primitive->clut = texture->clut;
+    primitive->tpage = texture->tpage;
+    if (color == 0) {
+        primitive->r0 = primitive->g0 = primitive->b0 = 0x80;
+    } else {
+        primitive->r0 = color->r;
+        primitive->g0 = color->g;
+        primitive->b0 = color->b;
+        if (color->cd != 0) {
+            primitive->code |= 2;
+        }
+    }
+    left_cos = left * cosine;
+    top_sin = top * sine;
+    right_cos = right * cosine;
+    bottom_sin = bottom * sine;
+    left_sin = left * sine;
+    primitive->u0 = primitive->u2 = texture->u;
+    primitive->u1 = primitive->u3 = texture->u + (unsigned char)texture->w;
+    top_cos = top * cosine;
+    primitive->v0 = primitive->v1 = texture->v;
+    primitive->v2 = primitive->v3 = texture->v + (unsigned char)texture->h;
+    right_sin = right * sine;
+    primitive->x0 = x + ((left_cos - top_sin) >> 12);
+    primitive->x1 = x + ((right_cos - top_sin) >> 12);
+    primitive->x2 = x + ((left_cos - bottom_sin) >> 12);
+    bottom_cos = bottom * cosine;
+    primitive->x3 = x + ((right_cos - bottom_sin) >> 12);
+    primitive->y0 = y + ((left_sin + top_cos) >> 12);
+    primitive->y1 = y + ((right_sin + top_cos) >> 12);
+    primitive->y2 = y + ((left_sin + bottom_cos) >> 12);
+    primitive->y3 = y + ((right_sin + bottom_cos) >> 12);
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     return packet;
 }
