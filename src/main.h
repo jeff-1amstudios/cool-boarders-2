@@ -87,4 +87,17 @@ typedef struct CVECTOR {
     unsigned char r, g, b, cd;
 } CVECTOR;
 
+typedef struct SPRT_16 {
+    unsigned long tag;
+    unsigned char r0, g0, b0, code;
+    short x0, y0;
+    unsigned char u0, v0;
+    unsigned short clut;
+} SPRT_16;
+
+typedef struct Sprite16Texture {
+    unsigned char u, v;
+    unsigned short clut;
+} Sprite16Texture;
+
 #endif

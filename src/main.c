@@ -251,3 +251,20 @@ SPRT *func_800129E8(unsigned long *ordering_table, SPRT *sprite, short x, short 
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     return sprite;
 }
+
+// FUNCTION: SCUS_943.58:0x80012AE8
+SPRT_16 *func_80012AE8(unsigned long *ordering_table, SPRT_16 *sprite, short x, short y,
+                     Sprite16Texture *texture, unsigned char shade)
+{
+    ((PrimitiveTag *)sprite)->length = 3;
+    sprite->code = 0x7C;
+    sprite->x0 = x;
+    sprite->y0 = y;
+    sprite->r0 = sprite->g0 = sprite->b0 = shade;
+    sprite->u0 = texture->u;
+    sprite->v0 = texture->v;
+    sprite->clut = texture->clut;
+    ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
+    return sprite + 1;
+}
