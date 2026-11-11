@@ -77,3 +77,11 @@ The host build uses `-O2 -std=gnu17` for C and `-O2 -std=c++17` for C++. `tools/
 ## Next discrimination work
 
 Expand the sample to functions with signed/unsigned byte accesses, division, switches, floating point, pointer arithmetic, inlining opportunities and more complex loops. Recover types from callers, compare the same settings across independent objects, and retain ties when the samples cannot distinguish them. Map and rebuild overlays before assuming the boot executable's recipe applies to them. Every integrated C change must continue to pass the full-file comparison.
+
+## Deferred text sprite builder (`0x80012C30`)
+
+The fresh-start reconstruction of the 624-byte text sprite builder matches with the unchanged PSX GCC 2.7.2 recipe above. The preserved flat implementation matched the sprite loop but compiled to 620 bytes: GCC moved the final packet advance past the first `GetGraphType` call, filled the conditional branch delay slot with that advance, and shared the command constant load. The reference advances the cursor before the call and loads `0xE1000000` in both paths.
+
+The matching C uses `static __inline__ append_draw_tpage`, with an explicit `DR_TPAGE *next = packet + 1` local, and assigns the helper's result back to the caller's `packet` variable before returning it. Returning the helper call directly, advancing its parameter with `packet++`, or flattening the helper back into the caller does not produce the same code. This is evidence that inline expansion and return-value handling can determine the instruction schedule even when the operations are equivalent; it does not uniquely establish the original source spelling. No inline assembly, register pinning, compiler change, flag change, reference change or binary patch is needed.
+
+Focused object diagnostics report 100%. The containing 266,240-byte EXE compares exactly with the pinned reference (`5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`), and `make validate` passes all 15 pinned files. The current fresh-start build contains 12 independently compiled boot C functions; the 14 overlay rebuilds still retain their assembly and data and do not add reconstructed overlay C.

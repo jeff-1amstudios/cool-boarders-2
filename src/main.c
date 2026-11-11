@@ -63,6 +63,20 @@ extern void *func_8001F1A0(unsigned int size);
 
 extern int GetGraphType(void);
 
+/* Keep the inline return cursor explicit: it affects GCC 2.7.2 scheduling. */
+static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_TPAGE *packet, unsigned int tpage)
+{
+    DR_TPAGE *next = packet + 1;
+
+    ((PrimitiveTag *)packet)->length = 1;
+    packet->code[0] = 0xE1000000 |
+        ((GetGraphType() == 1 || GetGraphType() == 2) ?
+         (tpage & 0x27FF) : (tpage & 0x09FF));
+    ((PrimitiveTag *)packet)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)packet;
+    return next;
+}
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -283,5 +297,55 @@ DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
          (tpage & 0x27FF) : (tpage & 0x09FF));
     ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return packet;
+}
+
+// FUNCTION: SCUS_943.58:0x80012C30
+unsigned char *func_80012C30(unsigned long *ordering_table, unsigned char *packet, RECT *texture,
+                    unsigned short clut, int x, int y, unsigned char *string,
+                    CVECTOR *color, unsigned short mode)
+{
+    int u = (short)(texture->x % 64) << 2;
+    int v = (short)(texture->y % 256);
+    unsigned char glyph;
+    unsigned int index;
+    unsigned char *text = string;
+    SPRT *sprite;
+    unsigned short tpage;
+
+    while (*text != 0) {
+        glyph = *text++;
+        sprite = (SPRT *)packet;
+        packet += sizeof(SPRT);
+        ((PrimitiveTag *)sprite)->length = 4;
+        sprite->code = 0x64;
+        sprite->w = texture->w;
+        sprite->h = texture->h;
+        sprite->x0 = x;
+        sprite->y0 = y;
+        if (color != 0) {
+            sprite->r0 = color->r;
+            sprite->g0 = color->g;
+            sprite->b0 = color->b;
+            glyph -= color->cd;
+        } else {
+            sprite->r0 = sprite->g0 = sprite->b0 = 0x80;
+        }
+        index = glyph;
+        sprite->u0 = u + (index & 15) * texture->w;
+        sprite->v0 = v + (index >> 4) * texture->h;
+        sprite->clut = clut;
+        if (mode >= 128) {
+            sprite->code |= 2;
+        } else {
+            sprite->code &= 0xFD;
+        }
+        ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
+        ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
+        x += texture->w;
+    }
+    tpage = ((mode & 3) << 5) | (((unsigned short)texture->y >> 4) & 16) |
+            (((unsigned short)texture->x & 0x3FF) >> 6);
+    packet = (unsigned char *)append_draw_tpage(ordering_table, (DR_TPAGE *)packet, tpage);
     return packet;
 }
