@@ -53,6 +53,10 @@ extern short D_80058ADE;
 extern short D_80058B00;
 extern short D_80058B02;
 
+extern void GsInit3D(void);
+extern int D_80058E10;
+extern int D_80058E18;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -136,4 +140,36 @@ void func_8001263C(void)
     D_80058032 = D_80058ADE;
     D_80058034 = D_80058B00;
     D_80058036 = D_80058B02;
+}
+
+// FUNCTION: SCUS_943.58:0x80012770
+void func_80012770(int width, int height)
+{
+    unsigned char interlaced;
+
+    interlaced = height > 256;
+    D_80058C00.screen.h = 239;
+    D_80058BA0.ofs[0] = width / 2;
+    D_80058BA0.ofs[1] = height / 2;
+    D_80058C00.disp.w = width;
+    D_80058C00.disp.h = height;
+    D_80058C00.screen.y = 0;
+    D_80058C00.isinter = interlaced;
+    D_80058BA0.clip.w = width;
+    D_80058BA0.clip.h = height;
+    D_80058BA0.dtd = 1;
+    D_80058BA0.dfe = 0;
+    D_80058E10 = width;
+    D_80058E18 = height;
+    D_80058F70.w = width;
+    D_80058F70.h = height;
+    D_80058032 = 0;
+    D_80058030 = 0;
+    D_80058034 = 0;
+    if (height <= 256) {
+        D_80058036 = 256;
+    } else {
+        D_80058036 = 0;
+    }
+    GsInit3D();
 }
