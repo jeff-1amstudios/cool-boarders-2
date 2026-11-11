@@ -501,3 +501,26 @@ POLY_FT4 *func_80013340(unsigned long *ordering_table, POLY_FT4 *packet,
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     return packet;
 }
+
+// FUNCTION: SCUS_943.58:0x80013A20
+void func_80013A20(unsigned char *data)
+{
+    int block, index, next;
+    unsigned char *front, *back;
+    unsigned char first, last;
+
+    for (block = 0; block < 2; block++) {
+        for (index = 0; index < 0x400;) {
+            front = data + (block * 0x800 + index);
+            next = index + 1;
+            back = data + ((block + 1) * 0x800 - next);
+            first = *front;
+            last = *back;
+            first = ((first << 4) & 0xF0) | (first >> 4);
+            last = ((last << 4) & 0xF0) | (last >> 4);
+            *front = last;
+            *back = first;
+            index = next;
+        }
+    }
+}

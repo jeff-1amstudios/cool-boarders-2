@@ -85,6 +85,8 @@ segments:
       - [0x38F0, c, func_800130F0]
       - [0x3B40, c, func_80013340]
       - [0x3E54, asm, after_func_80013340]
+      - [0x4220, c, func_80013A20]
+      - [0x42A0, asm, after_func_80013A20]
       - [0x4330, asm, queue_call]
       - [0x4360, asm, boot_after_queue]
       - [0x4B88, asm, poll_loop]
