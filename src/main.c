@@ -349,3 +349,52 @@ unsigned char *func_80012C30(unsigned long *ordering_table, unsigned char *packe
     packet = (unsigned char *)append_draw_tpage(ordering_table, (DR_TPAGE *)packet, tpage);
     return packet;
 }
+
+// FUNCTION: SCUS_943.58:0x80012EA0
+unsigned char *func_80012EA0(unsigned long *ordering_table, unsigned char *packet, RECT *texture,
+                    unsigned short clut, int x, int y, unsigned int number, CVECTOR *color)
+{
+    unsigned int digits[16];
+    int count = 0;
+    unsigned int quotient;
+    int u, v;
+    int index;
+    SPRT *sprite;
+    unsigned int tpage;
+
+    do {
+        quotient = number / 10;
+        digits[count] = number % 10;
+        number = quotient;
+        count++;
+    } while (number != 0);
+    u = (short)(texture->x % 64) << 2;
+    v = (short)(texture->y % 256);
+    for (index = count - 1; index >= 0; index--) {
+        sprite = (SPRT *)packet;
+        packet += sizeof(SPRT);
+        ((PrimitiveTag *)sprite)->length = 4;
+        sprite->code = 0x64;
+        sprite->w = texture->w;
+        sprite->h = texture->h;
+        sprite->x0 = x;
+        sprite->y0 = y;
+        if (color != 0) {
+            sprite->r0 = color->r;
+            sprite->g0 = color->g;
+            sprite->b0 = color->b;
+        } else {
+            sprite->r0 = sprite->g0 = sprite->b0 = 0x80;
+        }
+        sprite->u0 = u + digits[index] * texture->w;
+        sprite->v0 = v;
+        sprite->clut = clut;
+        ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
+        ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
+        x += texture->w;
+    }
+    tpage = ((((unsigned short)texture->y >> 8) & 1) << 4) |
+            (((unsigned short)texture->x & 0x3FF) >> 6);
+    packet = (unsigned char *)append_draw_tpage(ordering_table, (DR_TPAGE *)packet, tpage);
+    return packet;
+}

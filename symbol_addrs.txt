@@ -172,3 +172,5 @@ func_8001F1A0 = 0x8001F1A0; // type:func
 GetGraphType = 0x800296D0; // type:func size:0x10 rom:0x19ED0
 
 func_80012C30 = 0x80012C30; // type:func size:0x270 rom:0x3430
+
+func_80012EA0 = 0x80012EA0; // type:func size:0x250
