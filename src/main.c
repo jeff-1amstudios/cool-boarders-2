@@ -80,6 +80,8 @@ static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_
 extern int rsin(int angle);
 extern int rcos(int angle);
 
+extern int CdControl(unsigned char command, unsigned char *param, unsigned char *result);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -523,4 +525,16 @@ void func_80013A20(unsigned char *data)
             index = next;
         }
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80013C24
+void func_80013C24(void)
+{
+    int result;
+    unsigned char mode[8];
+
+    do {
+        mode[0] = 0xA0;
+        result = CdControl(0x0E, mode, 0);
+    } while (result != 1);
 }

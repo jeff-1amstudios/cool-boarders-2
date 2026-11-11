@@ -181,3 +181,6 @@ rsin = 0x8001F5DC; // type:func
 rcos = 0x8001F6A8; // type:func
 
 func_80013A20 = 0x80013A20; // type:func size:0x80
+
+func_80013C24 = 0x80013C24; // type:func size:0x4C
+CdControl = 0x80040844; // type:func
