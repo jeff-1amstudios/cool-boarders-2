@@ -63,6 +63,22 @@ extern void *func_8001F1A0(unsigned int size);
 
 extern int GetGraphType(void);
 
+extern int func_8003CB2C(void);
+extern int func_8003CA24(int mode);
+extern int ResetCallback(void);
+extern void func_8001B228(void);
+extern int ChangeClearPAD(int mode);
+extern void func_8001F824(void);
+extern void func_8001787C(void);
+extern int ClearImage(RECT *rect, unsigned char r, unsigned char g, unsigned char b);
+extern int DrawSync(int mode);
+extern void GsInitGraph(unsigned short x, unsigned short y, unsigned short intmode,
+                        unsigned short dith, unsigned short varmmode);
+extern void func_8002ECB0(short x0, short y0, short x1, short y1);
+extern void func_8001E8C0(void);
+extern void func_8003CB3C(void);
+extern void SetDispMask(int mask);
+
 /* Keep the inline return cursor explicit: it affects GCC 2.7.2 scheduling. */
 static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_TPAGE *packet, unsigned int tpage)
 {
@@ -109,6 +125,35 @@ void boot_main(void)
         func_8001263C();
     } while (mode != -1);
     func_80044938();
+}
+
+// FUNCTION: SCUS_943.58:0x8001228C
+void func_8001228C(void)
+{
+    RECT rect;
+
+    func_8003CB2C();
+    func_8003CA24(0);
+    ResetCallback();
+    func_8001B228();
+    ChangeClearPAD(0);
+    ResetGraph(0);
+    func_8001F824();
+    func_8001787C();
+    rect.w = 1024;
+    rect.x = 0;
+    rect.y = 0;
+    rect.h = 512;
+    ClearImage(&rect, 0, 0, 0);
+    DrawSync(0);
+    GsInitGraph(320, 240, 4, 1, 0);
+    D_80058C00.screen.y = 0;
+    D_80058C00.screen.h = 239;
+    func_8002ECB0(0, 0, 0, 240);
+    GsInit3D();
+    func_8001E8C0();
+    func_8003CB3C();
+    SetDispMask(1);
 }
 
 // FUNCTION: SCUS_943.58:0x80012378

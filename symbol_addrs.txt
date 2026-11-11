@@ -184,3 +184,10 @@ func_80013A20 = 0x80013A20; // type:func size:0x80
 
 func_80013C24 = 0x80013C24; // type:func size:0x4C
 CdControl = 0x80040844; // type:func
+
+ResetCallback = 0x8003BF44; // type:func size:0x30
+ChangeClearPAD = 0x8003CBAC; // type:func size:0xC
+ClearImage = 0x8002997C; // type:func
+DrawSync = 0x800297E8; // type:func
+GsInitGraph = 0x8002DB58; // type:func size:0x78
+SetDispMask = 0x8002974C; // type:func
