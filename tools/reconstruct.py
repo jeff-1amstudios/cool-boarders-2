@@ -377,6 +377,8 @@ def main():
     batch.add_argument("--limit", type=int, default=10)
     batch.add_argument("--minutes", type=int, default=120)
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout per agent")
+    batch.add_argument("--sync-types", action="store_true",
+                       help="Refresh cached Ghidra type declarations once before matching (default: reuse cache/source headers)")
     batch.add_argument("--verbose", action="store_true", help="Also print echoed compiler/assembler commands")
     batch.add_argument("--agent-command", help="Custom launcher argv; prompt on stdin, no shell")
     sub.add_parser("status", help="Show the current or last batch")

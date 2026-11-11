@@ -82,11 +82,6 @@ public class ReconstructionGhidra extends GhidraScript {
             JsonObject report = signature(function);
             report.addProperty("inferred_prototype", result.getDecompiledFunction().getSignature());
             report.addProperty("warnings", result.getErrorMessage());
-            List<DataType> types = new ArrayList<>(); types.add(new FunctionDefinitionDataType(function, false));
-            if (result.getHighFunction() != null) {
-                var locals = result.getHighFunction().getLocalSymbolMap().getSymbols();
-                while (locals.hasNext()) types.add(locals.next().getDataType());
-            }
             Set<Address> seen = new HashSet<>(); JsonArray callees = new JsonArray(), globals = new JsonArray();
             var instructions = currentProgram.getListing().getInstructions(function.getBody(), true);
             while (instructions.hasNext()) {
@@ -94,22 +89,27 @@ public class ReconstructionGhidra extends GhidraScript {
                     Address to = reference.getToAddress(); if (!seen.add(to)) continue;
                     Function callee = getFunctionAt(to);
                     if (reference.getReferenceType().isCall() && callee != null) {
-                        callees.add(signature(callee)); types.add(new FunctionDefinitionDataType(callee, false));
+                        callees.add(signature(callee));
                     } else if (reference.getReferenceType().isData()) {
                         var data = getDataAt(to);
                         if (data != null) {
                             JsonObject row = new JsonObject(); row.addProperty("address", to.toString());
                             row.addProperty("name", getSymbolAt(to) == null ? "" : getSymbolAt(to).getName());
                             row.addProperty("type", data.getDataType().getPathName()); globals.add(row);
-                            types.add(data.getDataType());
                         }
                     }
                 }
             }
             report.add("callees", callees); report.add("globals", globals);
-            StringWriter header = new StringWriter();
-            new DataTypeWriter(currentProgram.getDataTypeManager(), header).write(types, monitor);
-            Files.writeString(directory.resolve("ghidra-types.h"), header.toString());
+            if (request.has("sync_types") && request.get("sync_types").getAsBoolean()) {
+                // Cache all saved types once, rather than only this target's dependencies.
+                List<DataType> types = new ArrayList<>();
+                var allTypes = currentProgram.getDataTypeManager().getAllDataTypes();
+                while (allTypes.hasNext()) types.add(allTypes.next());
+                StringWriter header = new StringWriter();
+                new DataTypeWriter(currentProgram.getDataTypeManager(), header).write(types, monitor);
+                Files.writeString(directory.resolve("ghidra-types.h"), header.toString());
+            }
             return report;
         } finally { decompiler.dispose(); }
     }
@@ -176,8 +176,11 @@ public class ReconstructionGhidra extends GhidraScript {
         verify(request);
         result.addProperty("request_sha256", sha(payload)); result.addProperty("mode", mode);
         JsonObject files = new JsonObject();
-        if (mode.equals("export")) for (String name : List.of("target.ghidra.c", "ghidra-types.h"))
-            files.addProperty(name, sha(Files.readAllBytes(directory.resolve(name))));
+        if (mode.equals("export")) {
+            files.addProperty("target.ghidra.c", sha(Files.readAllBytes(directory.resolve("target.ghidra.c"))));
+            if (request.has("sync_types") && request.get("sync_types").getAsBoolean())
+                files.addProperty("ghidra-types.h", sha(Files.readAllBytes(directory.resolve("ghidra-types.h"))));
+        }
         result.add("files", files);
         Files.writeString(directory.resolve("complete.json"), new GsonBuilder().setPrettyPrinting().create().toJson(result) + "\n");
         println("Reconstruction Ghidra " + mode + " complete");

@@ -205,7 +205,8 @@ class Runner:
             f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
             f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"Start from the CURRENT Ghidra pseudocode in {directory / 'ghidra/target.ghidra.c'}, with named SDK calls and typed variables.\n"
-            f"Read {directory / 'ghidra/ghidra-types.h'} for relevant layouts/prototypes and context.json ghidra metadata for parameter storage and callees.\n"
+            f"Read {directory / 'ghidra/ghidra-types.h'} (cached type reference) and existing image headers for layouts/prototypes and context.json ghidra metadata for parameter storage and callees.\n"
+            "Reuse SDK types such as CdlLOC and RECT from existing source headers and the cached reference. Do not launch Ghidra or rerun SDK type audits/exports; type refresh is supervisor-owned and opt-in via --sync-types.\n"
             "Adapt that pseudocode to compilable matching C. Use assembly to resolve uncertainty and refine compiler output; do not reconstruct the function from assembly alone.\n"
             "Propagate all known types, including recovered game types, through assignments, initializers, arguments, returns and field accesses. When an unknown local, global or field receives a value of known type, use that type as the destination's inferred type and check its other uses for conflicting evidence. For example, if a global receives file.pos of type CdlLOC, try declaring the global as CdlLOC and assigning file.pos directly; do not default to an integer global with a pointer cast or raw-word copy. Apply the same reasoning to game structs and other known types. Distinguish value assignment from intentional conversion, serialization, byte copying or overlapping storage; preserve uncertainty where uses conflict. Check the selected object's generated instructions. If the inferred typed form cannot match, explain the concrete mismatch and retain the type evidence rather than treating a byte match as proof of a scalar type.\n"
             f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
@@ -412,7 +413,9 @@ class Runner:
         if self.w.read(self.w.REVIEW).get("matching_paused", False):
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
         session = self.w.begin_batch(self.args.limit, self.args.minutes)
-        session.update(branch="main", integration_head=session["head"])
+        session.update(branch="main", integration_head=session["head"],
+                       sync_types=getattr(self.args, 'sync_types', False))
+        sync_types_pending = session['sync_types']
         self.w.save_state(session)
         reason = "target limit reached"
         while len(session["completed"]) + len(session["deferred"]) < session["limit"]:
@@ -435,7 +438,8 @@ class Runner:
             if not active.get('boundary_findings'):
                 from reconstruction_ghidra import export
                 try:
-                    export(self.w, active)
+                    export(self.w, active, sync_types=sync_types_pending)
+                    sync_types_pending = False
                 except BaseException:
                     # An unavailable/locked Ghidra project is infrastructure
                     # failure, not evidence against reconstructing this target.

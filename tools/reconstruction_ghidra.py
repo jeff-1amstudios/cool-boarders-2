@@ -43,16 +43,41 @@ def invoke(worker, directory, payload, mode):
     for name, expected in result.get('files', {}).items():
         if name not in ('target.ghidra.c', 'ghidra-types.h') or digest((directory / name).read_bytes()) != expected:
             raise RuntimeError('Ghidra export fingerprint differs')
-    if mode == 'export' and set(result.get('files', {})) != {'target.ghidra.c', 'ghidra-types.h'}:
+    expected = {'target.ghidra.c'} | ({'ghidra-types.h'} if payload.get('sync_types', False) else set())
+    if mode == 'export' and set(result.get('files', {})) != expected:
         raise RuntimeError('Incomplete Ghidra evidence bundle')
     if mode == 'apply' and 'Save succeeded for processed file: /SCUS_943.58' not in (directory / 'ghidra-apply.log').read_text():
         raise RuntimeError('Ghidra update ran but persistence was not confirmed; recover before continuing')
     return result
 
 
-def export(worker, active):
+def export(worker, active, *, sync_types=False):
     directory = worker.ROOT / active['context']
-    result = invoke(worker, directory / 'ghidra', request(worker.ROOT, active), 'export')
+    payload = request(worker.ROOT, active) | {'sync_types': sync_types}
+    result = invoke(worker, directory / 'ghidra', payload, 'export')
+    cache = worker.ROOT / 'reports/reconstruction/ghidra-types.h'
+    manifest = cache.with_suffix('.json')
+    catalog_hash = digest((worker.ROOT / 'config/psyq-sdk.json').read_bytes())
+    if sync_types:
+        header = (directory / 'ghidra/ghidra-types.h').read_bytes()
+        temporary = cache.with_suffix('.tmp')
+        temporary.write_bytes(header)
+        temporary.replace(cache)
+        worker.write(manifest, {'sha256': digest(header), 'catalog_sha256': catalog_hash})
+    elif cache.is_file() and manifest.is_file():
+        saved = worker.read(manifest)
+        header = cache.read_bytes()
+        if saved != {'sha256': digest(header), 'catalog_sha256': catalog_hash}:
+            raise RuntimeError('Cached Ghidra types differ; rerun with --sync-types')
+        (directory / 'ghidra/ghidra-types.h').write_bytes(header)
+    else:
+        # Missing cache never triggers an implicit Ghidra type synchronization.
+        (directory / 'ghidra/ghidra-types.h').write_text(
+            '/* No cached type export. Reuse authored image headers. '
+            'Refresh with reconstruct.py start --sync-types if needed. */\n')
+    result['type_reference'] = {'synced': sync_types,
+        'sha256': digest((directory / 'ghidra/ghidra-types.h').read_bytes())}
+
     context = worker.read(directory / 'context.json')
     context['ghidra'] = result
     worker.write(directory / 'context.json', context)
