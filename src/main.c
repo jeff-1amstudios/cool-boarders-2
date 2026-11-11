@@ -57,6 +57,10 @@ extern void GsInit3D(void);
 extern int D_80058E10;
 extern int D_80058E18;
 
+extern DRAWENV *SetDefDrawEnv(DRAWENV *env, int x, int y, int w, int h);
+extern DISPENV *SetDefDispEnv(DISPENV *env, int x, int y, int w, int h);
+extern void *func_8001F1A0(unsigned int size);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -172,4 +176,27 @@ void func_80012770(int width, int height)
         D_80058036 = 0;
     }
     GsInit3D();
+}
+
+// FUNCTION: SCUS_943.58:0x80012868
+void func_80012868(RenderBuffer *buffers, unsigned int size)
+{
+    SetDefDrawEnv(&buffers[0].draw, 0, 256, 320, 240);
+    SetDefDrawEnv(&buffers[1].draw, 0, 0, 320, 240);
+    buffers[0].draw.b0 = 0;
+    buffers[0].draw.g0 = 0;
+    buffers[0].draw.r0 = 0;
+    buffers[1].draw.b0 = 0;
+    buffers[1].draw.g0 = 0;
+    buffers[1].draw.r0 = 0;
+    buffers[0].draw.isbg = 1;
+    buffers[1].draw.isbg = 1;
+    SetDefDispEnv(&buffers[0].disp, 0, 0, 320, 240);
+    SetDefDispEnv(&buffers[1].disp, 0, 256, 320, 240);
+    buffers[0].disp.screen.h = 239;
+    buffers[1].disp.screen.h = 239;
+    buffers[0].disp.screen.y = 0;
+    buffers[1].disp.screen.y = 0;
+    buffers[0].allocation = func_8001F1A0(size);
+    buffers[1].allocation = func_8001F1A0(size);
 }

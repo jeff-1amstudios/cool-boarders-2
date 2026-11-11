@@ -54,4 +54,12 @@ typedef struct DISPENV {
     unsigned char pad0, pad1;
 } DISPENV;
 
+typedef struct RenderBuffer {
+    DRAWENV draw;
+    DISPENV disp;
+    unsigned char unknown_70[4];
+    void *allocation;
+    unsigned char unknown_78[4];
+} RenderBuffer;
+
 #endif
