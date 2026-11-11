@@ -76,7 +76,7 @@ segments:
       - [0x2E3C, c, func_8001263C]
       - [0x2F70, c, func_80012770]
       - [0x3068, c, func_80012868]
-      - [0x3150, asm, func_80012950]
+      - [0x3150, c, func_80012950]
       - [0x31E8, asm, func_800129E8]
       - [0x32E8, asm, func_80012AE8]
       - [0x336C, asm, func_80012B6C]

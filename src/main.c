@@ -200,3 +200,22 @@ void func_80012868(RenderBuffer *buffers, unsigned int size)
     buffers[0].allocation = func_8001F1A0(size);
     buffers[1].allocation = func_8001F1A0(size);
 }
+
+// FUNCTION: SCUS_943.58:0x80012950
+SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite, short x, short y,
+                    SpriteTexture *texture, unsigned char shade)
+{
+    ((PrimitiveTag *)sprite)->length = 4;
+    sprite->code = 0x64;
+    sprite->w = texture->w;
+    sprite->h = texture->h;
+    sprite->r0 = sprite->g0 = sprite->b0 = shade;
+    sprite->x0 = x;
+    sprite->y0 = y;
+    sprite->u0 = texture->u;
+    sprite->v0 = texture->v;
+    sprite->clut = texture->clut;
+    ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
+    return sprite + 1;
+}

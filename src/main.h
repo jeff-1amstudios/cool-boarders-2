@@ -62,4 +62,25 @@ typedef struct RenderBuffer {
     unsigned char unknown_78[4];
 } RenderBuffer;
 
+typedef struct PrimitiveTag {
+    unsigned int address : 24;
+    unsigned int length : 8;
+} PrimitiveTag;
+
+typedef struct SPRT {
+    unsigned long tag;
+    unsigned char r0, g0, b0, code;
+    short x0, y0;
+    unsigned char u0, v0;
+    unsigned short clut;
+    short w, h;
+} SPRT;
+
+typedef struct SpriteTexture {
+    unsigned char u, v;
+    short w, h;
+    unsigned short clut;
+    unsigned short tpage;
+} SpriteTexture;
+
 #endif
