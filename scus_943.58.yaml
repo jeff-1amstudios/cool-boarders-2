@@ -82,7 +82,7 @@ segments:
       - [0x336C, c, func_80012B6C]
       - [0x3430, c, func_80012C30]
       - [0x36A0, c, func_80012EA0]
-      - [0x38F0, asm, after_func_80012508]
+      - [0x38F0, c, func_800130F0]
       - [0x3B40, asm, func_80013340]
       - [0x3E54, asm, after_func_80013340]
       - [0x4330, asm, queue_call]
