@@ -100,4 +100,9 @@ typedef struct Sprite16Texture {
     unsigned short clut;
 } Sprite16Texture;
 
+typedef struct DR_TPAGE {
+    unsigned long tag;
+    unsigned long code[1];
+} DR_TPAGE;
+
 #endif

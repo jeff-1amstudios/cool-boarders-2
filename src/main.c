@@ -61,6 +61,8 @@ extern DRAWENV *SetDefDrawEnv(DRAWENV *env, int x, int y, int w, int h);
 extern DISPENV *SetDefDispEnv(DISPENV *env, int x, int y, int w, int h);
 extern void *func_8001F1A0(unsigned int size);
 
+extern int GetGraphType(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -267,4 +269,19 @@ SPRT_16 *func_80012AE8(unsigned long *ordering_table, SPRT_16 *sprite, short x, 
     ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
     return sprite + 1;
+}
+
+// FUNCTION: SCUS_943.58:0x80012B6C
+DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
+                        unsigned int tpage)
+{
+    DR_TPAGE *primitive = packet++;
+
+    ((PrimitiveTag *)primitive)->length = 1;
+    primitive->code[0] = 0xE1000000 |
+        ((GetGraphType() == 1 || GetGraphType() == 2) ?
+         (tpage & 0x27FF) : (tpage & 0x09FF));
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return packet;
 }

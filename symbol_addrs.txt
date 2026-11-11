@@ -168,3 +168,5 @@ GsInit3D = 0x8002ED50; // type:func absolute:True
 SetDefDrawEnv = 0x80027E9C; // type:func
 SetDefDispEnv = 0x80027F6C; // type:func
 func_8001F1A0 = 0x8001F1A0; // type:func
+
+GetGraphType = 0x800296D0; // type:func size:0x10 rom:0x19ED0
