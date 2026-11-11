@@ -219,3 +219,35 @@ SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite, short x, short 
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
     return sprite + 1;
 }
+
+// FUNCTION: SCUS_943.58:0x800129E8
+SPRT *func_800129E8(unsigned long *ordering_table, SPRT *sprite, short x, short y,
+                    SpriteTexture *texture, CVECTOR *color, int semitransparent)
+{
+    SPRT *primitive = sprite++;
+
+    ((PrimitiveTag *)primitive)->length = 4;
+    primitive->code = 0x64;
+    primitive->w = texture->w;
+    primitive->h = texture->h;
+    if (color != 0) {
+        primitive->r0 = color->r;
+        primitive->g0 = color->g;
+        primitive->b0 = color->b;
+    } else {
+        primitive->r0 = primitive->g0 = primitive->b0 = 0x80;
+    }
+    primitive->x0 = x;
+    primitive->y0 = y;
+    primitive->u0 = texture->u;
+    primitive->v0 = texture->v;
+    primitive->clut = texture->clut;
+    if (semitransparent) {
+        primitive->code |= 2;
+    } else {
+        primitive->code &= 0xFD;
+    }
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return sprite;
+}

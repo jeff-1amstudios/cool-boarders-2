@@ -83,4 +83,8 @@ typedef struct SpriteTexture {
     unsigned short tpage;
 } SpriteTexture;
 
+typedef struct CVECTOR {
+    unsigned char r, g, b, cd;
+} CVECTOR;
+
 #endif
