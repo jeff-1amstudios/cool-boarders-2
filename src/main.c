@@ -158,6 +158,10 @@ extern void func_80016278(void);
 extern volatile int sound_bank_sample_count;
 extern volatile unsigned short sound_bank_pitch;
 
+extern unsigned char D_80058CC8[64];
+extern int D_80058B10;
+extern int D_8005A7B8;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1381,4 +1385,23 @@ void func_80016278(void)
     SpuSetTransferStartAddr(sound_transfer_banks[current->bank_index].transfer_start);
     CdReadyCallback(func_80016354);
     CdControl(6, (unsigned char *)&sound_disc_transfer->positions[sound_disc_transfer->bank_index], 0);
+}
+
+// FUNCTION: SCUS_943.58:0x800166A4
+void func_800166A4(void)
+{
+    unsigned char *slot;
+    int remaining;
+    unsigned char empty;
+
+    empty = 0xFF;
+    remaining = 63;
+    slot = &D_80058CC8[63];
+    D_80058B10 = 0;
+    D_8005A7B8 = 0;
+    do {
+        *slot = empty;
+        remaining--;
+        slot--;
+    } while (remaining >= 0);
 }

@@ -283,3 +283,6 @@ CdMix = 0x80040BEC; // type:func
 D_800478D4 = 0x800478D4; // absolute:True
 sound_bank_sample_count = 0x80058F90; // size:0x4 absolute:True
 sound_bank_pitch = 0x80057FC0; // size:0x2 absolute:True
+
+D_80058B10 = 0x80058B10; // size:0x4
+D_8005A7B8 = 0x8005A7B8; // size:0x4

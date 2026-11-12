@@ -116,7 +116,7 @@ segments:
       - [0x6A20, c, func_80016220]
       - [0x6A78, c, func_80016278]
       - [0x6B54, asm, after_func_80016278]
-      - [0x6EA4, asm, fill_slots]
+      - [0x6EA4, c, func_800166A4]
       - [0x6EDC, asm, after_fill_slots]
       - [0x7844, asm, queue_word]
       - [0x7874, asm, after_queue_word]
