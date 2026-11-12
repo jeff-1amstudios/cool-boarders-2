@@ -212,6 +212,9 @@ extern CardResultTable card_result_table;
 extern long _card_info(long channel);
 extern long _card_clear(long channel);
 
+extern CardLoadResultTable card_load_result_table;
+extern long _card_load(long channel);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1983,4 +1986,48 @@ clear_event:
         }
     }
     return results.entries[index];
+}
+
+// FUNCTION: SCUS_943.58:0x80017CFC
+int func_80017CFC(long *events)
+{
+    CardLoadResultTable results;
+    long event;
+    int i;
+    long *cursor;
+    int index;
+    int retries;
+    int result_offset;
+    long status;
+
+    results = card_load_result_table;
+    i = 0;
+    cursor = events;
+    do {
+        event = *cursor;
+        cursor++;
+        i++;
+        TestEvent(event);
+    } while (i < 4);
+    retries = 0;
+    do {
+        _card_load(0);
+        do {
+            index = 0;
+            do {
+                status = TestEvent(events[index]);
+                result_offset = index * sizeof(int);
+                if (status != 0) {
+                    goto load_event;
+                }
+                index++;
+            } while (index < 4);
+        } while (1);
+load_event:
+        if (index == 0) {
+            break;
+        }
+        retries++;
+    } while (retries < 16);
+    return *(int *)((char *)&results + result_offset);
 }

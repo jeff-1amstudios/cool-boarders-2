@@ -342,3 +342,7 @@ func_80017B64 = 0x80017B64; // type:func size:0x198
 card_result_table = 0x80010224; // size:0x14
 _card_info = 0x800444AC; // type:func size:0xC
 _card_clear = 0x800444CC; // type:func size:0x38
+
+func_80017CFC = 0x80017CFC; // type:func size:0xEC
+card_load_result_table = 0x80010238; // size:0x10
+_card_load = 0x800444BC; // type:func size:0xC

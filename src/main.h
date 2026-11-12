@@ -111,4 +111,8 @@ typedef struct CardResultTable {
     int entries[5];
 } CardResultTable;
 
+typedef struct CardLoadResultTable {
+    int entries[4];
+} CardLoadResultTable;
+
 #endif
