@@ -438,3 +438,6 @@ card_ghost_palette_5 = 0x800108C0; // size:0x20
 card_ghost_frame_5 = 0x800108E0; // size:0x80
 card_ghost_palette_6 = 0x80010960; // size:0x20
 card_ghost_frame_6 = 0x80010980; // size:0x80
+
+func_8001A410 = 0x8001A410; // type:func size:0xC4
+func_8001A4D4 = 0x8001A4D4; // type:func size:0x134

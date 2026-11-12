@@ -319,6 +319,8 @@ extern CardGhostFrame card_ghost_frame_5;
 extern CardSavePalette card_ghost_palette_6;
 extern CardGhostFrame card_ghost_frame_6;
 
+extern int func_8001A4D4(int slot, unsigned int *data);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2945,4 +2947,37 @@ void func_8001A3DC(void *destination, void *source, unsigned int length)
             output++;
         } while (copied < length);
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001A410
+unsigned short func_8001A410(unsigned int *data)
+{
+    int status;
+    int slot;
+    unsigned short result;
+    long events[8];
+
+    result = 0;
+
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            for (slot = 0; slot < 2; slot++) {
+                if (func_8001A4D4(slot, data + slot * 4) == 0) {
+                    result |= 1 << slot;
+                }
+            }
+        } else {
+            result = 0xFFFA;
+            if (status == 1) {
+                result = 0xFFFE;
+            }
+        }
+    } else {
+        result = 0xFFFF;
+    }
+    func_80017A00(events);
+    return result & 0xFFFF;
 }
