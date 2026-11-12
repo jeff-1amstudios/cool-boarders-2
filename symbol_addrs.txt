@@ -263,3 +263,5 @@ PutDrawEnv = 0x80029E5C; // type:func
 PutDispEnv = 0x8002A0B4; // type:func
 
 D_80057FBE = 0x80057FBE; // type:s16 size:0x2 absolute:True
+
+D_80057FBA = 0x80057FBA; // type:s16 size:0x2 absolute:True

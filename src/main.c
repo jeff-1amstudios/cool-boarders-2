@@ -179,6 +179,8 @@ extern unsigned short D_80057FC0;
 
 extern short D_80057FBE;
 
+extern short D_80057FBA;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1246,4 +1248,26 @@ void func_80015D84(unsigned long voices, int volume)
     }
     voice.volume.right = voice.volume.left = voice.volume.left;
     SpuSetVoiceAttr(&voice);
+}
+
+// FUNCTION: SCUS_943.58:0x80015E18
+void func_80015E18(unsigned long voices, int sample)
+{
+    SpuVoiceAttr voice;
+    short level;
+
+    if (D_80050568 == 0) {
+        voice.voice = voices;
+        voice.mask = 0x93;
+        voice.pitch = D_80057FC0;
+        level = D_80057FBA * 0x20 - 1;
+        if (level > 0) {
+            voice.volume.left = level < 0x4000 ? level : 0x3FFF;
+        } else {
+            voice.volume.left = 0;
+        }
+        voice.volume.right = voice.volume.left = voice.volume.left;
+        voice.addr = D_80058F98 + D_80058FA0[sample];
+        SpuSetKeyOnWithAttr(&voice);
+    }
 }
