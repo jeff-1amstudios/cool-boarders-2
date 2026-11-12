@@ -420,3 +420,21 @@ card_extra_record_value = 0x80057124; // size:0x2
 
 card_ghost_filename = 0x80010538; // size:0x18
 func_80019748 = 0x80019748; // type:func size:0x1D8
+
+func_80019920 = 0x80019920; // type:func size:0xABC
+card_ghost_signature = 0x80010550; // size:0x9
+card_ghost_title = 0x8001055C; // size:0x41
+card_ghost_palette_0 = 0x800105A0; // size:0x20
+card_ghost_frame_0 = 0x800105C0; // size:0x80
+card_ghost_palette_1 = 0x80010640; // size:0x20
+card_ghost_frame_1 = 0x80010660; // size:0x80
+card_ghost_palette_2 = 0x800106E0; // size:0x20
+card_ghost_frame_2 = 0x80010700; // size:0x80
+card_ghost_palette_3 = 0x80010780; // size:0x20
+card_ghost_frame_3 = 0x800107A0; // size:0x80
+card_ghost_palette_4 = 0x80010820; // size:0x20
+card_ghost_frame_4 = 0x80010840; // size:0x80
+card_ghost_palette_5 = 0x800108C0; // size:0x20
+card_ghost_frame_5 = 0x800108E0; // size:0x80
+card_ghost_palette_6 = 0x80010960; // size:0x20
+card_ghost_frame_6 = 0x80010980; // size:0x80

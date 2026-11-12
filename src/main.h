@@ -239,4 +239,22 @@ typedef struct CardGhostSaveBlock {
     unsigned char payload[16104];
 } CardGhostSaveBlock;
 
+/* One 16x16 four-bit memory-card icon. */
+typedef struct CardGhostFrame {
+    unsigned char bytes[128];
+} CardGhostFrame;
+
+typedef struct CardGhostAssetPointers {
+    unsigned char *entries[7];
+} CardGhostAssetPointers;
+
+/* Serialized ghost header embedded at byte 256 of CardGhostSaveBlock. */
+typedef struct CardGhostHeader {
+    unsigned char signature[8];
+    unsigned int checksum;
+    unsigned int data_offset;
+    unsigned int data_size;
+    unsigned int data_checksum;
+} CardGhostHeader;
+
 #endif

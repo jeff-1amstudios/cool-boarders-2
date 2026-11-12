@@ -161,7 +161,7 @@ segments:
       - [0x9D30, c, func_80019530]
       - [0x9DF8, c, func_800195F8]
       - [0x9F48, c, func_80019748]
-      - [0xA120, asm, after_func_80019748]
+      - [0xA120, c, func_80019920]
       - [0xABDC, asm, copy_bytes]
       - [0xAC10, asm, after_copy_bytes]
       - [0xB5C8, asm, copy_record_payload]

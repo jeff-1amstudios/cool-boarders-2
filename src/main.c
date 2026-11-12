@@ -301,6 +301,24 @@ extern int func_80019920(char *filename, CardGhostSaveBlock *block,
                           unsigned int slot, int title_index);
 extern void func_8001A3DC(void *destination, void *source, unsigned int length);
 
+
+extern unsigned char card_ghost_signature[9];
+extern CardSaveTitle card_ghost_title;
+extern CardSavePalette card_ghost_palette_0;
+extern CardGhostFrame card_ghost_frame_0;
+extern CardSavePalette card_ghost_palette_1;
+extern CardGhostFrame card_ghost_frame_1;
+extern CardSavePalette card_ghost_palette_2;
+extern CardGhostFrame card_ghost_frame_2;
+extern CardSavePalette card_ghost_palette_3;
+extern CardGhostFrame card_ghost_frame_3;
+extern CardSavePalette card_ghost_palette_4;
+extern CardGhostFrame card_ghost_frame_4;
+extern CardSavePalette card_ghost_palette_5;
+extern CardGhostFrame card_ghost_frame_5;
+extern CardSavePalette card_ghost_palette_6;
+extern CardGhostFrame card_ghost_frame_6;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2812,4 +2830,99 @@ int func_80019748(unsigned int slot, CardGhostPayload *data, unsigned int length
     func_80017A00(events);
     func_8001F378(block);
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80019920
+int func_80019920(char *filename, CardGhostSaveBlock *block,
+                  unsigned int slot, int title_index)
+{
+    CardSaveTitle title;
+    CardSavePalette palette_0;
+    CardGhostFrame frame_0;
+    CardSavePalette palette_1;
+    CardGhostFrame frame_1;
+    CardSavePalette palette_2;
+    CardGhostFrame frame_2;
+    CardSavePalette palette_3;
+    CardGhostFrame frame_3;
+    CardSavePalette palette_4;
+    CardGhostFrame frame_4;
+    CardSavePalette palette_5;
+    CardGhostFrame frame_5;
+    CardSavePalette palette_6;
+    CardGhostFrame frame_6;
+    CardGhostAssetPointers frames;
+    CardGhostAssetPointers palettes;
+    CardGhostAssetPointers temporary;
+    int fd;
+    int available = 1;
+    unsigned char *output;
+    int i;
+    unsigned char *expected;
+    CardGhostHeader *header;
+
+    title = card_ghost_title;
+    palette_0 = card_ghost_palette_0;
+    frame_0 = card_ghost_frame_0;
+    palette_1 = card_ghost_palette_1;
+    frame_1 = card_ghost_frame_1;
+    palette_2 = card_ghost_palette_2;
+    frame_2 = card_ghost_frame_2;
+    palette_3 = card_ghost_palette_3;
+    frame_3 = card_ghost_frame_3;
+    palette_4 = card_ghost_palette_4;
+    frame_4 = card_ghost_frame_4;
+    palette_5 = card_ghost_palette_5;
+    frame_5 = card_ghost_frame_5;
+    palette_6 = card_ghost_palette_6;
+    frame_6 = card_ghost_frame_6;
+    palettes.entries[0] = frame_0.bytes;
+    palettes.entries[1] = frame_1.bytes;
+    palettes.entries[2] = frame_2.bytes;
+    palettes.entries[3] = frame_3.bytes;
+    palettes.entries[4] = frame_4.bytes;
+    palettes.entries[5] = frame_5.bytes;
+    palettes.entries[6] = frame_6.bytes;
+    frames = palettes;
+    temporary.entries[0] = palette_0.bytes;
+    temporary.entries[1] = palette_1.bytes;
+    temporary.entries[2] = palette_2.bytes;
+    temporary.entries[3] = palette_3.bytes;
+    temporary.entries[4] = palette_4.bytes;
+    temporary.entries[5] = palette_5.bytes;
+    temporary.entries[6] = palette_6.bytes;
+    palettes = temporary;
+    title.text[59] = slot + 'P';
+    fd = open(filename, 1);
+    if (fd < 0) {
+        fd = open(filename, 0x20200);
+        if (fd < 0) {
+            goto unavailable;
+        }
+    }
+    close(fd);
+    goto opened;
+unavailable:
+    available = 0;
+opened:
+    if (available) {
+        fd = open(filename, 0x8002);
+    }
+    for (i = 0x1FFF; i >= 0; i--) {
+        ((unsigned char *)block)[i] = 0;
+    }
+    func_80018044((unsigned char *)block, 2, 1, palettes.entries[title_index],
+                  frames.entries[title_index], title.text);
+    header = (CardGhostHeader *)block->signature;
+    output = header->signature;
+    expected = card_ghost_signature;
+    do {
+        *output = *expected;
+        output++;
+        expected++;
+    } while ((int)output < (int)(header->signature + 8));
+    header->data_offset = 0;
+    header->data_size = 0;
+    header->data_checksum = 0;
+    return fd;
 }
