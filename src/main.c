@@ -181,6 +181,8 @@ extern short D_80057FBE;
 
 extern short D_80057FBA;
 
+extern unsigned short D_800478D0;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1270,4 +1272,18 @@ void func_80015E18(unsigned long voices, int sample)
         voice.addr = D_80058F98 + D_80058FA0[sample];
         SpuSetKeyOnWithAttr(&voice);
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80015F68
+int func_80015F68(void)
+{
+    int result;
+
+    if (D_800478D0 == 0) {
+        D_800478D0 = 1;
+        result = 0;
+    } else {
+        result = -1;
+    }
+    return result;
 }
