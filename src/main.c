@@ -276,6 +276,9 @@ extern char card_load_filename[23];
 extern int func_80019058(CardSaveHeader *header);
 extern int func_80019154(CardSaveHeader *header, CardGamePayload *payload);
 
+extern unsigned char card_load_signature[9];
+extern int D_80045370;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2538,5 +2541,42 @@ int func_80018F44(void)
     }
     func_80017A00(events);
     D_80047D10 = result > 0;
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80019058
+int func_80019058(CardSaveHeader *input)
+{
+    int result = 0;
+    unsigned char *signature = card_load_signature;
+    unsigned char *expected = signature;
+    CardSaveHeader *header = input;
+    CardGamePayload *payload = (CardGamePayload *)((unsigned char *)header + header->data_offset);
+    int version;
+
+    do {
+        if (*(unsigned char *)input != *expected++) {
+            return -1;
+        }
+        /* Walk the serialized signature one byte at a time. */
+        input = (CardSaveHeader *)((unsigned char *)input + 1);
+    } while ((int)expected < (int)(signature + 7));
+    version = header->signature[7];
+    if (version != signature[7]) {
+        D_80045370 = version;
+        if (version <= 0) {
+            D_80045370 = 1;
+        }
+    }
+    if (func_800181D4((unsigned char *)&header->data_offset, 16) != header->checksum) {
+        return -2;
+    }
+    if (header->data_offset != 0) {
+        result = 0x10000;
+        if (func_800181D4((unsigned char *)payload, 0x998) ==
+            ((CardSaveHeaderTail *)header->unknown_10)->data_checksum) {
+            result = 1;
+        }
+    }
     return result;
 }

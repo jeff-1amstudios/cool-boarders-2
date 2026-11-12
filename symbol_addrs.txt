@@ -397,3 +397,6 @@ func_80018F44 = 0x80018F44; // type:func size:0x114
 card_load_filename = 0x800104F0; // size:0x17
 func_80019058 = 0x80019058; // type:func size:0xFC
 func_80019154 = 0x80019154; // type:func size:0x2D4
+
+card_load_signature = 0x80010508; // size:0x9
+D_80045370 = 0x80045370; // size:0x4
