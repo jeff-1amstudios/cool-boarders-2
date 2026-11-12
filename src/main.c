@@ -1753,3 +1753,17 @@ void func_800172B8(void)
         D_80050680 = 6;
     }
 }
+
+// FUNCTION: SCUS_943.58:0x800173C0
+void func_800173C0(void)
+{
+    unsigned char result[8];
+
+    if (D_80050680 == 6) {
+        CdControl(1, 0, result);
+        if ((result[0] & 0x80) == 0) {
+            D_80050680 = D_80050694;
+            CdControlF(3, &D_80050690.minute);
+        }
+    }
+}

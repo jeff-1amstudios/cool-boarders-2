@@ -320,3 +320,4 @@ D_80050690 = 0x80050690; // size:0x4
 D_80050694 = 0x80050694; // type:s32 size:0x4
 
 func_800172B8 = 0x800172B8; // type:func size:0x108
+func_800173C0 = 0x800173C0; // type:func size:0x6C
