@@ -1450,3 +1450,25 @@ void func_80016804(void)
     } while (index < 16);
     D_8005AB2C = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x80016860
+int func_80016860(int sample_index, unsigned char volume)
+{
+    int index;
+
+    if (sound_transfer_status != 0) {
+        return -1;
+    }
+    if (sample_index >= sound_transfer_banks[0].sample_count) {
+        return -1;
+    }
+    index = D_8005A7AC;
+    if (sound_commands[index].command != 0xFF) {
+        return -1;
+    }
+    sound_commands[index].sample_index = sample_index;
+    sound_commands[index].command = 0;
+    sound_commands[D_8005A7AC].volume = volume;
+    D_8005A7AC = (D_8005A7AC + 1) % 16;
+    return 0;
+}
