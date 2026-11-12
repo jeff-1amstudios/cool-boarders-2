@@ -107,4 +107,8 @@ typedef struct SoundCommand {
     unsigned short pitch;
 } SoundCommand;
 
+typedef struct CardResultTable {
+    int entries[5];
+} CardResultTable;
+
 #endif

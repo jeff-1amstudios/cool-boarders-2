@@ -208,6 +208,10 @@ extern long OpenEvent(unsigned long event_class, long specification, long mode,
                       long (*callback)(void));
 extern long EnableEvent(long event);
 
+extern CardResultTable card_result_table;
+extern long _card_info(long channel);
+extern long _card_clear(long channel);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1893,4 +1897,90 @@ void func_80017B18(long *events)
         i++;
         TestEvent(event);
     } while (i < 4);
+}
+
+// FUNCTION: SCUS_943.58:0x80017B64
+int func_80017B64(long *events)
+{
+    CardResultTable results;
+    long event;
+    int i;
+    long *cursor;
+    int index;
+    int retries;
+    long *flush_cursor;
+    int clear_index;
+    long *clear_cursor;
+    int poll_index;
+    long *poll_cursor;
+
+    results = card_result_table;
+    i = 0;
+    cursor = events;
+    do {
+        event = *cursor;
+        cursor++;
+        i++;
+        TestEvent(event);
+    } while (i < 4);
+    retries = 0;
+    do {
+        _card_info(0);
+        do {
+            poll_index = 0;
+            poll_cursor = events;
+            do {
+                if (TestEvent(*poll_cursor) != 0) {
+                    index = poll_index;
+                    goto info_event;
+                }
+                poll_index++;
+                poll_cursor++;
+            } while (poll_index < 4);
+        } while (1);
+info_event:
+        if (index == 0) {
+            break;
+        }
+        clear_index = 0;
+        if (index == 3) {
+            goto clear_flush;
+        }
+        retries++;
+    } while (retries < 16);
+    if (index == 3) {
+        clear_index = 0;
+clear_flush:
+        flush_cursor = events + 4;
+        do {
+            TestEvent(*flush_cursor++);
+            clear_index++;
+        } while (clear_index < 4);
+        retries = 0;
+        events += 4;
+        do {
+            _card_clear(0);
+            do {
+                clear_index = 0;
+                clear_cursor = events;
+                do {
+                    if (TestEvent(*clear_cursor) != 0) {
+                        goto clear_event;
+                    }
+                    clear_index++;
+                    clear_cursor++;
+                } while (clear_index < 4);
+            } while (1);
+clear_event:
+            if (clear_index == 0) {
+                break;
+            }
+            retries++;
+        } while (retries < 16);
+        index = 3;
+        if (clear_index != 0) {
+            index = 4;
+        }
+    }
+    return results.entries[index];
 }
