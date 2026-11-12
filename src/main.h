@@ -218,4 +218,25 @@ typedef struct CardExtraLoadBlock {
     unsigned char trailing[8];
 } CardExtraLoadBlock;
 
+/* Byte-aligned filename template copied before substituting the ghost slot. */
+typedef struct CardGhostFilename {
+    char text[24];
+} CardGhostFilename;
+
+/* Observed prefix of the variable-length ghost payload. */
+typedef struct CardGhostPayload {
+    unsigned char unknown_00[10];
+    short title_index;
+} CardGhostPayload;
+
+typedef struct CardGhostSaveBlock {
+    unsigned char card_header[256];
+    unsigned char signature[8];
+    unsigned int checksum;
+    unsigned int data_offset;
+    unsigned int data_size;
+    unsigned int data_checksum;
+    unsigned char payload[16104];
+} CardGhostSaveBlock;
+
 #endif

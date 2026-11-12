@@ -296,6 +296,11 @@ extern volatile unsigned short card_extra_setting_6;
 extern short card_extra_mode;
 extern unsigned short card_extra_record_value;
 
+extern CardGhostFilename card_ghost_filename;
+extern int func_80019920(char *filename, CardGhostSaveBlock *block,
+                          unsigned int slot, int title_index);
+extern void func_8001A3DC(void *destination, void *source, unsigned int length);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2756,4 +2761,55 @@ int func_800195F8(CardSaveHeader *header, CardExtraPayload *payload)
     }
     card_extra_mode = mode;
     return 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80019748
+int func_80019748(unsigned int slot, CardGhostPayload *data, unsigned int length)
+{
+    long events[8];
+    CardGhostFilename filename;
+    CardGhostSaveBlock *block;
+    unsigned char *payload;
+    int result = 0;
+    int status;
+    int fd;
+
+    filename = card_ghost_filename;
+    if (slot >= 2) {
+        return -6;
+    }
+    filename.text[22] = slot + '1';
+    block = func_8001F1A0(0x4000);
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = func_80019920(filename.text, block, slot, data->title_index);
+            if (fd >= 0) {
+                payload = block->payload;
+                block->data_offset = 24;
+                block->data_size = length;
+                func_8001A3DC(payload, data, length);
+                block->data_checksum = func_800181D4(payload, length);
+                block->checksum = func_800181D4((unsigned char *)&block->data_offset, 12);
+                lseek(fd, 0, 0);
+                write(fd, block, 0x4000);
+                func_80017A58(events);
+                close(fd);
+            } else {
+                result = -3;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    func_8001F378(block);
+    return result;
 }

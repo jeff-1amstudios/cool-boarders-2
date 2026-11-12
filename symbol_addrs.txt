@@ -417,3 +417,6 @@ card_extra_setting_5 = 0x800570EC; // size:0x2
 card_extra_setting_6 = 0x800570EE; // size:0x2
 card_extra_mode = 0x800570F2; // size:0x2
 card_extra_record_value = 0x80057124; // size:0x2
+
+card_ghost_filename = 0x80010538; // size:0x18
+func_80019748 = 0x80019748; // type:func size:0x1D8
