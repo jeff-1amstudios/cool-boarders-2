@@ -112,7 +112,9 @@ def changes():
                  ("ls-files", "--others", "--exclude-standard", "-z")):
         output = subprocess.check_output(["git", *args], cwd=ROOT)
         paths.update(p.decode() for p in output.split(b"\0") if p)
-    return paths
+    # Progress is refreshed by the supervisor after a batch and may remain
+    # uncommitted. Exclude it from checkout guards, candidate audits and commits.
+    return paths - {"README.md"}
 
 
 def fingerprints():

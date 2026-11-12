@@ -9,14 +9,14 @@ Snapshot: **12 November 2026**. Counts cover non-SDK function instances across a
 
 | Status | Functions | Percent |
 | --- | ---: | ---: |
-| Matching C | 44 | 1.51% |
+| Matching C | 45 | 1.54% |
 | Deferred | 2 | 0.07% |
-| Remaining | 2,874 | 98.42% |
+| Remaining | 2,873 | 98.39% |
 | **Total** | **2,920** | **100.00%** |
 
 Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; remaining includes 1 curated hold.
 
-C function instances by image: `SCUS_943.58`: 44.
+C function instances by image: `SCUS_943.58`: 45.
 
 The inventory contains **3,967** detected function instances, including **1,047 SDK signature matches** excluded from the table. Boundaries are provisional and duplicate bodies are counted per image. Counts come from `reports/reconstruction/targets.json` and the persistent `reports/reconstruction/deferred.json`, excluding targets already covered by C.
 
