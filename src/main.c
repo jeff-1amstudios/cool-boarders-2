@@ -177,6 +177,8 @@ extern unsigned long *volatile D_80058FA0;
 extern int volatile D_80058FA4;
 extern unsigned short D_80057FC0;
 
+extern short D_80057FBE;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1192,4 +1194,34 @@ void func_80015948(unsigned char *first_data, int first_bank,
     }
     D_8005AB2C = 0;
     D_80050568 = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80015C8C
+void func_80015C8C(int pitch, unsigned long voices, int sample, int volume)
+{
+    SpuVoiceAttr voice;
+    short level;
+
+    if (D_80050568 == 0 && sample < D_80058F90) {
+        voice.voice = voices;
+        voice.mask = 0x93;
+        if (pitch != 0) {
+            voice.pitch = pitch;
+        } else {
+            voice.pitch = D_80057FC0;
+        }
+        if (voices == 0x800000) {
+            level = ((volume * D_80057FBE) >> 2) - 1;
+        } else {
+            level = ((volume * D_80057FBC) >> 2) - 1;
+        }
+        if (level > 0) {
+            voice.volume.left = level < 0x4000 ? level : 0x3FFF;
+        } else {
+            voice.volume.left = 0;
+        }
+        voice.volume.right = voice.volume.left = voice.volume.left;
+        voice.addr = D_80058F84 + D_80058F8C[sample];
+        SpuSetKeyOnWithAttr(&voice);
+    }
 }

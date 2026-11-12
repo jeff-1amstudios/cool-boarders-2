@@ -261,3 +261,5 @@ DrawPrim = 0x80029D88; // type:func
 DrawOTag = 0x80029DE8; // type:func
 PutDrawEnv = 0x80029E5C; // type:func
 PutDispEnv = 0x8002A0B4; // type:func
+
+D_80057FBE = 0x80057FBE; // type:s16 size:0x2 absolute:True
