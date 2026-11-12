@@ -181,6 +181,16 @@ extern int D_80058048;
 extern int D_80047D0C;
 extern char D_80010214[16];
 
+extern void func_80017470(unsigned char status, unsigned char *result);
+extern short D_80047CF8[10];
+extern int D_80050640[10];
+extern CdlLOC D_80050678;
+extern int D_8005067C;
+extern int D_80050680;
+extern int D_80050684;
+extern CdlLOC D_80050690;
+extern int D_80050694;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1660,4 +1670,54 @@ void func_80016EE4(void)
 void func_80017044(int track)
 {
     CdControlF(0x16, &cd_audio_starts[track].minute);
+}
+
+// FUNCTION: SCUS_943.58:0x80017074
+void func_80017074(int track, int mode)
+{
+    int index;
+    int first;
+    int second;
+    int temporary;
+    short *source;
+    int *destination;
+    unsigned char parameter[8];
+
+    if (track <= D_80058048) {
+        CdReadyCallback(func_80017470);
+        parameter[0] = 4;
+        CdControl(14, parameter, 0);
+        D_80050684 = 0;
+        if (track == 0) {
+            mode = 5;
+            index = 0;
+            destination = D_80050640;
+            source = D_80047CF8;
+            do {
+                *destination++ = *source++;
+                index++;
+            } while (index < 10);
+            index = 0;
+            do {
+                index++;
+                first = rand() % 10;
+                second = rand() % 10;
+                temporary = D_80050640[first];
+                D_80050640[first] = D_80050640[second];
+                D_80050640[second] = temporary;
+            } while (index < 100);
+            track = D_80050640[0];
+        }
+        D_80050678 = cd_audio_ends[track];
+        D_80050678.track = track;
+        D_8005067C = CdPosToInt(&D_80050678);
+        if (D_80047D0C != 0) {
+            D_8005067C -= 75;
+        }
+        D_80050680 = mode;
+        D_80050690 = cd_audio_starts[track];
+        D_80050694 = mode;
+        CdControlF(3, &cd_audio_starts[track].minute);
+        func_80015EC8(-1, -1, -1);
+    }
 }

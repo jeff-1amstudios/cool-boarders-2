@@ -307,3 +307,14 @@ D_80047D0C = 0x80047D0C; // type:s32 size:0x4
 D_80010214 = 0x80010214; // size:0x10
 cd_audio_current_minute = 0x80050670; // type:u8 size:0x1 absolute:True
 cd_audio_pending_minute = 0x80050674; // type:u8 size:0x1 absolute:True
+
+func_80017074 = 0x80017074; // size:0x218
+func_80017470 = 0x80017470; // type:func size:0x40C
+D_80047CF8 = 0x80047CF8; // size:0x14
+D_80050640 = 0x80050640; // size:0x28
+D_80050678 = 0x80050678; // size:0x4
+D_8005067C = 0x8005067C; // type:s32 size:0x4
+D_80050680 = 0x80050680; // type:s32 size:0x4
+D_80050684 = 0x80050684; // type:s32 size:0x4
+D_80050690 = 0x80050690; // size:0x4
+D_80050694 = 0x80050694; // type:s32 size:0x4
