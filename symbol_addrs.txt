@@ -353,3 +353,5 @@ func_80018230 = 0x80018230; // type:func size:0x34
 func_80018808 = 0x80018808; // type:func size:0x160
 D_80047D10 = 0x80047D10; // size:0x2
 D_80047D14 = 0x80047D14; // size:0x4
+
+func_80018264 = 0x80018264; // type:func size:0x18

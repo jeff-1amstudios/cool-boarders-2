@@ -2118,3 +2118,10 @@ int func_80018230(void)
     D_80047D14 = 0;
     return func_80018808();
 }
+
+// FUNCTION: SCUS_943.58:0x80018264
+void func_80018264(void)
+{
+    D_80047D10 = 0;
+    D_80047D14 = 0;
+}
