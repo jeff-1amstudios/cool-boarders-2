@@ -130,6 +130,11 @@ extern int func_80013C70(void);
 extern unsigned int func_8001B320(int port, unsigned char *state);
 extern int rand(void);
 
+extern SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite,
+                            short x, short y, SpriteTexture *texture, unsigned char shade);
+extern DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
+                              unsigned int tpage);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -875,4 +880,72 @@ void func_8001507C(DRAWENV *draw, DISPENV *disp)
     disp[1].screen.h = 240;
     disp[0].screen.y = 0;
     disp[1].screen.y = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x8001514C
+unsigned char *func_8001514C(unsigned long *ordering_table, unsigned char *cursor,
+                    SpriteTexture *texture, int step, int duration, int x, int y,
+                    unsigned char *glyphs, int count, int time)
+{
+    SpriteTexture glyph_texture;
+    int elapsed = 0;
+    int index;
+    int layers = 6;
+    int progress;
+    unsigned char glyph;
+    unsigned int glyph_index;
+    int offset;
+    int glyph_x;
+    int expansion;
+    int layer;
+    int shade;
+    POLY_FT4 *poly;
+
+    glyph_texture = *texture;
+    for (index = 0; index < count; elapsed += step, index++) {
+        progress = time - elapsed;
+        if (progress < 0)
+            return cursor;
+        glyph_x = x;
+        glyph = *glyphs++;
+        offset = *glyphs++;
+        glyph_index = glyph;
+        glyph_texture.u = texture->u + (glyph_index & 15) * texture->w;
+        glyph_texture.v = texture->v + (glyph_index >> 4) * texture->h;
+        progress = duration - progress;
+        glyph_x += offset;
+        if (progress < 0) {
+            /* The legacy call passes promoted coordinates without short narrowing. */
+            cursor = (unsigned char *)((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, int))
+                      func_80012950)(ordering_table, (SPRT *)cursor, glyph_x, y,
+                                   &glyph_texture, 128);
+            cursor = (unsigned char *)func_80012B6C(ordering_table, (DR_TPAGE *)cursor,
+                                          texture->tpage);
+        } else {
+            for (layer = 0; layer < layers; layer++) {
+                poly = (POLY_FT4 *)cursor;
+                cursor += sizeof(POLY_FT4);
+                ((PrimitiveTag *)poly)->length = 9;
+                poly->code = 0x2c;
+                expansion = texture->w * layer * progress / duration;
+                poly->x0 = poly->x2 = glyph_x - (expansion + 1) / 2;
+                poly->x1 = poly->x3 = poly->x0 + texture->w + expansion;
+                poly->u0 = poly->u2 = glyph_texture.u;
+                poly->u1 = poly->u3 = glyph_texture.u + (unsigned char)texture->w - 1;
+                expansion = texture->h * layer * progress / duration;
+                shade = 128 / layers + layers / 2;
+                poly->y0 = poly->y1 = y - (expansion + 1) / 2;
+                poly->y2 = poly->y3 = poly->y0 + texture->h + expansion;
+                poly->v0 = poly->v1 = glyph_texture.v;
+                poly->v2 = poly->v3 = glyph_texture.v + (unsigned char)texture->h - 1;
+                poly->tpage = texture->tpage;
+                poly->clut = texture->clut;
+                poly->r0 = poly->g0 = poly->b0 = shade;
+                poly->code |= 2;
+                ((PrimitiveTag *)poly)->address = ((PrimitiveTag *)(ordering_table + 1))->address;
+                ((PrimitiveTag *)(ordering_table + 1))->address = (unsigned long)poly;
+            }
+        }
+    }
+    return cursor;
 }
