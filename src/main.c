@@ -105,6 +105,12 @@ extern int CdControlF(unsigned char command, unsigned char *param);
 extern int D_80045364;
 extern FileReadRequest D_800502E8[20];
 
+extern int CdPosToInt(CdlLOC *position);
+extern int VSync(int mode);
+extern void func_800140A0(unsigned char status, unsigned char *result);
+extern int D_80045354;
+extern int D_80045350;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -642,4 +648,21 @@ int func_80013B60(int file_index, char *destination, int completion_address, int
         return disc_file_records[file_index].size;
     }
     return -1;
+}
+
+// FUNCTION: SCUS_943.58:0x80013FB8
+void func_80013FB8(int index)
+{
+    int sector;
+    int file_index;
+
+    sector = CdPosToInt(&disc_file_records[D_800502E8[index].file_index].pos);
+    file_index = D_800502E8[index].file_index;
+    D_800502E8[index].sector = sector;
+    D_800502E8[index].cursor = D_800502E8[index].destination;
+    D_800502E8[index].remaining = D_800502E8[index].size;
+    D_80045354 = CdPosToInt(&disc_file_records[file_index].pos);
+    CdReadyCallback(func_800140A0);
+    CdControl(6, (unsigned char *)&disc_file_records[D_800502E8[index].file_index].pos, 0);
+    D_80045350 = VSync(-1);
 }
