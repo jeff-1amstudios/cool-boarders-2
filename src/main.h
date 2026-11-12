@@ -148,4 +148,48 @@ typedef struct ModeDisplayData {
     int value_14;
 } ModeDisplayData;
 
+typedef struct SpuVolume {
+    short left;
+    short right;
+} SpuVolume;
+
+typedef struct SpuExtAttr {
+    SpuVolume volume;
+    long reverb;
+    long mix;
+} SpuExtAttr;
+
+typedef struct SpuCommonAttr {
+    unsigned long mask;
+    SpuVolume mvol;
+    SpuVolume mvolmode;
+    SpuVolume mvolx;
+    SpuExtAttr cd;
+    SpuExtAttr ext;
+} SpuCommonAttr;
+
+typedef struct SpuVoiceAttr {
+    unsigned long voice;
+    unsigned long mask;
+    SpuVolume volume;
+    SpuVolume volmode;
+    SpuVolume volumex;
+    unsigned short pitch;
+    unsigned short note;
+    unsigned short sample_note;
+    short envx;
+    unsigned long addr;
+    unsigned long loop_addr;
+    long a_mode;
+    long s_mode;
+    long r_mode;
+    unsigned short ar;
+    unsigned short dr;
+    unsigned short sr;
+    unsigned short rr;
+    unsigned short sl;
+    unsigned short adsr1;
+    unsigned short adsr2;
+} SpuVoiceAttr;
+
 #endif

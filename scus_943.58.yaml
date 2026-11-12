@@ -101,6 +101,8 @@ segments:
       - [0x587C, c, func_8001507C]
       - [0x594C, c, func_8001514C]
       - [0x5D08, asm, after_func_8001514C]
+      - [0x6014, c, func_80015814]
+      - [0x6148, asm, after_func_80015814]
       - [0x6768, asm, flag_acquire]
       - [0x6798, asm, flag_release]
       - [0x67C8, asm, after_flag_release]

@@ -135,6 +135,18 @@ extern SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite,
 extern DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
                               unsigned int tpage);
 
+extern void SpuInit(void);
+extern long SpuSetMute(long on_off);
+extern long SpuSetTransferMode(long mode);
+extern void SpuSetCommonAttr(SpuCommonAttr *attr);
+extern void SpuSetVoiceAttr(SpuVoiceAttr *attr);
+extern unsigned long SpuSetNoiseVoice(long on_off, unsigned long voice_bit);
+extern void func_80015EC8(unsigned short volume, unsigned short effect_volume,
+                          unsigned short cd_volume);
+extern SpuCommonAttr D_80058068;
+extern unsigned long D_8005AB2C;
+extern unsigned short D_80050568;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -948,4 +960,48 @@ unsigned char *func_8001514C(unsigned long *ordering_table, unsigned char *curso
         }
     }
     return cursor;
+}
+
+// FUNCTION: SCUS_943.58:0x80015814
+void func_80015814(void)
+{
+    SpuVoiceAttr voice;
+    /* Unreferenced stack storage; the original local type is unknown. */
+    unsigned char unused_stack[24];
+
+    func_8003F094();
+    SpuInit();
+    SpuSetMute(0);
+    SpuSetTransferMode(0);
+    D_80058068.mask = 0x23CF;
+    D_80058068.mvol.left = 0x3FFF;
+    D_80058068.mvol.right = 0x3FFF;
+    D_80058068.mvolmode.left = 0;
+    D_80058068.mvolmode.right = 0;
+    D_80058068.cd.volume.left = 0x7FFF;
+    D_80058068.cd.volume.right = 0x7FFF;
+    D_80058068.cd.reverb = 0;
+    D_80058068.cd.mix = 1;
+    D_80058068.ext.mix = 0;
+    SpuSetCommonAttr(&D_80058068);
+    voice.mask = 0xFF1F;
+    voice.volume.left = 0x2FFF;
+    voice.volume.right = 0x2FFF;
+    voice.pitch = 0x1000;
+    voice.r_mode = 3;
+    voice.voice = 0xFFFFFF;
+    voice.volmode.left = 0;
+    voice.volmode.right = 0;
+    voice.a_mode = 1;
+    voice.s_mode = 1;
+    voice.ar = 0;
+    voice.dr = 0;
+    voice.sr = 0;
+    voice.rr = 0;
+    voice.sl = 0xF;
+    SpuSetVoiceAttr(&voice);
+    SpuSetNoiseVoice(0, 0xFFFFFF);
+    func_80015EC8(0xC0, 0xC0, 0xC0);
+    D_8005AB2C = 0;
+    D_80050568 = 0;
 }
