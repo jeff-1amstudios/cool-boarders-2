@@ -162,6 +162,8 @@ extern unsigned char D_80058CC8[64];
 extern int D_80058B10;
 extern int D_8005A7B8;
 
+extern int func_80016A24(unsigned long voice_bit, int sample_index);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1415,4 +1417,15 @@ int func_800166DC(unsigned char command)
     D_80058CC8[D_8005A7B8] = command;
     D_8005A7B8 = (D_8005A7B8 + 1) % 64;
     return 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80016748
+void func_80016748(void)
+{
+    if (D_80058CC8[D_80058B10] != 0xFF &&
+        SpuGetKeyStatus(0x20000) != 1) {
+        func_80016A24(0x20000, D_80058CC8[D_80058B10]);
+        D_80058CC8[D_80058B10] = 0xFF;
+        D_80058B10 = (D_80058B10 + 1) % 64;
+    }
 }
