@@ -331,3 +331,5 @@ func_80044578 = 0x80044578; // type:func size:0x38
 func_800445B0 = 0x800445B0; // type:func size:0x30
 
 CloseEvent = 0x8003CABC; // type:func size:0xC
+func_80017A58 = 0x80017A58; // type:func size:0x68
+TestEvent = 0x8003CACC; // type:func size:0xC

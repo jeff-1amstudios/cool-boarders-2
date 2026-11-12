@@ -202,6 +202,8 @@ extern void func_800445B0(void);
 
 extern long CloseEvent(long event);
 
+extern long TestEvent(long event);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1813,4 +1815,23 @@ void func_80017A00(long *events)
         CloseEvent(events[i]);
     }
     func_8003CB3C();
+}
+
+// FUNCTION: SCUS_943.58:0x80017A58
+int func_80017A58(long *events)
+{
+    int index;
+    long *event;
+
+    do {
+        index = 0;
+        event = events;
+        do {
+            if (TestEvent(*event) != 0) {
+                return index;
+            }
+            index++;
+            event++;
+        } while (index < 4);
+    } while (1);
 }
