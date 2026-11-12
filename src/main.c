@@ -239,6 +239,17 @@ extern unsigned char card_saved_text[17];
 
 #include "card_format.h"
 
+extern void func_800178CC(long *events);
+extern int func_80017B64(long *events);
+extern int func_80017CFC(long *events);
+extern void func_80017A00(long *events);
+extern int open(char *filename, int mode);
+extern int lseek(int fd, int offset, int origin);
+extern int read(int fd, void *buffer, int size);
+extern int close(int fd);
+extern int func_80018768(unsigned char *data);
+extern char card_save_filename[23];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2256,4 +2267,47 @@ void func_8001827C(void)
             break;
         VSync(0);
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80018678
+int func_80018678(void)
+{
+    unsigned char data[128];
+    long events[8];
+    int result;
+    int status;
+    int fd;
+
+    result = 0;
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = open(card_save_filename, 1);
+            if (fd >= 0) {
+                lseek(fd, 0x200, 0);
+                status = read(fd, data, 128);
+                if (status == 128) {
+                    status = func_80018768(data);
+                    result = -4;
+                    if (status >= 0) {
+                        result = status & 1;
+                    }
+                } else {
+                    result = -6;
+                }
+                close(fd);
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    return result;
 }

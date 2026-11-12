@@ -369,3 +369,11 @@ card_not_saved_text = 0x800102B4; // size:0xE
 card_save_off_text = 0x800102C4; // size:0xF
 card_saved_text = 0x800102D4; // size:0x11
 func_8001827C = 0x8001827C; // type:func size:0x388
+
+func_80018678 = 0x80018678; // type:func size:0xF0
+func_80018768 = 0x80018768; // type:func size:0xA0
+open = 0x8003CB4C; // type:func
+lseek = 0x8003CB5C; // type:func
+read = 0x8003CB6C; // type:func
+close = 0x8003CB8C; // type:func
+card_save_filename = 0x800102E8; // size:0x17
