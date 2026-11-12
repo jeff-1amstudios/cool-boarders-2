@@ -147,6 +147,13 @@ extern SpuCommonAttr D_80058068;
 extern unsigned long D_8005AB2C;
 extern unsigned short D_80050568;
 
+extern void SpuSetKeyOnWithAttr(SpuVoiceAttr *attr);
+extern int D_80058F90;
+extern short D_80057FBC;
+extern int D_800478CC;
+extern unsigned long *D_80058F8C;
+extern unsigned long D_80058F84;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1004,4 +1011,28 @@ void func_80015814(void)
     func_80015EC8(0xC0, 0xC0, 0xC0);
     D_8005AB2C = 0;
     D_80050568 = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80015B70
+int func_80015B70(int sample, int volume)
+{
+    SpuVoiceAttr voice;
+    short level;
+
+    if (D_80050568 == 0 && sample < D_80058F90) {
+        voice.mask = 0x93;
+        voice.pitch = 0x5CE;
+        voice.voice = 1 << D_800478CC;
+        level = ((volume * D_80057FBC) >> 2) - 1;
+        if (level > 0) {
+            voice.volume.left = level < 0x4000 ? level : 0x3FFF;
+        } else {
+            voice.volume.left = 0;
+        }
+        voice.volume.right = voice.volume.left = voice.volume.left;
+        voice.addr = D_80058F84 + D_80058F8C[sample];
+        SpuSetKeyOnWithAttr(&voice);
+        D_800478CC = (D_800478CC + 1) % 8;
+    }
+    return D_800478CC;
 }

@@ -226,3 +226,11 @@ SpuSetNoiseVoice = 0x8003F178; // type:func
 D_80058068 = 0x80058068; // size:0x28 absolute:True
 D_8005AB2C = 0x8005AB2C; // type:u32 size:0x4 absolute:True
 D_80050568 = 0x80050568; // type:u16 size:0x2 absolute:True
+
+func_80015B70 = 0x80015B70; // type:func size:0x11C
+SpuSetKeyOnWithAttr = 0x8003F5F0; // type:func
+D_80058F90 = 0x80058F90; // type:s32 size:0x4 absolute:True
+D_80057FBC = 0x80057FBC; // type:s16 size:0x2 absolute:True
+D_800478CC = 0x800478CC; // type:s32 size:0x4 absolute:True
+D_80058F8C = 0x80058F8C; // size:0x4 absolute:True
+D_80058F84 = 0x80058F84; // type:u32 size:0x4 absolute:True
