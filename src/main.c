@@ -1728,3 +1728,28 @@ void func_8001728C(void)
     CdControlF(9, 0);
     D_80050680 = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x800172B8
+void func_800172B8(void)
+{
+    int status;
+    unsigned char result[8];
+
+    status = CdControl(1, 0, result);
+    if (status == 1 && (result[0] & 0x80)) {
+        status = CdControl(0x11, 0, result);
+        if (status == 1) {
+            D_80050690.minute = result[5];
+            D_80050690.second = result[6];
+            D_80050690.sector = result[7];
+            D_80050690.track = result[0];
+        } else {
+            D_80050690 = cd_audio_starts[D_80050678.track];
+        }
+        CdControlF(9, 0);
+    }
+    if (D_80050680 != 6) {
+        D_80050694 = D_80050680;
+        D_80050680 = 6;
+    }
+}
