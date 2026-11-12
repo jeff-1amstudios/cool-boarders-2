@@ -2926,3 +2926,23 @@ opened:
     header->data_checksum = 0;
     return fd;
 }
+
+// FUNCTION: SCUS_943.58:0x8001A3DC
+void func_8001A3DC(void *destination, void *source, unsigned int length)
+{
+    unsigned char scratch[8];
+    unsigned char *output = destination;
+    unsigned char *input = source;
+    unsigned int copied = 0;
+    unsigned char value;
+
+    if (length != 0) {
+        do {
+            value = *input;
+            input++;
+            copied++;
+            *output = value;
+            output++;
+        } while (copied < length);
+    }
+}
