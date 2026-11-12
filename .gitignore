@@ -1,15 +1,71 @@
-# Installed/downloaded dependencies and tool build state (recipes stay tracked).
-/tools/.venv/
-/tools/cache/
-/tools/tmp/
-/tools/downloads/
-/tools/ghidra/
-/tools/ghidra-state/
-/tools/vendor/
-/tools/build/
-/tools/toolchain/
-/tools/compilers/
-/tools/objdiff/
+# Tools are ignored by default: downloads, caches, temporary sources and build products.
+# Add an explicit exception when introducing a project-authored tool or recipe.
+/tools/*
+
+# Project-authored scripts, patches and pinned dependency/version locks.
+!/tools/audit_sdk_types.py
+!/tools/binutils-macos.patch
+!/tools/binutils.lock.json
+!/tools/bootstrap.sh
+!/tools/boundary_audit.py
+!/tools/c_sources.py
+!/tools/compiler_matrix.py
+!/tools/compilers.lock.json
+!/tools/disc.py
+!/tools/ghidra-docker.sh
+!/tools/ghidra-install.lock.json
+!/tools/ghidra.sh
+!/tools/install_mips.py
+!/tools/install_objdiff.py
+!/tools/objdiff.lock.json
+!/tools/objdiff.py
+!/tools/overlay_rebuild.py
+!/tools/overlays.py
+!/tools/readme_progress.py
+!/tools/rebuild.py
+!/tools/reconstruct.py
+!/tools/reconstruct_run.py
+!/tools/reconstruction_backlog.py
+!/tools/reconstruction_ghidra.py
+!/tools/reconstruction_runtime.py
+!/tools/reconstruction_step.py
+!/tools/requirements.lock
+!/tools/target_queue.py
+!/tools/test_boundary_audit.py
+!/tools/test_c_sources.py
+!/tools/test_overlay_rebuild.py
+!/tools/test_reconstruct.py
+!/tools/test_reconstruct_run.py
+!/tools/test_reconstruction_backlog.py
+!/tools/test_target_queue.py
+!/tools/validate.py
+
+# Project-authored Docker recipes, Ghidra scripts and Splat extensions.
+!/tools/ghidra-docker/
+/tools/ghidra-docker/*
+!/tools/ghidra-docker/Dockerfile
+!/tools/ghidra-docker/Dockerfile.dockerignore
+!/tools/ghidra-docker/Dockerfile.web
+!/tools/ghidra-docker/Dockerfile.web.dockerignore
+!/tools/ghidra-docker/entrypoint.sh
+!/tools/ghidra-docker/web-entrypoint.sh
+!/tools/ghidra_scripts/
+/tools/ghidra_scripts/*
+!/tools/ghidra_scripts/AuditOverlayReferences.java
+!/tools/ghidra_scripts/AuditSdkTypes.java
+!/tools/ghidra_scripts/ExportAllOverlays.java
+!/tools/ghidra_scripts/ExportBoundaryEvidence.java
+!/tools/ghidra_scripts/ExportCompilerEvidence.java
+!/tools/ghidra_scripts/ExportFunctionTrace.java
+!/tools/ghidra_scripts/ExportOverlayInventory.java
+!/tools/ghidra_scripts/ImportOverlays.java
+!/tools/ghidra_scripts/ReconstructionGhidra.java
+!/tools/ghidra_scripts/ReviewBoundaries.java
+!/tools/ghidra_scripts/VerifyPsx.java
+!/tools/splat_ext/
+/tools/splat_ext/*
+!/tools/splat_ext/bytes.py
+
 /objdiff.json
 
 # User-supplied originals, extracted data, and generated output.
