@@ -125,7 +125,7 @@ segments:
       - [0x7224, c, func_80016A24]
       - [0x72EC, c, func_80016AEC]
       - [0x76E4, c, func_80016EE4]
-      - [0x7844, asm, queue_word]
+      - [0x7844, c, func_80017044]
       - [0x7874, asm, after_queue_word]
       - [0x7A8C, asm, command_reset]
       - [0x7AB8, asm, after_command_reset]

@@ -1655,3 +1655,9 @@ void func_80016EE4(void)
         position++;
     }
 }
+
+// FUNCTION: SCUS_943.58:0x80017044
+void func_80017044(int track)
+{
+    CdControlF(0x16, &cd_audio_starts[track].minute);
+}
