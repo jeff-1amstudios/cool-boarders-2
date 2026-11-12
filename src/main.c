@@ -191,6 +191,9 @@ extern int D_80050684;
 extern CdlLOC D_80050690;
 extern int D_80050694;
 
+extern int D_80050688;
+extern int D_8005068C;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1765,5 +1768,15 @@ void func_800173C0(void)
             D_80050680 = D_80050694;
             CdControlF(3, &D_80050690.minute);
         }
+    }
+}
+
+// FUNCTION: SCUS_943.58:0x8001742C
+void func_8001742C(int fade_step)
+{
+    if (D_80050680 - 1U < 2) {
+        D_8005068C = D_80057FB8;
+        D_80050688 = fade_step;
+        D_80050680 = 3;
     }
 }
