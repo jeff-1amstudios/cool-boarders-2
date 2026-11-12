@@ -666,3 +666,36 @@ void func_80013FB8(int index)
     CdControl(6, (unsigned char *)&disc_file_records[D_800502E8[index].file_index].pos, 0);
     D_80045350 = VSync(-1);
 }
+
+// FUNCTION: SCUS_943.58:0x80013654
+POLY_FT4 *func_80013654(unsigned long *ordering_table, POLY_FT4 *packet,
+                      int spacing, int x, int y, SpriteTexture *texture)
+{
+    int index = 0;
+    short base_x = x;
+    POLY_FT4 *primitive;
+
+    for (; index < 3; index++) {
+        primitive = packet++;
+        ((PrimitiveTag *)primitive)->length = 9;
+        primitive->code = 0x2C;
+        primitive->x2 = base_x;
+        primitive->x0 = x + (index + 1) * spacing;
+        primitive->x2 += index * spacing;
+        primitive->x3 = primitive->x2 + texture->w;
+        primitive->x1 = primitive->x0 + texture->w;
+        primitive->y0 = primitive->y1 = y + (index < 2 ? texture->h / (index + 2) : 0);
+        primitive->y2 = primitive->y3 = y + texture->h / (index + 1);
+        primitive->u0 = primitive->u2 = texture->u;
+        primitive->u1 = primitive->u3 = texture->u + (unsigned char)texture->w;
+        primitive->v1 = texture->v + (index < 2 ? texture->h / (index + 2) : 0);
+        primitive->v0 = primitive->v1 = primitive->v1;
+        primitive->v2 = primitive->v3 = texture->v + texture->h / (index + 1);
+        primitive->clut = texture->clut;
+        primitive->tpage = texture->tpage;
+        primitive->r0 = primitive->g0 = primitive->b0 = 0x80;
+        ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+        ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    }
+    return packet;
+}

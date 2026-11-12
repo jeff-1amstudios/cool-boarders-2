@@ -9,7 +9,8 @@
   ],
   "maspsx_flags": [
     "--aspsx-version",
-    "2.56"
+    "2.56",
+    "--expand-div"
   ],
   "as_flags": [
     "-EL",
@@ -20,5 +21,5 @@
     "-G0",
     "-no-pad-sections"
   ],
-  "scope": "Twenty-five integrated C reconstructions and 1,800 matrix trials. PSX GCC 2.7.2 O2/O3 G0 with maspsx 2.56 both match 25/25; original optimization level, exact ASPSX version and project-wide flags remain unproven."
+  "scope": "Twenty-five integrated C reconstructions and 1,800 matrix trials. PSX GCC 2.7.2 O2/O3 G0 with maspsx 2.56 both match 25/25; original optimization level, exact ASPSX version and project-wide flags remain unproven. Subsequent exact full-executable validation with 23 resident C functions establishes --expand-div for func_80013654 (four guarded divisions, 636 bytes). This flag is supported for that function; original assembler version and settings for other objects remain provisional."
 }
