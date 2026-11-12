@@ -198,6 +198,8 @@ extern void func_80044524(int mode);
 extern void func_80044578(void);
 extern void func_8003CA7C(void); /* SDK _bu_init */
 
+extern void func_800445B0(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1791,4 +1793,10 @@ void func_8001787C(void)
     func_80044524(1);
     func_80044578();
     func_8003CA7C();
+}
+
+// FUNCTION: SCUS_943.58:0x800178AC
+void func_800178AC(void)
+{
+    func_800445B0();
 }
