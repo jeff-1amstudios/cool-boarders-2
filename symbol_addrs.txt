@@ -269,3 +269,6 @@ D_80057FBA = 0x80057FBA; // type:s16 size:0x2 absolute:True
 D_800478D0 = 0x800478D0; // size:0x2
 
 func_80015FC8 = 0x80015FC8; // type:func size:0x48
+
+D_80047CF4 = 0x80047CF4; // size:0x4
+sound_transfer_status = 0x80050568; // type:u16 size:0x2 absolute:True

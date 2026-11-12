@@ -183,6 +183,10 @@ extern short D_80057FBA;
 
 extern unsigned short D_800478D0;
 
+extern void *D_80047CF4;
+/* Volatile view of the sound status shared with the transfer callback. */
+extern volatile unsigned short sound_transfer_status;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1311,4 +1315,14 @@ void func_80015FC8(void)
     mode[0] = 0xA0;
     CdControl(0x0E, mode, 0);
     D_80050568 = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80016220
+int func_80016220(void)
+{
+    if (D_80050568 == 0 && D_80047CF4 != 0) {
+        func_8001F378(D_80047CF4);
+        D_80047CF4 = 0;
+    }
+    return (short)sound_transfer_status;
 }
