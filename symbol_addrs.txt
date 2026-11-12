@@ -205,3 +205,4 @@ func_80013654 = 0x80013654; // type:func size:0x27C
 D_80045368 = 0x80045368; // type:s32 size:0x4
 func_80013C70 = 0x80013C70; // type:func size:0x348
 shared_read_requests = 0x800502E8; // absolute:True
+func_800139C4 = 0x800139C4; // type:func size:0x5C

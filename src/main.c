@@ -787,3 +787,26 @@ count_requests:
     } while (count < 20);
     return index;
 }
+// FUNCTION: SCUS_943.58:0x800139C4
+void func_800139C4(unsigned char *buffer)
+{
+    int index, next, block, end;
+    unsigned char *front, *back;
+    unsigned char first;
+    block = 0;
+    end = 0x1000;
+    do {
+        index = 0;
+        do {
+            front = buffer + (block * 0x1000 + index);
+            next = index + 1;
+            back = buffer + (end - next);
+            first = *front;
+            *front = *back;
+            *back = first;
+            index = next;
+        } while (index < 0x800);
+        block++;
+        end += 0x1000;
+    } while (block < 2);
+}

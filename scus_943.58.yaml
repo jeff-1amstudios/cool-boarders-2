@@ -86,6 +86,7 @@ segments:
       - [0x3B40, c, func_80013340]
       - [0x3E54, c, func_80013654]
       - [0x40D0, asm, after_func_80013654]
+      - [0x41C4, c, func_800139C4]
       - [0x4220, c, func_80013A20]
       - [0x42A0, c, func_80013AA0]
       - [0x4330, c, func_80013B30]
