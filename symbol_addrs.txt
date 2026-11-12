@@ -384,3 +384,11 @@ write = 0x8003CB7C; // type:func size:0x10
 card_save_title = 0x8001030C; // size:0x41
 card_save_palette = 0x80010350; // size:0x20
 card_save_frames = 0x80010370; // size:0x180
+
+card_game_settings = 0x800570F4; // size:0x1A
+card_audio_settings = 0x80057FB8; // size:0xA absolute:True
+card_game_options = 0x80057FC2; // size:0x1A
+card_game_records = 0x80057664; // size:0x780
+card_game_results = 0x80057DE4; // size:0x138
+card_game_progress = 0x80057F1C; // size:0x6C
+card_game_entries = 0x80057F88; // size:0x30

@@ -154,4 +154,44 @@ typedef struct CardSaveFrames {
     unsigned char bytes[384];
 } CardSaveFrames;
 
+/* Serialized settings retain halfword alignment and their observed copy extents. */
+typedef struct CardGameSettings {
+    short values[13];
+} CardGameSettings;
+
+typedef struct CardAudioSettings {
+    short cd_volume;
+    short effect_volume;
+    short music_volume;
+    short saved_cd_volume;
+    unsigned short pitch;
+} CardAudioSettings;
+
+typedef struct CardGameRecord {
+    unsigned int words[48];
+} CardGameRecord;
+
+typedef struct CardGameResult {
+    unsigned int words[26];
+} CardGameResult;
+
+typedef struct CardGameProgress {
+    unsigned int words[27];
+} CardGameProgress;
+
+typedef struct CardGameEntry {
+    unsigned int words[4];
+} CardGameEntry;
+
+typedef struct CardGamePayload {
+    unsigned int size;
+    CardGameSettings settings;
+    CardAudioSettings audio;
+    CardGameSettings options;
+    CardGameRecord records[10];
+    CardGameResult results[3];
+    CardGameProgress progress;
+    CardGameEntry entries[3];
+} CardGamePayload;
+
 #endif

@@ -264,6 +264,14 @@ extern CardSaveFrames card_save_frames;
 extern int func_80018044(unsigned char *destination, int mode, int frame_count,
                           unsigned char *palette, unsigned char *frames, char *title);
 
+extern CardGameSettings card_game_settings;
+extern CardAudioSettings card_audio_settings;
+extern CardGameSettings card_game_options;
+extern CardGameRecord card_game_records[10];
+extern CardGameResult card_game_results[3];
+extern CardGameProgress card_game_progress;
+extern CardGameEntry card_game_entries[3];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2461,4 +2469,27 @@ int func_80018968(char *filename, CardSaveBlock *block)
         fd = open(filename, 0x8002);
     }
     return fd;
+}
+
+// FUNCTION: SCUS_943.58:0x80018CC0
+void func_80018CC0(unsigned char *data)
+{
+    CardGamePayload *save = (CardGamePayload *)data;
+    int i;
+
+    save->size = 0x998;
+    save->settings = card_game_settings;
+    save->audio = card_audio_settings;
+    save->options = card_game_options;
+    for (i = 0; i < 10; i++) {
+        /* Preserve the shared base used to address the resident record table. */
+        save->records[i] = ((CardGameRecord *)((unsigned char *)&card_game_settings + 0x570))[i];
+    }
+    for (i = 0; i < 3; i++) {
+        save->results[i] = card_game_results[i];
+    }
+    save->progress = card_game_progress;
+    for (i = 0; i < 3; i++) {
+        save->entries[i] = card_game_entries[i];
+    }
 }
