@@ -1301,3 +1301,14 @@ int func_80015F98(void)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x80015FC8
+void func_80015FC8(void)
+{
+    unsigned char mode[8];
+
+    SpuSetKey(0, 0xFFFFFF);
+    mode[0] = 0xA0;
+    CdControl(0x0E, mode, 0);
+    D_80050568 = 0;
+}
