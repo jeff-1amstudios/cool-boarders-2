@@ -219,6 +219,26 @@ extern unsigned short D_80047D10;
 extern int D_80047D14;
 extern int func_80018808(void);
 
+extern int format(char *device);
+extern char card_format_device[6];
+
+extern unsigned char *func_80012C30(unsigned long *ordering_table, unsigned char *packet, RECT *texture,
+                                      unsigned short clut, int x, int y, unsigned char *string,
+                                      CVECTOR *color, unsigned short mode);
+extern TILE *func_80018604(unsigned long *ordering_table, TILE *tile);
+
+extern RECT card_message_texture;
+extern CardMessageColors card_message_colors;
+extern unsigned char card_saving_text[15];
+extern unsigned char card_missing_text[16];
+extern unsigned char card_changed_text[33];
+extern unsigned char card_write_error_text[13];
+extern unsigned char card_not_saved_text[14];
+extern unsigned char card_save_off_text[15];
+extern unsigned char card_saved_text[17];
+
+#include "card_format.h"
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2142,4 +2162,98 @@ TILE *func_80018604(unsigned long *ordering_table, TILE *tile)
     ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)tile;
     return tile + 1;
+}
+
+// FUNCTION: SCUS_943.58:0x80017DE8
+int func_80017DE8(void)
+{
+    long events[8];
+    int result;
+
+    card_format_open_events(events);
+    result = card_format_load_result(events);
+    card_format_close_events(events);
+    if (result == 1) {
+        result = format(card_format_device) - 1;
+    } else {
+        result = -1;
+    }
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001827C
+void func_8001827C(void)
+{
+    DRAWENV draw;
+    DISPENV disp;
+    unsigned char packets[4096];
+    RECT texture = card_message_texture;
+    CardMessageColors colors = card_message_colors;
+    unsigned long ordering_table[2];
+    unsigned char *packet;
+    int result;
+    int frames;
+    unsigned int previous;
+    unsigned int buttons;
+
+    if (D_80047D10 == 0 || D_80047D14 == 0)
+        return;
+    SetDefDrawEnv(&draw, 0, 0, 320, 240);
+    draw.dtd = 0;
+    draw.r0 = draw.g0 = draw.b0 = 0;
+    draw.isbg = 1;
+    draw.r0 = draw.g0 = draw.b0 = 0;
+    SetDefDispEnv(&disp, 0, 0, 320, 240);
+    PutDrawEnv(&draw);
+    PutDispEnv(&disp);
+    ClearOTag(ordering_table, 1);
+    packet = packets;
+    packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                           176, 192, card_saving_text, &colors.normal, 0);
+    func_80018604(ordering_table, (TILE *)packet);
+    DrawOTag(ordering_table);
+    DrawSync(0);
+    SetDispMask(1);
+    result = func_80018808();
+    ClearOTag(ordering_table, 1);
+    packet = packets;
+    if (result < 0) {
+        switch (result) {
+        case -1:
+            packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                                   100, 114, card_missing_text, &colors.error, 0);
+            break;
+        case -2:
+        case -3:
+        case -7:
+            packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                                   32, 114, card_changed_text, &colors.error, 0);
+            break;
+        default:
+            packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                                   112, 114, card_write_error_text, &colors.error, 0);
+            break;
+        }
+        packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                               108, 138, card_not_saved_text, &colors.error, 0);
+        packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                               104, 162, card_save_off_text, &colors.error, 0);
+        frames = 180;
+    } else {
+        packet = func_80012C30(ordering_table, packet, &texture, 0x733E,
+                               160, 192, card_saved_text, &colors.normal, 0);
+        frames = 120;
+    }
+    func_80018604(ordering_table, (TILE *)packet);
+    DrawOTag(ordering_table);
+    DrawSync(0);
+    SetDispMask(1);
+    buttons = ~0U;
+    while (--frames > 0) {
+        previous = buttons;
+        buttons = func_8001B320(0, 0);
+        if (buttons != (previous & buttons))
+            break;
+        VSync(0);
+    }
 }

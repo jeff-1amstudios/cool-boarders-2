@@ -131,3 +131,39 @@ five accepted GPU, sound, CD-global and event records. An older sound record was
 still rejected by the existing global-extent guard because subsequent analysis
 expanded `D_80058F80`; the importer does not relax that protection. Final
 `make validate` again passed all 15 pinned full-file comparisons.
+
+## Two newest deferrals — card functions, 2026-11-13
+
+The newest persistent entries were `0x80017DE8` (604 bytes) and `0x8001827C`
+(904 bytes), both from batch `1794521977450840000`. Neither was deferred for
+nonmatching instructions: the archived candidates had already passed the pinned
+full-executable comparison. Both were rejected during the subsequent read-only
+Ghidra feedback plan.
+
+| Function | Deferral cause | Resolution |
+| --- | --- | --- |
+| `0x80017DE8` | `Global would truncate existing data: card_format_device`. The unsized `char []` declaration supplied only an element type, and the importer attempted a one-byte prefix over an existing six-byte string. | Declare `card_format_device[6]`, covering the reference's `bu00:` and NUL. Restore matching C and its inline event/load helpers. |
+| `0x8001827C` | `Global would truncate existing data: card_saving_text`. The unsized text declarations encountered the same saved-string extent guard. | Give all seven text arrays explicit NUL-inclusive lengths verified from the pinned bytes: 15, 16, 33, 13, 14, 15 and 17. Reuse the now-accepted `TILE *` drawing-helper prototype with explicit cursor casts. |
+
+Fresh read-only headless exports used current saved SDK names and accepted
+analysis before restoration. Both selected objects match with the unchanged
+provisional `gcc-2.7.2-psx -O2 -G0 -mips1` recipe; no compiler flag change was
+needed. The full 266,240-byte executable matches reference SHA-256
+`5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`
+with zero differing bytes. The two functions add 1,508 bytes of matching C,
+taking resident C objects from 72 to 74. BIOS/SDK calls remain retained assembly.
+
+The first function manages eight card events, polls card-load results with up to
+sixteen retries, closes the events, and invokes BIOS formatting only for result
+code 1. The second draws automatic-save status and error messages, then waits
+up to 120 or 180 frames, allowing a newly pressed controller button to end the
+wait. Recovered layouts and return codes are viable matching representations;
+the original aggregate spelling and complete card-status semantics remain
+uncertain.
+
+The importer and its conflict/extent guards are unchanged. Explicit verified
+array bounds let both feedback plans pass without reducing existing data.
+Replayable feedback records are under `config/ghidra/`; exports, object
+comparisons, full-file logs and feedback transactions are preserved under
+ignored `reports/reconstruction/deferred-card-review/`. Original failed-session
+records remain intact.

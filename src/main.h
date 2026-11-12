@@ -115,4 +115,9 @@ typedef struct CardLoadResultTable {
     int entries[4];
 } CardLoadResultTable;
 
+typedef struct CardMessageColors {
+    CVECTOR normal;
+    CVECTOR error;
+} CardMessageColors;
+
 #endif

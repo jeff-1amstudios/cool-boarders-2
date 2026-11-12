@@ -356,3 +356,16 @@ D_80047D14 = 0x80047D14; // size:0x4
 
 func_80018264 = 0x80018264; // type:func size:0x18
 func_80018604 = 0x80018604; // type:func size:0x74
+format = 0x8003CB9C; // type:func size:0xC
+card_format_device = 0x80010248; // size:0x6
+func_80017DE8 = 0x80017DE8; // type:func size:0x25C
+card_message_texture = 0x80010250; // size:0x8
+card_message_colors = 0x80010258; // size:0x8
+card_saving_text = 0x80010260; // size:0x10
+card_missing_text = 0x80010270; // size:0x10
+card_changed_text = 0x80010280; // size:0x21
+card_write_error_text = 0x800102A4; // size:0xD
+card_not_saved_text = 0x800102B4; // size:0xE
+card_save_off_text = 0x800102C4; // size:0xF
+card_saved_text = 0x800102D4; // size:0x11
+func_8001827C = 0x8001827C; // type:func size:0x388
