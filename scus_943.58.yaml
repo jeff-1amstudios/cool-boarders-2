@@ -91,7 +91,7 @@ segments:
       - [0x4330, c, func_80013B30]
       - [0x4360, c, func_80013B60]
       - [0x4424, c, func_80013C24]
-      - [0x4470, asm, after_func_80013C24]
+      - [0x4470, c, func_80013C70]
       - [0x47B8, c, func_80013FB8]
       - [0x48A0, asm, after_func_80013FB8]
       - [0x4B88, asm, poll_loop]

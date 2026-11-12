@@ -111,6 +111,15 @@ extern void func_800140A0(unsigned char status, unsigned char *result);
 extern int D_80045354;
 extern int D_80045350;
 
+extern volatile int D_80045368;
+/* Volatile view of fields shared with the CD callback; layout is unchanged. */
+extern volatile FileReadRequest shared_read_requests[20];
+extern int func_8001EC78(void *data);
+extern int func_8001EEE0(void *data);
+extern int func_8001F378(void *allocation);
+extern void *func_8001F28C(unsigned int size);
+extern void func_80013FB8(int index);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -698,4 +707,83 @@ POLY_FT4 *func_80013654(unsigned long *ordering_table, POLY_FT4 *packet,
         ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     }
     return packet;
+}
+
+// FUNCTION: SCUS_943.58:0x80013C70
+int func_80013C70(void)
+{
+    int current;
+    int flags;
+    int count;
+    int index;
+    char *buffer;
+    char *allocation;
+
+    current = D_80045368;
+    flags = D_800502E8[current].flags;
+    if ((flags & 1) == 0) {
+        if (flags & 2) {
+            func_8001EC78(shared_read_requests[current].destination);
+            DrawSync(0);
+            current = D_80045368;
+            if (D_800502E8[current].flags & 0x100) {
+                func_8001F378(shared_read_requests[current].destination);
+            }
+            D_800502E8[D_80045368].flags = 0;
+        }
+        current = D_80045368;
+        if (D_800502E8[current].flags & 4) {
+            func_8001EEE0(shared_read_requests[current].destination);
+            DrawSync(0);
+            current = D_80045368;
+            if (D_800502E8[current].flags & 0x100) {
+                func_8001F378(shared_read_requests[current].destination);
+            }
+            D_800502E8[D_80045368].flags = 0;
+        }
+        index = (D_80045368 + 1) % 20;
+        if (D_800502E8[index].flags == 0) {
+            return 0;
+        }
+        buffer = shared_read_requests[index].destination;
+        D_80045368 = index;
+        if (buffer == 0) {
+            if (D_800502E8[index].flags & 0x106) {
+                int slot;
+                allocation = func_8001F28C(disc_file_records[D_800502E8[index].file_index].size);
+                slot = D_80045368;
+                shared_read_requests[slot].cursor = allocation;
+                shared_read_requests[slot].destination = allocation;
+            } else {
+                int slot;
+                allocation = func_8001F1A0(disc_file_records[D_800502E8[index].file_index].size);
+                slot = D_80045368;
+                shared_read_requests[slot].cursor = allocation;
+                shared_read_requests[slot].destination = allocation;
+            }
+            if (shared_read_requests[D_80045368].destination == 0) {
+                return -2;
+            }
+        }
+        current = D_80045368;
+        if (D_800502E8[current].completion != 0) {
+            *D_800502E8[current].completion = shared_read_requests[current].destination;
+        }
+    } else {
+        index = VSync(-1) - D_80045350;
+        if (D_80045354 == 0 || index < 181) {
+            goto count_requests;
+        }
+    }
+    func_80013FB8(D_80045368);
+count_requests:
+    index = 0;
+    count = 0;
+    do {
+        if (D_800502E8[count].flags != 0) {
+            index++;
+        }
+        count++;
+    } while (count < 20);
+    return index;
 }
