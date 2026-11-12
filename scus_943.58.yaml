@@ -95,6 +95,7 @@ segments:
       - [0x4470, c, func_80013C70]
       - [0x47B8, c, func_80013FB8]
       - [0x48A0, asm, after_func_80013FB8]
+      - [0x4AF0, c, func_800142F0]
       - [0x4B88, asm, poll_loop]
       - [0x4BE0, asm, boot_after_poll]
       - [0x6768, asm, flag_acquire]

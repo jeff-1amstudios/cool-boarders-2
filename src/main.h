@@ -138,4 +138,14 @@ typedef struct FileReadRequest {
     unsigned long remaining;
 } FileReadRequest;
 
+/* Six word fields read by func_800143E0; semantic names remain uncertain. */
+typedef struct ModeDisplayData {
+    int index;
+    int variant;
+    int value_08;
+    int value_0c;
+    int value_10;
+    int value_14;
+} ModeDisplayData;
+
 #endif

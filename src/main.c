@@ -120,6 +120,12 @@ extern int func_8001F378(void *allocation);
 extern void *func_8001F28C(unsigned int size);
 extern void func_80013FB8(int index);
 
+extern void func_80013C24(void);
+extern void func_80015508(void);
+extern void func_800143E0(int mode, ModeDisplayData *data);
+extern void func_80014388(void);
+extern ModeDisplayData D_80058090;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -809,4 +815,23 @@ void func_800139C4(unsigned char *buffer)
         block++;
         end += 0x1000;
     } while (block < 2);
+}
+
+// FUNCTION: SCUS_943.58:0x800142F0
+void func_800142F0(int mode)
+{
+    func_80013C24();
+    VSync(3);
+    switch (mode) {
+    case 3:
+        func_80015508();
+        break;
+    case 7:
+        func_800143E0(0, &D_80058090);
+        break;
+    case 6:
+    default:
+        func_80014388();
+        break;
+    }
 }
