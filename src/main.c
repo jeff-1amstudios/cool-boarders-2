@@ -126,6 +126,10 @@ extern void func_800143E0(int mode, ModeDisplayData *data);
 extern void func_80014388(void);
 extern ModeDisplayData D_80058090;
 
+extern int func_80013C70(void);
+extern unsigned int func_8001B320(int port, unsigned char *state);
+extern int rand(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -833,5 +837,21 @@ void func_800142F0(int mode)
     default:
         func_80014388();
         break;
+    }
+}
+
+// FUNCTION: SCUS_943.58:0x80014388
+void func_80014388(void)
+{
+    int pending;
+
+    for (;;) {
+        pending = func_80013C70() - 1;
+        func_8001B320(0, 0);
+        if (pending < 0) {
+            break;
+        }
+        rand();
+        VSync(0);
     }
 }
