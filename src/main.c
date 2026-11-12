@@ -194,6 +194,10 @@ extern int D_80050694;
 extern int D_80050688;
 extern int D_8005068C;
 
+extern void func_80044524(int mode);
+extern void func_80044578(void);
+extern void func_8003CA7C(void); /* SDK _bu_init */
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1779,4 +1783,12 @@ void func_8001742C(int fade_step)
         D_80050688 = fade_step;
         D_80050680 = 3;
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001787C
+void func_8001787C(void)
+{
+    func_80044524(1);
+    func_80044578();
+    func_8003CA7C();
 }

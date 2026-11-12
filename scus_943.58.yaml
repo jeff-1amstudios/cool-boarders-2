@@ -132,7 +132,7 @@ segments:
       - [0x7BC0, c, func_800173C0]
       - [0x7C2C, c, func_8001742C]
       - [0x7C70, asm, after_state_transition]
-      - [0x807C, asm, sdk_calls]
+      - [0x807C, c, func_8001787C]
       - [0x80AC, asm, sdk_single_call]
       - [0x80CC, asm, after_sdk_single_call]
       - [0x8200, asm, word_call_loop]
