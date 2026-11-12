@@ -272,3 +272,7 @@ func_80015FC8 = 0x80015FC8; // type:func size:0x48
 
 D_80047CF4 = 0x80047CF4; // size:0x4
 sound_transfer_status = 0x80050568; // type:u16 size:0x2 absolute:True
+
+sound_disc_transfer = 0x80047CF4; // size:0x4 absolute:True
+sound_transfer_banks = 0x80058F80; // size:0x28 absolute:True
+func_80016354 = 0x80016354; // type:func size:0x350

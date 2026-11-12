@@ -187,6 +187,10 @@ extern void *D_80047CF4;
 /* Volatile view of the sound status shared with the transfer callback. */
 extern volatile unsigned short sound_transfer_status;
 
+extern SoundDiscTransfer *sound_disc_transfer;
+extern SoundTransferBank sound_transfer_banks[2];
+extern void func_80016354(unsigned char status, unsigned char *result);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1325,4 +1329,25 @@ int func_80016220(void)
         D_80047CF4 = 0;
     }
     return (short)sound_transfer_status;
+}
+
+// FUNCTION: SCUS_943.58:0x80016278
+void func_80016278(void)
+{
+    int sector;
+    unsigned long size;
+    SoundDiscTransfer *transfer;
+    SoundDiscTransfer *current;
+
+    sector = CdPosToInt(&sound_disc_transfer->positions[sound_disc_transfer->bank_index]);
+    transfer = sound_disc_transfer;
+    transfer->sector = sector - 1;
+    size = transfer->sizes[transfer->bank_index];
+    transfer->transfer_pending = 0;
+    current = sound_disc_transfer;
+    transfer->remaining = (size + 0x7FFU) >> 11;
+    sound_transfer_status = 2;
+    SpuSetTransferStartAddr(sound_transfer_banks[current->bank_index].transfer_start);
+    CdReadyCallback(func_80016354);
+    CdControl(6, (unsigned char *)&sound_disc_transfer->positions[sound_disc_transfer->bank_index], 0);
 }

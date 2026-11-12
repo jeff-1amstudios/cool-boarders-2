@@ -199,4 +199,24 @@ typedef struct SoundBankDescriptor {
     int unknown_0c;
 } SoundBankDescriptor;
 
+typedef struct SoundDiscTransfer {
+    short bank_index;
+    unsigned char voice;
+    unsigned char transfer_pending;
+    CdlLOC positions[2];
+    unsigned long sizes[2];
+    int sector;
+    unsigned long remaining;
+    unsigned char data[2048];
+} SoundDiscTransfer;
+
+typedef struct SoundTransferBank {
+    short bank_index;
+    unsigned char unknown_02[2];
+    unsigned long transfer_start;
+    unsigned long size;
+    unsigned long *offsets;
+    int sample_count;
+} SoundTransferBank;
+
 #endif
