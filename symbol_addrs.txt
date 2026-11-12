@@ -193,3 +193,4 @@ GsInitGraph = 0x8002DB58; // type:func size:0x78
 SetDispMask = 0x8002974C; // type:func
 func_80013AA0 = 0x80013AA0; // type:func size:0x90
 disc_file_records = 0x800580A8; // absolute:True
+CdControlF = 0x8004097C; // type:func size:0x12C

@@ -100,6 +100,8 @@ extern int CdControl(unsigned char command, unsigned char *param, unsigned char 
 
 extern DiscFileRecord disc_file_records[];
 
+extern int CdControlF(unsigned char command, unsigned char *param);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -610,4 +612,10 @@ void func_80013AA0(char **filenames, int count)
             offset += 8;
         } while (index < count);
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80013B30
+void func_80013B30(int file_index)
+{
+    CdControlF(0x15, (unsigned char *)&disc_file_records[file_index].pos);
 }
