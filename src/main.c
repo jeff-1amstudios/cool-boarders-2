@@ -2580,3 +2580,31 @@ int func_80019058(CardSaveHeader *input)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x80019154
+int func_80019154(CardSaveHeader *header, CardGamePayload *payload)
+{
+    int i;
+
+    if (payload->size != 0x998) {
+        return -1;
+    }
+    if (func_800181D4((unsigned char *)payload, 0x998) !=
+        ((CardSaveHeaderTail *)header->unknown_10)->data_checksum) {
+        return -2;
+    }
+    card_game_settings = payload->settings;
+    card_audio_settings = payload->audio;
+    card_game_options = payload->options;
+    for (i = 0; i < 10; i++) {
+        ((CardGameRecord *)((unsigned char *)&card_game_settings + 0x570))[i] = payload->records[i];
+    }
+    for (i = 0; i < 3; i++) {
+        card_game_results[i] = payload->results[i];
+    }
+    card_game_progress = payload->progress;
+    for (i = 0; i < 3; i++) {
+        card_game_entries[i] = payload->entries[i];
+    }
+    return 0;
+}
