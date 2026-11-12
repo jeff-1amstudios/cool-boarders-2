@@ -128,4 +128,17 @@ typedef struct CardSaveHeader {
     unsigned char unknown_10[12];
 } CardSaveHeader;
 
+/* Word view of the serialized tail retained as bytes in CardSaveHeader. */
+typedef struct CardSaveHeaderTail {
+    unsigned int unknown_10;
+    unsigned int data_checksum;
+    unsigned int unknown_18;
+} CardSaveHeaderTail;
+
+typedef struct CardSaveBlock {
+    unsigned char card_header[512];
+    CardSaveHeader header;
+    unsigned char payload[7652];
+} CardSaveBlock;
+
 #endif

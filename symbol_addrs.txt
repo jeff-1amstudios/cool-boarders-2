@@ -378,3 +378,6 @@ read = 0x8003CB6C; // type:func
 close = 0x8003CB8C; // type:func
 card_save_filename = 0x800102E8; // size:0x17
 card_save_signature = 0x80010300; // size:0x9
+func_80018968 = 0x80018968; // type:func size:0x358
+func_80018CC0 = 0x80018CC0; // type:func size:0x284
+write = 0x8003CB7C; // type:func size:0x10

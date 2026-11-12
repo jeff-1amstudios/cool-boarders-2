@@ -253,6 +253,11 @@ extern char card_save_filename[23];
 extern unsigned int func_800181D4(unsigned char *data, unsigned int length);
 extern unsigned char card_save_signature[9];
 
+extern int func_80018968(char *filename, CardSaveBlock *block);
+extern void func_80018CC0(unsigned char *data);
+extern int func_80017A58(long *events);
+extern int write(int fd, void *buffer, int size);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2335,5 +2340,59 @@ int func_80018768(unsigned char *data)
     if (header->data_offset != 0) {
         result = 1;
     }
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80018808
+int func_80018808(void)
+{
+    CardSaveBlock block;
+    long events[8];
+    int result = 0;
+    int status;
+    int fd;
+
+    if (D_80047D10 == 0) {
+        return 0;
+    }
+    D_80047D10 = 0;
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status == 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = func_80018968(card_save_filename, &block);
+            if (fd >= 0) {
+                block.header.data_offset = 28;
+                func_80018CC0(block.payload);
+                ((CardSaveHeaderTail *)block.header.unknown_10)->data_checksum =
+                    func_800181D4(block.payload, 0x998);
+                block.header.checksum = func_800181D4(
+                    (unsigned char *)&block.header.data_offset, 16);
+                lseek(fd, 0, 0);
+                write(fd, &block, 0x2000);
+                if (func_80017A58(events) > 0) {
+                    result = -6;
+                } else {
+                    D_80047D10 = 1;
+                    D_80047D14 = 0;
+                }
+                close(fd);
+            } else {
+                result = -3;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+        if (status == 1) {
+            result = -7;
+        }
+    }
+    func_80017A00(events);
     return result;
 }
