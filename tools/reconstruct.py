@@ -17,7 +17,7 @@ STATE = ROOT / "reports/reconstruction/state.json"
 REVIEW = ROOT / "config/reconstruction.json"
 PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
-             "tools/reconstruct_run.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
+             "tools/reconstruct_run.py", "tools/readme_progress.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
              "tools/ghidra-docker.sh", "tools/ghidra.sh",
              "config/function-boundaries.json", "config/reconstruction.json", "config/psyq-sdk.json",

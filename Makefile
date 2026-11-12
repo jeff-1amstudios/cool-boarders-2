@@ -1,6 +1,6 @@
 PYTHON := tools/.venv/bin/python
 
-.PHONY: all verify validate split toolchain compiler-matrix boundary-audit target-list overlays overlay-report overlay-validate objdiff-install objdiff-prepare objdiff objdiff-report FORCE
+.PHONY: all verify validate progress split toolchain compiler-matrix boundary-audit target-list overlays overlay-report overlay-validate objdiff-install objdiff-prepare objdiff objdiff-report FORCE
 all: verify
 
 verify validate: objdiff-install
@@ -17,6 +17,9 @@ compiler-matrix:
 
 target-list:
 	$(PYTHON) tools/target_queue.py
+
+progress:
+	$(PYTHON) tools/readme_progress.py
 
 overlays:
 	$(PYTHON) tools/overlays.py analyze

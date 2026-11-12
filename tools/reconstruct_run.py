@@ -490,6 +490,10 @@ class Runner:
             session["result"] = session["directory"] + "/result.json"
             self.w.write(self.w.ROOT / session["result"], result)
             self.w.save_state(session)
+        # Update tracked documentation only after all candidate/checkout invariants
+        # and the final all-image gate, never during acceptance of a worker edit.
+        from readme_progress import update
+        update()
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
               f"{len(session['deferred'])} deferred. Result: {session['result']}", flush=True)
         if reason == "interrupted":
