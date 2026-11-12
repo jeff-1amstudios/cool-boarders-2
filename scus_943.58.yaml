@@ -144,7 +144,7 @@ segments:
       - [0x85E8, asm, after_four_word_calls]
       - [0x8844, c, func_80018044]
       - [0x8950, asm, after_func_80018044]
-      - [0x89D4, asm, byte_fold]
+      - [0x89D4, c, func_800181D4]
       - [0x8A30, asm, after_byte_fold]
       - [0xABDC, asm, copy_bytes]
       - [0xAC10, asm, after_copy_bytes]

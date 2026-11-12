@@ -2078,3 +2078,31 @@ int func_80018044(unsigned char *destination, int mode, int frame_count,
     }
     return result;
 }
+
+
+// FUNCTION: SCUS_943.58:0x800181D4
+unsigned int func_800181D4(unsigned char *data, unsigned int length)
+{
+    unsigned int value;
+    unsigned int left_shift;
+    unsigned int right_shift;
+    unsigned int index;
+    unsigned int checksum;
+    /* Preserve the original unused eight-byte stack allocation. */
+    unsigned char stack_space[8];
+
+    checksum = 0x6B383658;
+    index = 0;
+    if (length != 0) {
+        do {
+            value = *data;
+            data++;
+            left_shift = index & 0x1F;
+            right_shift = 32 - index;
+            index++;
+            checksum ^= (value << left_shift) |
+                        (value << (right_shift & 0x1F));
+        } while (index < length);
+    }
+    return checksum;
+}
