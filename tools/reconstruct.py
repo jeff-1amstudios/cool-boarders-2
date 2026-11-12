@@ -25,7 +25,8 @@ PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py",
              "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
              "tools/ghidra_scripts/AuditOverlayReferences.java", "tools/overlay_rebuild.py",
              "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/reconstruction_backlog.py", "tools/reconstruction_step.py", "tools/reconstruction_runtime.py", "Makefile") + tuple(
-                 p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file())
+                 p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file()) + tuple(
+                 p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/sdk").glob("*.ld")))
 
 
 class NoTarget(RuntimeError):

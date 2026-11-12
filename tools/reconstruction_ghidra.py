@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import time
 
-from c_sources import sections
+from c_sources import sections, header_path
 from reconstruction_backlog import source_file, slug
 
 
@@ -99,10 +99,10 @@ def declarations(root, active):
             raise RuntimeError('Feedback header leaves source tree')
         seen.add(path)
         text = strip_comments(path.read_text())
-        included = ''.join(header(path.parent / name) for name in re.findall(r'^\s*#\s*include\s+"(\w+\.h)"', text, re.M))
+        included = ''.join(header(header_path(path, name)) for name in re.findall(r'^\s*#\s*include\s+"(\w+\.h)"', text, re.M))
         return included + '\n' + re.sub(r'^\s*#.*$', '', text, flags=re.M)
 
-    headers = ''.join(header(source.parent / name) for name in re.findall(r'^\s*#\s*include\s+"(\w+\.h)"', shared, re.M))
+    headers = ''.join(header(header_path(source, name)) for name in re.findall(r'^\s*#\s*include\s+"(\w+\.h)"', shared, re.M))
     body = strip_comments(blocks[active['identity']])
     match = re.search(r'^\s*([\w\s*]+\b' + re.escape(active['name']) + r'\s*\([^;{}]*\))\s*\{', body)
     if not match:

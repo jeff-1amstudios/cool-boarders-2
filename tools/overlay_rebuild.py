@@ -134,7 +134,10 @@ def build_objects(config, recipe, *, reference=False):
 def link(config, output):
     options = config["options"]
     elf = ROOT / options["elf_path"]
+    sdk = ROOT / 'config/sdk' / (slug(config['name']) + '.ld')
+    sdk_args = ['-T', 'config/sdk/resident.ld'] + (['-T', sdk] if sdk.is_file() else [])
     run([str(PREFIX) + "ld", "-EL", "-e", "func_8005AB6C", "-T", options["ld_script_path"],
+         *sdk_args,
          "-T", options["undefined_funcs_auto_path"], "-T", options["undefined_syms_auto_path"],
          "-Map", elf.with_suffix(".map"), "-o", elf])
     run([str(PREFIX) + "objcopy", "-O", "binary", elf, output])

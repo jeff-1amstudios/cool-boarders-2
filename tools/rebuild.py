@@ -61,7 +61,8 @@ def compile_c(name, recipe, config=None):
     preprocessed = ROOT / Path(name).with_suffix(".i")
     psyq = ROOT / Path(name).with_suffix(".psyq.s")
     gas = ROOT / Path(name).with_suffix(".gas.s")
-    run([compiler / "cpp", "-P", "-undef", "-nostdinc", "-I", ROOT / authored.parent, source, preprocessed])
+    run([compiler / "cpp", "-P", "-undef", "-nostdinc", "-I", ROOT / authored.parent,
+         "-I", ROOT / "src", source, preprocessed])
     run([compiler / "cc1", "-quiet", *recipe["cc1_flags"], "-o", psyq, preprocessed])
     run([sys.executable, ROOT / "tools/vendor/maspsx/maspsx.py", *recipe["maspsx_flags"], "-G0"],
         input_text=psyq.read_text(), output_path=gas)
@@ -101,6 +102,7 @@ def main():
                  "-G0", "-no-pad-sections", "-I", "build/include", "-o", name, source])
     run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
          "-T", absolute_symbols_script(),
+         "-T", "config/sdk/resident.ld",
          "-T", "build/undefined_funcs_auto.txt", "-T", "build/undefined_syms_auto.txt",
          "-Map", "build/scus_943.58.map", "-o", "build/scus_943.58.elf"])
     rebuilt = ROOT / "build/SCUS_943.58"

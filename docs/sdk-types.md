@@ -37,3 +37,38 @@ tools/.venv/bin/python tools/audit_sdk_types.py
 The runner clears old output, copies the accepted catalog into ignored `reports/sdk-types/`, and runs `AuditSdkTypes.java` with `-readOnly -noanalysis`. It requires a fresh hash-checked completion manifest because Ghidra can return success after a script error. The generated `audit.md` summarizes results; `audit.json` contains type layouts, stored prototypes, parameter storage and complete per-instance findings. Downloaded archives and generated type dumps remain uncommitted.
 
 This checks stored program signatures, not decompiler-inferred local signatures. Type agreement does not prove ABI storage, library identity, compiler settings or original game source types. The worker's exact containing-file comparison remains the matching acceptance gate.
+
+## Shared C declarations and linker aliases
+
+`src/sdk.h` is the checked-in SDK header. `src/main.h` includes it; overlay
+headers can include `"sdk.h"` through the shared `src/` include path. It contains
+329 archive-derived entry declarations covering 342 accepted SDK instances,
+plus the three previously matched declarations for `GetGraphType`, `StopPAD`
+and `ChangeClearPAD`. The archive leaves the parameter lists of `strcmp`,
+`strcpy`, `strlen`, `FntPrint` and both `memcpy` instances incomplete: these six
+are explicitly marked old-style unprototyped declarations, not assertions that
+the functions take no arguments.
+Other archive signatures remain analysis evidence and require review when used.
+
+Dependent SDK layouts live in the same guarded header; `src/main.h` retains
+game-specific layouts. Existing matched layouts keep their authored field names.
+Other archive fields with dollar-prefixed placeholder names use valid C names
+such as `sdk_unnamed_2`. Callback function types have explicit `CB2SdkCallback_`
+names, while `CdlCB` retains its SDK pointer typedef. No generated header, Docker
+export or installer is required by a normal build.
+
+`config/sdk/resident.ld` supplies resident aliases to both the executable and
+overlay links. `config/sdk/ending.ld` and `config/sdk/mode_sel.ld` supply each
+image's own DCT addresses. `PROVIDE` keeps existing authored/assembly labels;
+these aliases do not change Splat splits, SDK classification or C coverage.
+The ambiguous resident `memcpy` and `memset` names are exposed with explicit
+address suffixes, for example `memcpy_80042E68` and `memcpy_800449D8`. Bare names
+are deliberately not chosen for them. Names lacking archive prototypes were
+not bulk imported; `memclr`, in particular, remains unresolved by a guessed
+public declaration. New declarations and addresses should be reviewed against
+the pinned catalog/archive and the containing-file comparison before use.
+
+Validation after integration: `make validate` passes exact comparisons of all
+15 pinned files. A rollback-only headless Ghidra feedback plan parses the shared
+header successfully and preserves established saved types. No Ghidra changes
+were saved by this header integration. Logs are under ignored `reports/sdk-header/`.

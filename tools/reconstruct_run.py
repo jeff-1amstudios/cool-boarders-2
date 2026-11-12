@@ -11,7 +11,7 @@ from pathlib import Path
 
 import yaml
 from reconstruction_backlog import key, slug, source_dir, source_file, coverage
-from c_sources import sections, function_source
+from c_sources import sections, function_source, header_path
 
 
 class Rejected(RuntimeError):
@@ -95,7 +95,7 @@ def review_source(root, paths, entry, symbol, *, checkpoint=False):
                 continue
             include = re.fullmatch(r'\s*#\s*include\s+"([A-Za-z_]\w*\.h)"\s*', line)
             if include:
-                pending.append(path.parent / include[1])
+                pending.append(header_path(path, include[1]))
             elif not re.fullmatch(r"\s*#\s*(?:ifndef\s+\w+|define\s+\w+|endif)\s*", line):
                 raise Rejected(f"Unsupported preprocessor directive in {path.name}")
         if not checkpoint and path == root / entry and not re.search(r"\b" + re.escape(symbol) + r"\s*\([^;{}]*\)\s*\{", clean):

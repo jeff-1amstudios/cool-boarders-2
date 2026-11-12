@@ -28,3 +28,45 @@ Trials covered the available PSX/CDK GCC 2.7.2 and PSX GCC 2.8.1 compilers, O2/O
 Fresh headless exports and review artifacts are under ignored `reports/reconstruction/deferred-retry/`. The remaining candidate, its matching header/symbol/split inputs, instruction diagnostics and failed full-file comparison are preserved under `reports/reconstruction/deferred-retry/800143E0/`. Original batch evidence is unchanged except the selected-object iteration diagnostics, which are copied into the new directory for this review. Prior candidate patches and supervisor logs remain available in the original session.
 
 Final acceptance uses plain `make validate`: exact full-file comparison of all 15 pinned images. The accepted source adds three resident C functions (1,332 bytes), increasing resident C objects from 31 to 34. Remaining executable assembly, SDK identifications and overlays retain their existing status.
+
+## Two newest deferrals — batch `1794470751902582000`
+
+Both resident functions now compile to matching C with the unchanged provisional
+`gcc-2.7.2-psx -O2 -G0 -mips1` recipe.
+
+| Function | Why it was deferred | Resolution |
+| --- | --- | --- |
+| `0x80015EC8` (160 bytes) | The candidate was nonmatching (83.5% diagnostic similarity), and containing-file validation failed to link the missing `CdMix` alias. The worker preserved an earlier `unsigned short` parameter declaration. | Full-width `int` parameters, explicit low-16-bit range checks, and `short` store locals reproduce the reference's register copies without extra sign extensions. Added `CdMix = 0x80040BEC` from the pinned SDK catalog. |
+| `0x80016010` (528 bytes) | The object diagnostic reported 100%, but the source checker mistook the C union member access `.word` for an assembler directive. No embedded assembly was present. | Reused the subsequently accepted `SoundDiscTransfer` layout and copied the aligned `CdlLOC` representation through `unsigned long` accesses. The resulting C passes the existing source check and reproduces the original aligned loads/stores. |
+
+The volume function preserves a stored value when its argument's low 16 bits are
+outside `0..255`, then applies the signed stored CD volume divided by two to both
+active mixer channels. Full-width parameters also accommodate the observed `-1`
+sentinel caller. Matching establishes a viable source representation, not the
+original declaration spelling.
+
+The transfer function allocates a `0x81C`-byte request, initializes one or two
+sound banks, copies their disc positions and sizes, and starts the transfer.
+The third argument's low byte is stored in the existing layout's `voice` field;
+its precise mode/voice meaning remains uncertain. The overlapping file-record
+view supplies file indices at a 16-byte stride. Existing saved global layouts,
+including the four-byte object containing the pitch halfword, are preserved;
+feedback records explain these overlapping views without replacing their saved
+extents. Volatile aliases preserve the reference's initialization order without
+altering prior users.
+
+Fresh read-only headless exports, compiler/C trials, selected-object diagnostics,
+full-file validation logs, and Ghidra feedback are preserved under ignored
+`reports/reconstruction/newest-deferred/`. The focused C experiment found the
+volume match after 74 compiler/C trials; the broader sweep recorded 995 successful
+trials before it was stopped. No compiler recipe change was needed.
+
+The full 266,240-byte `SCUS_943.58` matches the pinned reference SHA-256
+`5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4` with
+zero differing bytes. These two functions add 688 bytes of matching C, taking
+resident C objects from 42 to 44. `CdMix` remains retained SDK assembly. The older
+`0x800143E0` deferral and the overlays' reconstruction status are unchanged.
+
+Final `make validate` passed all 15 pinned full-file comparisons. Fresh read-only
+exports after transactional Ghidra saves confirmed both accepted prototypes.
+The two resolved entries were removed from the persistent deferred queue.

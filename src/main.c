@@ -5,7 +5,7 @@ extern void func_8001228C(void);
 extern void func_80015814(void);
 extern void func_80016EE4(void);
 extern void func_8001B9A4(void);
-extern CdlFILE *CdSearchFile(CdlFILE *file, char *name);
+
 extern int func_8001C0F4(int *state, int enabled);
 extern int func_800123F8(int overlay, int size);
 extern void func_800142F0(int mode);
@@ -19,18 +19,10 @@ extern char init_filename[];
 extern unsigned int D_800580A8;
 extern unsigned long D_800580AC;
 
-extern CdlCB CdSyncCallback(CdlCB callback);
-extern CdlCB CdReadyCallback(CdlCB callback);
-extern unsigned long DrawSyncCallback(void (*callback)(void));
-extern void SpuSetKey(long on_off, unsigned long voice_bits);
 extern void func_8003F094(void);
 extern void func_8001BA78(void);
-extern int ResetGraph(int mode);
-extern void CdFlush(void);
-extern void StopPAD(void);
+
 extern void func_800178AC(void);
-extern void PadStop(void);
-extern int StopCallback(void);
 
 extern OverlayFileIndices overlay_file_indices;
 extern OverlayHeapStarts overlay_heap_starts;
@@ -53,31 +45,21 @@ extern short D_80058ADE;
 extern short D_80058B00;
 extern short D_80058B02;
 
-extern void GsInit3D(void);
 extern int D_80058E10;
 extern int D_80058E18;
 
-extern DRAWENV *SetDefDrawEnv(DRAWENV *env, int x, int y, int w, int h);
-extern DISPENV *SetDefDispEnv(DISPENV *env, int x, int y, int w, int h);
 extern void *func_8001F1A0(unsigned int size);
-
-extern int GetGraphType(void);
 
 extern int func_8003CB2C(void);
 extern int func_8003CA24(int mode);
-extern int ResetCallback(void);
+
 extern void func_8001B228(void);
-extern int ChangeClearPAD(int mode);
 extern void func_8001F824(void);
 extern void func_8001787C(void);
-extern int ClearImage(RECT *rect, unsigned char r, unsigned char g, unsigned char b);
-extern int DrawSync(int mode);
-extern void GsInitGraph(unsigned short x, unsigned short y, unsigned short intmode,
-                        unsigned short dith, unsigned short varmmode);
+
 extern void func_8002ECB0(short x0, short y0, short x1, short y1);
 extern void func_8001E8C0(void);
 extern void func_8003CB3C(void);
-extern void SetDispMask(int mask);
 
 /* Keep the inline return cursor explicit: it affects GCC 2.7.2 scheduling. */
 static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_TPAGE *packet, unsigned int tpage)
@@ -93,20 +75,11 @@ static __inline__ DR_TPAGE *append_draw_tpage(unsigned long *ordering_table, DR_
     return next;
 }
 
-extern int rsin(int angle);
-extern int rcos(int angle);
-
-extern int CdControl(unsigned char command, unsigned char *param, unsigned char *result);
-
 extern DiscFileRecord disc_file_records[];
-
-extern int CdControlF(unsigned char command, unsigned char *param);
 
 extern int D_80045364;
 extern FileReadRequest D_800502E8[20];
 
-extern int CdPosToInt(CdlLOC *position);
-extern int VSync(int mode);
 extern void func_800140A0(unsigned char status, unsigned char *result);
 extern int D_80045354;
 extern int D_80045350;
@@ -128,26 +101,17 @@ extern ModeDisplayData D_80058090;
 
 extern int func_80013C70(void);
 extern unsigned int func_8001B320(int port, unsigned char *state);
-extern int rand(void);
 
 extern SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite,
                             short x, short y, SpriteTexture *texture, unsigned char shade);
 extern DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
                               unsigned int tpage);
 
-extern void SpuInit(void);
-extern long SpuSetMute(long on_off);
-extern long SpuSetTransferMode(long mode);
-extern void SpuSetCommonAttr(SpuCommonAttr *attr);
-extern void SpuSetVoiceAttr(SpuVoiceAttr *attr);
-extern unsigned long SpuSetNoiseVoice(long on_off, unsigned long voice_bit);
-extern void func_80015EC8(unsigned short volume, unsigned short effect_volume,
-                          unsigned short cd_volume);
+extern void func_80015EC8(int volume, int effect_volume, int cd_volume);
 extern SpuCommonAttr D_80058068;
 extern unsigned long D_8005AB2C;
 extern unsigned short D_80050568;
 
-extern void SpuSetKeyOnWithAttr(SpuVoiceAttr *attr);
 extern int D_80058F90;
 extern short D_80057FBC;
 extern int D_800478CC;
@@ -156,17 +120,11 @@ extern unsigned long volatile D_80058F84;
 
 extern void *func_8001579C(void);
 extern int func_8001EFE4(void *image, int x, int y, int clut_x, int clut_y);
-extern DRAWENV *PutDrawEnv(DRAWENV *env);
-extern DISPENV *PutDispEnv(DISPENV *env);
-extern void DrawPrim(void *primitive);
-extern int MoveImage(RECT *rect, int x, int y);
+
 extern short D_8004534C;
 extern void *func_8001EA54(char *filename, void *destination, int sector_offset, int sector_count);
 extern char D_80010200[17];
-extern void SpuStart(void);
-extern unsigned long SpuSetTransferStartAddr(unsigned long addr);
-extern unsigned long SpuRead(unsigned char *addr, unsigned long size);
-extern long SpuIsTransferCompleted(long flag);
+
 extern volatile SoundBankDescriptor D_800478D8[];
 extern short volatile D_80058F80;
 extern unsigned long volatile D_80058F88;
@@ -190,6 +148,15 @@ extern volatile unsigned short sound_transfer_status;
 extern SoundDiscTransfer *sound_disc_transfer;
 extern SoundTransferBank sound_transfer_banks[2];
 extern void func_80016354(unsigned char status, unsigned char *result);
+
+extern short D_80057FB8;
+
+extern volatile SoundBankFileRecord D_800478D4[];
+extern void func_80016278(void);
+
+/* Separate volatile views preserve the initialization store order. */
+extern volatile int sound_bank_sample_count;
+extern volatile unsigned short sound_bank_pitch;
 
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
@@ -1282,6 +1249,29 @@ void func_80015E18(unsigned long voices, int sample)
     }
 }
 
+// FUNCTION: SCUS_943.58:0x80015EC8
+void func_80015EC8(int volume, int effect_volume, int cd_volume)
+{
+    CdlATV mix;
+    short music = volume;
+    short effects = effect_volume;
+    short cd = cd_volume;
+
+    if ((unsigned short)volume < 0x100) {
+        D_80057FBC = music;
+    }
+    if ((unsigned short)effect_volume < 0x100) {
+        D_80057FBA = effects;
+    }
+    if ((unsigned short)cd_volume < 0x100) {
+        D_80057FB8 = D_80057FBE = cd;
+    }
+    mix.val3 = 0;
+    mix.val1 = 0;
+    mix.val0 = mix.val2 = D_80057FB8 / 2;
+    CdMix(&mix);
+}
+
 // FUNCTION: SCUS_943.58:0x80015F68
 int func_80015F68(void)
 {
@@ -1319,6 +1309,47 @@ void func_80015FC8(void)
     mode[0] = 0xA0;
     CdControl(0x0E, mode, 0);
     D_80050568 = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80016010
+void func_80016010(int first_bank, int second_bank, unsigned char mode)
+{
+    SoundDiscTransfer *request;
+    SoundDiscTransfer *active;
+    unsigned long second_addr;
+    int bank;
+    int file_index;
+
+    request = func_8001F1A0(0x81C);
+    D_80058F80 = first_bank;
+    D_80058F84 = 0x1010;
+    D_80058F88 = D_800478D8[first_bank].offsets[D_800478D8[first_bank].sample_count];
+    D_80058F8C = D_800478D8[first_bank].offsets;
+    sound_bank_sample_count = D_800478D8[first_bank].sample_count;
+    file_index = D_800478D4[first_bank].file_index;
+    D_80047CF4 = request;
+    /* Copy the aligned CdlLOC representation: direct SDK struct assignment
+       emits unaligned load/store pairs with this compiler. */
+    *(unsigned long *)&request->positions[0] = *(unsigned long *)&disc_file_records[file_index].pos;
+    request->sizes[0] = disc_file_records[D_800478D4[first_bank].file_index].size;
+    if (second_bank >= 0) {
+        second_addr = ((D_80058F88 + 0x800) & ~0x7FFUL) + 0x1010;
+        D_80058F94 = second_bank;
+        D_80058F98 = second_addr;
+        D_80058F9C = D_800478D8[second_bank].offsets[D_800478D8[second_bank].sample_count];
+        D_80058FA0 = D_800478D8[second_bank].offsets;
+        D_80058FA4 = D_800478D8[second_bank].sample_count;
+        sound_bank_pitch = D_800478D8[second_bank].pitch;
+        *(unsigned long *)&request->positions[1] = *(unsigned long *)&disc_file_records[D_800478D4[second_bank].file_index].pos;
+        request->sizes[1] = disc_file_records[D_800478D4[second_bank].file_index].size;
+        bank = 1;
+    } else {
+        bank = 0;
+    }
+    active = D_80047CF4;
+    active->bank_index = bank;
+    active->voice = mode;
+    func_80016278();
 }
 
 // FUNCTION: SCUS_943.58:0x80016220

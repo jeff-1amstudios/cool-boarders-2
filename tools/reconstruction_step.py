@@ -44,6 +44,7 @@ def check(context_path, full=False):
               'tools/rebuild.py', 'tools/overlay_rebuild.py', 'tools/reconstruction_step.py',
               'tools/c_sources.py',
               'orig/disc/files/' + context['image']]
+    inputs += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / 'config/sdk').glob('*.ld'))]
     signature = {p: digest(ROOT / p) for p in inputs}
     cache_path = directory / 'object-reference.json'
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}

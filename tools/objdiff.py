@@ -102,6 +102,7 @@ def main():
                  Path(name).with_suffix(".s")])
         run([str(PREFIX) + "ld", "-EL", "-e", "_start", "-T", script,
              "-T", absolute_symbols_script(),
+             "-T", "config/sdk/resident.ld",
              "-T", directory / "undefined_funcs.txt", "-T", directory / "undefined_syms.txt",
              "-o", directory / "reference.elf"])
         binary = directory / "SCUS_943.58"

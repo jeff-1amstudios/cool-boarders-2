@@ -12,6 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 MARKER = re.compile(r'^// FUNCTION: ([A-Za-z0-9_.]+):(0x[0-9A-Fa-f]{8})\s*$', re.M)
 
 
+def header_path(source, name):
+    """Resolve image-local headers first, then shared headers such as sdk.h."""
+    local = source.parent / name
+    return local if local.is_file() else ROOT / 'src' / name
+
+
 def source_path(unit):
     unit = Path(unit)
     if unit.parts[:1] == ('overlays',):
