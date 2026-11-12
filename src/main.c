@@ -98,6 +98,8 @@ extern int rcos(int angle);
 
 extern int CdControl(unsigned char command, unsigned char *param, unsigned char *result);
 
+extern DiscFileRecord disc_file_records[];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -582,4 +584,30 @@ void func_80013C24(void)
         mode[0] = 0xA0;
         result = CdControl(0x0E, mode, 0);
     } while (result != 1);
+}
+
+// FUNCTION: SCUS_943.58:0x80013AA0
+void func_80013AA0(char **filenames, int count)
+{
+    int index;
+    int offset;
+    char **cursor;
+    CdlFILE file;
+
+    index = 1;
+    if (index < count) {
+        offset = 8;
+        cursor = filenames + 1;
+        do {
+            CdSearchFile(&file, *cursor);
+            cursor++;
+            /* Copy the aligned CdlLOC representation as one word; direct
+             * struct assignment makes GCC 2.7.2 emit unaligned transfers. */
+            *(unsigned long *)((char *)&disc_file_records[0].pos + offset) =
+                *(unsigned long *)&file.pos;
+            index++;
+            *(unsigned long *)((char *)&disc_file_records[0].size + offset) = file.size;
+            offset += 8;
+        } while (index < count);
+    }
 }

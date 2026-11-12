@@ -122,4 +122,9 @@ typedef struct POLY_FT4 {
     unsigned short pad2;
 } POLY_FT4;
 
+typedef struct DiscFileRecord {
+    CdlLOC pos;
+    unsigned long size;
+} DiscFileRecord;
+
 #endif
