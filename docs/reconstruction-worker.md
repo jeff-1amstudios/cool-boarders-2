@@ -28,6 +28,23 @@ The broad function inventory and boundary audit remain explicit analysis command
 
 The worker writes `ghidra-update.json` in its ignored attempt directory with exactly `function_evidence` (a nonempty string describing parameter/return evidence and uncertainty) and `globals` (a list, empty when no global types were recovered). Each global entry has `image`, hexadecimal `address`, `name` and `evidence`; it must correspond to an authored extern and a matching address in the selected image's symbols file. Declare each global separately. Use `SCUS_943.58` for a resident global even when reconstructing an overlay.
 
+Preserve established global data extents. For a referenced NUL-terminated string,
+verify its bytes in the pinned image and use an explicit array bound including
+the NUL; record that length in the global's evidence. For example, `bu00:` needs
+`extern char card_format_device[6]`. Do not infer extra capacity from alignment
+padding. An unsized extern array `[]` supplies an element type, not an allocation
+size: feedback may attempt a one-element prefix and reject it for truncating an
+existing string or larger object. This caused the otherwise matching
+`0x80017DE8` and `0x8001827C` candidates to be deferred.
+
+For other arrays, use explicit bounds only when supported by evidence. If the
+extent remains unknown or the inferred type describes only a prefix or
+overlapping view of a larger saved object, preserve the established declaration
+and layout, document the inferred view and uncertainty in `function_evidence`,
+and omit a global replacement that would shrink it. Retain the recovered type
+evidence even when a replacement is unsafe. Never invent a bound or weaken the
+importer's extent/conflict guards to make feedback pass.
+
 After the supervisor's containing-file gate passes, it extracts the selected C prototype, authored headers and extern declarations. A headless planning transaction parses the types and checks that the proposal can be applied, then rolls back. The supervisor commits a replayable authored analysis record under `config/ghidra/` with the matching C. Only after integration does it apply that record transactionally and save Ghidra. The next fresh decompilation therefore sees the accepted types and global field names. A byte match supports one viable reconstruction; the evidence record must preserve remaining semantic uncertainty.
 
 Inline function-pointer types are assigned deterministic signature-based names under
