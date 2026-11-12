@@ -855,3 +855,24 @@ void func_80014388(void)
         VSync(0);
     }
 }
+
+// FUNCTION: SCUS_943.58:0x8001507C
+void func_8001507C(DRAWENV *draw, DISPENV *disp)
+{
+    SetDefDrawEnv(draw, 0, 256, 320, 240);
+    SetDefDrawEnv(draw + 1, 0, 0, 320, 240);
+    draw[0].b0 = 0;
+    draw[0].g0 = 0;
+    draw[0].r0 = 0;
+    draw[1].b0 = 0;
+    draw[1].g0 = 0;
+    draw[1].r0 = 0;
+    draw[0].isbg = 1;
+    draw[1].isbg = 1;
+    SetDefDispEnv(disp, 0, 0, 320, 240);
+    SetDefDispEnv(disp + 1, 0, 256, 320, 240);
+    disp[0].screen.h = 240;
+    disp[1].screen.h = 240;
+    disp[0].screen.y = 0;
+    disp[1].screen.y = 0;
+}
