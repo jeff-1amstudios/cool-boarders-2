@@ -1225,3 +1225,25 @@ void func_80015C8C(int pitch, unsigned long voices, int sample, int volume)
         SpuSetKeyOnWithAttr(&voice);
     }
 }
+
+// FUNCTION: SCUS_943.58:0x80015D84
+void func_80015D84(unsigned long voices, int volume)
+{
+    SpuVoiceAttr voice;
+    short level;
+
+    voice.mask = 3;
+    voice.voice = voices;
+    if (voices == 0x800000) {
+        level = ((volume * D_80057FBE) >> 2) - 1;
+    } else {
+        level = ((volume * D_80057FBC) >> 2) - 1;
+    }
+    if (level > 0) {
+        voice.volume.left = level < 0x4000 ? level : 0x3FFF;
+    } else {
+        voice.volume.left = 0;
+    }
+    voice.volume.right = voice.volume.left = voice.volume.left;
+    SpuSetVoiceAttr(&voice);
+}
