@@ -167,3 +167,10 @@ Replayable feedback records are under `config/ghidra/`; exports, object
 comparisons, full-file logs and feedback transactions are preserved under
 ignored `reports/reconstruction/deferred-card-review/`. Original failed-session
 records remain intact.
+
+Final plain `make validate` passed all 15 pinned full-file comparisons. Both
+transactional Ghidra saves succeeded, and subsequent fresh read-only exports
+confirmed `int func_80017DE8(void)` and `void func_8001827C(void)`. Both entries
+were removed from the persistent deferred queue only after those saves and
+confirmation; three older deferrals remain. The progress snapshot now records
+74 matching resident C functions.
