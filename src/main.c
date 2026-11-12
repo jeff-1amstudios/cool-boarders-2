@@ -1405,3 +1405,14 @@ void func_800166A4(void)
         slot--;
     } while (remaining >= 0);
 }
+
+// FUNCTION: SCUS_943.58:0x800166DC
+int func_800166DC(unsigned char command)
+{
+    if (D_80058CC8[D_8005A7B8] != 0xFF) {
+        return -1;
+    }
+    D_80058CC8[D_8005A7B8] = command;
+    D_8005A7B8 = (D_8005A7B8 + 1) % 64;
+    return 0;
+}
