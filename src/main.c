@@ -1721,3 +1721,10 @@ void func_80017074(int track, int mode)
         func_80015EC8(-1, -1, -1);
     }
 }
+
+// FUNCTION: SCUS_943.58:0x8001728C
+void func_8001728C(void)
+{
+    CdControlF(9, 0);
+    D_80050680 = 0;
+}

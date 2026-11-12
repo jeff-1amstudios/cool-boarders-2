@@ -127,7 +127,7 @@ segments:
       - [0x76E4, c, func_80016EE4]
       - [0x7844, c, func_80017044]
       - [0x7874, c, func_80017074]
-      - [0x7A8C, asm, command_reset]
+      - [0x7A8C, c, func_8001728C]
       - [0x7AB8, asm, after_command_reset]
       - [0x7C2C, asm, state_transition]
       - [0x7C70, asm, after_state_transition]
