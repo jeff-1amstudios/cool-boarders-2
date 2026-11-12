@@ -127,4 +127,15 @@ typedef struct DiscFileRecord {
     unsigned long size;
 } DiscFileRecord;
 
+typedef struct FileReadRequest {
+    char *cursor;
+    char *destination;
+    char **completion;
+    unsigned int flags;
+    int file_index;
+    unsigned long size;
+    int sector;
+    unsigned long remaining;
+} FileReadRequest;
+
 #endif

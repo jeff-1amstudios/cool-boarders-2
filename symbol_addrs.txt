@@ -194,3 +194,5 @@ SetDispMask = 0x8002974C; // type:func
 func_80013AA0 = 0x80013AA0; // type:func size:0x90
 disc_file_records = 0x800580A8; // absolute:True
 CdControlF = 0x8004097C; // type:func size:0x12C
+D_80045364 = 0x80045364; // size:0x4
+D_800502E8 = 0x800502E8; // size:0x280

@@ -102,6 +102,9 @@ extern DiscFileRecord disc_file_records[];
 
 extern int CdControlF(unsigned char command, unsigned char *param);
 
+extern int D_80045364;
+extern FileReadRequest D_800502E8[20];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -618,4 +621,25 @@ void func_80013AA0(char **filenames, int count)
 void func_80013B30(int file_index)
 {
     CdControlF(0x15, (unsigned char *)&disc_file_records[file_index].pos);
+}
+
+// FUNCTION: SCUS_943.58:0x80013B60
+int func_80013B60(int file_index, char *destination, int completion_address, int flags)
+{
+    unsigned long size;
+    int slot;
+
+    slot = (D_80045364 + 1) % 20;
+    if (D_800502E8[slot].flags == 0) {
+        D_800502E8[slot].flags = flags | 1;
+        D_800502E8[slot].file_index = file_index;
+        size = disc_file_records[file_index].size;
+        D_80045364 = slot;
+        D_800502E8[slot].destination = destination;
+        /* The existing interface carries this pointer as a 32-bit address. */
+        D_800502E8[slot].completion = (char **)completion_address;
+        D_800502E8[slot].size = size;
+        return disc_file_records[file_index].size;
+    }
+    return -1;
 }
