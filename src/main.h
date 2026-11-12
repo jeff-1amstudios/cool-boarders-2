@@ -201,4 +201,21 @@ typedef struct CardLoadBlock {
     unsigned char trailing[204];
 } CardLoadBlock;
 
+/* Secondary save payload validated and imported by func_800195F8. */
+typedef struct CardExtraPayload {
+    unsigned int size;
+    short selected_record;
+    unsigned short settings[7];
+    unsigned short record_values[8];
+    unsigned short record_data[8][10];
+} CardExtraPayload;
+
+/* The secondary payload occupies the existing load window's trailing bytes. */
+typedef struct CardExtraLoadBlock {
+    CardSaveHeader header;
+    CardGamePayload payload;
+    CardExtraPayload extra;
+    unsigned char trailing[8];
+} CardExtraLoadBlock;
+
 #endif

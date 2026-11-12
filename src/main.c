@@ -279,6 +279,10 @@ extern int func_80019154(CardSaveHeader *header, CardGamePayload *payload);
 extern unsigned char card_load_signature[9];
 extern int D_80045370;
 
+extern char card_extra_load_filename[23];
+extern int func_80019530(CardSaveHeader *header);
+extern int func_800195F8(CardSaveHeader *header, CardExtraPayload *payload);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2607,4 +2611,46 @@ int func_80019154(CardSaveHeader *header, CardGamePayload *payload)
         card_game_entries[i] = payload->entries[i];
     }
     return 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80019428
+int func_80019428(void)
+{
+    CardExtraLoadBlock block;
+    long events[8];
+    int result = 0;
+    int status;
+    int fd;
+
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = open(card_extra_load_filename, 1);
+            if (fd >= 0) {
+                lseek(fd, 0x200, 0);
+                if (read(fd, &block, 0xA80) == 0xA80) {
+                    status = func_80019530(&block.header);
+                    if (status >= 0 && (status & 2) != 0) {
+                        result = func_800195F8(&block.header, &block.extra) == 0;
+                    } else {
+                        result = -4;
+                    }
+                } else {
+                    result = -6;
+                }
+                close(fd);
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    return result;
 }
