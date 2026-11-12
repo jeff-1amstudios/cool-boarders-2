@@ -2125,3 +2125,21 @@ void func_80018264(void)
     D_80047D10 = 0;
     D_80047D14 = 0;
 }
+
+
+// FUNCTION: SCUS_943.58:0x80018604
+TILE *func_80018604(unsigned long *ordering_table, TILE *tile)
+{
+    ((PrimitiveTag *)tile)->length = 3;
+    tile->code = 0x60;
+    tile->w = 320;
+    tile->r0 = 0;
+    tile->g0 = 0;
+    tile->b0 = 0;
+    tile->x0 = 0;
+    tile->y0 = 0;
+    tile->h = 240;
+    ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)tile;
+    return tile + 1;
+}
