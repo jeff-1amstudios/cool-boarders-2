@@ -170,6 +170,17 @@ extern SoundCommand sound_commands[16];
 
 extern volatile SoundCommand pending_sound_commands[16];
 
+/* The byte aliases preserve standalone minute stores; both objects are CdlLOC. */
+extern volatile CdlLOC cd_audio_current_pos;
+extern volatile unsigned char cd_audio_current_minute;
+extern volatile CdlLOC cd_audio_pending_pos;
+extern volatile unsigned char cd_audio_pending_minute;
+extern CdlLOC cd_audio_starts[26];
+extern CdlLOC cd_audio_ends[26];
+extern int D_80058048;
+extern int D_80047D0C;
+extern char D_80010214[16];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1604,4 +1615,43 @@ void func_80016AEC(void)
     }
     SpuSetKey(1, voices);
     D_8005AB2C = 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80016EE4
+void func_80016EE4(void)
+{
+    char *filename = D_80010214;
+    int index;
+    int track;
+    int current_track;
+    CdlLOC *position;
+    CdlFILE file;
+
+    cd_audio_current_pos.sector = 0;
+    cd_audio_current_pos.second = 0;
+    cd_audio_current_minute = 0;
+    cd_audio_current_pos.track = 0;
+    cd_audio_pending_pos.sector = 0;
+    cd_audio_pending_pos.second = 0;
+    cd_audio_pending_minute = 0;
+    cd_audio_pending_pos.track = 0;
+    for (index = 1; index < 26; index++) {
+        cd_audio_starts[index].track = 255;
+    }
+    position = &cd_audio_starts[2];
+    D_80058048 = 1;
+    D_80047D0C = 0;
+    for (track = 2; track < 26; track++) {
+        filename[9] = track + 63;
+        current_track = track;
+        if (CdSearchFile(&file, filename) == 0) {
+            return;
+        }
+        D_80058048++;
+        *position = file.pos;
+        cd_audio_starts[track].track = current_track;
+        CdIntToPos(CdPosToInt(&file.pos) + ((file.size + 2047) >> 11),
+                   &cd_audio_ends[track]);
+        position++;
+    }
 }

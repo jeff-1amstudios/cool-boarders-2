@@ -297,3 +297,13 @@ func_80016860 = 0x80016860; // size:0xC8
 
 func_80016AEC = 0x80016AEC; // size:0x3F8
 pending_sound_commands = 0x80058C48; // size:0x80 absolute:True
+
+cd_audio_current_pos = 0x80050670; // size:0x4
+cd_audio_pending_pos = 0x80050674; // size:0x4
+cd_audio_starts = 0x80050570; // size:0x68
+cd_audio_ends = 0x800505D8; // size:0x68
+D_80058048 = 0x80058048; // type:s32 size:0x4
+D_80047D0C = 0x80047D0C; // type:s32 size:0x4
+D_80010214 = 0x80010214; // size:0x10
+cd_audio_current_minute = 0x80050670; // type:u8 size:0x1 absolute:True
+cd_audio_pending_minute = 0x80050674; // type:u8 size:0x1 absolute:True
