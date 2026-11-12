@@ -134,7 +134,7 @@ segments:
       - [0x7C70, asm, after_state_transition]
       - [0x807C, c, func_8001787C]
       - [0x80AC, c, func_800178AC]
-      - [0x80CC, asm, after_sdk_single_call]
+      - [0x80CC, c, func_800178CC]
       - [0x8200, c, func_80017A00]
       - [0x8258, c, func_80017A58]
       - [0x82C0, c, func_80017AC0]

@@ -113,16 +113,118 @@ public class ReconstructionGhidra extends GhidraScript {
             return report;
         } finally { decompiler.dispose(); }
     }
+    private List<DataType> children(DataType type) {
+        List<DataType> result = new ArrayList<>();
+        if (type instanceof Pointer pointer) result.add(pointer.getDataType());
+        else if (type instanceof Array array) result.add(array.getDataType());
+        else if (type instanceof TypeDef alias) result.add(alias.getDataType());
+        else if (type instanceof Composite composite)
+            for (var field : composite.getDefinedComponents()) result.add(field.getDataType());
+        else if (type instanceof FunctionDefinition function) {
+            result.add(function.getReturnType());
+            for (var parameter : function.getArguments()) result.add(parameter.getDataType());
+        }
+        result.removeIf(Objects::isNull);
+        return result;
+    }
+    private void collect(DataType type, Set<DataType> seen, List<DataType> types) {
+        if (type == null || !seen.add(type)) return;
+        types.add(type);
+        for (DataType child : children(type)) collect(child, seen, types);
+    }
+    private String callbackSignature(DataType type) {
+        if (type == null) return "void";
+        if (type instanceof FunctionDefinition function) {
+            StringBuilder signature = new StringBuilder("function[")
+                .append(function.getCallingConventionName()).append(';')
+                .append(function.hasVarArgs()).append(';').append(function.hasNoReturn()).append(';')
+                .append(callbackSignature(function.getReturnType()));
+            for (var argument : function.getArguments())
+                signature.append(';').append(callbackSignature(argument.getDataType()));
+            return signature.append(']').toString();
+        }
+        if (type instanceof Pointer pointer)
+            return "pointer[" + pointer.getLength() + ";" + callbackSignature(pointer.getDataType()) + "]";
+        if (type instanceof Array array)
+            return "array[" + array.getNumElements() + ";" + callbackSignature(array.getDataType()) + "]";
+        // Named types retain their identity and are independently checked for layout conflicts.
+        return type.getPathName() + ":" + type.getLength();
+    }
+    private int stageDeclarations(CParser parser, DataTypeManager staging, JsonObject report) throws Exception {
+        List<DataType> roots = new ArrayList<>();
+        for (var table : List.of(parser.getTypes(), parser.getComposites(), parser.getEnums(),
+                                  parser.getDeclarations(), parser.getFunctions())) {
+            for (String name : new TreeSet<>(table.keySet())) roots.add(table.get(name));
+        }
+        Set<DataType> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        List<DataType> types = new ArrayList<>();
+        for (DataType root : roots) collect(root, seen, types);
+
+        // Explicit function typedefs keep their authored names and conflict semantics.
+        Set<DataType> namedFunctions = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (DataType type : types) {
+            if (!(type instanceof TypeDef)) continue;
+            Set<DataType> chain = Collections.newSetFromMap(new IdentityHashMap<>());
+            while (type != null && chain.add(type)) {
+                if (type instanceof TypeDef alias) type = alias.getDataType();
+                else if (type instanceof Pointer pointer) type = pointer.getDataType();
+                else if (type instanceof Array array) type = array.getDataType();
+                else {
+                    if (type instanceof FunctionDefinition) namedFunctions.add(type);
+                    break;
+                }
+            }
+        }
+        Set<DataType> callbacks = Collections.newSetFromMap(new IdentityHashMap<>());
+        for (DataType type : types)
+            if (type instanceof Pointer pointer && pointer.getDataType() instanceof FunctionDefinition)
+                callbacks.add(pointer.getDataType());
+        // Compute names before changing the graph, so traversal order cannot affect the hash.
+        Map<DataType, String> names = new IdentityHashMap<>();
+        for (DataType callback : callbacks) {
+            if (!namedFunctions.contains(callback) && callback.getDataTypeManager() == staging)
+                names.put(callback, "CB2Callback_" + sha(callbackSignature(callback)
+                    .getBytes(StandardCharsets.UTF_8)));
+        }
+        JsonObject signatures = new JsonObject();
+        for (var entry : names.entrySet()) {
+            signatures.addProperty(entry.getValue(), callbackSignature(entry.getKey()));
+            entry.getKey().setCategoryPath(new CategoryPath("/CB2Matching/callbacks"));
+            entry.getKey().setName(entry.getValue());
+        }
+        // Check the complete graph before resolving it: REPLACE_HANDLER must not hide
+        // conflicts either within this payload or against the saved analysis.
+        Map<String, DataType> proposed = new HashMap<>();
+        for (DataType candidate : types) {
+            DataType other = proposed.putIfAbsent(candidate.getPathName(), candidate);
+            DataType previous = currentProgram.getDataTypeManager().getDataType(candidate.getPathName());
+            if (!(candidate instanceof FunctionDefinition) &&
+                    ((other != null && !other.isEquivalent(candidate)) ||
+                     (previous != null && !previous.isEquivalent(candidate))))
+                throw new IllegalStateException("Conflicting existing type: " + candidate.getPathName());
+        }
+        int transaction = staging.startTransaction("Stage checked reconstruction types");
+        boolean staged = false;
+        try {
+            for (DataType root : roots) staging.addDataType(root, DataTypeConflictHandler.REPLACE_HANDLER);
+            staged = true;
+        } finally { staging.endTransaction(transaction, staged); }
+        report.add("callback_signatures", signatures);
+        return names.size();
+    }
     private JsonObject update(JsonObject request, Function function, boolean apply) throws Exception {
         int transaction = currentProgram.startTransaction("Reviewed matching reconstruction feedback");
         boolean success = false;
         JsonObject report = new JsonObject();
         try (var archive = FileDataTypeManager.openFileArchive(new File("/opt/ghidra/Ghidra/Extensions/ghidra_psx_ldr/data/psyq370.gdt"), false);
              var staging = new StandAloneDataTypeManager("CB2Matching", currentProgram.getDataTypeManager().getDataOrganization())) {
-            CParser parser = new CParser(staging, true, new DataTypeManager[]{currentProgram.getDataTypeManager(), archive});
+            // Parse without inserting definitions: CParser otherwise replaces distinct
+            // inline callbacks sharing a parameter name before we can qualify them.
+            CParser parser = new CParser(staging, false, new DataTypeManager[]{currentProgram.getDataTypeManager(), archive});
             String declarations = request.get("declarations").getAsString();
             parser.parse(new ByteArrayInputStream(declarations.getBytes(StandardCharsets.UTF_8)));
             if (!parser.didParseSucceed()) throw new IllegalStateException(parser.getParseMessages());
+            report.addProperty("normalized_callback_types", stageDeclarations(parser, staging, report));
             // Never silently replace a previously established type layout.
             var iterator = staging.getAllDataTypes();
             while (iterator.hasNext()) {

@@ -70,3 +70,64 @@ resident C objects from 42 to 44. `CdMix` remains retained SDK assembly. The old
 Final `make validate` passed all 15 pinned full-file comparisons. Fresh read-only
 exports after transactional Ghidra saves confirmed both accepted prototypes.
 The two resolved entries were removed from the persistent deferred queue.
+
+## Newest deferrals reviewed — 2026-11-13
+
+The newest persistent deferrals were `0x80017470` and `0x800178CC`, from
+batch `1794509183087661000`. Fresh read-only headless exports used the current
+saved SDK names and accepted analysis before retrying them.
+
+| Function | Original deferral | Review result |
+| --- | --- | --- |
+| `0x80017470` (1,036 bytes) | Whole-executable validation failed with 12 differing bytes: the eight-byte CD response buffer and mixer occupied reversed stack slots. | Separate response-buffer scopes improved the candidate to 99.99228% diagnostic similarity and **two full-file byte differences**. Retained assembly. |
+| `0x800178CC` (308 bytes) | Its object and whole executable matched, but Ghidra feedback failed with `Conflicting existing type: /functions/callback *`. | Renamed the `OpenEvent` callback parameter to `event_handler`, avoiding the parser-generated type-name collision. Retained matching C and transactional analysis feedback. |
+
+The event function opens eight BIOS events for two event classes and enables all
+eight handles. Its calling convention and function-pointer types are unchanged;
+no type-conflict checks were weakened. `OpenEvent` and `EnableEvent` aliases name
+existing retained SDK assembly at `0x8003CAAC` and `0x8003CADC`; they are not
+additional C reconstructions.
+
+The CD callback handles polling, fading, response copying and playback state.
+The best candidate's remaining differences are the first polling buffer's two
+address instructions: `addiu a2, sp, 0x10` and `lbu v0, 0x10(sp)` must use
+`0x18`. Its second response buffer, mixer, frame size and saved registers match.
+The whole 266,240-byte executable differs only at file offsets `0x7CB0` and
+`0x7CC0`. This remains a failed acceptance gate regardless of the high score.
+
+The review recorded 649 C/compiler trials (631 completed object comparisons),
+including the available PSX/CDK GCC 2.7.2 and PSX GCC 2.8.1 compilers, optimization
+and CSE/scheduling options, local types/layouts and separate buffer lifetimes.
+Some options were rejected by particular compilers. No compiler recipe change
+was accepted. The failed candidate did not update saved Ghidra analysis.
+
+Evidence is preserved under ignored
+`reports/reconstruction/deferred-review-20261113/`: `best-full-checked-main.c`,
+`best-object-diff.json`, `best-boot-rebuild.json`, numbered trial records,
+fresh exports and validation/feedback logs. The remaining queue entry links this
+review while preserving the original attempt. The resolved event entry is removed
+only after its full-file gate and saved Ghidra feedback succeed.
+
+Final `make validate` passed all 15 pinned full-file comparisons. The resident
+executable contains 64 matching C objects, with the remaining code retained as
+assembly. The compiler flags remain unchanged.
+
+### Generic callback import fix
+
+The subsequent importer fix removes the need for the `event_handler` workaround;
+the authored `OpenEvent` declaration again uses `callback`. Inline function-pointer
+types receive deterministic signature-based identities before resolution. Parsing
+without immediate insertion also prevents different callback signatures with the
+same parameter name from replacing each other inside one import. Explicit named
+function typedefs and established data layouts retain conflict checks.
+
+Focused read-only headless checks cover the original failed payload, repeated and
+nested callback parameter names, deterministic replay, real struct-layout and
+named callback typedef conflicts, and representative accepted global/type records.
+Artifacts are under ignored `reports/reconstruction/callback-import-fix/`.
+
+The generic importer passed the original collision payload and replay checks for
+five accepted GPU, sound, CD-global and event records. An older sound record was
+still rejected by the existing global-extent guard because subsequent analysis
+expanded `D_80058F80`; the importer does not relax that protection. Final
+`make validate` again passed all 15 pinned full-file comparisons.

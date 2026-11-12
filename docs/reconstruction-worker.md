@@ -30,6 +30,17 @@ The worker writes `ghidra-update.json` in its ignored attempt directory with exa
 
 After the supervisor's containing-file gate passes, it extracts the selected C prototype, authored headers and extern declarations. A headless planning transaction parses the types and checks that the proposal can be applied, then rolls back. The supervisor commits a replayable authored analysis record under `config/ghidra/` with the matching C. Only after integration does it apply that record transactionally and save Ghidra. The next fresh decompilation therefore sees the accepted types and global field names. A byte match supports one viable reconstruction; the evidence record must preserve remaining semantic uncertainty.
 
+Inline function-pointer types are assigned deterministic signature-based names under
+`/CB2Matching/callbacks` during feedback import. Parameter names such as `callback`
+can therefore repeat across declarations and batches, including nested callbacks,
+without colliding or replacing another signature. Parsing first retains temporary
+objects separately; normalization happens before any type resolution. Explicit
+function typedefs retain their authored names. The complete proposed type graph is
+checked against both the payload and saved analysis before insertion. Completion
+reports include the normalized callback count and signature mapping for diagnosis.
+Older feedback records use the same normalization when replayed; workers do not
+need callback-parameter naming conventions.
+
 Conflicting established layouts, custom function storage and globals overlapping instructions stop automatic feedback for review. The supervisor checks program bytes before and after updates. Failed/nonmatching worker attempts never update the saved project.
 
 If a saved update fails after the C commit was accepted, the batch stops with phase `syncing_ghidra`; another target cannot launch. Resolve the cause and run `tools/.venv/bin/python tools/reconstruct.py recover-ghidra` on the unchanged clean accepted `main` commit. To rebuild accepted analysis on a compatible saved project, use `replay-ghidra` from a clean checkout with no active attempt. Records replay in acceptance order. Originals, SDK archives, generated pseudocode and Ghidra databases are not committed.

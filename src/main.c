@@ -204,6 +204,10 @@ extern long CloseEvent(long event);
 
 extern long TestEvent(long event);
 
+extern long OpenEvent(unsigned long event_class, long specification, long mode,
+                      long (*callback)(void));
+extern long EnableEvent(long event);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1852,4 +1856,24 @@ int func_80017AC0(long *events)
         event++;
     } while (index < 4);
     return -1;
+}
+
+// FUNCTION: SCUS_943.58:0x800178CC
+void func_800178CC(long *events)
+{
+    int i;
+
+    func_8003CB2C();
+    events[0] = OpenEvent(0xF4000001, 4, 0x2000, 0);
+    events[1] = OpenEvent(0xF4000001, 0x8000, 0x2000, 0);
+    events[2] = OpenEvent(0xF4000001, 0x100, 0x2000, 0);
+    events[3] = OpenEvent(0xF4000001, 0x2000, 0x2000, 0);
+    events[4] = OpenEvent(0xF0000011, 4, 0x2000, 0);
+    events[5] = OpenEvent(0xF0000011, 0x8000, 0x2000, 0);
+    events[6] = OpenEvent(0xF0000011, 0x100, 0x2000, 0);
+    events[7] = OpenEvent(0xF0000011, 0x2000, 0x2000, 0);
+    func_8003CB3C();
+    for (i = 0; i < 8; i++) {
+        EnableEvent(events[i]);
+    }
 }
