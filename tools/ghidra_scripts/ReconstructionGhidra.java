@@ -144,6 +144,7 @@ public class ReconstructionGhidra extends GhidraScript {
             if (function.hasCustomVariableStorage()) throw new IllegalStateException("Custom ABI requires separate review");
             var command = new ApplyFunctionSignatureCmd(function.getEntryPoint(), definition, SourceType.USER_DEFINED);
             if (!command.applyTo(currentProgram, monitor)) throw new IllegalStateException(command.getStatusMsg());
+            JsonArray globals = new JsonArray();
             for (var element : request.getAsJsonArray("globals")) {
                 JsonObject global = element.getAsJsonObject(); String name = global.get("name").getAsString();
                 DataType dt = parser.getTypes().get(global.get("type_alias").getAsString());
@@ -151,14 +152,42 @@ public class ReconstructionGhidra extends GhidraScript {
                 if (dt == null || dt.getLength() <= 0) throw new IllegalStateException("Global declaration missing: " + name);
                 Address at = address(global.get("image").getAsString(), global.get("address").getAsString());
                 var old = getDataAt(at);
+                boolean unknownExtent = dt instanceof Array array && array.getNumElements() == 0;
+                if (unknownExtent) {
+                    // C's [] supplies an element type, not an allocation size. Ghidra's
+                    // zero-element array reports a one-byte placeholder from getLength().
+                    // Type one element as a prefix; never infer the table's capacity.
+                    Array array = (Array) dt;
+                    dt = new ArrayDataType(array.getDataType(), 1, array.getElementLength());
+                    // Preserve a previously established extent for the same element type.
+                    if (old != null && old.getDataType() instanceof Array previous &&
+                            previous.getNumElements() > 0 &&
+                            previous.getElementLength() == array.getElementLength() &&
+                            previous.getDataType().isEquivalent(array.getDataType()))
+                        dt = previous;
+                }
                 if (old != null && old.getLength() > dt.getLength()) throw new IllegalStateException("Global would truncate existing data: " + name);
                 // Explicit reviewed globals may replace existing data, but never instructions.
                 if (currentProgram.getListing().getInstructions(new ghidra.program.model.address.AddressSet(at, at.add(dt.getLength()-1)), true).hasNext())
                     throw new IllegalStateException("Global overlaps instructions: " + name);
-                DataUtilities.createData(currentProgram, at, dt, -1, DataUtilities.ClearDataMode.CLEAR_ALL_CONFLICT_DATA);
+                var data = DataUtilities.createData(currentProgram, at, dt, -1, DataUtilities.ClearDataMode.CLEAR_ALL_CONFLICT_DATA);
+                if (unknownExtent) {
+                    String note = "Authored array has unknown total extent ([]); the applied type covers only a known prefix, not the table capacity.";
+                    String comment = data.getComment(ghidra.program.model.listing.CodeUnit.PLATE_COMMENT);
+                    if (comment == null || !comment.contains(note))
+                        data.setComment(ghidra.program.model.listing.CodeUnit.PLATE_COMMENT,
+                            comment == null || comment.isBlank() ? note : comment + "\n" + note);
+                }
                 createLabel(at, name, true);
+                JsonObject appliedGlobal = new JsonObject();
+                appliedGlobal.addProperty("name", name);
+                appliedGlobal.addProperty("type", dt.getDisplayName());
+                appliedGlobal.addProperty("length", dt.getLength());
+                appliedGlobal.addProperty("unknown_extent", unknownExtent);
+                globals.add(appliedGlobal);
             }
             verify(request);
+            report.add("globals", globals);
             report.add("function", signature(function)); report.addProperty("applied", apply);
             success = apply;
         } finally { currentProgram.endTransaction(transaction, success); }
