@@ -200,6 +200,8 @@ extern void func_8003CA7C(void); /* SDK _bu_init */
 
 extern void func_800445B0(void);
 
+extern long CloseEvent(long event);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1799,4 +1801,16 @@ void func_8001787C(void)
 void func_800178AC(void)
 {
     func_800445B0();
+}
+
+// FUNCTION: SCUS_943.58:0x80017A00
+void func_80017A00(long *events)
+{
+    int i;
+
+    func_8003CB2C();
+    for (i = 0; i < 8; i++) {
+        CloseEvent(events[i]);
+    }
+    func_8003CB3C();
 }

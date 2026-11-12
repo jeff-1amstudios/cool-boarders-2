@@ -329,3 +329,5 @@ func_80044524 = 0x80044524; // type:func size:0x54
 func_80044578 = 0x80044578; // type:func size:0x38
 
 func_800445B0 = 0x800445B0; // type:func size:0x30
+
+CloseEvent = 0x8003CABC; // type:func size:0xC

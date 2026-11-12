@@ -135,7 +135,7 @@ segments:
       - [0x807C, c, func_8001787C]
       - [0x80AC, c, func_800178AC]
       - [0x80CC, asm, after_sdk_single_call]
-      - [0x8200, asm, word_call_loop]
+      - [0x8200, c, func_80017A00]
       - [0x8258, asm, after_word_call_loop]
       - [0x82C0, asm, word_find_call]
       - [0x8318, asm, four_word_calls]
