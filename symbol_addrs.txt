@@ -348,3 +348,8 @@ card_load_result_table = 0x80010238; // size:0x10
 _card_load = 0x800444BC; // type:func size:0xC
 
 func_80018044 = 0x80018044; // type:func size:0x10C
+
+func_80018230 = 0x80018230; // type:func size:0x34
+func_80018808 = 0x80018808; // type:func size:0x160
+D_80047D10 = 0x80047D10; // size:0x2
+D_80047D14 = 0x80047D14; // size:0x4

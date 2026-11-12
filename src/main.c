@@ -215,6 +215,10 @@ extern long _card_clear(long channel);
 extern CardLoadResultTable card_load_result_table;
 extern long _card_load(long channel);
 
+extern unsigned short D_80047D10;
+extern int D_80047D14;
+extern int func_80018808(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2105,4 +2109,12 @@ unsigned int func_800181D4(unsigned char *data, unsigned int length)
         } while (index < length);
     }
     return checksum;
+}
+
+// FUNCTION: SCUS_943.58:0x80018230
+int func_80018230(void)
+{
+    D_80047D10 = 1;
+    D_80047D14 = 0;
+    return func_80018808();
 }
