@@ -1835,3 +1835,21 @@ int func_80017A58(long *events)
         } while (index < 4);
     } while (1);
 }
+
+// FUNCTION: SCUS_943.58:0x80017AC0
+int func_80017AC0(long *events)
+{
+    int index;
+    long *event;
+
+    index = 0;
+    event = events;
+    do {
+        if (TestEvent(*event) != 0) {
+            return index;
+        }
+        index++;
+        event++;
+    } while (index < 4);
+    return -1;
+}
