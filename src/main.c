@@ -250,6 +250,9 @@ extern int close(int fd);
 extern int func_80018768(unsigned char *data);
 extern char card_save_filename[23];
 
+extern unsigned int func_800181D4(unsigned char *data, unsigned int length);
+extern unsigned char card_save_signature[9];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2309,5 +2312,28 @@ int func_80018678(void)
         result = -1;
     }
     func_80017A00(events);
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80018768
+int func_80018768(unsigned char *data)
+{
+    int result = 0;
+    unsigned char *expected = card_save_signature;
+    CardSaveHeader *header = (CardSaveHeader *)data;
+    unsigned char *cursor = data;
+
+    do {
+        if (*cursor != *expected++) {
+            return -1;
+        }
+        cursor++;
+    } while ((int)expected < (int)(card_save_signature + 7));
+    if (func_800181D4((unsigned char *)&header->data_offset, 16) != header->checksum) {
+        return -2;
+    }
+    if (header->data_offset != 0) {
+        result = 1;
+    }
     return result;
 }

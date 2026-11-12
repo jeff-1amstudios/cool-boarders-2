@@ -120,4 +120,12 @@ typedef struct CardMessageColors {
     CVECTOR error;
 } CardMessageColors;
 
+/* Serialized save header; data_offset points beyond this 28-byte prefix. */
+typedef struct CardSaveHeader {
+    unsigned char signature[8];
+    unsigned int checksum;
+    unsigned int data_offset;
+    unsigned char unknown_10[12];
+} CardSaveHeader;
+
 #endif
