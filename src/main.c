@@ -151,8 +151,31 @@ extern void SpuSetKeyOnWithAttr(SpuVoiceAttr *attr);
 extern int D_80058F90;
 extern short D_80057FBC;
 extern int D_800478CC;
-extern unsigned long *D_80058F8C;
-extern unsigned long D_80058F84;
+extern unsigned long *volatile D_80058F8C;
+extern unsigned long volatile D_80058F84;
+
+extern void *func_8001579C(void);
+extern int func_8001EFE4(void *image, int x, int y, int clut_x, int clut_y);
+extern DRAWENV *PutDrawEnv(DRAWENV *env);
+extern DISPENV *PutDispEnv(DISPENV *env);
+extern void DrawPrim(void *primitive);
+extern int MoveImage(RECT *rect, int x, int y);
+extern short D_8004534C;
+extern void *func_8001EA54(char *filename, void *destination, int sector_offset, int sector_count);
+extern char D_80010200[17];
+extern void SpuStart(void);
+extern unsigned long SpuSetTransferStartAddr(unsigned long addr);
+extern unsigned long SpuRead(unsigned char *addr, unsigned long size);
+extern long SpuIsTransferCompleted(long flag);
+extern volatile SoundBankDescriptor D_800478D8[];
+extern short volatile D_80058F80;
+extern unsigned long volatile D_80058F88;
+extern short volatile D_80058F94;
+extern unsigned long volatile D_80058F98;
+extern unsigned long volatile D_80058F9C;
+extern unsigned long *volatile D_80058FA0;
+extern int volatile D_80058FA4;
+extern unsigned short D_80057FC0;
 
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
@@ -1035,4 +1058,138 @@ int func_80015B70(int sample, int volume)
         D_800478CC = (D_800478CC + 1) % 8;
     }
     return D_800478CC;
+}
+// FUNCTION: SCUS_943.58:0x80015508
+void func_80015508(void)
+{
+    void *image;
+    int pending;
+    DRAWENV draw;
+    DISPENV disp;
+    RECT rect;
+    DR_TPAGE page0;
+    DR_TPAGE page1;
+    SPRT sprites[2];
+
+    image = func_8001579C();
+    func_8001EFE4(image, 0, 511, 0, 256);
+    DrawSync(0);
+    func_8001F378(image);
+    SetDefDrawEnv(&draw, 0, 0, 320, 240);
+    draw.dtd = 0;
+    draw.r0 = draw.g0 = draw.b0 = 0;
+    draw.isbg = 1;
+    draw.r0 = draw.g0 = draw.b0 = 0;
+    SetDefDispEnv(&disp, 0, 0, 320, 240);
+    disp.screen.h = 239;
+    disp.screen.y = 0;
+    VSync(0);
+    PutDrawEnv(&draw);
+    PutDispEnv(&disp);
+    ((PrimitiveTag *)&page0)->length = 1;
+    page0.code[0] = (GetGraphType() == 1 || GetGraphType() == 2) ?
+                    0xe1001090 : 0xe1000490;
+    DrawPrim(&page0);
+    ((PrimitiveTag *)&sprites[0])->length = 4;
+    sprites[0].code = 0x64;
+    sprites[0].w = 256;
+    sprites[0].h = 240;
+    sprites[0].clut = 0x7fc0;
+    sprites[0].x0 = 0;
+    sprites[0].y0 = 0;
+    sprites[0].u0 = sprites[0].v0 = 0;
+    sprites[0].r0 = sprites[0].g0 = sprites[0].b0 = 128;
+    DrawPrim(&sprites[0]);
+    ((PrimitiveTag *)&page1)->length = 1;
+    page1.code[0] = (GetGraphType() == 1 || GetGraphType() == 2) ?
+                    0xe1001092 : 0xe1000492;
+    DrawPrim(&page1);
+    ((PrimitiveTag *)&sprites[1])->length = 4;
+    sprites[1].code = 0x64;
+    sprites[1].x0 = 256;
+    sprites[1].w = 64;
+    sprites[1].h = 240;
+    sprites[1].clut = 0x7fc0;
+    sprites[1].y0 = 0;
+    sprites[1].u0 = sprites[1].v0 = 0;
+    sprites[1].r0 = sprites[1].g0 = sprites[1].b0 = 128;
+    DrawPrim(&sprites[1]);
+    DrawSync(0);
+    SetDispMask(1);
+    for (;;) {
+        pending = func_80013C70() - 1;
+        func_8001B320(0, 0);
+        if (pending < 0)
+            break;
+        rand();
+        DrawSync(0);
+        VSync(0);
+    }
+    D_8004534C = 1;
+    rect.w = 320;
+    rect.x = 0;
+    rect.y = 0;
+    rect.h = 240;
+    MoveImage(&rect, 0, 256);
+    DrawSync(0);
+}
+// FUNCTION: SCUS_943.58:0x8001579C
+void *func_8001579C(void)
+{
+    int selection;
+
+    selection = rand() % 11;
+    return func_8001EA54(D_80010200, 0, selection * 38, 38);
+}
+// FUNCTION: SCUS_943.58:0x80015948
+void func_80015948(unsigned char *first_data, int first_bank,
+                   unsigned char *second_data, int second_bank)
+{
+    unsigned long addr;
+    SpuVoiceAttr voice;
+
+    SpuSetKey(0, 0xFFFFFF);
+    func_8003F094();
+    SpuStart();
+    voice.mask = 0xFF1C;
+    voice.pitch = 0x1000;
+    voice.a_mode = 1;
+    voice.s_mode = 1;
+    voice.r_mode = 3;
+    voice.voice = 0xFFFFFF;
+    voice.volmode.left = 0;
+    voice.volmode.right = 0;
+    voice.ar = 0;
+    voice.dr = 0;
+    voice.sr = 0;
+    voice.rr = 0;
+    voice.sl = 0xF;
+    SpuSetVoiceAttr(&voice);
+    addr = 0x1010;
+    if (first_bank >= 0) {
+        D_80058F80 = first_bank;
+        D_80058F84 = addr;
+        D_80058F88 = D_800478D8[first_bank].offsets[D_800478D8[first_bank].sample_count];
+        D_80058F8C = D_800478D8[first_bank].offsets;
+        D_80058F90 = D_800478D8[first_bank].sample_count;
+        SpuSetTransferStartAddr(0x1010);
+        SpuRead(first_data, D_80058F88);
+        VSync(0);
+        SpuIsTransferCompleted(1);
+        addr = ((D_80058F88 + 0xF) & ~0xFUL) + 0x1010;
+    }
+    if (second_bank >= 0) {
+        D_80058F94 = second_bank;
+        D_80058F98 = addr;
+        D_80058F9C = D_800478D8[second_bank].offsets[D_800478D8[second_bank].sample_count];
+        D_80058FA0 = D_800478D8[second_bank].offsets;
+        D_80058FA4 = D_800478D8[second_bank].sample_count;
+        D_80057FC0 = D_800478D8[second_bank].pitch;
+        SpuSetTransferStartAddr(addr);
+        SpuRead(second_data, D_80058F9C);
+        VSync(0);
+        SpuIsTransferCompleted(1);
+    }
+    D_8005AB2C = 0;
+    D_80050568 = 0;
 }

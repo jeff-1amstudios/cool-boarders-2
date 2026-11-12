@@ -192,4 +192,11 @@ typedef struct SpuVoiceAttr {
     unsigned short adsr2;
 } SpuVoiceAttr;
 
+typedef struct SoundBankDescriptor {
+    unsigned long *offsets;
+    int sample_count;
+    unsigned long pitch;
+    int unknown_0c;
+} SoundBankDescriptor;
+
 #endif
