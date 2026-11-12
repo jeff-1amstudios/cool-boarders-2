@@ -2031,3 +2031,50 @@ load_event:
     } while (retries < 16);
     return *(int *)((char *)&results + result_offset);
 }
+
+
+// FUNCTION: SCUS_943.58:0x80018044
+int func_80018044(unsigned char *destination, int mode, int frame_count,
+                  unsigned char *palette, unsigned char *frames, char *title)
+{
+    int i;
+    int size;
+    int result;
+    unsigned char character;
+    char *title_cursor;
+
+    result = frame_count + 1;
+    size = result * 128;
+    for (i = 0; i < size; i++) {
+        destination[i] = 0;
+    }
+    destination[0] = 0x53;
+    destination[1] = 0x43;
+    destination[2] = frame_count % 4 + 0x10;
+    destination[3] = mode;
+    title_cursor = title;
+    for (i = 0; i < 64; i += 2) {
+        character = *title_cursor;
+        if (character == 0) {
+            break;
+        }
+        (destination + i)[4] = character;
+        (destination + i)[5] = title_cursor[1];
+        title_cursor += 2;
+    }
+    for (i = 0; i < 32; i++) {
+        (destination + i)[0x60] = *palette;
+        palette++;
+    }
+    for (i = 0; i < frame_count; i++, destination += 128) {
+        mode = 0;
+        size = i * 128;
+        palette = destination + 128;
+        do {
+            *palette = frames[size + mode];
+            mode++;
+            palette++;
+        } while (mode < 128);
+    }
+    return result;
+}
