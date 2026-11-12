@@ -1287,3 +1287,17 @@ int func_80015F68(void)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x80015F98
+int func_80015F98(void)
+{
+    int result;
+
+    if (D_800478D0 != 0) {
+        D_800478D0 = 0;
+        result = 0;
+    } else {
+        result = -1;
+    }
+    return result;
+}

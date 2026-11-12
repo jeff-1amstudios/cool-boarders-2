@@ -110,7 +110,7 @@ segments:
       - [0x6618, c, func_80015E18]
       - [0x66C8, asm, after_func_80015E18]
       - [0x6768, c, func_80015F68]
-      - [0x6798, asm, flag_release]
+      - [0x6798, c, func_80015F98]
       - [0x67C8, asm, after_flag_release]
       - [0x6EA4, asm, fill_slots]
       - [0x6EDC, asm, after_fill_slots]
