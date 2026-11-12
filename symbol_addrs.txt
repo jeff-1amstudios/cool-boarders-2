@@ -405,3 +405,4 @@ func_80019428 = 0x80019428; // type:func size:0x108
 func_80019530 = 0x80019530; // type:func size:0xC8
 func_800195F8 = 0x800195F8; // type:func size:0x150
 card_extra_load_filename = 0x80010514; // size:0x17
+card_extra_load_signature = 0x8001052C; // size:0x9

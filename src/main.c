@@ -283,6 +283,8 @@ extern char card_extra_load_filename[23];
 extern int func_80019530(CardSaveHeader *header);
 extern int func_800195F8(CardSaveHeader *header, CardExtraPayload *payload);
 
+extern unsigned char card_extra_load_signature[9];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2652,5 +2654,34 @@ int func_80019428(void)
         result = -1;
     }
     func_80017A00(events);
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80019530
+int func_80019530(CardSaveHeader *input)
+{
+    int result = 0;
+    unsigned char *signature = card_extra_load_signature;
+    unsigned char *expected = signature;
+    CardSaveHeader *header = input;
+    CardExtraPayload *payload = (CardExtraPayload *)((unsigned char *)header +
+        ((CardSaveHeaderTail *)header->unknown_10)->unknown_10);
+
+    do {
+        if (*(unsigned char *)input != *expected++) {
+            return -1;
+        }
+        input = (CardSaveHeader *)((unsigned char *)input + 1);
+    } while ((int)expected < (int)(signature + 8));
+    if (func_800181D4((unsigned char *)&header->data_offset, 16) != header->checksum) {
+        return -2;
+    }
+    if (((CardSaveHeaderTail *)header->unknown_10)->unknown_10 != 0) {
+        result = 0x20000;
+        if (func_800181D4((unsigned char *)payload, 0xC4) ==
+            ((CardSaveHeaderTail *)header->unknown_10)->unknown_18) {
+            result = 2;
+        }
+    }
     return result;
 }
