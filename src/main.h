@@ -99,4 +99,12 @@ typedef struct SoundBankFileRecord {
     unsigned long pitch;
 } SoundBankFileRecord;
 
+/* Queue commands: 0/1 select automatic voices, larger values are voice masks. */
+typedef struct SoundCommand {
+    unsigned long command;
+    unsigned char sample_index;
+    unsigned char volume;
+    unsigned short pitch;
+} SoundCommand;
+
 #endif

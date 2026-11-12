@@ -288,3 +288,7 @@ D_80058B10 = 0x80058B10; // size:0x4
 D_8005A7B8 = 0x8005A7B8; // size:0x4
 
 func_80016A24 = 0x80016A24;
+
+D_8005A7AC = 0x8005A7AC; // size:0x4 absolute:True
+D_80058B0C = 0x80058B0C; // size:0x4 absolute:True
+sound_commands = 0x80058C48; // size:0x80 absolute:True

@@ -164,6 +164,10 @@ extern int D_8005A7B8;
 
 extern int func_80016A24(unsigned long voice_bit, int sample_index);
 
+extern int D_8005A7AC;
+extern int D_80058B0C;
+extern SoundCommand sound_commands[16];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1428,4 +1432,21 @@ void func_80016748(void)
         D_80058CC8[D_80058B10] = 0xFF;
         D_80058B10 = (D_80058B10 + 1) % 64;
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80016804
+void func_80016804(void)
+{
+    int index;
+
+    index = 0;
+    D_8005A7AC = 0;
+    D_80058B0C = 0;
+    do {
+        sound_commands[index].command = 0xFF;
+        sound_commands[index].sample_index = 0xFF;
+        sound_commands[index].volume = 0;
+        index++;
+    } while (index < 16);
+    D_8005AB2C = 0;
 }
