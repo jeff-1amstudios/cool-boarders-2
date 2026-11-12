@@ -1877,3 +1877,20 @@ void func_800178CC(long *events)
         EnableEvent(events[i]);
     }
 }
+
+// FUNCTION: SCUS_943.58:0x80017B18
+void func_80017B18(long *events)
+{
+    long event;
+    int i;
+    long *cursor;
+
+    i = 0;
+    cursor = events;
+    do {
+        event = *cursor;
+        cursor++;
+        i++;
+        TestEvent(event);
+    } while (i < 4);
+}

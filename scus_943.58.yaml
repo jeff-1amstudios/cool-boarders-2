@@ -138,7 +138,7 @@ segments:
       - [0x8200, c, func_80017A00]
       - [0x8258, c, func_80017A58]
       - [0x82C0, c, func_80017AC0]
-      - [0x8318, asm, four_word_calls]
+      - [0x8318, c, func_80017B18]
       - [0x8364, asm, after_four_word_calls]
       - [0x89D4, asm, byte_fold]
       - [0x8A30, asm, after_byte_fold]
