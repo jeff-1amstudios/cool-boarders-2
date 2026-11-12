@@ -1,11 +1,51 @@
 """Stream child output and summarize recorded agent usage."""
 import json
+import re
+import shlex
+from pathlib import PurePosixPath
+
+
+def file_read_command(command):
+    """Recognize common file-display commands, including shell-wrapped reads."""
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+        lexer.whitespace_split = True
+        lexer.commenters = ''
+        tokens = list(lexer)
+    except ValueError:
+        return False
+    if not tokens:
+        return False
+    if PurePosixPath(tokens[0]).name in ('sh', 'bash', 'zsh'):
+        if len(tokens) == 3 and tokens[1] in ('-c', '-lc'):
+            return file_read_command(tokens[2])
+        return False
+    commands, current = [], []
+    for token in tokens:
+        if token in (';', '&&', '||', '|'):
+            if not current:
+                return False
+            commands.append(current)
+            current = []
+        elif token in ('&', '>', '>>', '<', '<<', '(', ')'):
+            return False
+        else:
+            current.append(token)
+    if current:
+        commands.append(current)
+    return bool(commands) and all(
+        PurePosixPath(words[0]).name in ('cat', 'head', 'tail', 'sed', 'rg', 'grep')
+        and not (PurePosixPath(words[0]).name == 'sed'
+                 and any(arg.startswith('-i') for arg in words[1:]))
+        for words in commands)
 
 
 class Output:
     """Render agent JSON events for humans while retaining raw JSON in the log."""
-    def __init__(self, agent=False, verbose=False):
+    def __init__(self, agent=False, verbose=False, ghidra=False):
         self.agent, self.verbose, self.pending = agent, verbose, ''
+        self.ghidra = ghidra
+        self.ghidra_level = None
 
     def write(self, chunk):
         self.pending += chunk
@@ -15,6 +55,16 @@ class Output:
 
     def text(self, text):
         for line in text.splitlines(keepends=True):
+            if self.ghidra:
+                level = re.match(r'^\s*(TRACE|DEBUG|INFO|WARN|ERROR|FATAL)\b', line)
+                if level:
+                    self.ghidra_level = level[1]
+                elif line.strip() and not line.startswith((' ', '\t')):
+                    # Unclassified launcher errors must remain visible.
+                    self.ghidra_level = None
+                # Retain warning/error continuations, including Java stack traces.
+                if self.ghidra_level in ('TRACE', 'DEBUG', 'INFO'):
+                    continue
             if self.verbose or not line.startswith('+ '):
                 print(line, end='', flush=True)
 
@@ -37,7 +87,9 @@ class Output:
             if event.get('type') == 'item.started':
                 print('$ ' + item.get('command', ''), flush=True)
             elif event.get('type') == 'item.completed':
-                self.text(item.get('aggregated_output', ''))
+                if (self.verbose or item.get('exit_code') != 0
+                        or not file_read_command(item.get('command', ''))):
+                    self.text(item.get('aggregated_output', ''))
         elif event.get('type') == 'error':
             print('Agent error: ' + str(event.get('message', 'unknown error')), flush=True)
         elif event.get('type') == 'turn.failed':
@@ -49,9 +101,9 @@ class Output:
             self.pending = ''
 
 
-def follow_log(path, done, agent=False, verbose=False):
+def follow_log(path, done, agent=False, verbose=False, ghidra=False):
     """Tee child output without competing with communicate() for its pipes."""
-    output = Output(agent, verbose)
+    output = Output(agent, verbose, ghidra)
     with path.open(errors='replace') as stream:
         while not done.is_set():
             chunk = stream.read(8192)

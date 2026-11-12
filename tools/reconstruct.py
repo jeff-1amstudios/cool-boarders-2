@@ -15,7 +15,7 @@ from rebuild import ROOT, reference
 
 STATE = ROOT / "reports/reconstruction/state.json"
 REVIEW = ROOT / "config/reconstruction.json"
-PROTECTED = ("config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
+PROTECTED = ("FUNCTION_AGENTS.md", "config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
              "tools/reconstruct_run.py", "tools/readme_progress.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
@@ -139,7 +139,8 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
         from reconstruction_runtime import follow_log
         import threading
         done = threading.Event()
-        output = threading.Thread(target=follow_log, args=(path, done, name == "agent", os.environ.get("CB2_VERBOSE") == "1"), daemon=True)
+        quiet_ghidra = name.startswith('ghidra-') and os.environ.get('CB2_GHIDRA_INFO') != '1'
+        output = threading.Thread(target=follow_log, args=(path, done, name == "agent", os.environ.get("CB2_VERBOSE") == "1", quiet_ghidra), daemon=True)
         output.start()
         try:
             process.communicate(input=input_text, timeout=timeout)
@@ -382,16 +383,21 @@ def main():
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout per agent")
     batch.add_argument("--sync-types", action="store_true",
                        help="Refresh cached Ghidra type declarations once before matching (default: reuse cache/source headers)")
-    batch.add_argument("--verbose", action="store_true", help="Also print echoed compiler/assembler commands")
+    batch.add_argument("--verbose", action="store_true", help="Also print file-read output and echoed compiler/assembler commands")
     batch.add_argument("--agent-command", help="Custom launcher argv; prompt on stdin, no shell")
     sub.add_parser("status", help="Show the current or last batch")
-    sub.add_parser("recover-ghidra", help="Finish Ghidra feedback for an already accepted commit")
-    sub.add_parser("replay-ghidra", help="Replay committed analysis records into the saved Ghidra project")
+    recovery = sub.add_parser("recover-ghidra", help="Finish Ghidra feedback for an already accepted commit")
+    replay_parser = sub.add_parser("replay-ghidra", help="Replay committed analysis records into the saved Ghidra project")
+    for ghidra_parser in (batch, recovery, replay_parser):
+        ghidra_parser.add_argument("--ghidra-info", action="store_true",
+                                   help="Print Ghidra INFO output (default: WARN/ERROR; full logs are always saved)")
     retry = sub.add_parser("retry-deferred", help="Return deferred targets to the eligible queue")
     selection = retry.add_mutually_exclusive_group(required=True)
     selection.add_argument("--target", help="Image-qualified identity, e.g. INIT.BIN:0x8005AB6C")
     selection.add_argument("--all", action="store_true", help="Requeue every deferred target")
     args = parser.parse_args()
+    if getattr(args, 'ghidra_info', False):
+        os.environ['CB2_GHIDRA_INFO'] = '1'
     if args.command in ('recover-ghidra', 'replay-ghidra'):
         from reconstruction_ghidra import recover, replay
         if args.command == 'recover-ghidra':

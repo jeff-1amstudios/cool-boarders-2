@@ -10,6 +10,23 @@ The loop is: select target → ask saved Ghidra for current typed pseudocode →
 
 SDK/layout declarations are reused by default (`--sync-types` defaults to false). Use `tools/.venv/bin/python tools/reconstruct.py start --limit 2 --sync-types` to refresh all saved program type declarations, including SDK types such as `CdlLOC` and `RECT`, during the first selected function's existing headless export. The cache lives in ignored `reports/reconstruction/ghidra-types.h` with a SHA-256/catalog manifest; subsequent targets and batches reuse it without exporting declarations again. With no cache, workers use authored image headers; there is no implicit refresh. Refresh explicitly when additional Ghidra layouts are needed or the SDK catalog changes. Workers must not launch extra SDK audits/type exports. Fresh function pseudocode, current signatures/global metadata and accepted analysis feedback remain enabled on every attempt.
 
+## Worker instructions
+
+`AGENTS.md` governs repository maintenance and supervisor work, including tool
+setup, integration and full-file acceptance. `FUNCTION_AGENTS.md` is the focused
+brief for a single-function worker: allowed edits, boundaries, type propagation,
+object diagnostics and analysis evidence. A missing dependency is a blocker for
+the supervisor, not a worker installation task.
+
+The supervisor embeds `FUNCTION_AGENTS.md` into each archived `agent-prompt.md`,
+followed by the selected target's paths, identity and time allowance. The default
+Codex launcher uses the invocation-local `--config project_doc_max_bytes=0` so
+repository/global `AGENTS.md` discovery does not also inject maintenance guidance.
+This leaves sandbox and approval settings unchanged. Custom `--agent-command`
+launchers receive the same focused prompt on stdin and must configure their own
+automatic instruction loading if they support it. The brief is a protected input:
+workers cannot edit it during a batch. Changes take effect in the next batch.
+
 ## Targets and review
 
 `make target-list` refreshes the complete byte-checked Ghidra backlog under `reports/reconstruction/targets.json`. Selection follows recorded order: boot first, then overlay filename, ascending address. IDs include the image, such as `INIT.BIN:0x8005AB6C`; equal RAM addresses in different overlays remain separate. SDK identifications and curated holds stay excluded. Unknown does not establish game authorship. Splat build spans and Ghidra function instances remain different counts.
@@ -25,6 +42,20 @@ CFG warnings such as analysis-state limits or exceptional paths are advisory. Th
 The broad function inventory and boundary audit remain explicit analysis commands. Each ordinary attempt now launches read-only headless Ghidra to decompile its selected function from the current saved project. Request/output fingerprints and a completion manifest reject failed or stale exports. Every pass verifies the original mapped bytes for all 15 pinned images. No GUI or interactive diff viewer is involved.
 
 ## Analysis feedback
+
+Successful worker file-display commands (`cat`, `head`, `tail`, `sed`, `rg`,
+`grep`, including shell-wrapped combinations) print their command but omit the
+file contents from the default console stream. `--verbose` restores that output.
+Failed reads remain visible, as do compiler/object diagnostics and worker
+messages. The worker still receives the full tool output, and raw agent events
+remain in `agent.log`; this affects only the supervisor's console rendering.
+
+Ghidra console output defaults to WARN/ERROR, including their continuation lines.
+Full INFO logs are always retained in each attempt's `ghidra-*.log` files for
+diagnosis and the supervisor's save-confirmation check. Add `--ghidra-info` to
+`reconstruct.py start` (or `run`, `recover-ghidra`, `replay-ghidra`) to print INFO
+output too, for example `tools/.venv/bin/python tools/reconstruct.py start --limit 2 --ghidra-info`.
+This filters console output only; Ghidra's analysis and file logging are unchanged.
 
 The worker writes `ghidra-update.json` in its ignored attempt directory with exactly `function_evidence` (a nonempty string describing parameter/return evidence and uncertainty) and `globals` (a list, empty when no global types were recovered). Each global entry has `image`, hexadecimal `address`, `name` and `evidence`; it must correspond to an authored extern and a matching address in the selected image's symbols file. Declare each global separately. Use `SCUS_943.58` for a resident global even when reconstructing an overlay.
 

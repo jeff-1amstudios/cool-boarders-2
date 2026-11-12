@@ -200,41 +200,23 @@ class Runner:
         seconds = min(self.args.agent_seconds, session["deadline"] - time.time())
         if seconds <= 0:
             raise Rejected("Session time budget expired before agent launch")
+        instructions = (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
         prompt = (
-            f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes) as matching C.\n"
-            f"Work on the existing branch {active['branch']}. Python owns all branch switches and commits.\n"
-            f"Read AGENTS.md, {directory / 'context.json'} and {directory / 'target.s'}.\n"
-            f"Start from the CURRENT Ghidra pseudocode in {directory / 'ghidra/target.ghidra.c'}, with named SDK calls and typed variables.\n"
-            f"Read {directory / 'ghidra/ghidra-types.h'} (cached type reference) and existing image headers for layouts/prototypes and context.json ghidra metadata for parameter storage and callees.\n"
-            "Reuse SDK types such as CdlLOC and RECT from existing source headers and the cached reference. Do not launch Ghidra or rerun SDK type audits/exports; type refresh is supervisor-owned and opt-in via --sync-types.\n"
-            "Adapt that pseudocode to compilable matching C. Use assembly to resolve uncertainty and refine compiler output; do not reconstruct the function from assembly alone.\n"
-            "Propagate all known types, including recovered game types, through assignments, initializers, arguments, returns and field accesses. When an unknown local, global or field receives a value of known type, use that type as the destination's inferred type and check its other uses for conflicting evidence. For example, if a global receives file.pos of type CdlLOC, try declaring the global as CdlLOC and assigning file.pos directly; do not default to an integer global with a pointer cast or raw-word copy. Apply the same reasoning to game structs and other known types. Distinguish value assignment from intentional conversion, serialization, byte copying or overlapping storage; preserve uncertainty where uses conflict. Check the selected object's generated instructions. If the inferred typed form cannot match, explain the concrete mismatch and retain the type evidence rather than treating a byte match as proof of a scalar type.\n"
-            f"You have at most {int(seconds)} seconds. Inspect callers, callees and referenced data.\n"
-            "Review both boundaries, give only this function a C subsegment and preserve all other configuration.\n"
-            "Use the context name as the build symbol; ghidra_name is an analysis label and can differ.\n"
-            "Start from current main. Do not restore candidates from earlier failed attempts.\n"
-            f"Append the function to {source_file(active)}, starting with // FUNCTION: {key(active)}.\n"
-            "Keep all extern declarations together at the top, before the first FUNCTION annotation. Reuse existing declarations; append new externs to that shared block. Each annotation owns only the function text until the next annotation.\n"
-            f"Define structs and unions once in headers. Reuse existing types in {Path(source_file(active)).with_suffix('.h')}; add new types before its final #endif or create a guarded local header. Do not duplicate layouts in C.\n"
-            f"Add headers only under {source_dir(active)}; edit only {active.get('build_config', 'scus_943.58.yaml')} and append to {active.get('symbol_file', 'symbol_addrs.txt')}.\n"
-            "Explain boundary/dependency conclusions and any concrete blocker in your final response. No review forms are required.\n"
-            "boundary_warnings are heuristic review hints, not proof that C is impossible. Curated holds and factual split blockers remain excluded.\n"
-            "Preserve existing annotated blocks, shared declarations and header definitions exactly. Add only externs/local includes at the end of the shared top block, and append new types before the image header's final #endif. Do not edit other existing source files, build tools, the reference, compiler recipe, docs or queue metadata.\n"
-            "Use readable C. No inline assembly, embedded instruction bytes, section attributes, or preprocessor tricks.\n"
-            "Only quoted local headers and simple header guards are accepted by the automated source checks.\n"
-            "Initialized arrays require manual review; declare arrays uninitialized and assign elements explicitly.\n"
-            "Keep reads focused on this context, selected span and relevant callers/callees. Do not dump whole configs, all sources or full build logs.\n"
-            f"Write {directory / 'ghidra-update.json'} with exactly {{\"function_evidence\": \"observed argument/return evidence and remaining uncertainty\", \"globals\": []}}.\n"
-            "For each newly recovered global type, add a globals entry with image, address (hex string), name and evidence. It must have an authored extern declaration and matching symbol address in the selected image's symbols. Use the resident image for resident globals. Headers and the selected prototype are imported automatically after acceptance. Do not copy unrelated or speculative types.\n"
-            "Preserve established global data extents when proposing Ghidra feedback. For a referenced NUL-terminated string, verify its bytes in the pinned image and declare an explicit array bound including the NUL (for example, extern char card_format_device[6] for bu00:). Record the verified length in its evidence; do not infer extra capacity from alignment padding. An unsized extern array [] supplies only an element type: feedback may apply a one-element prefix and reject it as truncating an existing string or larger object. For other arrays, use an explicit bound only when supported by evidence. If the extent is unknown or the recovered type describes only a prefix/overlapping view of a larger saved object, preserve the established declaration/layout and explain the inferred view and uncertainty in function_evidence; omit a global replacement that would shrink it. Never invent a bound or weaken the importer's extent/conflict guards to make feedback pass.\n"
-            "Before finishing, review assignments, calls, returns, casts and raw memory copies for missed type propagation, regardless of where the known types came from. Reflect supported inferences in authored local declarations, shared types and function signatures, and include recovered global typings in ghidra-update.json so future decompilations use them. Do not leave the globals list empty when you have recovered a global's type.\n"
-            "Use tools/.venv/bin/python tools/reconstruction_step.py for every compile/edit iteration. It compiles only your unit and prints a short diff.\n"
-            "Use the hard time allowance sensibly. Restore your best candidate before finishing; if blocked, explain why and stop.\n"
-            "Your scope is the selected function: once its object matches and the feedback proposal is written, finish. Python independently validates the entire containing EXE/BIN and updates Ghidra. Do not run whole-file validation yourself.\n"
-            "Do not repeatedly run whole-project objdiff or all-image validation. Read object-diff.json when the compact diff is insufficient.\n"
-            "Do not invoke reconstruct.py: the supervisor holds its lock. Do not stage, commit, switch branches, reset, clean or spawn agents.\n"
-            "Leave your candidate edits in place. Python independently validates and decides whether to commit.\n"
-            "If blocked, leave the best candidate and explain the blocker in your final response.\n")
+            instructions + "\n\n# Selected function\n"
+            f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes).\n"
+            f"Work on existing branch {active['branch']}; Python owns branch switches and commits.\n"
+            f"Read {directory / 'context.json'} and {directory / 'target.s'}.\n"
+            f"Start from current pseudocode in {directory / 'ghidra/target.ghidra.c'}.\n"
+            f"Read cached types in {directory / 'ghidra/ghidra-types.h'} and current image header "
+            f"{Path(source_file(active)).with_suffix('.h')}.\n"
+            f"Append only this function to {source_file(active)}, with // FUNCTION: {key(active)}.\n"
+            f"New headers belong under {source_dir(active)}. Split only this function in "
+            f"{active.get('build_config', 'scus_943.58.yaml')}; append symbols only to "
+            f"{active.get('symbol_file', 'symbol_addrs.txt')}.\n"
+            f"Use tools/.venv/bin/python tools/reconstruction_step.py --context {directory / 'context.json'}.\n"
+            f"Write evidence to {directory / 'ghidra-update.json'}.\n"
+            f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
+            "the selected object matches and evidence is written.\n")
         (directory / "agent-prompt.md").write_text(prompt)
         env = os.environ.copy()
         temporary = self.w.ROOT / "tools/tmp/reconstruction-agents"
@@ -246,7 +228,9 @@ class Runner:
             cache = self.w.ROOT / "tools/cache/reconstruction-agents" / Path(session["directory"]).name / slug(active)
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
-            argv += ["--no-daemon", "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
+            # The supplied worker brief replaces repository-wide setup guidance
+            # for this invocation only; retain the normal sandbox/approval policy.
+            argv += ["--no-daemon", "--config", "project_doc_max_bytes=0", "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
                      "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}",
                      "--ask-for-approval", "never", "exec", "--ephemeral",
                      "--sandbox", "workspace-write", "--json", "-"]
