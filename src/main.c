@@ -258,6 +258,12 @@ extern void func_80018CC0(unsigned char *data);
 extern int func_80017A58(long *events);
 extern int write(int fd, void *buffer, int size);
 
+extern CardSaveTitle card_save_title;
+extern CardSavePalette card_save_palette;
+extern CardSaveFrames card_save_frames;
+extern int func_80018044(unsigned char *destination, int mode, int frame_count,
+                          unsigned char *palette, unsigned char *frames, char *title);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2395,4 +2401,64 @@ int func_80018808(void)
     }
     func_80017A00(events);
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x80018968
+int func_80018968(char *filename, CardSaveBlock *block)
+{
+    CardSaveTitle title;
+    CardSavePalette palette;
+    CardSaveFrames frames;
+    int fd;
+    CardSaveHeader *header;
+    int initialize = 0;
+    unsigned char *signature = card_save_signature;
+    unsigned char *expected;
+    unsigned char *output;
+    int i;
+
+    title = card_save_title;
+    palette = card_save_palette;
+    frames = card_save_frames;
+    fd = open(filename, 1);
+    header = &block->header;
+    if (fd >= 0) {
+        read(fd, block, 0x2000);
+        close(fd);
+        for (i = 0; i < 8; i++) {
+            if (header->signature[i] != signature[i]) {
+                initialize = 1;
+            }
+        }
+    } else {
+        fd = open(filename, 0x10200);
+        if (fd >= 0) {
+            close(fd);
+            initialize = 1;
+        }
+    }
+    if (initialize) {
+        if (fd < 0) {
+            return fd;
+        }
+        for (i = 0x1fff; i >= 0; i--) {
+            ((unsigned char *)block)[i] = 0;
+        }
+        func_80018044(block->card_header, 1, 3, palette.bytes, frames.bytes, title.text);
+        output = header->signature;
+        expected = signature;
+        do {
+            *output = *expected;
+            output++;
+            expected++;
+        } while ((int)output < (int)(header->signature + 8));
+        header->data_offset = 0;
+        ((CardSaveHeaderTail *)header->unknown_10)->unknown_10 = 0;
+        ((CardSaveHeaderTail *)header->unknown_10)->data_checksum = 0;
+        ((CardSaveHeaderTail *)header->unknown_10)->unknown_18 = 0;
+    }
+    if (fd >= 0) {
+        fd = open(filename, 0x8002);
+    }
+    return fd;
 }

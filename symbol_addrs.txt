@@ -381,3 +381,6 @@ card_save_signature = 0x80010300; // size:0x9
 func_80018968 = 0x80018968; // type:func size:0x358
 func_80018CC0 = 0x80018CC0; // type:func size:0x284
 write = 0x8003CB7C; // type:func size:0x10
+card_save_title = 0x8001030C; // size:0x41
+card_save_palette = 0x80010350; // size:0x20
+card_save_frames = 0x80010370; // size:0x180

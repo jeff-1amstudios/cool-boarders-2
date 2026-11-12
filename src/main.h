@@ -141,4 +141,17 @@ typedef struct CardSaveBlock {
     unsigned char payload[7652];
 } CardSaveBlock;
 
+/* Byte-aligned assets copied into the memory-card header workspace. */
+typedef struct CardSaveTitle {
+    char text[65];
+} CardSaveTitle;
+
+typedef struct CardSavePalette {
+    unsigned char bytes[32];
+} CardSavePalette;
+
+typedef struct CardSaveFrames {
+    unsigned char bytes[384];
+} CardSaveFrames;
+
 #endif
