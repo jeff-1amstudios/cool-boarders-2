@@ -406,3 +406,14 @@ func_80019530 = 0x80019530; // type:func size:0xC8
 func_800195F8 = 0x800195F8; // type:func size:0x150
 card_extra_load_filename = 0x80010514; // size:0x17
 card_extra_load_signature = 0x8001052C; // size:0x9
+
+card_extra_selected_record = 0x80057118; // size:0x4
+card_extra_setting_0 = 0x800570C8; // size:0x2
+card_extra_setting_1 = 0x800570CA; // size:0x2
+card_extra_setting_2 = 0x800570CC; // size:0x2
+card_extra_setting_3 = 0x800570CE; // size:0x2
+card_extra_setting_4 = 0x800570D0; // size:0x2
+card_extra_setting_5 = 0x800570EC; // size:0x2
+card_extra_setting_6 = 0x800570EE; // size:0x2
+card_extra_mode = 0x800570F2; // size:0x2
+card_extra_record_value = 0x80057124; // size:0x2

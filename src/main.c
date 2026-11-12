@@ -285,6 +285,17 @@ extern int func_800195F8(CardSaveHeader *header, CardExtraPayload *payload);
 
 extern unsigned char card_extra_load_signature[9];
 
+extern volatile int card_extra_selected_record;
+extern volatile unsigned short card_extra_setting_0;
+extern volatile unsigned short card_extra_setting_1;
+extern volatile unsigned short card_extra_setting_2;
+extern volatile unsigned short card_extra_setting_3;
+extern volatile unsigned short card_extra_setting_4;
+extern volatile short card_extra_setting_5;
+extern volatile unsigned short card_extra_setting_6;
+extern short card_extra_mode;
+extern unsigned short card_extra_record_value;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2684,4 +2695,65 @@ int func_80019530(CardSaveHeader *input)
         }
     }
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x800195F8
+int func_800195F8(CardSaveHeader *header, CardExtraPayload *payload)
+{
+    volatile int *selected;
+    int row;
+    int column;
+    int offset;
+    int mode;
+    unsigned short *destination;
+    unsigned short *output;
+    volatile unsigned short *source;
+    volatile unsigned short *values;
+    volatile unsigned short *cursor;
+
+    if (payload->size != 0xC4) {
+        return -1;
+    }
+    if (func_800181D4((unsigned char *)payload, 0xC4) !=
+        ((CardSaveHeaderTail *)header->unknown_10)->unknown_18) {
+        return -2;
+    }
+    selected = &card_extra_selected_record;
+    *selected = payload->selected_record;
+    card_extra_setting_5 = ((volatile unsigned short *)payload)[3 + 5];
+    card_extra_setting_6 = ((volatile unsigned short *)payload)[3 + 6];
+    card_extra_setting_0 = ((volatile unsigned short *)payload)[3 + 0];
+    row = 0;
+    card_extra_setting_1 = ((volatile unsigned short *)payload)[3 + 1];
+    cursor = (volatile unsigned short *)payload;
+    card_extra_setting_2 = cursor[3 + 2];
+    offset = 0;
+    card_extra_setting_3 = cursor[3 + 3];
+    card_extra_setting_4 = cursor[3 + 4];
+    values = cursor;
+    destination = (unsigned short *)((unsigned char *)selected + 0xA0);
+    do {
+        column = 0;
+        output = destination;
+        *(unsigned short *)((unsigned char *)&card_extra_record_value + offset) = values[10];
+        source = cursor + 18;
+        do {
+            *output = *source++;
+            column++;
+            output++;
+        } while (column < 10);
+        cursor += 10;
+        destination += 84;
+        offset += 168;
+        row++;
+        values++;
+    } while (row < 8);
+    mode = *(short *)&card_extra_setting_5;
+    if (mode == 0) {
+        mode = 9;
+    } else {
+        mode = 10;
+    }
+    card_extra_mode = mode;
+    return 0;
 }
