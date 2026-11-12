@@ -194,4 +194,11 @@ typedef struct CardGamePayload {
     CardGameEntry entries[3];
 } CardGamePayload;
 
+/* Read window after the 512-byte memory-card header. */
+typedef struct CardLoadBlock {
+    CardSaveHeader header;
+    CardGamePayload payload;
+    unsigned char trailing[204];
+} CardLoadBlock;
+
 #endif

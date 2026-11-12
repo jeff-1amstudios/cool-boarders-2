@@ -392,3 +392,8 @@ card_game_records = 0x80057664; // size:0x780
 card_game_results = 0x80057DE4; // size:0x138
 card_game_progress = 0x80057F1C; // size:0x6C
 card_game_entries = 0x80057F88; // size:0x30
+
+func_80018F44 = 0x80018F44; // type:func size:0x114
+card_load_filename = 0x800104F0; // size:0x17
+func_80019058 = 0x80019058; // type:func size:0xFC
+func_80019154 = 0x80019154; // type:func size:0x2D4

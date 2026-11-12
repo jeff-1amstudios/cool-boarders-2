@@ -272,6 +272,10 @@ extern CardGameResult card_game_results[3];
 extern CardGameProgress card_game_progress;
 extern CardGameEntry card_game_entries[3];
 
+extern char card_load_filename[23];
+extern int func_80019058(CardSaveHeader *header);
+extern int func_80019154(CardSaveHeader *header, CardGamePayload *payload);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2492,4 +2496,47 @@ void func_80018CC0(unsigned char *data)
     for (i = 0; i < 3; i++) {
         save->entries[i] = card_game_entries[i];
     }
+}
+
+// FUNCTION: SCUS_943.58:0x80018F44
+int func_80018F44(void)
+{
+    CardLoadBlock block;
+    long events[8];
+    int result = 0;
+    int status;
+    int fd;
+
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = open(card_load_filename, 1);
+            if (fd >= 0) {
+                lseek(fd, 0x200, 0);
+                if (read(fd, &block, 0xA80) == 0xA80) {
+                    status = func_80019058(&block.header);
+                    if (status >= 0 && (status & 1) != 0) {
+                        result = func_80019154(&block.header, &block.payload) == 0;
+                    } else {
+                        result = -4;
+                    }
+                } else {
+                    result = -6;
+                }
+                close(fd);
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    D_80047D10 = result > 0;
+    return result;
 }
