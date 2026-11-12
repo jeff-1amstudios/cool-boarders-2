@@ -168,6 +168,8 @@ extern int D_8005A7AC;
 extern int D_80058B0C;
 extern SoundCommand sound_commands[16];
 
+extern volatile SoundCommand pending_sound_commands[16];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -1493,4 +1495,113 @@ int func_80016A24(unsigned long voice_bit, int sample_index)
     sound_commands[D_8005A7AC].volume = 0x80;
     D_8005A7AC = (D_8005A7AC + 1) % 16;
     return 0;
+}
+
+// FUNCTION: SCUS_943.58:0x80016AEC
+void func_80016AEC(void)
+{
+    int index;
+    int next_voice;
+    unsigned long command;
+    unsigned long voices;
+    int level;
+    SpuVoiceAttr voice;
+
+    voices = 0;
+    index = D_80058B0C;
+    next_voice = D_800478CC;
+    while (index != D_8005A7AC) {
+        if (sound_commands[index].command != 0xFF) {
+            if (sound_commands[index].command >= 16) {
+                /* The reference explicitly rereads the queued voice mask. */
+                voices |= pending_sound_commands[index].command;
+                D_8005AB2C |= sound_commands[index].command;
+            } else {
+                switch (sound_commands[index].command) {
+                case 0:
+                    next_voice = (next_voice + 1) % 8;
+                    voices |= 1 << next_voice;
+                    D_8005AB2C |= 1 << next_voice;
+                    break;
+                case 1:
+                    voices |= 0x8000;
+                    D_8005AB2C |= 0x8000;
+                    break;
+                }
+            }
+        }
+        index = (index + 1) % 16;
+    }
+    SpuSetKey(0, D_8005AB2C);
+    while (D_80058B0C != D_8005A7AC) {
+        command = sound_commands[D_80058B0C].command;
+        if (command != 0xFF) {
+            if (command >= 16) {
+                voice.voice = command;
+                voice.mask = 0x93;
+                voice.pitch = D_80057FC0;
+                level = D_80057FBA * 0x20 - 1;
+                if (level > 0) {
+                    if (level < 0x4000) {
+                        voice.volume.left = level;
+                    } else {
+                        voice.volume.left = 0x3FFF;
+                    }
+                } else {
+                    voice.volume.left = 0;
+                }
+                voice.volume.right = voice.volume.left = voice.volume.left;
+                voice.addr = sound_transfer_banks[1].transfer_start +
+                    sound_transfer_banks[1].offsets[sound_commands[D_80058B0C].sample_index];
+                SpuSetVoiceAttr(&voice);
+            } else {
+                switch (command) {
+                case 0:
+                    D_800478CC = (D_800478CC + 1) % 8;
+                    voice.voice = 1 << D_800478CC;
+                    voice.mask = 0x93;
+                    voice.pitch = 0x5CE;
+                    level = ((sound_commands[D_80058B0C].volume * D_80057FBC) >> 2) - 1;
+                    if (level > 0) {
+                        if (level < 0x4000) {
+                            voice.volume.left = level;
+                        } else {
+                            voice.volume.left = 0x3FFF;
+                        }
+                    } else {
+                        voice.volume.left = 0;
+                    }
+                    voice.volume.right = voice.volume.left = voice.volume.left;
+                    voice.addr = sound_transfer_banks[0].transfer_start +
+                        sound_transfer_banks[0].offsets[sound_commands[D_80058B0C].sample_index];
+                    SpuSetVoiceAttr(&voice);
+                    break;
+                case 1:
+                    voice.voice = 0x8000;
+                    voice.mask = 0x93;
+                    voice.pitch = sound_commands[D_80058B0C].pitch;
+                    level = ((sound_commands[D_80058B0C].volume * D_80057FBC) >> 2) - 1;
+                    if (level > 0) {
+                        if (level < 0x4000) {
+                            voice.volume.left = level;
+                        } else {
+                            voice.volume.left = 0x3FFF;
+                        }
+                    } else {
+                        voice.volume.left = 0;
+                    }
+                    voice.volume.right = voice.volume.left = voice.volume.left;
+                    voice.addr = sound_transfer_banks[0].transfer_start +
+                        sound_transfer_banks[0].offsets[sound_commands[D_80058B0C].sample_index];
+                    SpuSetVoiceAttr(&voice);
+                    break;
+                }
+            }
+            voices |= voice.voice;
+            sound_commands[D_80058B0C].command = 0xFF;
+        }
+        D_80058B0C = (D_80058B0C + 1) % 16;
+    }
+    SpuSetKey(1, voices);
+    D_8005AB2C = 0;
 }
