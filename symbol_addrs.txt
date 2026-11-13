@@ -469,3 +469,5 @@ pad_send_buffers = 0x80058F00; // size:0x44
 InitPAD = 0x8003CC78;
 SendPAD = 0x8003CFB4;
 StartPAD = 0x8003CD04;
+
+D_80047D18 = 0x80047D18; // type:s32 size:0x4

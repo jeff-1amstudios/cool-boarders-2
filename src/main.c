@@ -351,6 +351,8 @@ extern int SendPAD(unsigned char *buffer0, int length0, unsigned char *buffer1, 
 extern int StartPAD(void);
 
 
+extern int D_80047D18;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3415,4 +3417,14 @@ unsigned int func_8001B320(int port, unsigned char *state)
         }
     }
     return buttons;
+}
+
+// FUNCTION: SCUS_943.58:0x8001B5B4
+int func_8001B5B4(int port, int countdown)
+{
+    int previous;
+
+    previous = (&D_80047D18)[port];
+    (&D_80047D18)[port] = countdown;
+    return previous;
 }
