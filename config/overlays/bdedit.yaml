@@ -53,6 +53,7 @@ segments:
   - [0x2034, c, func_8005CB9C]
   - [0x21ac, asm, body_21AC]
   - [0x23d0, c, func_8005CF38]
-  - [0x2424, asm, body_2424]
+  - [0x2424, c, func_8005CF8C]
+  - [0x2588, asm, body_2588]
   - [0x8020, data, data]
 - [0x86a0]

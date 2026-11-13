@@ -42,6 +42,10 @@ extern DR_TPAGE *func_80012B6C(unsigned long *ot, DR_TPAGE *packet, unsigned int
 extern short D_800631E8;
 extern short D_800631EC;
 
+extern int D_800631F8;
+extern void func_8005F634(unsigned short *packed, CVECTOR *palette, int count);
+extern void func_8005D8C4(unsigned short *packed);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -372,4 +376,38 @@ void func_8005CF38(short *cursor, unsigned int buttons)
             D_800631FC = position > 236 ? 216 : cursor[1] - 52;
         }
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005CF8C
+void func_8005CF8C(CVECTOR *palette, unsigned short *packed)
+{
+    int index;
+    CVECTOR *color;
+
+    D_800631F8 = 7;
+    for (index = 0; index < 64; index++) {
+        color = &palette[index];
+        if ((index & 4) > 0) {
+            color->g = (8 - index / 8) * 255 / 8;
+        } else {
+            color->g = 0;
+        }
+        if ((index & 2) > 0) {
+            color->r = (8 - index / 8) * 255 / 8;
+        } else {
+            color->r = 0;
+        }
+        if ((index & 1) > 0) {
+            color->b = (8 - index / 8) * 255 / 8;
+        } else {
+            color->b = 0;
+        }
+        color->cd = 1;
+    }
+    for (index = 64; index < 256; index++) {
+        color = &palette[index];
+        color->r = color->g = color->b = color->cd = 0;
+    }
+    func_8005F634(packed, palette, 256);
+    func_8005D8C4(packed);
 }
