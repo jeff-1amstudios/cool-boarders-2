@@ -46,6 +46,17 @@ extern int D_800631F8;
 extern void func_8005F634(unsigned short *packed, CVECTOR *palette, int count);
 extern void func_8005D8C4(unsigned short *packed);
 
+extern CVECTOR D_80062E6C;
+extern unsigned char *func_8005EDD8(unsigned long *ot, unsigned char *packet,
+                                  int x, int y, int w, int h, CVECTOR *color);
+extern unsigned char *func_8005F77C(unsigned long *ot, unsigned char *packet,
+                                  int x, int y, int value, int digits, int flags);
+extern unsigned char *func_8005EEF8(unsigned long *ot, unsigned char *packet,
+                                  int x, int y, int w, int h, CVECTOR *color, int flags);
+extern unsigned char *func_8005F238(unsigned long *ot, unsigned char *packet,
+                                  int x, int y, int w, int h,
+                                  CVECTOR *border, CVECTOR *fill, int flags);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -425,4 +436,99 @@ void func_8005D194(unsigned short *packed)
         palette[index] = packed[index] & 0x7F;
     }
     palette[255] = 0;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005D200
+unsigned char *func_8005D200(unsigned long *ot, unsigned char *packet,
+                          int x, int y, CVECTOR *palette, int selection)
+{
+    CVECTOR fill = D_80062E6C;
+    CVECTOR border = D_80062E14;
+    CVECTOR highlight;
+    int row, column;
+    int dx, dy;
+    TILE *tile;
+    LINE_F2 *line;
+    POLY_G4 *bar;
+    CVECTOR *color;
+
+    if (selection == 1) {
+        highlight.r = highlight.g = highlight.b = abs((D_80047DC0 & 31) - 16) * 8 + 96;
+    } else {
+        highlight.r = highlight.g = highlight.b = 192;
+    }
+    packet = func_8005EDD8(ot, packet, (D_800631F8 % 8) * 8 + 24,
+                          (D_800631F8 / 8) * 8 + 68, 7, 7, &highlight);
+    row = 0;
+    do {
+        dy = (row + 1) * 8 - 4;
+        column = 0;
+        do {
+            dx = column * 8 + 8;
+            color = (CVECTOR *)((row * 8 + column) * 4 + (int)palette);
+            tile = (TILE *)packet;
+            packet += sizeof(TILE);
+            ((PrimitiveTag *)tile)->length = 3;
+            tile->code = 0x60;
+            tile->w = 8;
+            tile->h = 8;
+            tile->x0 = x + dx;
+            tile->y0 = y + dy;
+            tile->r0 = color->r;
+            tile->g0 = color->g;
+            tile->b0 = color->b;
+            ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ot)->address;
+            ((PrimitiveTag *)ot)->address = (unsigned long)tile;
+            column++;
+        } while (column < 8);
+        row++;
+    } while (row < 8);
+    row = 0;
+    do {
+        line = (LINE_F2 *)packet;
+        packet += sizeof(LINE_F2);
+        ((PrimitiveTag *)line)->length = 3;
+        line->code = 0x40;
+        line->x0 = 30 + row * 20;
+        line->x1 = 41 + row * 20;
+        if (row + 2 == selection) {
+            line->r0 = line->g0 = line->b0 = abs((D_80047DC0 & 31) - 16) * 8 + 96;
+        } else {
+            line->r0 = line->g0 = line->b0 = 255;
+        }
+        bar = (POLY_G4 *)packet;
+        packet += sizeof(POLY_G4);
+        ((PrimitiveTag *)bar)->length = 8;
+        bar->code = 0x38;
+        bar->x0 = bar->x2 = 32 + row * 20;
+        bar->x1 = bar->x3 = 40 + row * 20;
+        bar->y0 = bar->y1 = 136;
+        bar->y2 = bar->y3 = 168;
+        bar->r0 = bar->r1 = bar->g0 = bar->g1 = bar->b0 = bar->b1 =
+        bar->r2 = bar->r3 = bar->g2 = bar->g3 = bar->b2 = bar->b3 = 0;
+        switch (row) {
+        case 0:
+            bar->b0 = bar->b1 = 255;
+            line->y0 = line->y1 = 167 - (palette[D_800631F8].b >> 3);
+            break;
+        case 1:
+            bar->r0 = bar->r1 = 255;
+            line->y0 = line->y1 = 167 - (palette[D_800631F8].r >> 3);
+            break;
+        case 2:
+            bar->g0 = bar->g1 = 255;
+            line->y0 = line->y1 = 167 - (palette[D_800631F8].g >> 3);
+            break;
+        }
+        ((PrimitiveTag *)line)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)line;
+        ((PrimitiveTag *)bar)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)bar;
+        row++;
+    } while (row < 3);
+    packet = func_8005F77C(ot, packet, 28, 170, palette[D_800631F8].b >> 3, 2, 0);
+    packet = func_8005F77C(ot, packet, 48, 170, palette[D_800631F8].r >> 3, 2, 0);
+    packet = func_8005F77C(ot, packet, 68, 170, palette[D_800631F8].g >> 3, 2, 0);
+    packet = func_8005EEF8(ot, packet, 24, 180, 64, 8, &palette[D_800631F8], 0);
+    return func_8005F238(ot, packet, x, y, 80, 127, &border, &fill, 0);
 }
