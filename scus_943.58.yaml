@@ -260,7 +260,7 @@ segments:
       - [0x2E95C, c, func_8003E15C]
       - [0x2E964, c, func_8003E164]
       - [0x2E96C, asm, after_func_8003E164]
-      - [0x2EAF8, asm, func_8003E2F8]
+      - [0x2EAF8, c, func_8003E2F8]
       - [0x2EB00, asm, after_func_8003E2F8]
       - [0x35BA8, data, 35BA8] # estimated
   - [0x41000]

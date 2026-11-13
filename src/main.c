@@ -4686,3 +4686,9 @@ int func_8003E164(void)
 {
     return 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8003E2F8
+int func_8003E2F8(void)
+{
+    return 0;
+}
