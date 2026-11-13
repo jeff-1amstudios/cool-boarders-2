@@ -401,6 +401,8 @@ extern char *demo_paths[3];
 extern int demo_index;
 extern short D_800570DC;
 
+extern BackgroundTextures D_8001125C;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3988,4 +3990,31 @@ void func_8001DD60(unsigned long *ordering_table, TILE_16 *tile, int row,
     ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)tile;
     func_80012B6C(ordering_table, (DR_TPAGE *)(tile + 1), 0x20);
+}
+
+// FUNCTION: SCUS_943.58:0x8001DE20
+void func_8001DE20(unsigned long *ordering_table, SPRT *sprite, int x, int y,
+                   int offset_x, int offset_y)
+{
+    BackgroundTextures textures;
+    int row;
+    int column;
+    textures = D_8001125C;
+    for (row = 0; row < 5; row++) {
+        for (column = 0; column < 4; column++) {
+            /* Legacy calls pass promoted coordinates; the callee stores halfwords. */
+            sprite = ((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, int))
+                      func_80012950)(ordering_table, sprite, column * 64 - 32 + x + offset_x,
+                                    row * 48 + offset_y, &textures.entries[0], 128);
+        }
+    }
+    sprite = (SPRT *)func_80012B6C(ordering_table, (DR_TPAGE *)sprite, 0x16);
+    for (row = 0; row < 5; row++) {
+        for (column = 0; column < 2; column++) {
+            sprite = ((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, int))
+                      func_80012950)(ordering_table, sprite, column * 64 + 224 + offset_x,
+                                    row * 48 + y + offset_y, &textures.entries[1], 128);
+        }
+    }
+    func_80012B6C(ordering_table, (DR_TPAGE *)sprite, 0x16);
 }

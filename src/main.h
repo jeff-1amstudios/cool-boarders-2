@@ -365,4 +365,9 @@ typedef struct SelectionHalfwords {
     short high;
 } SelectionHalfwords;
 
+/* Two texture descriptors copied together by func_8001DE20. */
+typedef struct BackgroundTextures {
+    SpriteTexture entries[2];
+} BackgroundTextures;
+
 #endif
