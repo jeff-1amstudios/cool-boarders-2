@@ -584,3 +584,7 @@ D_80058ACC = 0x80058ACC; // size:0x4
 
 func_8003CA3C = 0x8003CA3C; // type:func size:0x10
 D_8004F3B4 = 0x8004F3B4; // type:u32 size:0x4
+
+func_8003D0D4 = 0x8003D0D4; // type:func size:0x38
+AddDrv = 0x8003E310; // type:func size:0xC
+D_8004F404 = 0x8004F404; // size:0x58

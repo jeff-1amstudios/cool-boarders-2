@@ -445,6 +445,10 @@ extern PACKET *D_80058ACC;
 
 extern int D_8004F3B4; /* Video mode selected by func_8003CA24. */
 
+extern int AddDrv(void *device);
+/* First pointer of the larger saved driver descriptor; only its address is used. */
+extern void *D_8004F404;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4620,4 +4624,12 @@ void func_8002F750(PACKET *work_base)
 int func_8003CA3C(void)
 {
     return D_8004F3B4;
+}
+
+// FUNCTION: SCUS_943.58:0x8003D0D4
+void func_8003D0D4(void)
+{
+    func_8003CB2C();
+    AddDrv(&D_8004F404);
+    func_8003CB3C();
 }
