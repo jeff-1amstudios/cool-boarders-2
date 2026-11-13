@@ -268,4 +268,19 @@ typedef struct CardGhostSummary {
     unsigned int words[4];
 } CardGhostSummary;
 
+/* Board save record at file offset 512, followed by its checksum region. */
+typedef struct CardBoardRecord {
+    unsigned char signature[8];
+    int selected_record;
+    unsigned int checksum;
+    unsigned short values[256];
+    unsigned char data[8192];
+} CardBoardRecord;
+
+typedef struct CardBoardSaveBlock {
+    unsigned char card_header[512];
+    CardBoardRecord record;
+    unsigned char remaining[7152];
+} CardBoardSaveBlock;
+
 #endif

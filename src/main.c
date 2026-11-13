@@ -328,6 +328,10 @@ extern unsigned char card_ghost_read_signature[9];
 
 #include "card_ghost_read.h"
 
+extern CardGhostFilename card_board_filename;
+extern int func_8001AAD0(char *filename, CardBoardSaveBlock *block, unsigned int slot);
+extern void func_8001ADC8(CardBoardRecord *record, unsigned short *values, unsigned char *data);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3069,5 +3073,54 @@ int func_8001A6B8(int slot, unsigned char *destination)
         result = -1;
     }
     func_80017A00(events);
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001A900
+int func_8001A900(unsigned int slot, short selected_record,
+                  unsigned short *values, unsigned char *data)
+{
+    long events[8];
+    CardGhostFilename filename;
+    CardBoardSaveBlock *block;
+    int result;
+    int status;
+    int fd;
+
+    filename = card_board_filename;
+    if (slot >= 7) {
+        return -6;
+    }
+    filename.text[22] = slot + '1';
+    block = func_8001F1A0(0x4000);
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = func_8001AAD0(filename.text, block, slot);
+            if (fd >= 0) {
+                block->record.selected_record = selected_record;
+                func_8001ADC8(&block->record, values, data);
+                block->record.checksum = func_800181D4(
+                    (unsigned char *)block->record.values, 0x2200);
+                lseek(fd, 0, 0);
+                write(fd, block, 0x4000);
+                result = -(unsigned int)(func_80017A58(events) > 0) & -6;
+                close(fd);
+            } else {
+                result = -3;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    func_8001F378(block);
     return result;
 }
