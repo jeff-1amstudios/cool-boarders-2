@@ -3521,3 +3521,44 @@ inactive:
 done:
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x8001BCB4
+unsigned char func_8001BCB4(int countdown, unsigned char value)
+{
+    int i;
+    unsigned char *cursor;
+    unsigned char *status_byte;
+
+    if (countdown < 0)
+        countdown = 5000000;
+    i = 7;
+    cursor = &D_800506A7;
+    do {
+        *cursor = value;
+        i--;
+        cursor--;
+    } while (i >= 0);
+    status_byte = &D_800506A7;
+    *status_byte = 0xdd;
+    D_800506B0 = countdown;
+    D_800506B4 = countdown;
+    if (D_8005AB5C >= 3)
+        goto inactive;
+    if (D_8005AB5C <= 0)
+        goto inactive;
+    if (D_8005AB5C == 1) {
+        write(D_8005069C, status_byte - 7, 8);
+        if (D_8005AB5C != -1)
+            read(D_80050698, D_800506A8, 8);
+    } else {
+        read(D_80050698, D_800506A8, 8);
+        if (D_8005AB5C != -1)
+            write(D_8005069C, status_byte - 7, 8);
+    }
+    value = D_800506A8[0];
+    goto done;
+inactive:
+    value = 0;
+done:
+    return value;
+}
