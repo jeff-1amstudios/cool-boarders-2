@@ -396,6 +396,11 @@ extern SelectionHalfwords D_800570D4;
 extern short D_800570D6;
 extern SelectionHalfwords D_800570D8;
 
+extern int func_8001E968(char *filename, SelectionRecord **destination, int allocator);
+extern char *demo_paths[3];
+extern int demo_index;
+extern short D_800570DC;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3900,4 +3905,40 @@ unsigned int func_8001D8B4(SelectionRecord *record)
         settings[4] = derived;
     }
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001D968
+int func_8001D968(void)
+{
+    short *settings = (short *)&card_extra_setting_0;
+    int loaded[2];
+    short category;
+    short index;
+    short quotient;
+    short derived;
+    short previous;
+
+    if (func_8001E968(demo_paths[demo_index], (SelectionRecord **)loaded, 0) > 0) {
+        D_800570DC = *(unsigned char *)(loaded[0] + 9);
+        category = *(short *)(loaded[0] + 10);
+        settings[0] = category;
+        index = *(short *)(loaded[0] + 12);
+        card_extra_setting_2 = 0;
+        card_extra_setting_3 = 0;
+        card_extra_setting_1 = index;
+        if (category < 5) {
+            quotient = index / 4;
+            if ((short)(index % 4) == 3) {
+                derived = quotient + 0x12;
+            } else {
+                derived = quotient * 6;
+            }
+        } else {
+            derived = category + 0x10;
+        }
+        settings[4] = derived;
+    }
+    previous = demo_index;
+    demo_index = (demo_index + 1) % 3;
+    return previous;
 }

@@ -199,7 +199,7 @@ segments:
       - [0xD414, c, func_8001CC14]
       - [0xD8EC, asm, after_func_8001CC14]
       - [0xE0B4, c, func_8001D8B4]
-      - [0xE168, asm, after_func_8001D8B4]
+      - [0xE168, c, func_8001D968]
       - [0xE298, asm, record_find_greater]
       - [0xE2D4, asm, record_find_less]
       - [0xE310, asm, after_record_find_less]

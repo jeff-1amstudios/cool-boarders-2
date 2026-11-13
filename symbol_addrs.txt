@@ -515,3 +515,8 @@ D_800570D2 = 0x800570D2; // size:0x2
 D_800570D4 = 0x800570D4; // size:0x4
 D_800570D6 = 0x800570D6; // size:0x2
 D_800570D8 = 0x800570D8; // size:0x4
+
+func_8001E968 = 0x8001E968; // type:func size:0xEC
+demo_paths = 0x80047D5C; // size:0xC
+demo_index = 0x80047D68; // size:0x4
+D_800570DC = 0x800570DC; // size:0x2
