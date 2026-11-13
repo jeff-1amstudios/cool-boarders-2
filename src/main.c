@@ -4018,3 +4018,105 @@ void func_8001DE20(unsigned long *ordering_table, SPRT *sprite, int x, int y,
     }
     func_80012B6C(ordering_table, (DR_TPAGE *)sprite, 0x16);
 }
+
+// FUNCTION: SCUS_943.58:0x8001DFCC
+unsigned char *func_8001DFCC(unsigned long *ordering_table, unsigned char *packet,
+                            short x, short y, short width, int height, int border,
+                            CVECTOR *color, unsigned int shade, unsigned int flags)
+{
+    LINE_F4 *light = (LINE_F4 *)packet;
+    LINE_F4 *dark;
+    LINE_F2 *bottom;
+    LINE_F2 *top;
+    POLY_G4 *fill;
+    DR_TPAGE *mode;
+    short upper;
+    short fill_height;
+    unsigned long command;
+    unsigned int draw_mode;
+
+    packet += sizeof(LINE_F4);
+    dark = (LINE_F4 *)packet;
+    packet += sizeof(LINE_F4);
+    bottom = (LINE_F2 *)packet;
+    packet += sizeof(LINE_F2);
+    top = (LINE_F2 *)packet;
+    packet += sizeof(LINE_F2);
+
+    ((PrimitiveTag *)light)->length = 6;
+    light->code = 0x4C;
+    light->pad = 0x55555555;
+    ((PrimitiveTag *)dark)->length = 6;
+    dark->code = 0x4C;
+    dark->pad = 0x55555555;
+    ((PrimitiveTag *)bottom)->length = 3;
+    bottom->code = 0x40;
+    ((PrimitiveTag *)top)->length = 3;
+    top->code = 0x40;
+
+    light->x0 = light->x1 = bottom->x0 = x - 4;
+    light->x2 = dark->x0 = bottom->x1 = light->x1 + 2;
+    upper = y - border;
+    light->y2 = light->y3 = top->y0 = upper;
+    light->y1 = dark->y3 = top->y1 = upper + 2;
+    dark->x2 = dark->x3 = top->x1 = x + width + 4;
+    light->x3 = dark->x1 = top->x0 = x + width + 2;
+    dark->y0 = dark->y1 = bottom->y1 = y + height + border;
+    light->y0 = dark->y2 = bottom->y0 = dark->y1 - 2;
+    light->r0 = light->g0 = light->b0 = (shade * 255) >> 7;
+    dark->r0 = dark->g0 = dark->b0 = (shade * 5) >> 2;
+    bottom->r0 = bottom->g0 = bottom->b0 = (shade * 13) >> 3;
+    top->r0 = top->g0 = top->b0 = (shade * 13) >> 3;
+
+    ((PrimitiveTag *)bottom)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)bottom;
+    ((PrimitiveTag *)top)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)top;
+    ((PrimitiveTag *)light)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)light;
+    ((PrimitiveTag *)dark)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)dark;
+
+    width += 4;
+    fill_height = height + border * 2 + 1;
+    fill = (POLY_G4 *)packet;
+    packet += sizeof(POLY_G4);
+    fill->x0 = x - 3;
+    fill->y0 = upper + 1;
+    fill->x1 = x + width;
+    fill->y1 = upper + 1;
+    fill->x2 = x - 3;
+    fill->y2 = upper + fill_height;
+    fill->x3 = x + width;
+    fill->y3 = upper + fill_height;
+    /* Copy the packed CVECTOR word, including its command byte. */
+    *(unsigned long *)&fill->r0 = *(unsigned long *)&fill->r3 = *(unsigned long *)color;
+    fill->r0 = fill->r3 = (color->r * shade) >> 7;
+    fill->g0 = fill->g3 = (color->g * shade) >> 7;
+    fill->b0 = fill->b3 = (color->b * shade) >> 7;
+    fill->r1 = fill->r2 = (color->r * shade) >> 8;
+    fill->g1 = fill->g2 = (color->g * shade) >> 8;
+    fill->b1 = fill->b2 = (color->b * shade) >> 8;
+    ((PrimitiveTag *)fill)->length = 8;
+    fill->code = 0x38;
+    if (flags & 0x80) {
+        fill->code = 0x3A;
+    }
+    ((PrimitiveTag *)fill)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)fill;
+
+    mode = (DR_TPAGE *)packet;
+    packet += sizeof(DR_TPAGE);
+    ((PrimitiveTag *)mode)->length = 1;
+    if (GetGraphType() == 1 || GetGraphType() == 2) {
+        command = 0xE1000800;
+    } else {
+        command = 0xE1000200;
+    }
+    draw_mode = (flags & 3) << 5;
+    draw_mode |= command;
+    mode->code[0] = draw_mode;
+    mode->tag = (mode->tag & 0xFF000000) | (*ordering_table & 0xFFFFFF);
+    *ordering_table = (*ordering_table & 0xFF000000) | ((unsigned long)mode & 0xFFFFFF);
+    return packet;
+}
