@@ -4305,3 +4305,35 @@ void func_8001EC68(int value)
 {
     D_8005802C = value;
 }
+
+// FUNCTION: SCUS_943.58:0x8001EC78
+int func_8001EC78(void *data)
+{
+    int uploaded = 0;
+    RECT rect;
+    unsigned long flags;
+
+    data += 4;
+    flags = *((unsigned long *)data)++;
+
+    if (flags & 8) {
+        data += 4;
+        rect.x = *((unsigned short *)data)++;
+        rect.y = *((unsigned short *)data)++;
+        rect.w = *((unsigned short *)data)++;
+        rect.h = *((unsigned short *)data)++;
+        LoadImage(&rect, (unsigned long *)data);
+        uploaded = 2;
+        data += rect.h * rect.w * 2;
+    }
+    data += 4;
+    rect.x = *((unsigned short *)data)++;
+    rect.y = *((unsigned short *)data)++;
+    rect.w = *((unsigned short *)data)++;
+    rect.h = *((unsigned short *)data)++;
+    if (rect.w > 0 && rect.h > 0) {
+        LoadImage(&rect, (unsigned long *)data);
+        uploaded++;
+    }
+    return uploaded;
+}
