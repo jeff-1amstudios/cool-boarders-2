@@ -476,6 +476,8 @@ extern void InitCARD2(int mode);
 extern void _patch_card(void);
 extern void _patch_card2(void);
 
+extern void StartCARD2(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4753,5 +4755,14 @@ void func_80044524(int mode)
     InitCARD2(mode);
     _patch_card();
     _patch_card2();
+    func_8003CB3C();
+}
+
+// FUNCTION: SCUS_943.58:0x80044578
+void func_80044578(void)
+{
+    func_8003CB2C();
+    StartCARD2();
+    ChangeClearPAD(0);
     func_8003CB3C();
 }
