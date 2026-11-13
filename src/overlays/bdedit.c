@@ -579,3 +579,60 @@ void func_8005D8C4(unsigned short *packed)
     rect.h = 1;
     LoadImage(&rect, (unsigned long *)packed);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005D908
+void func_8005D908(int *cursor, unsigned int buttons, void *unused,
+                   CVECTOR *palette, unsigned short *packed)
+{
+    int channel;
+    int level;
+    RECT rect;
+
+    if (D_800631EC < 2 && (buttons & 0x5000) != 0) {
+        D_800631E8 = 0;
+        if (D_800631EC == 0) {
+            D_800631EC = 11;
+        } else {
+            D_800631EC = 4;
+        }
+        channel = (((short *)cursor)[1] - 26) / 20;
+        switch (channel) {
+        case 0:
+            level = palette[D_800631F8].b >> 3;
+            break;
+        case 1:
+            level = palette[D_800631F8].r >> 3;
+            break;
+        case 2:
+        default:
+            level = palette[D_800631F8].g >> 3;
+            break;
+        }
+        if (buttons & 0x1000) {
+            level++;
+        }
+        if (buttons & 0x4000) {
+            level--;
+        }
+        level = level < 0 ? 0 : level > 31 ? 31 : level;
+        cursor[1] = (167 - level) << 16;
+        level = level * 255 / 31;
+        switch (channel) {
+        case 0:
+            palette[D_800631F8].b = level;
+            break;
+        case 1:
+            palette[D_800631F8].r = level;
+            break;
+        case 2:
+            palette[D_800631F8].g = level;
+            break;
+        }
+        func_8005F634(packed + D_800631F8, palette + D_800631F8, 1);
+        rect.x = 0x300;
+        rect.y = 0x1F7;
+        rect.w = 0x100;
+        rect.h = 1;
+        LoadImage(&rect, (unsigned long *)packed);
+    }
+}

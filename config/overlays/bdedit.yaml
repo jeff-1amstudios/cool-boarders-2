@@ -60,6 +60,7 @@ segments:
   - [0x2bfc, c, func_8005D764]
   - [0x2cf8, c, func_8005D860]
   - [0x2d5c, c, func_8005D8C4]
-  - [0x2da0, asm, body_2DA0]
+  - [0x2da0, c, func_8005D908]
+  - [0x2fe4, asm, body_2FE4]
   - [0x8020, data, data]
 - [0x86a0]
