@@ -1,5 +1,6 @@
 """Subprocess supervision for reconstruct.py run. Python alone accepts and commits."""
 import copy
+import difflib
 import json
 import os
 import re
@@ -139,12 +140,23 @@ def review_header_extension(before, after):
 
 def review_shared_extension(before, after):
     """Permit new top-level externs/includes while protecting established declarations."""
-    if not after.startswith(before):
-        raise Rejected('Existing shared declarations changed')
-    added = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', after[len(before):], flags=re.S)
-    added = re.sub(r'\bextern\s+[^;{}=]+;|#[ \t]*include[ \t]+"[A-Za-z_]\w*\.h"', '', added)
-    if added.strip():
-        raise Rejected('Only extern declarations and local includes may be added before FUNCTION annotations')
+    previous, proposed = before.splitlines(keepends=True), after.splitlines(keepends=True)
+    for operation, old_start, _, start, end in difflib.SequenceMatcher(
+            None, previous, proposed, autojunk=False).get_opcodes():
+        if operation == 'equal':
+            continue
+        if operation != 'insert':
+            raise Rejected('Existing shared declarations changed')
+        prefix = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', ''.join(previous[:old_start]), flags=re.S)
+        prefix = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', ' ', prefix)
+        if prefix.count('{') != prefix.count('}'):
+            raise Rejected('New shared declarations must be outside existing helper bodies')
+        # Check each insertion separately so a new comment cannot enclose
+        # established declarations. Existing lines must remain byte-for-byte.
+        added = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', ''.join(proposed[start:end]), flags=re.S)
+        added = re.sub(r'\bextern\s+[^;{}=]+;|#[ \t]*include[ \t]+"[A-Za-z_]\w*\.h"', '', added)
+        if added.strip():
+            raise Rejected('Only extern declarations and local includes may be added before FUNCTION annotations')
 
 
 class Runner:

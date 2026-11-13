@@ -59,6 +59,13 @@ Changes take effect on the next worker invocation.
 
 ## Targets and review
 
+Shared C declarations may gain standalone extern declarations and local includes
+between existing lines. Existing shared lines must remain unchanged; changing a
+prototype, helper body or existing header layout still requires manual review.
+This permits grouping new externs with related declarations without requiring
+them to be appended at the end of the shared text. Exact full-file validation
+remains the acceptance gate.
+
 `make target-list` refreshes the complete byte-checked Ghidra backlog under `reports/reconstruction/targets.json`. Selection follows recorded order: boot first, then overlay filename, ascending address. IDs include the image, such as `INIT.BIN:0x8005AB6C`; equal RAM addresses in different overlays remain separate. SDK identifications and curated holds stay excluded. Unknown does not establish game authorship. Splat build spans and Ghidra function instances remain different counts.
 
 Deferrals persist across batches in ignored `reports/reconstruction/deferred.json`, keyed by image-qualified identity with the reason and preserved attempt links. Repeated `start --limit 1` runs move on to other eligible targets. Exhausting the eligible queue stops the batch; it does not automatically retry deferred work. The last batch's deferrals are imported automatically when upgrading from the previous worker. Keep this file to preserve queue progress.
