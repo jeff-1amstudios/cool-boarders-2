@@ -339,6 +339,9 @@ extern unsigned char card_board_signature[9];
 
 extern int func_8001AEE0(int slot);
 
+extern CardGhostFilename card_board_read_filename;
+extern int func_8001B1AC(CardBoardRecord *record);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3222,6 +3225,61 @@ unsigned int func_8001AE14(short *results)
                     result |= 1 << slot;
                 }
                 results[slot] = value;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001AFD0
+int func_8001AFD0(int slot, unsigned short *values, unsigned char *data)
+{
+    long events[8];
+    CardGhostFilename filename;
+    CardBoardRecord *record;
+    int status;
+    int result;
+    int fd;
+    int i;
+
+    filename = card_board_read_filename;
+    record = func_8001F1A0(0x4000);
+    filename.text[22] = slot + '1';
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = open(filename.text, 1);
+            if (fd >= 0) {
+                lseek(fd, 0x200, 0);
+                if (read(fd, record, 0x2280) == 0x2280) {
+                    if (func_8001B1AC(record) == 0) {
+                        CardBoardRecord *source = record;
+                        result = source->selected_record;
+                        for (i = 0; i < 256; i++) {
+                            values[i] = source->values[i];
+                        }
+                        for (i = 0; i < 8192; i++) {
+                            data[i] = source->data[i];
+                        }
+                    } else {
+                        result = -4;
+                    }
+                } else {
+                    result = -6;
+                }
+                close(fd);
+            } else {
+                result = -5;
             }
         } else {
             result = -6;

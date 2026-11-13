@@ -172,6 +172,8 @@ segments:
       - [0xB5C8, c, func_8001ADC8]
       - [0xB614, c, func_8001AE14]
       - [0xB6E0, asm, after_copy_record_payload]
+      - [0xB7D0, c, func_8001AFD0]
+      - [0xB9AC, asm, after_func_8001AFD0]
       - [0xBD9C, asm, clear_globals]
       - [0xBDB4, asm, table_exchange]
       - [0xBDD0, asm, boot_after_globals]
