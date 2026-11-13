@@ -636,3 +636,10 @@ void func_8005D908(int *cursor, unsigned int buttons, void *unused,
         LoadImage(&rect, (unsigned long *)packed);
     }
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005DB4C
+void func_8005DB4C(int *cursor, CVECTOR *palette)
+{
+    cursor[0] = 36 << 16;
+    cursor[1] = (167 - (palette[D_800631F8].b >> 3)) << 16;
+}
