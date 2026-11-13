@@ -409,6 +409,10 @@ extern int D_80058004[2][4];
 extern int D_80057FDC;
 extern int D_80057FE0[2][4];
 
+extern char D_80058D10[256];
+extern void *D_80058C40;
+extern int D_8005AB54;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4169,4 +4173,19 @@ void func_8001E468(int bank, int category, int row)
             break;
         }
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001E560
+void func_8001E560(char *name, void *buffer)
+{
+    int i;
+
+    for (i = 0; i < 256; i++, name++) {
+        D_80058D10[i] = *name;
+        if (*name == '\0') {
+            break;
+        }
+    }
+    D_80058C40 = buffer;
+    D_8005AB54 = 0;
 }
