@@ -344,6 +344,13 @@ extern int func_8001B1AC(CardBoardRecord *record);
 
 extern unsigned char card_board_read_signature[9];
 
+extern unsigned char pad_receive_buffers[2][34];
+extern unsigned char pad_send_buffers[2][34];
+extern int InitPAD(unsigned char *buffer0, int length0, unsigned char *buffer1, int length1);
+extern int SendPAD(unsigned char *buffer0, int length0, unsigned char *buffer1, int length1);
+extern int StartPAD(void);
+
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3311,4 +3318,27 @@ int func_8001B1AC(CardBoardRecord *record)
     } while ((int)expected < (int)(card_board_read_signature + 8));
     return -(unsigned int)(func_800181D4((unsigned char *)header->values, 0x2200) !=
                             header->checksum) & -2;
+}
+
+// FUNCTION: SCUS_943.58:0x8001B228
+void func_8001B228(void)
+{
+    int i = 0;
+
+    do {
+        pad_send_buffers[0][i] = 0;
+        pad_send_buffers[1][i] = 0;
+        i++;
+    } while (i < 34);
+    card_game_options.values[0] = card_game_options.values[1] = 128;
+    card_game_options.values[2] = card_game_options.values[6] = 24;
+    card_game_options.values[3] = card_game_options.values[7] = 96;
+    card_game_options.values[8] = card_game_options.values[4] = card_game_options.values[5] = 128;
+    card_game_options.values[9] = 8;
+    card_game_options.values[10] = 100;
+    card_game_options.values[11] = 8;
+    card_game_options.values[12] = 200;
+    InitPAD(pad_receive_buffers[0], 34, pad_receive_buffers[1], 34);
+    SendPAD(pad_send_buffers[0], 34, pad_send_buffers[1], 34);
+    StartPAD();
 }
