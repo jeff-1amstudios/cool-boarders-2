@@ -65,6 +65,7 @@ extern int D_800631F4;
 extern BdEditMenuTextures D_80062E70;
 
 extern BdEditPixelMasks D_80062E20;
+extern void func_8005F6A4(CVECTOR *palette, unsigned short *packed, int count);
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -996,4 +997,21 @@ void func_8005C204(unsigned char **planes, unsigned char *packed)
         plane++;
         current++;
     } while (plane < 2);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005D0F0
+void func_8005D0F0(CVECTOR *palette, unsigned short *packed)
+{
+    unsigned short *base = (unsigned short *)0x801F1E00;
+    int index;
+
+    D_800631F8 = 0;
+    for (index = 0; index < 64; index++) {
+        packed[index] = base[index] | 0x8000;
+    }
+    for (index = 64; index < 256; index++) {
+        packed[index] = base[index] & 0x7F;
+    }
+    func_8005F6A4(palette, packed, 256);
+    func_8005D8C4(packed);
 }
