@@ -4646,3 +4646,9 @@ void func_8003D10C(void)
     FlushCache();
     func_8003CB3C();
 }
+
+// FUNCTION: SCUS_943.58:0x8003D14C
+void func_8003D14C(void)
+{
+    return;
+}

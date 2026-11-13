@@ -254,7 +254,7 @@ segments:
         linker_section_order: .text
       - [0x2D8D4, c, func_8003D0D4]
       - [0x2D90C, c, func_8003D10C]
-      - [0x2D94C, asm, func_8003D14C]
+      - [0x2D94C, c, func_8003D14C]
       - [0x2D954, asm, after_func_8003D14C]
       - [0x2E95C, asm, func_8003E15C]
       - [0x2E964, asm, func_8003E164]
