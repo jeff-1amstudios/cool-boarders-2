@@ -461,3 +461,5 @@ func_8001AEE0 = 0x8001AEE0; // type:func size:0xF0
 
 card_board_read_filename = 0x80010C2C; // size:0x18
 func_8001B1AC = 0x8001B1AC; // type:func size:0x7C
+
+card_board_read_signature = 0x80010C44; // size:0x9

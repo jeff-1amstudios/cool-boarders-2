@@ -342,6 +342,8 @@ extern int func_8001AEE0(int slot);
 extern CardGhostFilename card_board_read_filename;
 extern int func_8001B1AC(CardBoardRecord *record);
 
+extern unsigned char card_board_read_signature[9];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3292,4 +3294,21 @@ int func_8001AFD0(int slot, unsigned short *values, unsigned char *data)
     }
     func_80017A00(events);
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001B1AC
+int func_8001B1AC(CardBoardRecord *record)
+{
+    unsigned char *expected = card_board_read_signature;
+    CardBoardRecord *header = record;
+
+    do {
+        if (*(unsigned char *)record != *expected) {
+            return -1;
+        }
+        expected++;
+        record = (CardBoardRecord *)((unsigned char *)record + 1);
+    } while ((int)expected < (int)(card_board_read_signature + 8));
+    return -(unsigned int)(func_800181D4((unsigned char *)header->values, 0x2200) !=
+                            header->checksum) & -2;
 }
