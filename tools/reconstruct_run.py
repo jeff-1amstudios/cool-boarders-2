@@ -18,6 +18,33 @@ class Rejected(RuntimeError):
     """An ordinary unsuccessful candidate, which can be archived and restored."""
 
 
+class AgentUnavailable(RuntimeError):
+    """Infrastructure failure: stop the batch and keep the target eligible."""
+
+
+def agent_failure(path):
+    """Read error events only; quoted source/tool output is not a launcher error."""
+    if not path.exists():
+        return None
+    failure = None
+    with path.open(errors='replace') as stream:
+        for line in stream:
+            try:
+                event = json.loads(line)
+            except ValueError:
+                # Also support non-JSON custom launchers.
+                if re.search(r'usage limit|quota exceeded|insufficient_quota|rate.limit.exceeded', line, re.I):
+                    failure = line.strip()[:1000]
+                continue
+            if not isinstance(event, dict):
+                continue
+            if event.get('type') == 'error':
+                failure = str(event.get('message', 'Agent error'))[:1000]
+            elif event.get('type') == 'turn.failed':
+                failure = str(event.get('error', {}).get('message', 'Agent turn failed'))[:1000]
+    return failure
+
+
 def review_split(before, after, target):
     """Permit only splitting the containing assembly span around the selected C unit."""
     expected = copy.deepcopy(before)
@@ -234,7 +261,18 @@ class Runner:
                      "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}",
                      "--ask-for-approval", "never", "exec", "--ephemeral",
                      "--sandbox", "workspace-write", "--json", "-"]
-        self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
+        try:
+            self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
+        except self.w.CommandTimeout:
+            failure = agent_failure(directory / 'agent.log')
+            if failure:
+                raise AgentUnavailable(failure)
+            raise
+        except (RuntimeError, OSError) as error:
+            raise AgentUnavailable(agent_failure(directory / 'agent.log') or str(error)) from error
+        failure = agent_failure(directory / 'agent.log')
+        if failure:
+            raise AgentUnavailable(failure)
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
@@ -298,12 +336,13 @@ class Runner:
             raise Rejected("Candidate changed during Ghidra feedback planning")
         return paths, expected_hashes
 
-    def reject(self, session, tracked, reason):
+    def reject(self, session, tracked, reason, *, retryable=False):
         active = session["active"]
         archive = self.w.ROOT / active["context"] / "candidate"
         archive.mkdir(parents=True, exist_ok=True)
         self.w.archive_edits(archive)
         active["failure"] = reason
+        active["retryable"] = retryable
         self.w.save_state(session)
         # Never erase unexpected edits, index changes, or another process's commits.
         self.invariant(session)
@@ -339,6 +378,16 @@ class Runner:
         self.invariant(session)
         if self.w.changes():
             raise RuntimeError("main checkout is not clean after switching from the function branch")
+        if retryable:
+            # No baseline rebuild or deferral for unavailable infrastructure.
+            # Keep the active identity so the next start retries it first.
+            active['phase'] = 'interrupted'
+            session.update(stop_reason=reason, phase='interrupted')
+            from reconstruction_runtime import attempt_result
+            self.w.write(self.w.ROOT / active['context'] / 'result.json',
+                         attempt_result(self.w.ROOT, active, 'interrupted', reason))
+            self.w.save_state(session)
+            return
         self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
         from reconstruction_runtime import attempt_result
@@ -349,6 +398,72 @@ class Runner:
         session["active"] = None
         self.w.save_state(session)
         print(f"Deferred {active['name']} on {active['branch']} ({checkpoint[:12]}): {reason}", flush=True)
+
+    def resume(self, session):
+        """Recover only known pre-integration states; never guess about commits."""
+        if not session.get('active'):
+            # A stop between recovery and selection must retain the retry identity.
+            session['active'] = dict(session['interrupted'][-1])
+        active = session['active']
+        phase = active.get('phase')
+        if phase not in (None, 'creating_branch', 'working', 'checkpointed',
+                         'restoring_main', 'interrupted'):
+            raise RuntimeError(f"Cannot automatically recover phase {phase}; inspect Git/analysis state"
+                               + (' or run recover-ghidra' if phase == 'syncing_ghidra' else ''))
+        branch = self.w.git('branch', '--show-current')
+        head = self.w.git('rev-parse', 'HEAD')
+        main_head = self.w.git('rev-parse', 'refs/heads/main')
+        # Supervisor fixes may be committed while a batch is stopped. Accept only
+        # fast-forward maintenance changes on clean main, never changed game or
+        # compiler inputs, merges, or history rewrites.
+        maintenance = {'tools/reconstruct.py', 'tools/reconstruct_run.py',
+                       'docs/reconstruction-worker.md', 'README.md'}
+        if main_head != session['integration_head']:
+            ancestry = self.w.git('rev-list', '--parents',
+                                  session['integration_head'] + '..' + main_head).splitlines()
+            ancestor = subprocess.run(['git', 'merge-base', '--is-ancestor', session['integration_head'], main_head],
+                                      cwd=self.w.ROOT).returncode == 0
+            edited = set(self.w.git('diff', '--name-only', session['integration_head'], main_head).splitlines())
+            if (branch != 'main' or self.w.changes() or not ancestor
+                    or any(len(line.split()) != 2 for line in ancestry) or not edited <= maintenance):
+                raise RuntimeError('main moved outside supervisor maintenance; refusing automatic recovery')
+        if self.w.git('diff', '--cached', '--name-only'):
+            raise RuntimeError('Recovery requires an unchanged empty index')
+        if branch == 'main':
+            if head != main_head or self.w.changes():
+                raise RuntimeError('Recovery requires unchanged clean main')
+            current = self.w.fingerprints()
+            changed_inputs = {name for name in current.keys() | session['protected'].keys()
+                              if current.get(name) != session['protected'].get(name)}
+            if not changed_inputs <= maintenance:
+                raise RuntimeError('Protected inputs changed since interruption')
+            session.update(integration_head=main_head, protected=current)
+        elif (branch == active.get('branch') and phase in ('working', 'creating_branch', 'checkpointed')
+              and head == (active.get('checkpoint') or active.get('base_commit'))):
+            session.update(branch=branch, head=head)
+            self.w.save_state(session)
+            if phase == 'checkpointed':
+                self.invariant(session)
+                if self.w.changes():
+                    raise RuntimeError('Checkpoint checkout changed; refusing recovery')
+                self.switch(session, 'main', session['integration_head'])
+            else:
+                tracked = set(self.w.git('ls-files').splitlines())
+                self.reject(session, tracked, 'Recovered interrupted worker; retry selected target', retryable=True)
+        else:
+            raise RuntimeError('Unexpected recovery branch/commit; inspect preserved work')
+        session.update(branch='main', head=session['integration_head'])
+        self.invariant(session)
+        from reconstruction_runtime import attempt_result
+        self.w.write(self.w.ROOT / active['context'] / 'result.json',
+                     attempt_result(self.w.ROOT, active, 'interrupted', active.get('failure', 'Interrupted batch')))
+        session.setdefault('interrupted', []).append(dict(active))
+        session.update(active=None, retry_target=key(active), stop_reason=None,
+                       phase='running', deadline=time.time() + self.args.minutes * 60,
+                       limit=max(self.args.limit, len(session['completed']) + len(session['deferred']) + 1))
+        self.w.save_state(session)
+        print(f"Recovered interrupted batch; retrying {key(active)} first (previous attempt archived)", flush=True)
+        return session
 
     def accept(self, session, paths, expected_hashes):
         # Git/merge errors deliberately preserve the phase, branch, candidate and
@@ -393,13 +508,18 @@ class Runner:
         print(f"Integrated {active['branch']} into main at {commit[:12]}", flush=True)
 
     def run(self):
-        if self.w.git("branch", "--show-current") != "main":
-            raise RuntimeError("Automatic batches must start on the main integration branch")
         if self.w.read(self.w.REVIEW).get("matching_paused", False):
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
-        session = self.w.begin_batch(self.args.limit, self.args.minutes)
-        session.update(branch="main", integration_head=session["head"],
-                       sync_types=getattr(self.args, 'sync_types', False))
+        previous = self.w.state() if self.w.STATE.exists() else None
+        if previous and (previous.get('active') or previous.get('retry_target')):
+            session = self.resume(previous)
+            session['sync_types'] = getattr(self.args, 'sync_types', False)
+        else:
+            if self.w.git("branch", "--show-current") != "main":
+                raise RuntimeError("Automatic batches must start on the main integration branch")
+            session = self.w.begin_batch(self.args.limit, self.args.minutes)
+            session.update(branch="main", integration_head=session["head"],
+                           sync_types=getattr(self.args, 'sync_types', False))
         sync_types_pending = session['sync_types']
         self.w.save_state(session)
         reason = "target limit reached"
@@ -408,7 +528,9 @@ class Runner:
                 reason = "session time budget exhausted"
                 break
             try:
-                current_inventory = self.w.next_target(session)
+                current_inventory = self.w.next_target(session, session.get('retry_target'))
+                session.pop('retry_target', None)
+                self.w.save_state(session)
             except self.w.NoTarget:
                 reason = "eligible queue exhausted"
                 break
@@ -446,9 +568,12 @@ class Runner:
                 self.invariant(session)
                 paths, expected_hashes = self.candidate(session, tracked, before, old_symbols, prior_c)
             except KeyboardInterrupt:
-                self.reject(session, tracked, "Interrupted during agent/validation; candidate archived")
-                reason = "interrupted"
-                break
+                self.reject(session, tracked, "Interrupted during agent/validation; candidate archived", retryable=True)
+                raise
+            except AgentUnavailable as error:
+                self.reject(session, tracked, str(error), retryable=True)
+                # Exit before final validation and before selecting another function.
+                raise
             except (RuntimeError, subprocess.CalledProcessError, OSError, UnicodeError) as error:
                 self.reject(session, tracked, str(error))
                 if not launched and not isinstance(error, self.w.CommandTimeout):

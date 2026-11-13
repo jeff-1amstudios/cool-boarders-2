@@ -148,6 +148,14 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
         try:
             process.communicate(input=input_text, timeout=timeout)
             code = process.returncode
+            if name == "agent":
+                # A failed Codex turn can exit while a tool child is still alive.
+                # Stop it before archiving/checkpointing the candidate checkout.
+                import signal
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
         except BaseException as error:
             import signal
             try:
@@ -220,6 +228,9 @@ def next_target(session, address=None):
     if "targets" in report:
         row = prepare(ROOT, row, report)
     directory = ROOT / session.get("directory", "reports/reconstruction") / slug(row)
+    # A resumed target gets fresh pseudocode/logs without overwriting its archive.
+    if directory.exists():
+        directory = directory.with_name(directory.name + "-retry-" + str(time.time_ns()))
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "target.s").write_text(row["body"] + "\n")
     recipe = "config/compiler.json"

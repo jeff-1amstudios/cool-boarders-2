@@ -6,6 +6,23 @@ tools/.venv/bin/python tools/reconstruct.py start --limit 2
 
 The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Run from clean `main`; do not edit the checkout concurrently.
 
+`start` also resumes a recorded interrupted batch. It preserves completed and
+deferred counts, renews the time budget, and uses `--limit` as the total batch
+target count (with room for at least the interrupted target). The interrupted
+function is retried first from a fresh Ghidra export; its previous logs, candidate
+archive and result remain in their original attempt directory. A retry uses a
+new directory. Recovery accepts known worker/checkpoint/restore phases on the
+recorded branch and commit, with an empty index. Unexpected edits, commits or
+integration phases stop for inspection. Clean, linear commits changing only the
+supervisor scripts, this guide or README may be made before recovery; game,
+compiler and validation inputs must remain unchanged.
+
+Codex usage limits, failed turns and launcher failures stop the entire batch with
+a nonzero exit. The supervisor archives/checkpoints the candidate, restores main,
+and records an interrupted attempt without deferring the function or selecting
+another target. No final rebuild runs on this infrastructure exit. Once access
+is available again, run `start` to retry that function and continue the batch.
+
 Batch subprocesses default to `TQDM_DISABLE=1`, so Splat progress bars are disabled
 for workers and supervisor validation alike. Warnings, errors and summaries remain
 visible. This affects progress rendering only, not splitting or binary checks.
@@ -112,4 +129,4 @@ Each attempt retains its prompt, context, agent/build logs, candidate patch/sour
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/reconstruction/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 
-Launcher/authentication failures stop after preserving work. Ctrl-C/SIGTERM kills the agent process group, preserves its in-scope candidate and returns to validated main. Unexpected source/index/ref changes stop with the checkout intact. If Git fails mid-commit/integration or the process is hard-killed, inspect the recorded branch/commit and working tree before starting again; the runner does not guess or reset unexpected changes.
+Launcher/authentication failures stop after preserving work. Ctrl-C/SIGTERM kills the agent process group, preserves its in-scope candidate and returns to main with the function eligible for retry. Unexpected source/index/ref changes stop with the checkout intact. If Git fails mid-commit/integration, inspect the recorded branch/commit and working tree before starting again; the runner does not guess or reset unexpected changes. Hard-killed worker attempts in known pre-integration phases can be recovered by `start` under the recovery guards above.
