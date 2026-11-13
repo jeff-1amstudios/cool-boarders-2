@@ -566,3 +566,12 @@ D_80058C14 = 0x80058C14; // type:s32 size:0x4
 func_8001F378 = 0x8001F378; // type:func size:0x130
 
 func_8001F4A8 = 0x8001F4A8; // type:func
+
+func_8002ECB0 = 0x8002ECB0; // type:func size:0xA0
+GsSetDrawBuffClip = 0x8002E29C; // type:func
+GsSetDrawBuffOffset = 0x8002E168; // type:func
+D_8005AB44 = 0x8005AB44; // size:0x2
+D_8005805C = 0x8005805C; // size:0x2
+D_8005805E = 0x8005805E; // size:0x2
+D_80058060 = 0x80058060; // size:0x2
+D_80058062 = 0x80058062; // size:0x2

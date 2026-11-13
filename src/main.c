@@ -433,6 +433,12 @@ extern int D_80058C14;
 
 extern int D_8005AB24;
 
+extern short D_8005AB44;
+extern short D_8005805C;
+extern short D_8005805E;
+extern short D_80058060;
+extern short D_80058062;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4568,4 +4574,26 @@ void *func_8001F4A8(void *allocation, unsigned int size)
 void func_8002ECA0(int value)
 {
     D_8005AB24 = value;
+}
+
+// FUNCTION: SCUS_943.58:0x8002ECB0
+void func_8002ECB0(short x0, short y0, short x1, short y1)
+{
+    D_80058030 = x0;
+    D_80058032 = x1;
+    D_80058034 = y0;
+    D_80058036 = y1;
+    if (D_8005AB44 != 0) {
+        D_8005805C = 0;
+        D_8005805E = 0;
+        D_80058060 = 0;
+        D_80058062 = 0;
+    } else {
+        D_8005805C = x0;
+        D_8005805E = x1;
+        D_80058060 = y0;
+        D_80058062 = y1;
+    }
+    GsSetDrawBuffClip();
+    GsSetDrawBuffOffset();
 }
