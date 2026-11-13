@@ -722,3 +722,10 @@ unsigned char *func_8005DE88(unsigned long *ot, unsigned char *packet, int selec
     } while (item < 9);
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E224
+void func_8005E224(int selection, int *cursor)
+{
+    cursor[0] = 290 << 16;
+    cursor[1] = (selection * 15 + 70) << 16;
+}

@@ -51,3 +51,4 @@ D_800631F4 = 0x800631F4; // type:u32 size:0x4
 func_8005D860 = 0x8005D860; // type:func
 func_8005DB84 = 0x8005DB84; // type:func
 D_80062E70 = 0x80062E70; // size:0xB4
+func_8005E224 = 0x8005E224; // type:func
