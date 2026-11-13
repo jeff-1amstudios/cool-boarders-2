@@ -942,3 +942,24 @@ void func_8005EBF8(unsigned char **planes, short *cursor)
         column++;
     } while (x < 128);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005EC7C
+void func_8005EC7C(unsigned short **planes, unsigned short *palette)
+{
+    int i;
+
+    i = 0;
+    do {
+        planes[0][i] = 0;
+        planes[1][i] = 0;
+        i++;
+    } while (i < 0x1000);
+
+    i = 255;
+    palette += 255;
+    do {
+        *palette = 0;
+        i--;
+        palette--;
+    } while (i >= 0);
+}
