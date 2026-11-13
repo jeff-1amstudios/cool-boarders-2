@@ -62,6 +62,8 @@ extern void func_8005DB4C(int *cursor, CVECTOR *palette);
 extern int D_800631F0;
 extern int D_800631F4;
 
+extern BdEditMenuTextures D_80062E70;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -701,4 +703,22 @@ move_channel:
         }
         cursor[0] = (channel * 20 + 36) << 16;
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005DE88
+unsigned char *func_8005DE88(unsigned long *ot, unsigned char *packet, int selection)
+{
+    BdEditMenuTextures textures = D_80062E70;
+    int item;
+
+    item = 0;
+    do {
+        packet = (unsigned char *)((SPRT *(*)(unsigned long *, SPRT *, int, int,
+                      SpriteTexture *, unsigned char))func_80012950)(ot, (SPRT *)packet, 278, item * 15 + 63,
+                      &textures.entries[item][item == selection], 128);
+        packet = (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet,
+                      textures.entries[item][item == selection].tpage);
+        item++;
+    } while (item < 9);
+    return packet;
 }
