@@ -540,3 +540,5 @@ D_8005AB54 = 0x8005AB54; // size:0x4
 
 func_8001E8C0 = 0x8001E8C0; // type:func size:0x20
 CdInit = 0x80040580; // type:func size:0x7C
+
+func_8001EB28 = 0x8001EB28; // type:func size:0x6C

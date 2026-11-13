@@ -4255,3 +4255,21 @@ void *func_8001EA54(char *filename, void *destination, int sector_offset, int se
     } while (CdReadSync(0, result) != 0);
     return buffer;
 }
+
+// FUNCTION: SCUS_943.58:0x8001EB28
+int func_8001EB28(char *path)
+{
+    SelectionRecord *buffer;
+    int result;
+
+    if (func_8001E968(path, &buffer, 0) < 0) {
+        return -1;
+    }
+    result = func_8001EEE0(buffer);
+    DrawSync(0);
+    func_8001F378(buffer);
+    if (result == 0) {
+        return -1;
+    }
+    return result;
+}
