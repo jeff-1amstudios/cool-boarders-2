@@ -600,3 +600,10 @@ D_80054C80 = 0x80054C80; // size:0x4
 D_80054C84 = 0x80054C84; // type:u32 size:0x4
 D_8004F3CC = 0x8004F3CC; // size:0x4
 func_8003E164 = 0x8003E164; // type:func size:0x8
+
+D_8004F8C4 = 0x8004F8C4; // size:0x4
+D_8004F900 = 0x8004F900; // size:0x4
+D_8004F904 = 0x8004F904; // size:0x4
+D_8004F45C = 0x8004F45C; // size:0x4
+func_8003F050 = 0x8003F050; // type:func size:0x24
+func_8003F110 = 0x8003F110; // type:func size:0xC

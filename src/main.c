@@ -458,6 +458,13 @@ extern unsigned char * volatile D_80054C80;
 extern volatile int D_80054C84;
 extern volatile SerialRegisters * volatile D_8004F3CC;
 
+extern int D_8004F8C4;
+extern CB2SdkCallback_func * volatile D_8004F900;
+extern volatile unsigned long D_8004F904;
+extern long D_8004F45C;
+extern CB2SdkCallback_func *func_8003F050(CB2SdkCallback_func *callback);
+extern long func_8003F110(long event);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4691,4 +4698,19 @@ int func_8003E164(void)
 int func_8003E2F8(void)
 {
     return 0;
+}
+
+// FUNCTION: SCUS_943.58:0x8003F094
+void func_8003F094(void)
+{
+    if (D_8004F8C4 == 1) {
+        D_8004F8C4 = 0;
+        func_8003CB2C();
+        D_8004F900 = 0;
+        D_8004F904 = 0;
+        func_8003F050(0);
+        CloseEvent(D_8004F45C);
+        func_8003F110(D_8004F45C);
+        func_8003CB3C();
+    }
 }
