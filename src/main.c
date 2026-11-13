@@ -465,6 +465,9 @@ extern long D_8004F45C;
 extern CB2SdkCallback_func *func_8003F050(CB2SdkCallback_func *callback);
 extern long func_8003F110(long event);
 
+extern volatile unsigned char *PTR_CDROM_REG0_80050198;
+extern volatile unsigned char *PTR_CDROM_REG3_800501a4;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4713,4 +4716,15 @@ void func_8003F094(void)
         func_8003F110(D_8004F45C);
         func_8003CB3C();
     }
+}
+
+// FUNCTION: SCUS_943.58:0x800435A4
+void func_800435A4(void)
+{
+    func_8003CB2C();
+    CdDataCallback(0);
+    CdReadyCallback(0);
+    *PTR_CDROM_REG0_80050198 = 0;
+    *PTR_CDROM_REG3_800501a4 = 0;
+    func_8003CB3C();
 }

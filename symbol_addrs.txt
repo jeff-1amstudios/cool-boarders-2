@@ -607,3 +607,8 @@ D_8004F904 = 0x8004F904; // size:0x4
 D_8004F45C = 0x8004F45C; // size:0x4
 func_8003F050 = 0x8003F050; // type:func size:0x24
 func_8003F110 = 0x8003F110; // type:func size:0xC
+
+func_800435A4 = 0x800435A4; // type:func size:0x58
+CdDataCallback = 0x80040C2C; // type:func size:0x24
+PTR_CDROM_REG0_80050198 = 0x80050198; // size:0x4
+PTR_CDROM_REG3_800501a4 = 0x800501A4; // size:0x4
