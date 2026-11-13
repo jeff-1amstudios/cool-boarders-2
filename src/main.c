@@ -441,6 +441,8 @@ extern short D_80058062;
 
 extern void func_8002EE60(long projection);
 
+extern PACKET *D_80058ACC;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4604,4 +4606,10 @@ void func_8002ECB0(short x0, short y0, short x1, short y1)
 void func_8002EE40(long projection)
 {
     func_8002EE60(projection);
+}
+
+// FUNCTION: SCUS_943.58:0x8002F750
+void func_8002F750(PACKET *work_base)
+{
+    D_80058ACC = work_base;
 }
