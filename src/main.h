@@ -283,4 +283,17 @@ typedef struct CardBoardSaveBlock {
     unsigned char remaining[7152];
 } CardBoardSaveBlock;
 
+/* Sixteen-word state cleared here; asset fields receive CD completion pointers. */
+typedef struct FileLoadState {
+    int active;
+    int unknown_04;
+    char *file_5c;
+    char *file_13;
+    char *file_14;
+    int mode;
+    char *file_17;
+    char *file_18;
+    unsigned int unknown_20[8];
+} FileLoadState;
+
 #endif

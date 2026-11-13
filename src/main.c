@@ -3642,3 +3642,25 @@ int func_8001C0F4(int *state, int enabled)
     }
     return 3;
 }
+
+// FUNCTION: SCUS_943.58:0x8001C130
+int func_8001C130(FileLoadState *state, short mode)
+{
+    int remaining = 15;
+    unsigned int *cursor = (unsigned int *)state + 15;
+
+    do {
+        *cursor = 0;
+        remaining--;
+        cursor--;
+    } while (remaining >= 0);
+    state->active = 1;
+    func_80013B60(0x5B, 0, 0, 0x104);
+    func_80013B60(0x5C, 0, (int)&state->file_5c, 1);
+    func_80013B60(0x13, 0, (int)&state->file_13, 1);
+    func_80013B60(0x14, 0, (int)&state->file_14, 1);
+    state->mode = mode;
+    func_80013B60(0x17, 0, (int)&state->file_17, 1);
+    func_80013B60(0x18, 0, (int)&state->file_18, 1);
+    return 6;
+}
