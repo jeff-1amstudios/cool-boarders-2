@@ -493,3 +493,5 @@ asset_file_indices_0 = 0x80010C94; // size:0x10
 asset_file_indices_1 = 0x80010CA4; // size:0x10
 asset_file_indices_2 = 0x80010CB4; // size:0x10
 asset_file_indices_3 = 0x80010CC4; // size:0x10
+
+func_8001C628 = 0x8001C628; // type:func size:0x54

@@ -309,4 +309,12 @@ typedef struct AssetLoadState {
     unsigned int unknown_24[7];
 } AssetLoadState;
 
+/* Sixteen-word state with a completion destination for file 0x56. */
+typedef struct File56LoadState {
+    int active;
+    int unknown_04;
+    char *file_56;
+    unsigned int unknown_0c[13];
+} File56LoadState;
+
 #endif

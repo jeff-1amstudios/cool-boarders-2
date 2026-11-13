@@ -3699,3 +3699,20 @@ int func_8001C3C4(AssetLoadState *state, short *selection)
     func_80013B60(0x3F, 0, (int)&state->assets[6], 1);
     return 6;
 }
+
+// FUNCTION: SCUS_943.58:0x8001C628
+int func_8001C628(File56LoadState *state)
+{
+    int remaining = 15;
+    unsigned int *cursor = (unsigned int *)state + 15;
+
+    do {
+        *cursor = 0;
+        remaining--;
+        cursor--;
+    } while (remaining >= 0);
+    state->active = 3;
+    state->unknown_04 = 0;
+    func_80013B60(0x56, 0, (int)&state->file_56, 1);
+    return 3;
+}
