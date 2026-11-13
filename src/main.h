@@ -384,4 +384,25 @@ typedef struct SerialRegisters {
     unsigned short control;
 } SerialRegisters;
 
+/* Full serial register view used by the synchronous receive routine. */
+typedef struct SerialIoRegisters {
+    unsigned char data;
+    unsigned char unknown_01[3];
+    unsigned short status;
+    unsigned short unknown_06;
+    unsigned short mode;
+    unsigned short control;
+    unsigned short unknown_0c;
+    unsigned short baud;
+} SerialIoRegisters;
+
+/* Shared state for the synchronous and asynchronous serial receive routines. */
+typedef struct SerialReadState {
+    int active;
+    unsigned char *cursor;
+    int remaining;
+} SerialReadState;
+
+typedef int (*SerialPollCallback)(int operation, int poll_count);
+
 #endif

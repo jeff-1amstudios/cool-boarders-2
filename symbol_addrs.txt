@@ -595,9 +595,6 @@ FlushCache = 0x8003CA5C; // type:func size:0xC
 D_80011A48 = 0x80011A48; // type:char size:0x4
 
 func_8003D154 = 0x8003D154; // type:func size:0x60
-D_80054C7C = 0x80054C7C; // type:u32 size:0x4
-D_80054C80 = 0x80054C80; // size:0x4
-D_80054C84 = 0x80054C84; // type:u32 size:0x4
 D_8004F3CC = 0x8004F3CC; // size:0x4
 func_8003E164 = 0x8003E164; // type:func size:0x8
 
@@ -623,3 +620,19 @@ _patch_card2 = 0x80044720; // type:func size:0x6C
 StartCARD2 = 0x800445F0; // type:func size:0xC
 
 func_8003CA24 = 0x8003CA24; // type:func size:0x18
+
+D_80054C60 = 0x80054C60; // size:0x2
+
+D_80054C62 = 0x80054C62; // size:0x2
+
+D_80054C66 = 0x80054C66; // size:0x2
+
+D_80054C68 = 0x80054C68; // size:0x4
+
+D_8004F3FC = 0x8004F3FC; // size:0x8
+
+serial_read_state = 0x80054C7C; // size:0xC absolute:True
+
+DeliverEvent = 0x8003E300; // type:func
+
+func_8003D1B4 = 0x8003D1B4; // type:func size:0x280

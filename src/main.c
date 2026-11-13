@@ -453,10 +453,8 @@ extern int DelDrv(char *name);
 extern void FlushCache(void);
 extern char D_80011A48[4];
 
-extern volatile int D_80054C7C[1];
-extern unsigned char * volatile D_80054C80;
-extern volatile int D_80054C84;
-extern volatile SerialRegisters * volatile D_8004F3CC;
+extern volatile SerialReadState serial_read_state;
+extern volatile SerialRegisters *D_8004F3CC;
 
 extern int D_8004F8C4;
 extern CB2SdkCallback_func * volatile D_8004F900;
@@ -477,6 +475,13 @@ extern void _patch_card(void);
 extern void _patch_card2(void);
 
 extern void StartCARD2(void);
+
+extern volatile unsigned short D_80054C60[1];
+extern volatile unsigned short D_80054C62[1];
+extern volatile unsigned short D_80054C66;
+extern SerialPollCallback D_80054C68;
+extern short D_8004F3FC[4];
+extern int DeliverEvent(unsigned long event, unsigned long spec);
 
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
@@ -4683,13 +4688,13 @@ int func_8003D154(unsigned char *destination, int count)
 {
     volatile SerialRegisters *serial;
 
-    if (D_80054C7C[0] != 0) {
+    if (serial_read_state.active != 0) {
         return -1;
     }
-    D_80054C84 = count;
-    D_80054C80 = destination;
+    serial_read_state.remaining = count;
+    serial_read_state.cursor = destination;
     serial = D_8004F3CC;
-    D_80054C7C[0] = 1;
+    serial_read_state.active = 1;
     serial->control |= 0x800;
     serial->control |= 0x20;
     return 0;
@@ -4774,4 +4779,68 @@ int func_8003CA24(int mode)
 
     D_8004F3B4 = mode;
     return previous_mode;
+}
+
+// FUNCTION: SCUS_943.58:0x8003D1B4
+int func_8003D1B4(unsigned char *destination, int count)
+{
+    int polls = 0;
+    int received;
+    int group_size;
+    unsigned short control;
+    volatile SerialIoRegisters *serial;
+
+    if (serial_read_state.active != 0) {
+        return -1;
+    }
+    group_size = D_8004F3FC[(D_80054C62[0] & 0x300) >> 8];
+    serial_read_state.remaining = count;
+    serial_read_state.cursor = destination;
+    {
+        volatile SerialRegisters *initial_serial = D_8004F3CC;
+        serial_read_state.active = 0;
+        initial_serial->control |= 0x20;
+    }
+    received = 0;
+    while (serial_read_state.remaining != 0) {
+        serial = (volatile SerialIoRegisters *)D_8004F3CC;
+        if (serial->status & 0x38) {
+            control = serial->control;
+            serial->control = 0x50;
+            serial->mode = D_80054C60[0];
+            serial->baud = D_80054C66;
+            serial->control |= 0x10;
+            serial->control = control;
+            serial->control &= 0xFFDF;
+            DeliverEvent(0xF000000B, 0x8000);
+            goto done;
+        }
+        while (!(((volatile SerialIoRegisters *)D_8004F3CC)->status & 2)) {
+            if (D_80054C68 != 0 && !D_80054C68(1, polls++)) {
+                volatile SerialRegisters *error_serial = D_8004F3CC;
+                error_serial->control &= 0xFFDF;
+                DeliverEvent(0xF000000B, 0x100);
+                goto done;
+            }
+        }
+        {
+            volatile SerialIoRegisters *data_serial = (volatile SerialIoRegisters *)D_8004F3CC;
+            *serial_read_state.cursor = data_serial->data;
+        }
+        serial_read_state.cursor++;
+        received++;
+        serial_read_state.remaining--;
+        if (received == group_size) {
+            volatile SerialRegisters *toggle_serial = D_8004F3CC;
+            received = 0;
+            toggle_serial->control ^= 2;
+        }
+    }
+    {
+        volatile SerialRegisters *end_serial = D_8004F3CC;
+        end_serial->control &= 0xFFDF;
+    }
+done:
+    count -= serial_read_state.remaining;
+    return count;
 }
