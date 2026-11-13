@@ -769,3 +769,18 @@ unsigned char *func_8005E6A4(unsigned long *ot, unsigned char *packet, int x, in
     }
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E784
+unsigned char *func_8005E784(unsigned long *ot, unsigned char *packet, int *cursor)
+{
+    int x;
+    int y;
+    CVECTOR color;
+
+    D_800631F0 = *(volatile int *)&cursor[0];
+    D_800631F4 = *(volatile int *)&cursor[1];
+    x = ((cursor[0] >> 16) - 106) / 4 * 4 + 106;
+    y = ((cursor[1] >> 16) - 63) / 4 * 4 + 63;
+    color.r = color.g = color.b = abs((D_80047DC0 & 31) - 16) * 8 + 96;
+    return func_8005EDD8(ot, packet, x, y, 4, 4, &color);
+}
