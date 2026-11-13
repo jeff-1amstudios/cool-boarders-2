@@ -426,6 +426,11 @@ extern short D_8005A7B0;
 extern short D_80058B16;
 extern int D_8005802C;
 
+extern char *D_8005A7C0;
+extern HeapBlock *D_8005AB1C;
+extern HeapBlock *D_80058F7C;
+extern int D_80058C14;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4437,4 +4442,25 @@ int func_8001EFE4(void *data, int clut_x, int clut_y, int image_x, int image_y)
         return -1;
     }
     return uploaded;
+}
+
+// FUNCTION: SCUS_943.58:0x8001F150
+void func_8001F150(char *heap_start, char *heap_end)
+{
+    HeapBlock *block;
+    unsigned int size;
+
+    heap_start += 15;
+    heap_start = (char *)((unsigned int)heap_start & ~15U);
+    block = (HeapBlock *)heap_start;
+    heap_end = (char *)((unsigned int)heap_end & ~15U);
+    D_8005A7C0 = heap_end;
+    size = (unsigned int)heap_end - (unsigned int)block - 16;
+    D_8005AB1C = block;
+    D_80058F7C = block;
+    block->previous = 0;
+    block->next = 0;
+    block->size = size;
+    block->allocated = 0;
+    D_80058C14 = 0;
 }

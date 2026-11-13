@@ -370,4 +370,12 @@ typedef struct BackgroundTextures {
     SpriteTexture entries[2];
 } BackgroundTextures;
 
+/* Header preceding each payload in the doubly linked heap block list. */
+typedef struct HeapBlock {
+    struct HeapBlock *previous;
+    struct HeapBlock *next;
+    unsigned int size;
+    int allocated;
+} HeapBlock;
+
 #endif
