@@ -337,6 +337,8 @@ extern CardSavePalette card_board_palette;
 extern CardSaveFrames card_board_frames;
 extern unsigned char card_board_signature[9];
 
+extern int func_8001AEE0(int slot);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3197,4 +3199,39 @@ void func_8001ADC8(CardBoardRecord *record, unsigned short *values, unsigned cha
     for (i = 0; i < 8192; i++) {
         record->data[i] = data[i];
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001AE14
+unsigned int func_8001AE14(short *results)
+{
+    int value;
+    int status;
+    unsigned int slot;
+    int result;
+    long events[8];
+
+    result = 0;
+    func_800178CC(events);
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            for (slot = 0; (int)slot < 7; slot++) {
+                value = (short)func_8001AEE0(slot);
+                if (value >= 0) {
+                    result |= 1 << slot;
+                }
+                results[slot] = value;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
+    return result;
 }

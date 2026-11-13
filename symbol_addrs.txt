@@ -455,3 +455,6 @@ card_board_signature = 0x80010A3C; // size:0x9
 card_board_title = 0x80010A48; // size:0x41
 card_board_palette = 0x80010A8C; // size:0x20
 card_board_frames = 0x80010AAC; // size:0x180
+
+func_8001AE14 = 0x8001AE14; // type:func size:0xCC
+func_8001AEE0 = 0x8001AEE0; // type:func size:0xF0
