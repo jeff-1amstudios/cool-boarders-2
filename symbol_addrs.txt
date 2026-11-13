@@ -621,3 +621,5 @@ InitCARD2 = 0x800445E0; // type:func size:0xC
 _patch_card = 0x80044668; // type:func size:0x88
 _patch_card2 = 0x80044720; // type:func size:0x6C
 StartCARD2 = 0x800445F0; // type:func size:0xC
+
+func_8003CA24 = 0x8003CA24; // type:func size:0x18

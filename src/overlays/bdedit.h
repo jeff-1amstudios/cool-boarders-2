@@ -30,4 +30,8 @@ typedef struct BdEditMenuTextures {
 
 void func_8005C204(unsigned char **planes, unsigned char *packed);
 
+typedef struct BdEditHitRegions {
+    int entries[5][5];
+} BdEditHitRegions;
+
 #endif

@@ -66,6 +66,7 @@ extern BdEditMenuTextures D_80062E70;
 
 extern BdEditPixelMasks D_80062E20;
 extern void func_8005F6A4(CVECTOR *palette, unsigned short *packed, int count);
+extern BdEditHitRegions D_80062FC4;
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -1014,4 +1015,25 @@ void func_8005D0F0(CVECTOR *palette, unsigned short *packed)
     }
     func_8005F6A4(palette, packed, 256);
     func_8005D8C4(packed);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005E90C
+int func_8005E90C(int *cursor)
+{
+    int result = -1;
+    BdEditHitRegions regions = D_80062FC4;
+    int i;
+    int x = ((short *)cursor)[1];
+    int y = ((short *)cursor)[3];
+    int *region;
+
+    for (i = 0; i < 5; i++) {
+        region = regions.entries[i];
+        if (x >= region[0] && x < region[1] &&
+            y >= region[2] && y < region[3]) {
+            result = region[4];
+            break;
+        }
+    }
+    return result;
 }
