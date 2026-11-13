@@ -3562,3 +3562,11 @@ inactive:
 done:
     return value;
 }
+
+// FUNCTION: SCUS_943.58:0x8001BF08
+void func_8001BF08(void)
+{
+    D_8005AB5C = 0;
+    func_8003D714(2, 0, 0);
+    func_8003D714(1, 1, 3);
+}
