@@ -20,6 +20,9 @@ extern unsigned char *func_8005F4AC(unsigned long *ot, unsigned char *packet,
                                   int x, int y, int w, int h,
                                   CVECTOR *border, CVECTOR *fill, int flags);
 
+extern void func_8005C328(unsigned char **planes, int plane);
+extern int D_800631FC;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -55,4 +58,30 @@ unsigned char *func_8005BE94(unsigned long *ot, unsigned char *packet,
     }
     packet = func_8005D200(ot, packet, 16, 64, palette, item);
     return func_8005F4AC(ot, packet, 16, 201, 285, 16, &border, &fill, 0);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005C020
+void func_8005C020(unsigned char **planes)
+{
+    int plane;
+    int pixel;
+    short fill;
+    unsigned char **current;
+
+    plane = 0;
+    fill = 0x101;
+    current = planes;
+    do {
+        pixel = 0;
+        do {
+            ((unsigned short *)*current)[pixel] = fill;
+            pixel++;
+        } while (pixel < 0x800);
+        fill += 0x101;
+        plane++;
+        current++;
+    } while (plane < 2);
+    func_8005C328(planes, 0);
+    func_8005C328(planes, 1);
+    D_800631FC = 0;
 }
