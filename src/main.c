@@ -324,6 +324,10 @@ extern int func_8001A4D4(int slot, unsigned int *data);
 extern CardGhostFilename card_ghost_read_filename;
 extern int func_8001A608(CardGhostHeader *header, int check_payload);
 
+extern unsigned char card_ghost_read_signature[9];
+
+#include "card_ghost_read.h"
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3008,5 +3012,62 @@ int func_8001A4D4(int slot, unsigned int *data)
         }
         close(fd);
     }
+    return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001A6B8
+int func_8001A6B8(int slot, unsigned char *destination)
+{
+    CardGhostFilename filename;
+    long events[8];
+    CardGhostHeader *block;
+    int status;
+    int result;
+    int fd;
+
+    filename = card_ghost_read_filename;
+    block = func_8001F1A0(0x3F00);
+    func_800178CC(events);
+    filename.text[22] = slot + '1';
+    status = func_80017B64(events);
+    if (status >= 0) {
+        status = func_80017CFC(events);
+        if (status == 0) {
+            fd = open(filename.text, 1);
+            if (fd >= 0) {
+                lseek(fd, 0x100, 0);
+                if (read(fd, block, 0x3F00) == 0x3F00) {
+                    status = card_ghost_read_validate(block);
+                    if (status == 0) {
+                        unsigned int i = 0;
+                        CardGhostHeader *header = block;
+                        unsigned char *source = (unsigned char *)header + header->data_offset;
+                        while (i < header->data_size) {
+                            *destination = *source;
+                            source++;
+                            i++;
+                            destination++;
+                        }
+                        result = 1;
+                    } else {
+                        result = -4;
+                    }
+                } else {
+                    result = -6;
+                }
+                close(fd);
+            } else {
+                result = -6;
+            }
+        } else {
+            result = -6;
+            if (status == 1) {
+                result = -2;
+            }
+        }
+    } else {
+        result = -1;
+    }
+    func_80017A00(events);
     return result;
 }
