@@ -4464,3 +4464,51 @@ void func_8001F150(char *heap_start, char *heap_end)
     block->allocated = 0;
     D_80058C14 = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001F378
+int func_8001F378(void *allocation)
+{
+    HeapBlock *previous;
+    HeapBlock *next;
+    HeapBlock *block;
+
+    if (allocation == 0) {
+        return -1;
+    }
+    previous = ((HeapBlock *)allocation)[-1].previous;
+    next = ((HeapBlock *)allocation)[-1].next;
+    block = (HeapBlock *)allocation - 1;
+    if (previous != 0 && previous->allocated == 0) {
+        if (next != 0 && next->allocated == 0) {
+            previous->next = next->next;
+            previous->size += 32 + (block->size + next->size);
+            if (next->next != 0) {
+                next->next->previous = previous;
+            } else {
+                D_8005AB1C = previous;
+            }
+        } else {
+            previous->next = next;
+            previous->size += 16 + block->size;
+            if (next != 0) {
+                next->previous = previous;
+            } else {
+                D_8005AB1C = previous;
+            }
+        }
+        previous->allocated = 0;
+    } else {
+        if (next != 0 && next->allocated == 0) {
+            block->next = next->next;
+            block->size += 16 + next->size;
+            if (next->next != 0) {
+                next->next->previous = block;
+            } else {
+                D_8005AB1C = block;
+            }
+        }
+        block->allocated = 0;
+    }
+    D_80058C14--;
+    return 0;
+}
