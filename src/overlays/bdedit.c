@@ -741,3 +741,31 @@ void func_8005E244(int *cursor)
     D_800631F4 = 64 << 16;
     D_800631FC = 0;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E6A4
+unsigned char *func_8005E6A4(unsigned long *ot, unsigned char *packet, int x, int y)
+{
+    POLY_G4 *poly;
+
+    if (D_800631E8 != 0) {
+        poly = (POLY_G4 *)packet;
+        packet += sizeof(POLY_G4);
+        ((PrimitiveTag *)poly)->length = 8;
+        poly->code = 0x38;
+        poly->x0 = x + 16;
+        poly->y0 = y + 10;
+        poly->x1 = x;
+        poly->y1 = y;
+        poly->x2 = x + 10;
+        poly->y2 = y + 10;
+        poly->x3 = x + 10;
+        poly->y3 = y + 16;
+        poly->r0 = poly->g0 = poly->b0 = 64;
+        poly->r1 = poly->g1 = poly->b1 = 255;
+        poly->r2 = poly->g2 = poly->b2 = 192;
+        poly->r3 = poly->g3 = poly->b3 = 64;
+        ((PrimitiveTag *)poly)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)poly;
+    }
+    return packet;
+}
