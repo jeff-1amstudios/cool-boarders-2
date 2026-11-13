@@ -217,7 +217,7 @@ segments:
       - [0xF328, c, func_8001EB28]
       - [0xF394, c, func_8001EB94]
       - [0xF450, asm, after_func_8001EB94]
-      - [0xF468, asm, func_8001EC68]
+      - [0xF468, c, func_8001EC68]
       - [0xF478, asm, after_func_8001EC68]
       - [0x19ED0, asm, func_800296D0]
       - [0x19EE0, asm, func_800296E0]

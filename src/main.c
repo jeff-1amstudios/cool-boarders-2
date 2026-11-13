@@ -4299,3 +4299,9 @@ void func_8001EB94(int texture_x, int texture_y, int clut_x, short clut_y)
     D_80058B16 = 240;
     D_8005802C = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001EC68
+void func_8001EC68(int value)
+{
+    D_8005802C = value;
+}
