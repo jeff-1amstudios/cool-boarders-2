@@ -431,6 +431,8 @@ extern HeapBlock *D_8005AB1C;
 extern HeapBlock *D_80058F7C;
 extern int D_80058C14;
 
+extern int D_8005AB24;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4560,4 +4562,10 @@ void *func_8001F4A8(void *allocation, unsigned int size)
         ((HeapBlock *)allocation)[-1].size = aligned_size;
     }
     return block + 1;
+}
+
+// FUNCTION: SCUS_943.58:0x8002ECA0
+void func_8002ECA0(int value)
+{
+    D_8005AB24 = value;
 }

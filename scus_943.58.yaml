@@ -234,7 +234,7 @@ segments:
       - [0x1CBCC, asm, after_func_8002C3BC]
       - [0x1E958, asm, func_8002E158]
       - [0x1E968, asm, after_func_8002E158]
-      - [0x1F4A0, asm, func_8002ECA0]
+      - [0x1F4A0, c, func_8002ECA0]
       - [0x1F4B0, asm, after_func_8002ECA0]
       - [0x204EC, asm, positive_bit_length]
       - [0x20508, asm, after_positive_bit_length]
