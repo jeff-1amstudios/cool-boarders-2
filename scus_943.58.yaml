@@ -237,6 +237,8 @@ segments:
       - [0x1F4A0, c, func_8002ECA0]
       - [0x1F4B0, c, func_8002ECB0]
       - [0x1F550, asm, after_func_8002ECB0]
+      - [0x1F640, c, func_8002EE40]
+      - [0x1F660, asm, after_func_8002EE40]
       - [0x204EC, asm, positive_bit_length]
       - [0x20508, asm, after_positive_bit_length]
       # Copied 16-byte patch template and 12 following zero bytes, not a function.

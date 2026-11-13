@@ -439,6 +439,8 @@ extern short D_8005805E;
 extern short D_80058060;
 extern short D_80058062;
 
+extern void func_8002EE60(long projection);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4596,4 +4598,10 @@ void func_8002ECB0(short x0, short y0, short x1, short y1)
     }
     GsSetDrawBuffClip();
     GsSetDrawBuffOffset();
+}
+
+// FUNCTION: SCUS_943.58:0x8002EE40
+void func_8002EE40(long projection)
+{
+    func_8002EE60(projection);
 }
