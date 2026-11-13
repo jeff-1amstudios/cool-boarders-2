@@ -729,3 +729,15 @@ void func_8005E224(int selection, int *cursor)
     cursor[0] = 290 << 16;
     cursor[1] = (selection * 15 + 70) << 16;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E244
+void func_8005E244(int *cursor)
+{
+    D_800631E8 = 0;
+    D_800631EC = 0;
+    cursor[0] = 107 << 16;
+    D_800631F0 = 107 << 16;
+    cursor[1] = 64 << 16;
+    D_800631F4 = 64 << 16;
+    D_800631FC = 0;
+}
