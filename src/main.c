@@ -3185,3 +3185,16 @@ opened:
     record->checksum = 0;
     return fd;
 }
+
+// FUNCTION: SCUS_943.58:0x8001ADC8
+void func_8001ADC8(CardBoardRecord *record, unsigned short *values, unsigned char *data)
+{
+    int i;
+
+    for (i = 0; i < 256; i++) {
+        record->values[i] = values[i];
+    }
+    for (i = 0; i < 8192; i++) {
+        record->data[i] = data[i];
+    }
+}
