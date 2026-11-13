@@ -18,4 +18,8 @@ typedef struct BdEditPixelMasks {
 
 void func_8005C0A8(unsigned char **planes, unsigned char *packed);
 
+typedef struct BdEditTextureChoices {
+    SpriteTexture entries[3];
+} BdEditTextureChoices;
+
 #endif

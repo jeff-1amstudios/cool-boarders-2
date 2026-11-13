@@ -33,6 +33,12 @@ extern unsigned char *func_8006135C(unsigned long *ot, unsigned char *packet,
 extern unsigned char *func_8005C7CC(unsigned long *ot, unsigned char *packet,
                                   int active, int value, int flags);
 
+extern BdEditTextureChoices D_80062E28;
+extern SpriteTexture D_80062E48;
+extern SPRT *func_80012950(unsigned long *ot, SPRT *sprite, short x, short y,
+                          SpriteTexture *texture, unsigned char shade);
+extern DR_TPAGE *func_80012B6C(unsigned long *ot, DR_TPAGE *packet, unsigned int tpage);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -251,4 +257,60 @@ unsigned char *func_8005C374(unsigned long *ot, unsigned char *packet,
         x += 4;
     } while (column < 40);
     return func_8005C7CC(ot, (unsigned char *)prim, mode == 4, value9, flags);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005C7CC
+unsigned char *func_8005C7CC(unsigned long *ot, unsigned char *packet,
+                          int active, int value, int flags)
+{
+    LINE_F3 *lines[2];
+    unsigned long *prim = (unsigned long *)packet;
+    BdEditTextureChoices choices = D_80062E28;
+    SpriteTexture background = D_80062E48;
+    SpriteTexture texture;
+    int brightness;
+    int index;
+    int x;
+
+    lines[0] = (LINE_F3 *)prim;
+    prim += sizeof(LINE_F3) / sizeof(*prim);
+    lines[1] = (LINE_F3 *)prim;
+    ((PrimitiveTag *)lines[0])->length = 5;
+    lines[0]->code = 0x48;
+    lines[0]->pad = 0x55555555;
+    ((PrimitiveTag *)lines[1])->length = 5;
+    lines[1]->code = 0x48;
+    lines[1]->pad = 0x55555555;
+    lines[0]->x0 = lines[1]->x0 = lines[1]->x1 = D_800631FC + 31;
+    prim += sizeof(LINE_F3) / sizeof(*prim);
+    lines[0]->x1 = lines[0]->x2 = lines[1]->x2 = lines[0]->x0 + 41;
+    lines[0]->y0 = lines[0]->y1 = lines[1]->y0 = 23;
+    lines[0]->y2 = lines[1]->y1 = lines[1]->y2 = 56;
+    if (active != 0) {
+        lines[0]->r0 = lines[0]->g0 = lines[0]->b0 =
+            lines[1]->r0 = lines[1]->g0 = lines[1]->b0 = abs((D_80047DC0 & 31) - 16) * 8 + 96;
+    } else {
+        lines[0]->r0 = lines[0]->g0 = lines[0]->b0 =
+            lines[1]->r0 = lines[1]->g0 = lines[1]->b0 = 192;
+    }
+    ((PrimitiveTag *)lines[0])->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)lines[0];
+    brightness = abs((D_80047DC0 & 63) - 32) + 28;
+    ((PrimitiveTag *)lines[1])->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)lines[1];
+    index = 0;
+    do {
+        x = index * 128 + 32;
+        if ((flags & 2) == 0) {
+            texture = choices.entries[value];
+            if (index != 0) texture.v += 32;
+            prim = (unsigned long *)((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, unsigned char))func_80012950)(ot, (SPRT *)prim, x, 24, &texture, brightness);
+            prim = (unsigned long *)func_80012B6C(ot, (DR_TPAGE *)prim, choices.entries[value].tpage);
+        }
+        background.v = (index * 32) % 256;
+        prim = (unsigned long *)((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, unsigned char))func_80012950)(ot, (SPRT *)prim, x, 24, &background, 128);
+        prim = (unsigned long *)func_80012B6C(ot, (DR_TPAGE *)prim, background.tpage);
+        index++;
+    } while (index < 2);
+    return (unsigned char *)prim;
 }
