@@ -43,5 +43,7 @@ segments:
   - [0x0, rodata, header]
   - [0x4, c, func_8005AB6C]
   - [0xa8, asm, body]
+  - [0x132c, c, func_8005BE94]
+  - [0x14b8, asm, body_14B8]
   - [0x8020, data, data]
 - [0x86a0]
