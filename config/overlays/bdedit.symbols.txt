@@ -58,3 +58,4 @@ func_8005E784 = 0x8005E784; // type:func
 func_8005E840 = 0x8005E840; // type:func
 func_8005E9EC = 0x8005E9EC; // type:func
 func_8005EA68 = 0x8005EA68; // type:func
+func_8005EAF0 = 0x8005EAF0; // type:func

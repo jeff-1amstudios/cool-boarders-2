@@ -849,3 +849,31 @@ void func_8005EA68(unsigned char **planes, short *cursor)
         row += 128;
     } while (offset < 4096);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005EAF0
+void func_8005EAF0(unsigned char **planes, short *cursor)
+{
+    unsigned char *pixels;
+    unsigned char *row;
+    unsigned char saved;
+    int offset;
+    int column;
+
+    if (D_800631FC + (cursor[1] - 106) / 4 >= 128) {
+        planes++;
+    }
+    pixels = *planes;
+    offset = 0;
+    row = pixels;
+    do {
+        saved = row[127];
+        column = 127;
+        do {
+            pixels[offset + column] = pixels[offset + column - 1];
+            column--;
+        } while (column > 0);
+        *row = saved;
+        offset += 128;
+        row += 128;
+    } while (offset < 4096);
+}
