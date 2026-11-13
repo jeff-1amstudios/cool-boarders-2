@@ -468,6 +468,10 @@ extern long func_8003F110(long event);
 extern volatile unsigned char *PTR_CDROM_REG0_80050198;
 extern volatile unsigned char *PTR_CDROM_REG3_800501a4;
 
+extern unsigned long D_8005AB48;
+extern unsigned long D_80058B54;
+extern unsigned long D_8005AB40;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4727,4 +4731,12 @@ void func_800435A4(void)
     *PTR_CDROM_REG0_80050198 = 0;
     *PTR_CDROM_REG3_800501a4 = 0;
     func_8003CB3C();
+}
+
+// FUNCTION: SCUS_943.58:0x8004392C
+void func_8004392C(unsigned long mask, unsigned long start_frame, unsigned long end_frame)
+{
+    D_8005AB48 = mask;
+    D_80058B54 = start_frame;
+    D_8005AB40 = end_frame;
 }

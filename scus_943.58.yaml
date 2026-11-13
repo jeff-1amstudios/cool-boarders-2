@@ -266,5 +266,7 @@ segments:
       - [0x2F910, asm, after_func_8003F094]
       - [0x33DA4, c, func_800435A4]
       - [0x33DFC, asm, after_func_800435A4]
+      - [0x3412C, c, func_8004392C]
+      - [0x3414C, asm, after_func_8004392C]
       - [0x35BA8, data, 35BA8] # estimated
   - [0x41000]
