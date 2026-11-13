@@ -29,3 +29,6 @@ D_80062E28 = 0x80062E28; // size:0x1E
 D_80062E48 = 0x80062E48; // size:0xA
 func_80012950 = 0x80012950; // type:func
 func_80012B6C = 0x80012B6C; // type:func
+func_8005CB9C = 0x8005CB9C; // type:func
+D_800631E8 = 0x800631E8; // size:0x2
+D_800631EC = 0x800631EC; // size:0x2

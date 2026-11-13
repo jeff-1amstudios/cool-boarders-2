@@ -39,6 +39,9 @@ extern SPRT *func_80012950(unsigned long *ot, SPRT *sprite, short x, short y,
                           SpriteTexture *texture, unsigned char shade);
 extern DR_TPAGE *func_80012B6C(unsigned long *ot, DR_TPAGE *packet, unsigned int tpage);
 
+extern short D_800631E8;
+extern short D_800631EC;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -313,4 +316,45 @@ unsigned char *func_8005C7CC(unsigned long *ot, unsigned char *packet,
         index++;
     } while (index < 2);
     return (unsigned char *)prim;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005CB9C
+void func_8005CB9C(int *cursor, unsigned int buttons)
+{
+    int column;
+    int row;
+    int value;
+
+    if ((D_800631EC < 2 || (buttons & 8) != 0) && (buttons & 0xF000) != 0) {
+        D_800631E8 = 0;
+        if (D_800631EC != 0) {
+            D_800631EC = 4;
+        } else {
+            D_800631EC = 11;
+        }
+        row = (((short *)cursor)[3] - 63) / 4;
+        if (buttons & 0x1000) row--;
+        if (buttons & 0x4000) row++;
+        row = row < 0 ? 0 : row >= 32 ? 31 : row;
+        column = (((short *)cursor)[1] - 106) / 4;
+        if (buttons & 0x8000) {
+            if (column > 0) {
+                column--;
+            } else if (D_800631FC > 0) {
+                D_800631FC--;
+                column = 0;
+            }
+        }
+        if (buttons & 0x2000) {
+            if (column < 39) {
+                column++;
+            } else if (D_800631FC < 216) {
+                D_800631FC++;
+                column = 39;
+            }
+        }
+        value = column < 0 ? 0 : column >= 40 ? 39 : column;
+        cursor[0] = (value * 4 + 109) << 16;
+        cursor[1] = (row * 4 + 66) << 16;
+    }
 }
