@@ -450,3 +450,8 @@ card_ghost_read_signature = 0x80010A18; // size:0x9
 func_8001A900 = 0x8001A900; // type:func size:0x1D0
 func_8001AAD0 = 0x8001AAD0; // type:func size:0x2F8
 card_board_filename = 0x80010A24; // size:0x18
+
+card_board_signature = 0x80010A3C; // size:0x9
+card_board_title = 0x80010A48; // size:0x41
+card_board_palette = 0x80010A8C; // size:0x20
+card_board_frames = 0x80010AAC; // size:0x180

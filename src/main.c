@@ -332,6 +332,11 @@ extern CardGhostFilename card_board_filename;
 extern int func_8001AAD0(char *filename, CardBoardSaveBlock *block, unsigned int slot);
 extern void func_8001ADC8(CardBoardRecord *record, unsigned short *values, unsigned char *data);
 
+extern CardSaveTitle card_board_title;
+extern CardSavePalette card_board_palette;
+extern CardSaveFrames card_board_frames;
+extern unsigned char card_board_signature[9];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3123,4 +3128,60 @@ int func_8001A900(unsigned int slot, short selected_record,
     func_80017A00(events);
     func_8001F378(block);
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001AAD0
+int func_8001AAD0(char *filename, CardBoardSaveBlock *block, unsigned int slot)
+{
+    CardSaveTitle title;
+    CardSavePalette palette;
+    CardSaveFrames frames;
+    int fd;
+    int available = 1;
+    unsigned char *output;
+    unsigned char *expected;
+    CardBoardRecord *record;
+    unsigned char *end;
+    unsigned char *clear_cursor;
+
+    title = card_board_title;
+    palette = card_board_palette;
+    frames = card_board_frames;
+    if ((int)slot > 0) {
+        title.text[62] = 0x82;
+        title.text[63] = slot + 'P';
+    }
+    fd = open(filename, 1);
+    if (fd < 0) {
+        fd = open(filename, 0x20200);
+        if (fd < 0) {
+            goto unavailable;
+        }
+    }
+    close(fd);
+    goto opened;
+unavailable:
+    available = 0;
+opened:
+    if (available) {
+        fd = open(filename, 0x8002);
+    }
+    clear_cursor = (unsigned char *)block;
+    end = (unsigned char *)block + 0x2280;
+    do {
+        *clear_cursor = 0;
+        clear_cursor++;
+    } while (clear_cursor < end);
+    func_80018044((unsigned char *)block, 2, 1, palette.bytes, frames.bytes, title.text);
+    record = &block->record;
+    output = record->signature;
+    expected = card_board_signature;
+    do {
+        *output = *expected;
+        output++;
+        expected++;
+    } while ((int)output < (int)(record->signature + 8));
+    record->selected_record = 0;
+    record->checksum = 0;
+    return fd;
 }

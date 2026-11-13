@@ -168,7 +168,7 @@ segments:
       - [0xAE08, asm, after_copy_bytes]
       - [0xAEB8, c, func_8001A6B8]
       - [0xB100, c, func_8001A900]
-      - [0xB2D0, asm, after_func_8001A900]
+      - [0xB2D0, c, func_8001AAD0]
       - [0xB5C8, asm, copy_record_payload]
       - [0xB614, asm, after_copy_record_payload]
       - [0xBD9C, asm, clear_globals]
