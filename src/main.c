@@ -3608,3 +3608,16 @@ int func_8001BFFC(void)
     D_8005AB5C = 2;
     return 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001C0D4
+void func_8001C0D4(unsigned int *words)
+{
+    int remaining = 15;
+
+    words += 15;
+    do {
+        *words = 0;
+        remaining--;
+        words--;
+    } while (remaining >= 0);
+}
