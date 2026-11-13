@@ -49,3 +49,4 @@ func_8005DB4C = 0x8005DB4C; // type:func
 D_800631F0 = 0x800631F0; // type:u32 size:0x4
 D_800631F4 = 0x800631F4; // type:u32 size:0x4
 func_8005D860 = 0x8005D860; // type:func
+func_8005DB84 = 0x8005DB84; // type:func

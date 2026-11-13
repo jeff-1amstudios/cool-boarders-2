@@ -643,3 +643,62 @@ void func_8005DB4C(int *cursor, CVECTOR *palette)
     cursor[0] = 36 << 16;
     cursor[1] = (167 - (palette[D_800631F8].b >> 3)) << 16;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005DB84
+void func_8005DB84(int *cursor, unsigned int buttons, unsigned int pressed,
+                   unsigned int repeated, CVECTOR *palette, unsigned short *packed)
+{
+    int channel;
+    int level;
+    RECT rect;
+
+    if (buttons & 0x400000) {
+        channel = (((short *)cursor)[1] - 26) / 20;
+        level = 167 - ((short *)cursor)[3];
+        level = level * 255 / 31;
+        switch (channel) {
+        case 0:
+            palette[D_800631F8].b = level;
+            break;
+        case 1:
+            palette[D_800631F8].r = level;
+            break;
+        case 2:
+            palette[D_800631F8].g = level;
+            break;
+        }
+        func_8005F634(packed + D_800631F8, palette + D_800631F8, 1);
+        rect.x = 0x300;
+        rect.y = 0x1F7;
+        rect.w = 0x100;
+        rect.h = 1;
+        LoadImage(&rect, (unsigned long *)packed);
+    } else {
+        if (buttons & 0xF000) goto move_channel;
+        if ((repeated & 0x400040) == 0x40) {
+            func_80015B70(7, 128);
+            D_800631E8 = 0;
+            cursor[0] = D_800631F0;
+            cursor[1] = D_800631F4;
+        }
+    }
+    if ((buttons & 0xF000) == 0 && (repeated & 0x10) != 0) {
+        func_80015B70(2, 128);
+        cursor[0] = (D_800631F8 % 8 * 8 + 28) << 16;
+        cursor[1] = (D_800631F8 / 8 * 8 + 72) << 16;
+    }
+move_channel:
+    if ((buttons & 0x5000) == 0 && (pressed & 0xA000) != 0) {
+        channel = (((short *)cursor)[1] - 26) / 20;
+        if (pressed & 0x8000) channel--;
+        if (pressed & 0x2000) channel++;
+        if (channel < 0) {
+            channel = 0;
+        } else if (channel >= 3) {
+            channel = 2;
+        } else {
+            func_80015B70(0, 128);
+        }
+        cursor[0] = (channel * 20 + 36) << 16;
+    }
+}
