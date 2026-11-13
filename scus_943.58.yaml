@@ -207,7 +207,7 @@ segments:
       - [0xE620, c, func_8001DE20]
       - [0xE7CC, c, func_8001DFCC]
       - [0xEC14, c, func_8001E414]
-      - [0xEC68, asm, after_func_8001E414]
+      - [0xEC68, c, func_8001E468]
       - [0xED60, asm, copy_bounded_name]
       - [0xEDAC, asm, after_copy_bounded_name]
       - [0xF468, asm, func_8001EC68]

@@ -406,6 +406,9 @@ extern BackgroundTextures D_8001125C;
 extern int D_80058000;
 extern int D_80058004[2][4];
 
+extern int D_80057FDC;
+extern int D_80057FE0[2][4];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4135,5 +4138,35 @@ void func_8001E414(void)
         D_80058004[i][1] = 0;
         D_80058004[i][2] = 0;
         D_80058004[i][3] = 0;
+    }
+}
+
+// FUNCTION: SCUS_943.58:0x8001E468
+void func_8001E468(int bank, int category, int row)
+{
+    int (*counters)[4];
+
+    if (bank == 0) {
+        counters = D_80057FE0;
+        D_80057FDC++;
+    } else {
+        counters = D_80058004;
+        D_80058000++;
+    }
+    if (row >= 0) {
+        switch (category) {
+        case 0:
+            counters[row][0]++;
+            break;
+        case 1:
+            counters[row][1]++;
+            break;
+        case 2:
+            counters[row][2]++;
+            break;
+        case 3:
+            counters[row][3]++;
+            break;
+        }
     }
 }
