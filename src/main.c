@@ -415,6 +415,17 @@ extern int D_8005AB54;
 
 extern void *func_8001F4A8(void *allocation, unsigned int size);
 
+extern int D_8005AB28;
+extern int D_8005AB30;
+extern short D_80058F68;
+extern unsigned char D_8005AB22;
+extern unsigned char D_8005AB21;
+extern unsigned char D_8005AB20;
+extern short D_80058B14;
+extern short D_8005A7B0;
+extern short D_80058B16;
+extern int D_8005802C;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4272,4 +4283,19 @@ int func_8001EB28(char *path)
         return -1;
     }
     return result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001EB94
+void func_8001EB94(int texture_x, int texture_y, int clut_x, short clut_y)
+{
+    D_8005AB28 = (texture_x % 64) * 4;
+    D_8005AB30 = texture_y % 256;
+    D_80058F68 = (clut_y << 6) | ((clut_x >> 4) & 0x3F);
+    D_8005A7B0 = ((texture_y & 0x100) >> 4) | ((texture_x & 0x3C0) >> 6);
+    D_8005AB22 = 0x80;
+    D_8005AB21 = 0x80;
+    D_8005AB20 = 0x80;
+    D_80058B14 = 320;
+    D_80058B16 = 240;
+    D_8005802C = 0;
 }
