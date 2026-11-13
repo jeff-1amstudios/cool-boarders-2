@@ -378,6 +378,19 @@ extern AssetFileIndices asset_file_indices_3;
 extern int D_800570E0;
 extern int func_8001C6EC(unsigned int *state, int mode);
 
+extern CourseAssetPaths course_board_paths;
+extern CourseAssetPaths course_paths;
+extern CourseAssetPaths course_loading_paths;
+extern CourseFileIndices course_file_indices;
+extern CourseAltFileIndices course_alt_file_indices;
+extern RECT course_board_rect;
+extern RECT course_rect;
+extern short course_file_variants[];
+extern char course_board_effect_path[28];
+extern char course_effect_path[27];
+extern int func_8001EB28(char *path);
+extern int func_8001E8E0(char *path, void *destination);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3741,4 +3754,113 @@ void func_8001C67C(unsigned int *state, int mode)
         cursor--;
     } while (remaining >= 0);
     func_8001C6EC(state, mode);
+}
+
+// FUNCTION: SCUS_943.58:0x8001CC14
+void func_8001CC14(CourseLoadState *state, short *selection, int course, int mode)
+{
+    CourseAssetPaths board_paths;
+    CourseAssetPaths paths;
+    CourseAssetPaths loading_paths;
+    CourseFileIndices file_indices;
+    CourseAltFileIndices alt_file_indices;
+    int variant_file;
+    int alternate_file;
+    int other_alternate_file;
+    int data_file;
+    int data_index;
+    int board_file;
+    int index;
+    int variant;
+    int base_file;
+    int width;
+    int height;
+    int buffer_size;
+    int selected_file;
+    RECT board_rect;
+    RECT rect;
+    RECT *save_rect;
+    u_long *saved;
+    CourseImageData *images;
+
+    data_index = selection[10];
+    variant = selection[2] * 3 + selection[3];
+    index = selection[0];
+    board_paths = course_board_paths;
+    paths = course_paths;
+    loading_paths = course_loading_paths;
+    file_indices = course_file_indices;
+    alt_file_indices = course_alt_file_indices;
+    alternate_file = course + 0x12D;
+    other_alternate_file = course + 0x137;
+    board_rect = course_board_rect;
+    rect = course_rect;
+    data_file = data_index + 0xEF;
+    base_file = variant + 0xB4;
+    variant_file = index * 9 + base_file;
+    board_file = course_file_variants[index] * 4 + 0xE8;
+    height = rect.h;
+    width = rect.w;
+    height *= 2;
+    buffer_size = width * height;
+    saved = func_8001F1A0(buffer_size * 2);
+    if (mode >= 0) {
+        if (mode < 2) goto board;
+    }
+    goto alternate;
+board:
+    {
+        save_rect = &board_rect;
+        StoreImage(save_rect, saved);
+        DrawSync(0);
+        func_8001EB28(board_paths.entries[course]);
+        func_8001EB28(course_board_effect_path);
+        func_8001EB28(course_effect_path);
+        LoadImage(save_rect, saved);
+        DrawSync(0);
+    }
+    goto restored;
+alternate:
+    {
+        save_rect = &rect;
+        StoreImage(save_rect, saved);
+        DrawSync(0);
+        func_8001EB28(paths.entries[course]);
+        LoadImage(save_rect, saved);
+        DrawSync(0);
+        func_80013B60(0x90, 0, 0, 0x104);
+    }
+restored:
+    func_8001F378(saved);
+    state->workspace = (char *)0x80195394;
+    func_80013B60(data_file, 0, (int)&state->course_data, 1);
+    switch (mode) {
+    case 0:
+        func_80013B60(board_file, state->workspace, 0, 1);
+    case 1:
+        func_80013B60(file_indices.entries[index], 0, (int)&state->geometry, 1);
+        state->images = (CourseImageData *)(state->workspace - 0xF000);
+        func_8001E8E0(loading_paths.entries[course], state->images);
+        if (mode == 1) {
+            DrawSync(0);
+            images = state->images;
+            func_8001EC78((unsigned int *)images + images->image_offset_1);
+            func_8001EC78((unsigned int *)images + images->image_offset_2);
+            DrawSync(0);
+        }
+        break;
+    case 2:
+        func_80013B60(alt_file_indices.entries[index], 0, (int)&state->geometry, 1);
+        selected_file = alternate_file;
+        if (*(short *)&card_extra_setting_5 != 0) {
+            selected_file = other_alternate_file;
+        }
+        func_80013B60(selected_file, 0, (int)&state->alternate_data, 1);
+        break;
+    }
+    func_80013B60(variant_file, 0, (int)&state->variant_data, 1);
+    func_80013B60(0xE4, 0, (int)&state->common_data, 1);
+    if (mode == 2) {
+        func_80013B60(0x91, 0, (int)&state->extra_data, 1);
+    }
 }

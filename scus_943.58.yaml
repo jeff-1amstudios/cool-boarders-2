@@ -196,6 +196,8 @@ segments:
       - [0xCE28, c, func_8001C628]
       - [0xCE7C, c, func_8001C67C]
       - [0xCEEC, asm, after_func_8001C67C]
+      - [0xD414, c, func_8001CC14]
+      - [0xD8EC, asm, after_func_8001CC14]
       - [0xE298, asm, record_find_greater]
       - [0xE2D4, asm, record_find_less]
       - [0xE310, asm, after_record_find_less]

@@ -317,4 +317,36 @@ typedef struct File56LoadState {
     unsigned int unknown_0c[13];
 } File56LoadState;
 
+/* Fixed tables copied by the course-asset loader. */
+typedef struct CourseAssetPaths {
+    char *entries[10];
+} CourseAssetPaths;
+
+typedef struct CourseFileIndices {
+    int entries[6];
+} CourseFileIndices;
+
+typedef struct CourseAltFileIndices {
+    int entries[4];
+} CourseAltFileIndices;
+
+/* Observed prefix; offsets in the loaded image are word indices. */
+typedef struct CourseImageData {
+    unsigned int unknown_00;
+    unsigned int image_offset_1;
+    unsigned int image_offset_2;
+} CourseImageData;
+
+typedef struct CourseLoadState {
+    unsigned int unknown_00[3];
+    char *course_data;
+    char *geometry;
+    char *workspace;
+    char *alternate_data;
+    CourseImageData *images;
+    char *common_data;
+    char *variant_data;
+    char *extra_data;
+} CourseLoadState;
+
 #endif
