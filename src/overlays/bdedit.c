@@ -411,3 +411,18 @@ void func_8005CF8C(CVECTOR *palette, unsigned short *packed)
     func_8005F634(packed, palette, 256);
     func_8005D8C4(packed);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005D194
+void func_8005D194(unsigned short *packed)
+{
+    unsigned short *palette = (unsigned short *)0x801F1E00;
+    int index;
+
+    for (index = 0; index < 64; index++) {
+        palette[index] = packed[index] | 0x8000;
+    }
+    for (index = 64; index < 255; index++) {
+        palette[index] = packed[index] & 0x7F;
+    }
+    palette[255] = 0;
+}
