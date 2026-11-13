@@ -4,7 +4,15 @@
 tools/.venv/bin/python tools/reconstruct.py start --limit 2
 ```
 
-The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Run from clean `main`; do not edit the checkout concurrently.
+The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Start on `main` with no pending game/source/config edits.
+
+Session input fingerprints are informational snapshots, not stop conditions.
+Edits to tracked tools, documentation, `AGENTS.md` and `FUNCTION_AGENTS.md` may
+remain in the checkout during a batch. They are excluded from candidate scope
+audits and matching commits; commit maintenance separately. Workers still follow
+their supplied brief. Source/config scope checks, Git ref/index checks, pinned
+reference verification and exact full-file comparisons remain enforced. Git can
+still refuse a branch switch that would overwrite pending maintenance.
 
 `start` also resumes a recorded interrupted batch. It preserves completed and
 deferred counts, renews the time budget, and uses `--limit` as the total batch
@@ -46,8 +54,8 @@ Codex launcher uses the invocation-local `--config project_doc_max_bytes=0` so
 repository/global `AGENTS.md` discovery does not also inject maintenance guidance.
 This leaves sandbox and approval settings unchanged. Custom `--agent-command`
 launchers receive the same focused prompt on stdin and must configure their own
-automatic instruction loading if they support it. The brief is a protected input:
-workers cannot edit it during a batch. Changes take effect in the next batch.
+automatic instruction loading if they support it. Workers are instructed not to edit the brief.
+Changes take effect on the next worker invocation.
 
 ## Targets and review
 
@@ -119,7 +127,7 @@ If a saved update fails after the C commit was accepted, the batch stops with ph
 
 The agent uses `tools/.venv/bin/python tools/reconstruction_step.py` for compact selected-object diagnostics. It recompiles the selected C unit, reuses a hash-checked assembly reference when possible, and prints a short diff. Its task ends when that function matches and its feedback proposal is written; it does not run containing-file validation. A score is diagnostic only. The compiler recipe remains provisional and fixed during each attempt. The agent should restore its best candidate before finishing; the hard timeout preserves whatever is actually in the checkout.
 
-Python accepts only a new annotated function block in the image's shared C file (`src/main.c` or `src/overlays/<overlay>.c`), additions to the image header or new local headers, the exact selected asm/c/asm split, and appended symbols in the selected image. Use `// FUNCTION: <image>:0x<ADDRESS>` to begin the function block. Keep all extern declarations together at the top of the C file, before the first annotation, and reuse existing declarations. New externs and local includes may be appended to that shared top block; existing declarations must stay unchanged. Define structs once in guarded headers and reuse existing layouts. New definitions may be appended before the image header’s final `#endif`; existing definitions must stay unchanged. The build extracts that block into generated C and compiles its independent Splat object. Existing blocks and shared declarations, unrelated boundaries, build/reference/compiler inputs, SDK policy and previous symbols stay protected. Source checks reject assembly/byte embedding and unsupported source forms. Python runs fresh `make validate IMAGE=<EXE-or-BIN> UNIT=<unit>` and independently compares the **entire containing file** to its pinned unchanged reference. Candidate/staged/committed hashes and prior C coverage are checked. Only then is a matching commit fast-forwarded into `main`.
+Python accepts only a new annotated function block in the image's shared C file (`src/main.c` or `src/overlays/<overlay>.c`), additions to the image header or new local headers, the exact selected asm/c/asm split, and appended symbols in the selected image. Use `// FUNCTION: <image>:0x<ADDRESS>` to begin the function block. Keep all extern declarations together at the top of the C file, before the first annotation, and reuse existing declarations. New externs and local includes may be appended to that shared top block; existing declarations must stay unchanged. Define structs once in guarded headers and reuse existing layouts. New definitions may be appended before the image header’s final `#endif`; existing definitions must stay unchanged. The build extracts that block into generated C and compiles its independent Splat object. Existing blocks and shared declarations, unrelated boundaries, game configuration, SDK policy and previous symbols stay protected by the candidate scope audit. Source checks reject assembly/byte embedding and unsupported source forms. Python runs fresh `make validate IMAGE=<EXE-or-BIN> UNIT=<unit>` and independently compares the **entire containing file** to its pinned unchanged reference. Candidate/staged/committed hashes and prior C coverage are checked. Only then is a matching commit fast-forwarded into `main`.
 
 Startup checks the branch, clean checkout, saved attempt state and reference fingerprints, refreshes the target inventory, and prepares the selected function's context. It does not rebuild or check matching before the first attempt. Plain `make validate` checks the boot EXE and all 14 overlays at batch end. A nonmatching candidate cannot enter `main`. Object diagnostics and full-file failure reports remain available for the next edit. No interactive diff viewer is used.
 

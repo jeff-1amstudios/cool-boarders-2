@@ -15,6 +15,7 @@ from rebuild import ROOT, reference
 
 STATE = ROOT / "reports/reconstruction/state.json"
 REVIEW = ROOT / "config/reconstruction.json"
+# Historical session-input snapshots are diagnostic only, never an acceptance gate.
 PROTECTED = ("FUNCTION_AGENTS.md", "config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
              "tools/reconstruct_run.py", "tools/readme_progress.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
@@ -112,13 +113,19 @@ def changes():
                  ("ls-files", "--others", "--exclude-standard", "-z")):
         output = subprocess.check_output(["git", *args], cwd=ROOT)
         paths.update(p.decode() for p in output.split(b"\0") if p)
-    # Progress is refreshed by the supervisor after a batch and may remain
-    # uncommitted. Exclude it from checkout guards, candidate audits and commits.
-    return paths - {"README.md"}
+    # Tooling/docs maintenance belongs to the user/supervisor, outside candidate
+    # commits. Allow it to remain dirty while matching; Git still protects edits
+    # when switching branches. Keep game/config/source edits in the scope audit.
+    tracked = set(git("ls-files", "-z").split("\0"))
+    maintenance = {name for name in paths if name in tracked and
+                   (name in {"README.md", "AGENTS.md", "FUNCTION_AGENTS.md"}
+                    or name.startswith(("tools/", "docs/")))}
+    return paths - maintenance
 
 
 def fingerprints():
-    return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in PROTECTED}
+    return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest()
+            for p in PROTECTED if (ROOT / p).is_file()}
 
 
 def content_hashes(paths):
@@ -184,19 +191,11 @@ def state():
     return read(STATE)
 
 
-def protected_unchanged(session):
-    active = session.get("active") or {}
-    allowed = {active.get("build_config"), active.get("symbol_file")}
-    return {k: v for k, v in fingerprints().items() if k not in allowed} == {k: v for k, v in session["protected"].items() if k not in allowed}
-
-
 def check_session(session):
     if git("rev-parse", "HEAD") != session["head"]:
         raise RuntimeError("HEAD changed outside the worker; begin a new session")
     if session.get("branch") and git("branch", "--show-current") != session["branch"]:
         raise RuntimeError("Current branch changed outside the worker")
-    if not protected_unchanged(session):
-        raise RuntimeError("Reference/build gate/compiler changed; review outside the function worker")
     if time.time() > session["deadline"]:
         raise RuntimeError("Session time budget exhausted; preserve/defer the attempt or begin again")
 

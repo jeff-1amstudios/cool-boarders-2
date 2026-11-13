@@ -168,8 +168,6 @@ class Runner:
             raise RuntimeError("Agent changed branch; stopping without resetting the checkout")
         if self.w.git("rev-parse", "refs/heads/main") != session["integration_head"]:
             raise RuntimeError("main moved unexpectedly; stopping without updating it")
-        if not self.w.protected_unchanged(session):
-            raise RuntimeError("Protected build/reference/recipe changed; stopping without resetting the checkout")
         self.w.reference()
         if "identity" in (session.get("active") or {}):
             from overlays import load
@@ -432,12 +430,7 @@ class Runner:
         if branch == 'main':
             if head != main_head or self.w.changes():
                 raise RuntimeError('Recovery requires unchanged clean main')
-            current = self.w.fingerprints()
-            changed_inputs = {name for name in current.keys() | session['protected'].keys()
-                              if current.get(name) != session['protected'].get(name)}
-            if not changed_inputs <= maintenance:
-                raise RuntimeError('Protected inputs changed since interruption')
-            session.update(integration_head=main_head, protected=current)
+            session.update(integration_head=main_head, protected=self.w.fingerprints())
         elif (branch == active.get('branch') and phase in ('working', 'creating_branch', 'checkpointed')
               and head == (active.get('checkpoint') or active.get('base_commit'))):
             session.update(branch=branch, head=head)
