@@ -203,6 +203,8 @@ segments:
       - [0xE298, c, func_8001DA98]
       - [0xE2D4, c, func_8001DAD4]
       - [0xE310, asm, after_record_find_less]
+      - [0xE560, c, func_8001DD60]
+      - [0xE620, asm, after_func_8001DD60]
       - [0xED60, asm, copy_bounded_name]
       - [0xEDAC, asm, after_copy_bounded_name]
       - [0xF468, asm, func_8001EC68]

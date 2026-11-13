@@ -3972,3 +3972,20 @@ int func_8001DAD4(unsigned int *records, unsigned int value)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x8001DD60
+void func_8001DD60(unsigned long *ordering_table, TILE_16 *tile, int row,
+                   int column, CVECTOR *color)
+{
+    ((PrimitiveTag *)tile)->length = 2;
+    tile->code = 0x78;
+    tile->x0 = column * 16 + 120;
+    tile->y0 = (row + 1) * 22 + 60;
+    tile->r0 = color->r;
+    tile->g0 = color->g;
+    tile->b0 = color->b;
+    tile->code |= 2;
+    ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)tile;
+    func_80012B6C(ordering_table, (DR_TPAGE *)(tile + 1), 0x20);
+}
