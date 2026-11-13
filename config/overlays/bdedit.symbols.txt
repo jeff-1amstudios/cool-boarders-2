@@ -21,3 +21,7 @@ D_800631FC = 0x800631FC; // type:u32 size:0x4
 func_8005C0A8 = 0x8005C0A8; // type:func
 D_80062E18 = 0x80062E18; // size:0x8
 LoadImage = 0x80029AAC; // type:func
+func_80060824 = 0x80060824; // type:func
+func_8006135C = 0x8006135C; // type:func
+func_8005C7CC = 0x8005C7CC; // type:func
+D_80047DC0 = 0x80047DC0; // size:0x2
