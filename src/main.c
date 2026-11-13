@@ -4189,3 +4189,9 @@ void func_8001E560(char *name, void *buffer)
     D_80058C40 = buffer;
     D_8005AB54 = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001E8C0
+void func_8001E8C0(void)
+{
+    CdInit();
+}
