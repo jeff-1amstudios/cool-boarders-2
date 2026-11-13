@@ -564,3 +564,5 @@ D_80058F7C = 0x80058F7C; // size:0x4
 D_80058C14 = 0x80058C14; // type:s32 size:0x4
 
 func_8001F378 = 0x8001F378; // type:func size:0x130
+
+func_8001F4A8 = 0x8001F4A8; // type:func

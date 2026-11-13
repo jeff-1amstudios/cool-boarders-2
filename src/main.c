@@ -4512,3 +4512,52 @@ int func_8001F378(void *allocation)
     D_80058C14--;
     return 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001F4A8
+void *func_8001F4A8(void *allocation, unsigned int size)
+{
+    unsigned int aligned_size;
+    HeapBlock *next;
+    HeapBlock *block;
+    HeapBlock *split;
+    HeapBlock saved;
+
+    aligned_size = (size + 15) & ~15U;
+    next = ((HeapBlock *)allocation)[-1].next;
+    block = (HeapBlock *)allocation - 1;
+    if (((HeapBlock *)allocation)[-1].allocated == 0) {
+        return 0;
+    }
+    if (size == ((HeapBlock *)allocation)[-1].size) {
+        return allocation;
+    }
+    if (next == 0 || next->allocated == 1) {
+        if (((HeapBlock *)allocation)[-1].size < size) {
+            return 0;
+        }
+        split = (HeapBlock *)((char *)block + aligned_size + 16);
+        split->previous = block;
+        split->next = ((HeapBlock *)allocation)[-1].next;
+        split->size = ((HeapBlock *)allocation)[-1].size - aligned_size - 16;
+        split->allocated = 0;
+        ((HeapBlock *)allocation)[-1].next = split;
+        ((HeapBlock *)allocation)[-1].size = aligned_size;
+        if (split->next == 0) {
+            D_8005AB1C = split;
+        }
+    } else {
+        saved = *next;
+        saved.size = 16 + ((HeapBlock *)allocation)[-1].size + saved.size;
+        if (saved.size < aligned_size) {
+            return 0;
+        }
+        split = (HeapBlock *)((char *)block + aligned_size + 16);
+        split->previous = block;
+        split->next = saved.next;
+        split->size = saved.size - aligned_size - 16;
+        split->allocated = 0;
+        ((HeapBlock *)allocation)[-1].next = split;
+        ((HeapBlock *)allocation)[-1].size = aligned_size;
+    }
+    return block + 1;
+}
