@@ -20,3 +20,4 @@ func_8005C328 = 0x8005C328; // type:func
 D_800631FC = 0x800631FC; // type:u32 size:0x4
 func_8005C0A8 = 0x8005C0A8; // type:func
 D_80062E18 = 0x80062E18; // size:0x8
+LoadImage = 0x80029AAC; // type:func

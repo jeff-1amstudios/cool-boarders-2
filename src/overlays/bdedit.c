@@ -127,3 +127,15 @@ void func_8005C0A8(unsigned char **planes, unsigned char *packed)
     func_8005C328(planes, 1);
     D_800631FC = 0;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005C328
+void func_8005C328(unsigned char **planes, int plane)
+{
+    RECT rect;
+
+    rect.x = 0x300;
+    rect.y = (short)(plane << 5);
+    rect.w = 0x40;
+    rect.h = 0x20;
+    LoadImage(&rect, (unsigned long *)planes[plane]);
+}
