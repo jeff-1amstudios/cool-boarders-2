@@ -453,6 +453,11 @@ extern int DelDrv(char *name);
 extern void FlushCache(void);
 extern char D_80011A48[4];
 
+extern volatile int D_80054C7C[1];
+extern unsigned char * volatile D_80054C80;
+extern volatile int D_80054C84;
+extern volatile SerialRegisters * volatile D_8004F3CC;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4651,4 +4656,21 @@ void func_8003D10C(void)
 void func_8003D14C(void)
 {
     return;
+}
+
+// FUNCTION: SCUS_943.58:0x8003D154
+int func_8003D154(unsigned char *destination, int count)
+{
+    volatile SerialRegisters *serial;
+
+    if (D_80054C7C[0] != 0) {
+        return -1;
+    }
+    D_80054C84 = count;
+    D_80054C80 = destination;
+    serial = D_8004F3CC;
+    D_80054C7C[0] = 1;
+    serial->control |= 0x800;
+    serial->control |= 0x20;
+    return 0;
 }

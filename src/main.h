@@ -378,4 +378,10 @@ typedef struct HeapBlock {
     int allocated;
 } HeapBlock;
 
+/* Register prefix through the serial control halfword at offset 10. */
+typedef struct SerialRegisters {
+    unsigned char unknown_00[10];
+    unsigned short control;
+} SerialRegisters;
+
 #endif

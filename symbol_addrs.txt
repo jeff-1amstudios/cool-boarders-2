@@ -593,3 +593,9 @@ func_8003D10C = 0x8003D10C; // type:func size:0x40
 DelDrv = 0x8003E320; // type:func size:0xC
 FlushCache = 0x8003CA5C; // type:func size:0xC
 D_80011A48 = 0x80011A48; // type:char size:0x4
+
+func_8003D154 = 0x8003D154; // type:func size:0x60
+D_80054C7C = 0x80054C7C; // type:u32 size:0x4
+D_80054C80 = 0x80054C80; // size:0x4
+D_80054C84 = 0x80054C84; // type:u32 size:0x4
+D_8004F3CC = 0x8004F3CC; // size:0x4
