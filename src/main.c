@@ -449,6 +449,10 @@ extern int AddDrv(void *device);
 /* First pointer of the larger saved driver descriptor; only its address is used. */
 extern void *D_8004F404;
 
+extern int DelDrv(char *name);
+extern void FlushCache(void);
+extern char D_80011A48[4];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4631,5 +4635,14 @@ void func_8003D0D4(void)
 {
     func_8003CB2C();
     AddDrv(&D_8004F404);
+    func_8003CB3C();
+}
+
+// FUNCTION: SCUS_943.58:0x8003D10C
+void func_8003D10C(void)
+{
+    func_8003CB2C();
+    DelDrv(D_80011A48);
+    FlushCache();
     func_8003CB3C();
 }
