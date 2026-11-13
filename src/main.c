@@ -4227,3 +4227,31 @@ int func_8001E968(char *filename, SelectionRecord **destination, int allocator)
     func_8001F4A8(buffer, file.size);
     return file.size;
 }
+
+// FUNCTION: SCUS_943.58:0x8001EA54
+void *func_8001EA54(char *filename, void *destination, int sector_offset, int sector_count)
+{
+    CdlFILE file;
+    unsigned char result[8];
+    CdlLOC position;
+    unsigned long *buffer;
+
+    if (destination == 0) {
+        buffer = func_8001F1A0(sector_count << 11);
+        if (buffer == 0) {
+            return 0;
+        }
+    } else {
+        buffer = destination;
+    }
+    if (CdSearchFile(&file, filename) == 0) {
+        return 0;
+    }
+    CdIntToPos(CdPosToInt(&file.pos) + sector_offset, &position);
+    do {
+        while (CdControlB(2, (unsigned char *)&position, 0) == 0) {
+        }
+        CdRead(sector_count, buffer, 0x80);
+    } while (CdReadSync(0, result) != 0);
+    return buffer;
+}
