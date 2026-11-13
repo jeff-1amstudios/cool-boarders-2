@@ -358,3 +358,18 @@ void func_8005CB9C(int *cursor, unsigned int buttons)
         cursor[1] = (row * 4 + 66) << 16;
     }
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005CF38
+void func_8005CF38(short *cursor, unsigned int buttons)
+{
+    int position;
+
+    if ((buttons & 0x400000) != 0) {
+        position = cursor[1] - 32;
+        if (position < 20) {
+            D_800631FC = 0;
+        } else {
+            D_800631FC = position > 236 ? 216 : cursor[1] - 52;
+        }
+    }
+}
