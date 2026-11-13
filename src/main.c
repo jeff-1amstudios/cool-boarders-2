@@ -3342,3 +3342,77 @@ void func_8001B228(void)
     SendPAD(pad_send_buffers[0], 34, pad_send_buffers[1], 34);
     StartPAD();
 }
+
+// FUNCTION: SCUS_943.58:0x8001B320
+unsigned int func_8001B320(int port, unsigned char *state)
+{
+    unsigned int buttons;
+    unsigned int original;
+
+    if (pad_receive_buffers[port][0] == 0) {
+        if (state != 0)
+            state[4] = pad_receive_buffers[port][1];
+        if (pad_receive_buffers[port][1] == 0x41 ||
+            pad_receive_buffers[port][1] == 0x53 ||
+            pad_receive_buffers[port][1] == 0x73) {
+            buttons = ~(pad_receive_buffers[port][2] << 8 |
+                        pad_receive_buffers[port][3]) & 0xffff;
+        } else {
+            buttons = 0;
+        }
+        switch (pad_receive_buffers[port][1]) {
+        case 0x53:
+            original = buttons;
+            if (state != 0) {
+                state[0] = pad_receive_buffers[port][4];
+                state[1] = pad_receive_buffers[port][5];
+                state[2] = pad_receive_buffers[port][6];
+                state[3] = pad_receive_buffers[port][7];
+            }
+            buttons &= 0xff61;
+            buttons |= (original & 4) << 5;
+            buttons |= (original & 10) << 1;
+            buttons |= (original & 0x10) >> 1;
+            original &= 0x80;
+            original >>= 6;
+            buttons |= original;
+            break;
+        case 0x73:
+            if (state != 0) {
+                state[0] = pad_receive_buffers[port][4];
+                state[1] = pad_receive_buffers[port][5];
+                state[2] = pad_receive_buffers[port][6];
+                state[3] = pad_receive_buffers[port][7];
+            }
+            break;
+        case 0x12:
+            if (state != 0) {
+                state[0] = pad_receive_buffers[port][4];
+                state[1] = pad_receive_buffers[port][5];
+                state[2] = ~pad_receive_buffers[port][2];
+                state[3] = ~pad_receive_buffers[port][3];
+                buttons &= ~3;
+            }
+            break;
+        case 0x41:
+        default:
+            if (state != 0) {
+                state[0] = 0;
+                state[1] = 0;
+                state[2] = 0;
+                state[3] = 0;
+            }
+            break;
+        }
+    } else {
+        buttons = 0xffff0000;
+        if (state != 0) {
+            state[0] = 0;
+            state[1] = 0;
+            state[2] = 0;
+            state[3] = 0;
+            state[4] = 0;
+        }
+    }
+    return buttons;
+}
