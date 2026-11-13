@@ -123,7 +123,7 @@ extern int func_8001EFE4(void *image, int x, int y, int clut_x, int clut_y);
 
 extern short D_8004534C;
 extern void *func_8001EA54(char *filename, void *destination, int sector_offset, int sector_count);
-extern char D_80010200[17];
+extern char D_80010200[16];
 
 extern volatile SoundBankDescriptor D_800478D8[];
 extern short volatile D_80058F80;

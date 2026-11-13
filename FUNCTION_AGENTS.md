@@ -36,6 +36,9 @@ do not install dependencies, change tools or perform repository maintenance.
   split configuration, append symbols to its supplied symbol file, and add
   headers only under its source directory. Do not change other source files,
   tools, reference bytes, compiler recipe, documentation or queue metadata.
+- Splat symbol metadata does not support `type:data`. For data symbols, omit
+  `type` when unknown, or use a supported type such as `u32`, `u8` or `char`
+  when evidenced. Keep the C extern's type in the image source.
 - No inline assembly, embedded instruction bytes, section attributes or
   preprocessor tricks. Only quoted local headers and simple header guards are
   accepted. Initialized arrays require manual review; use uninitialized local
