@@ -57,6 +57,11 @@ extern unsigned char *func_8005F238(unsigned long *ot, unsigned char *packet,
                                   int x, int y, int w, int h,
                                   CVECTOR *border, CVECTOR *fill, int flags);
 
+extern int func_80015B70(int sample, int volume);
+extern void func_8005DB4C(int *cursor, CVECTOR *palette);
+extern int D_800631F0;
+extern int D_800631F4;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -531,4 +536,27 @@ unsigned char *func_8005D200(unsigned long *ot, unsigned char *packet,
     packet = func_8005F77C(ot, packet, 68, 170, palette[D_800631F8].g >> 3, 2, 0);
     packet = func_8005EEF8(ot, packet, 24, 180, 64, 8, &palette[D_800631F8], 0);
     return func_8005F238(ot, packet, x, y, 80, 127, &border, &fill, 0);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005D764
+void func_8005D764(int *cursor, unsigned int buttons, unsigned int pressed,
+                   unsigned int repeated, CVECTOR *palette)
+{
+    int column;
+    int row;
+
+    if (pressed & 0x400000) {
+        func_80015B70(7, 128);
+        column = (((short *)cursor)[1] - 24) / 8;
+        row = (((short *)cursor)[3] - 68) / 8;
+        D_800631F8 = row * 8 + column;
+    } else if ((repeated & 0x400040) == 0x40 && (buttons & 0xF000) == 0) {
+        func_80015B70(7, 128);
+        D_800631E8 = 0;
+        cursor[0] = D_800631F0;
+        cursor[1] = D_800631F4;
+    } else if ((repeated & 0x10) != 0 && (buttons & 0xF000) == 0) {
+        func_80015B70(2, 128);
+        func_8005DB4C(cursor, palette);
+    }
 }
