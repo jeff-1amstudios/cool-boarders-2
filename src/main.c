@@ -391,6 +391,11 @@ extern char course_effect_path[27];
 extern int func_8001EB28(char *path);
 extern int func_8001E8E0(char *path, void *destination);
 
+extern short D_800570D2[];
+extern SelectionHalfwords D_800570D4;
+extern short D_800570D6;
+extern SelectionHalfwords D_800570D8;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3863,4 +3868,36 @@ restored:
     if (mode == 2) {
         func_80013B60(0x91, 0, (int)&state->extra_data, 1);
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001D8B4
+unsigned int func_8001D8B4(SelectionRecord *record)
+{
+    short *settings = D_800570D2;
+    short category = record->category;
+    short index = record->index;
+    unsigned int result = -1;
+    short quotient;
+    short derived;
+
+    if (record->active != 0) {
+        record->acknowledged = 1;
+        result = record->result;
+        settings[0] = category;
+        D_800570D4.low = index;
+        D_800570D6 = 0;
+        D_800570D8.low = 0;
+        if (category < 5) {
+            quotient = index / 4;
+            if ((short)(index % 4) == 3) {
+                derived = quotient + 0x12;
+            } else {
+                derived = quotient * 6;
+            }
+        } else {
+            derived = category + 0x10;
+        }
+        settings[4] = derived;
+    }
+    return result;
 }

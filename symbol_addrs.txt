@@ -510,3 +510,8 @@ course_rect = 0x80011118; // size:0x8
 course_file_variants = 0x80010CE4;
 course_board_effect_path = 0x80011120; // size:0x1C
 course_effect_path = 0x8001113C; // size:0x1B
+
+D_800570D2 = 0x800570D2; // size:0x2
+D_800570D4 = 0x800570D4; // size:0x4
+D_800570D6 = 0x800570D6; // size:0x2
+D_800570D8 = 0x800570D8; // size:0x4

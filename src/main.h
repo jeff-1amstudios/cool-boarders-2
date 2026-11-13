@@ -349,4 +349,20 @@ typedef struct CourseLoadState {
     char *extra_data;
 } CourseLoadState;
 
+/* Prefix of the loaded selection record consumed by func_8001D8B4. */
+typedef struct SelectionRecord {
+    int active;
+    int acknowledged;
+    unsigned char unknown_08;
+    unsigned char result;
+    short category;
+    short index;
+} SelectionRecord;
+
+/* Halfword view retaining the saved four-byte global extent. */
+typedef struct SelectionHalfwords {
+    short low;
+    short high;
+} SelectionHalfwords;
+
 #endif
