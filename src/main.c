@@ -413,6 +413,8 @@ extern char D_80058D10[256];
 extern void *D_80058C40;
 extern int D_8005AB54;
 
+extern void *func_8001F4A8(void *allocation, unsigned int size);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4194,4 +4196,34 @@ void func_8001E560(char *name, void *buffer)
 void func_8001E8C0(void)
 {
     CdInit();
+}
+
+// FUNCTION: SCUS_943.58:0x8001E968
+int func_8001E968(char *filename, SelectionRecord **destination, int allocator)
+{
+    CdlFILE file;
+    unsigned char result[8];
+    SelectionRecord *buffer;
+    int allocation_size;
+
+    if (CdSearchFile(&file, filename) == 0) {
+        return -1;
+    }
+    allocation_size = (file.size + 0x7FF) & ~0x7FF;
+    if (allocator != 0) {
+        buffer = func_8001F28C(allocation_size);
+    } else {
+        buffer = func_8001F1A0(allocation_size);
+    }
+    *destination = buffer;
+    if (buffer == 0) {
+        return -1;
+    }
+    do {
+        while (CdControlB(2, (unsigned char *)&file.pos, 0) == 0) {
+        }
+        CdRead(allocation_size / 2048, (unsigned long *)buffer, 0x80);
+    } while (CdReadSync(0, result) != 0);
+    func_8001F4A8(buffer, file.size);
+    return file.size;
 }
