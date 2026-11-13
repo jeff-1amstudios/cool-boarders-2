@@ -24,6 +24,7 @@ case "$task_mode" in
         if [ "$#" -eq 0 ]; then set -- /projects/CB2_USA.gpr; fi
         mkdir -p "$task_root/orig/ghidra" "$task_root/reports"
         docker run --detach --rm --init --name "$task_container" \
+            --hostname coolboarders2-ghidra --add-host coolboarders2-ghidra:127.0.0.1 \
             --publish "127.0.0.1:$task_port:6080" --shm-size 256m \
             --env "GHIDRA_GUI_JAVA_OPTIONS=-Duser.name=$(id -un)" \
             --mount "type=volume,source=$task_volume,target=/home/ghidra" \
@@ -49,6 +50,7 @@ case "$task_mode" in
     headless)
         mkdir -p "$task_root/orig/ghidra" "$task_root/reports"
         exec docker run --rm --init --network none \
+            --hostname coolboarders2-ghidra --add-host coolboarders2-ghidra:127.0.0.1 \
             --env "GHIDRA_HEADLESS_JAVA_OPTIONS=-Duser.name=$(id -un)" \
             --mount "type=volume,source=$task_volume,target=/home/ghidra" \
             --mount "type=bind,source=$task_root/orig/disc,target=/inputs,readonly" \

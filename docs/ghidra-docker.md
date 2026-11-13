@@ -57,6 +57,8 @@ Close any other Ghidra process using the same project before opening it in the c
 
 Runs are temporary containers (`--rm`), execute as a non-root user matched to the host UID/GID, and use no network. Project and report writes persist through their bind mounts; application state persists in the named volume.
 
+Both launcher modes set the container hostname to `coolboarders2-ghidra` and explicitly map it to `127.0.0.1` in the container's `/etc/hosts`. This lets Java resolve its own hostname even with headless networking disabled, avoiding Log4j's `Could not determine local host name` startup error. This is a launcher setting; no image rebuild is needed. An already-running browser container picks it up the next time it is started.
+
 The launcher also supplies the host username through Ghidra's Java options. Ghidra records a project-owner name separately from filesystem UID/GID; preserving that name lets the existing macOS-created project open in the Linux container without changing its ownership metadata.
 
 ## Interactive browser desktop
