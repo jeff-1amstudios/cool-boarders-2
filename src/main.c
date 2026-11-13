@@ -4372,3 +4372,34 @@ int func_8001ED74(void *data, int clut_x, int clut_y, int image_x, int image_y)
     }
     return uploaded;
 }
+
+// FUNCTION: SCUS_943.58:0x8001EEE0
+int func_8001EEE0(void *data)
+{
+    int uploaded = 0;
+    RECT clut;
+    RECT image;
+
+    data += 4;
+    clut.x = *((unsigned short *)data)++;
+    clut.y = *((unsigned short *)data)++;
+    clut.w = *((unsigned short *)data)++;
+    clut.h = *((unsigned short *)data)++;
+    image.x = *((unsigned short *)data)++;
+    image.y = *((unsigned short *)data)++;
+    image.w = *((unsigned short *)data)++;
+    image.h = *((unsigned short *)data)++;
+    if (clut.w > 0 && clut.h > 0) {
+        LoadImage(&clut, (unsigned long *)data);
+        uploaded = 2;
+        data += clut.w * clut.h * 2;
+    }
+    if (image.w > 0 && image.h > 0) {
+        LoadImage(&image, (unsigned long *)data);
+        uploaded++;
+    }
+    if (uploaded == 0) {
+        return -1;
+    }
+    return uploaded;
+}
