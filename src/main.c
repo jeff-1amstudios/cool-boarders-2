@@ -3942,3 +3942,18 @@ int func_8001D968(void)
     demo_index = (demo_index + 1) % 3;
     return previous;
 }
+
+// FUNCTION: SCUS_943.58:0x8001DA98
+int func_8001DA98(unsigned int *records, unsigned int value)
+{
+    int result = -1;
+    int index;
+
+    for (index = 0; index < 3; index++, records += 3) {
+        if (value < *records) {
+            result = index;
+            break;
+        }
+    }
+    return result;
+}
