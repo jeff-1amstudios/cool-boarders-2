@@ -3570,3 +3570,25 @@ void func_8001BF08(void)
     func_8003D714(2, 0, 0);
     func_8003D714(1, 1, 3);
 }
+
+// FUNCTION: SCUS_943.58:0x8001BF48
+int func_8001BF48(int countdown)
+{
+    int result = -1;
+    int remaining = countdown;
+
+    while (remaining > 0) {
+        if ((func_8003D714(0, 0, 0) & 0x180) == 0x80) {
+            func_8003D714(1, 1, 0);
+            func_8003D714(1, 1, 0);
+            func_8003D714(5, 0, 0);
+            SetDispMask(1);
+            VSync(0);
+            D_8005AB5C = 1;
+            result = 0;
+            break;
+        }
+        remaining--;
+    }
+    return result;
+}
