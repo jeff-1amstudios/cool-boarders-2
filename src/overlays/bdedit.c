@@ -567,3 +567,15 @@ void func_8005D860(int *cursor)
     cursor[0] = (D_800631F8 % 8 * 8 + 28) << 16;
     cursor[1] = (D_800631F8 / 8 * 8 + 72) << 16;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005D8C4
+void func_8005D8C4(unsigned short *packed)
+{
+    RECT rect;
+
+    rect.x = 0x300;
+    rect.y = 0x1F7;
+    rect.w = 0x100;
+    rect.h = 1;
+    LoadImage(&rect, (unsigned long *)packed);
+}
