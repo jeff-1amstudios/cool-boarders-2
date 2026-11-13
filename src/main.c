@@ -321,6 +321,9 @@ extern CardGhostFrame card_ghost_frame_6;
 
 extern int func_8001A4D4(int slot, unsigned int *data);
 
+extern CardGhostFilename card_ghost_read_filename;
+extern int func_8001A608(CardGhostHeader *header, int check_payload);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -2980,4 +2983,30 @@ unsigned short func_8001A410(unsigned int *data)
     }
     func_80017A00(events);
     return result & 0xFFFF;
+}
+
+// FUNCTION: SCUS_943.58:0x8001A4D4
+int func_8001A4D4(int slot, unsigned int *data)
+{
+    CardGhostReadWindow block;
+    CardGhostFilename filename;
+    int result;
+    int fd;
+
+    filename = card_ghost_read_filename;
+    result = -1;
+    filename.text[22] = slot + '1';
+    fd = open(filename.text, 1);
+    if (fd >= 0) {
+        lseek(fd, 0x100, 0);
+        if (read(fd, &block, 0x80) == 0x80) {
+            if (func_8001A608(&block.header, 0) == 0) {
+                result = 0;
+                *(CardGhostSummary *)data = *(CardGhostSummary *)
+                    ((unsigned char *)&block + block.header.data_offset);
+            }
+        }
+        close(fd);
+    }
+    return result;
 }

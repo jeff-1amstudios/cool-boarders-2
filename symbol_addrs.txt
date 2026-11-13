@@ -441,3 +441,6 @@ card_ghost_frame_6 = 0x80010980; // size:0x80
 
 func_8001A410 = 0x8001A410; // type:func size:0xC4
 func_8001A4D4 = 0x8001A4D4; // type:func size:0x134
+
+card_ghost_read_filename = 0x80010A00; // size:0x18
+func_8001A608 = 0x8001A608; // type:func size:0xB0

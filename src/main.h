@@ -257,4 +257,15 @@ typedef struct CardGhostHeader {
     unsigned int data_checksum;
 } CardGhostHeader;
 
+/* Initial ghost-file read: 24-byte header plus the remaining read window. */
+typedef struct CardGhostReadWindow {
+    CardGhostHeader header;
+    unsigned char remaining[104];
+} CardGhostReadWindow;
+
+/* Four payload words returned while inspecting a ghost slot. */
+typedef struct CardGhostSummary {
+    unsigned int words[4];
+} CardGhostSummary;
+
 #endif
