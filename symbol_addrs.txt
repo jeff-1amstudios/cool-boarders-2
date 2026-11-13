@@ -616,3 +616,7 @@ func_8004392C = 0x8004392C; // type:func size:0x20
 D_8005AB48 = 0x8005AB48; // type:u32 size:0x4
 D_80058B54 = 0x80058B54; // type:u32 size:0x4
 D_8005AB40 = 0x8005AB40; // type:u32 size:0x4
+
+InitCARD2 = 0x800445E0; // type:func size:0xC
+_patch_card = 0x80044668; // type:func size:0x88
+_patch_card2 = 0x80044720; // type:func size:0x6C

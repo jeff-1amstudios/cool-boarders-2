@@ -472,6 +472,10 @@ extern unsigned long D_8005AB48;
 extern unsigned long D_80058B54;
 extern unsigned long D_8005AB40;
 
+extern void InitCARD2(int mode);
+extern void _patch_card(void);
+extern void _patch_card2(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4739,4 +4743,15 @@ void func_8004392C(unsigned long mask, unsigned long start_frame, unsigned long 
     D_8005AB48 = mask;
     D_80058B54 = start_frame;
     D_8005AB40 = end_frame;
+}
+
+// FUNCTION: SCUS_943.58:0x80044524
+void func_80044524(int mode)
+{
+    ChangeClearPAD(0);
+    func_8003CB2C();
+    InitCARD2(mode);
+    _patch_card();
+    _patch_card2();
+    func_8003CB3C();
 }
