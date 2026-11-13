@@ -201,7 +201,7 @@ segments:
       - [0xE0B4, c, func_8001D8B4]
       - [0xE168, c, func_8001D968]
       - [0xE298, c, func_8001DA98]
-      - [0xE2D4, asm, record_find_less]
+      - [0xE2D4, c, func_8001DAD4]
       - [0xE310, asm, after_record_find_less]
       - [0xED60, asm, copy_bounded_name]
       - [0xEDAC, asm, after_copy_bounded_name]

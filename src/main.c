@@ -3957,3 +3957,18 @@ int func_8001DA98(unsigned int *records, unsigned int value)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x8001DAD4
+int func_8001DAD4(unsigned int *records, unsigned int value)
+{
+    int result = -1;
+    int index;
+
+    for (index = 0; index < 3; index++, records += 3) {
+        if (*records < value) {
+            result = index;
+            break;
+        }
+    }
+    return result;
+}
