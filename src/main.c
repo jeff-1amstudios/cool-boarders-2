@@ -4766,3 +4766,12 @@ void func_80044578(void)
     ChangeClearPAD(0);
     func_8003CB3C();
 }
+
+// FUNCTION: SCUS_943.58:0x8003CA24
+int func_8003CA24(int mode)
+{
+    int previous_mode = D_8004F3B4;
+
+    D_8004F3B4 = mode;
+    return previous_mode;
+}
