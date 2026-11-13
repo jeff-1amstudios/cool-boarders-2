@@ -784,3 +784,16 @@ unsigned char *func_8005E784(unsigned long *ot, unsigned char *packet, int *curs
     color.r = color.g = color.b = abs((D_80047DC0 & 31) - 16) * 8 + 96;
     return func_8005EDD8(ot, packet, x, y, 4, 4, &color);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E840
+unsigned char *func_8005E840(unsigned long *ot, unsigned char *packet, int *cursor)
+{
+    int x;
+    int y;
+    CVECTOR color;
+
+    x = ((cursor[0] >> 16) - 278) / 24 * 24 + 277;
+    y = ((cursor[1] >> 16) - 63) / 15 * 15 + 62;
+    color.r = color.g = color.b = abs((D_80047DC0 & 31) - 16) * 8 + 96;
+    return func_8005EDD8(ot, packet, x, y, 25, 16, &color);
+}
