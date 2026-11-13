@@ -560,3 +560,10 @@ void func_8005D764(int *cursor, unsigned int buttons, unsigned int pressed,
         func_8005DB4C(cursor, palette);
     }
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005D860
+void func_8005D860(int *cursor)
+{
+    cursor[0] = (D_800631F8 % 8 * 8 + 28) << 16;
+    cursor[1] = (D_800631F8 / 8 * 8 + 72) << 16;
+}

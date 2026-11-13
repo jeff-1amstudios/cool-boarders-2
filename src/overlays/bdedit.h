@@ -22,4 +22,6 @@ typedef struct BdEditTextureChoices {
     SpriteTexture entries[3];
 } BdEditTextureChoices;
 
+void func_8005D860(int *cursor);
+
 #endif
