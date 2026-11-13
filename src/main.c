@@ -3592,3 +3592,19 @@ int func_8001BF48(int countdown)
     }
     return result;
 }
+
+// FUNCTION: SCUS_943.58:0x8001BFFC
+int func_8001BFFC(void)
+{
+    unsigned int status;
+
+    do {
+        status = func_8003D714(0, 0, 0);
+    } while ((status & 0x100) != 0);
+    func_8003D714(1, 1, 0);
+    func_8003D714(5, 0, 0);
+    SetDispMask(1);
+    VSync(0);
+    D_8005AB5C = 2;
+    return 0;
+}
