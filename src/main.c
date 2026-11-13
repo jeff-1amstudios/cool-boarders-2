@@ -443,6 +443,8 @@ extern void func_8002EE60(long projection);
 
 extern PACKET *D_80058ACC;
 
+extern int D_8004F3B4; /* Video mode selected by func_8003CA24. */
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4612,4 +4614,10 @@ void func_8002EE40(long projection)
 void func_8002F750(PACKET *work_base)
 {
     D_80058ACC = work_base;
+}
+
+// FUNCTION: SCUS_943.58:0x8003CA3C
+int func_8003CA3C(void)
+{
+    return D_8004F3B4;
 }
