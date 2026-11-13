@@ -375,6 +375,9 @@ extern AssetFileIndices asset_file_indices_1;
 extern AssetFileIndices asset_file_indices_2;
 extern AssetFileIndices asset_file_indices_3;
 
+extern int D_800570E0;
+extern int func_8001C6EC(unsigned int *state, int mode);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3715,4 +3718,27 @@ int func_8001C628(File56LoadState *state)
     state->unknown_04 = 0;
     func_80013B60(0x56, 0, (int)&state->file_56, 1);
     return 3;
+}
+
+// FUNCTION: SCUS_943.58:0x8001C67C
+void func_8001C67C(unsigned int *state, int mode)
+{
+    int remaining;
+    unsigned int *cursor;
+
+    if (D_800570E0 == 6) {
+        card_extra_setting_0 = 0;
+        card_extra_setting_1 = 0;
+        card_extra_setting_2 = 0;
+        card_extra_setting_3 = 0;
+        card_extra_setting_4 = 0;
+    }
+    remaining = 15;
+    cursor = state + 15;
+    do {
+        *cursor = 0;
+        remaining--;
+        cursor--;
+    } while (remaining >= 0);
+    func_8001C6EC(state, mode);
 }
