@@ -28,4 +28,6 @@ typedef struct BdEditMenuTextures {
     SpriteTexture entries[9][2];
 } BdEditMenuTextures;
 
+void func_8005C204(unsigned char **planes, unsigned char *packed);
+
 #endif

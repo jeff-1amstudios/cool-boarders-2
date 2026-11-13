@@ -64,6 +64,7 @@ extern int D_800631F4;
 
 extern BdEditMenuTextures D_80062E70;
 
+extern BdEditPixelMasks D_80062E20;
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -962,4 +963,37 @@ void func_8005EC7C(unsigned short **planes, unsigned short *palette)
         i--;
         palette--;
     } while (i >= 0);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005C204
+void func_8005C204(unsigned char **planes, unsigned char *packed)
+{
+    BdEditPixelMasks masks = D_80062E20;
+    unsigned short *destination;
+    unsigned short value;
+    int plane;
+    int pixel;
+    unsigned char **current;
+
+    destination = (unsigned short *)0x801F2000;
+    plane = 0;
+    current = planes;
+    do {
+        pixel = 0;
+        do {
+            *destination++ = ((unsigned short *)*current)[pixel] |
+                             masks.values[*packed & 3];
+            *destination++ = ((unsigned short *)*current)[pixel + 1] |
+                             masks.values[(*packed >> 2) & 3];
+            *destination++ = ((unsigned short *)*current)[pixel + 2] |
+                             masks.values[(*packed >> 4) & 3];
+            value = ((unsigned short *)*current)[pixel + 3];
+            value |= masks.values[*packed >> 6];
+            packed++;
+            *destination++ = value;
+            pixel += 4;
+        } while (pixel < 0x800);
+        plane++;
+        current++;
+    } while (plane < 2);
 }
