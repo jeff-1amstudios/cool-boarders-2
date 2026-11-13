@@ -296,4 +296,17 @@ typedef struct FileLoadState {
     unsigned int unknown_20[8];
 } FileLoadState;
 
+/* Eight signed file indices copied as one halfword-aligned table. */
+typedef struct AssetFileIndices {
+    short entries[8];
+} AssetFileIndices;
+
+/* Completion destinations for the seven assets queued by func_8001C3C4. */
+typedef struct AssetLoadState {
+    int active;
+    int unknown_04;
+    char *assets[7];
+    unsigned int unknown_24[7];
+} AssetLoadState;
+
 #endif

@@ -487,3 +487,9 @@ func_8001BF48 = 0x8001BF48; // type:func size:0xB4
 func_8001BFFC = 0x8001BFFC; // type:func size:0x6C
 
 func_8001C130 = 0x8001C130; // type:func size:0xD8
+
+func_8001C3C4 = 0x8001C3C4; // type:func size:0x264
+asset_file_indices_0 = 0x80010C94; // size:0x10
+asset_file_indices_1 = 0x80010CA4; // size:0x10
+asset_file_indices_2 = 0x80010CB4; // size:0x10
+asset_file_indices_3 = 0x80010CC4; // size:0x10

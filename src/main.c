@@ -370,6 +370,11 @@ extern unsigned char D_800506A7;
 extern unsigned char D_800506A8[7];
 extern unsigned char D_800506AF;
 
+extern AssetFileIndices asset_file_indices_0;
+extern AssetFileIndices asset_file_indices_1;
+extern AssetFileIndices asset_file_indices_2;
+extern AssetFileIndices asset_file_indices_3;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3662,5 +3667,35 @@ int func_8001C130(FileLoadState *state, short mode)
     state->mode = mode;
     func_80013B60(0x17, 0, (int)&state->file_17, 1);
     func_80013B60(0x18, 0, (int)&state->file_18, 1);
+    return 6;
+}
+
+// FUNCTION: SCUS_943.58:0x8001C3C4
+int func_8001C3C4(AssetLoadState *state, short *selection)
+{
+    AssetFileIndices tables[4];
+    int remaining;
+    unsigned int *cursor;
+
+    tables[0] = asset_file_indices_0;
+    tables[1] = asset_file_indices_1;
+    tables[2] = asset_file_indices_2;
+    tables[3] = asset_file_indices_3;
+    remaining = 15;
+    cursor = (unsigned int *)state + 15;
+    do {
+        *cursor = 0;
+        remaining--;
+        cursor--;
+    } while (remaining >= 0);
+    state->active = 13;
+    func_80013B60(0x6E, 0, 0, 0x104);
+    func_80013B60(0x6F, 0, (int)&state->assets[0], 1);
+    func_80013B60(tables[0].entries[*(short *)&card_extra_setting_0], 0, (int)&state->assets[1], 1);
+    func_80013B60(tables[1].entries[selection[0]], 0, (int)&state->assets[2], 1);
+    func_80013B60(tables[2].entries[selection[1]], 0, (int)&state->assets[3], 1);
+    func_80013B60(tables[3].entries[selection[2]], 0, (int)&state->assets[4], 1);
+    func_80013B60(0x3E, 0, (int)&state->assets[5], 1);
+    func_80013B60(0x3F, 0, (int)&state->assets[6], 1);
     return 6;
 }
