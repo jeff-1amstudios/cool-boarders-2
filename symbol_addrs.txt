@@ -527,3 +527,6 @@ func_8001DE20 = 0x8001DE20; // type:func size:0x1AC
 D_8001125C = 0x8001125C;
 
 func_8001DFCC = 0x8001DFCC; // type:func size:0x448 rom:0xE7CC
+
+D_80058000 = 0x80058000; // type:s32 size:0x4
+D_80058004 = 0x80058004; // size:0x20

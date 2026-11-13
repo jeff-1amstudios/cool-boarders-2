@@ -403,6 +403,9 @@ extern short D_800570DC;
 
 extern BackgroundTextures D_8001125C;
 
+extern int D_80058000;
+extern int D_80058004[2][4];
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4119,4 +4122,18 @@ unsigned char *func_8001DFCC(unsigned long *ordering_table, unsigned char *packe
     mode->tag = (mode->tag & 0xFF000000) | (*ordering_table & 0xFFFFFF);
     *ordering_table = (*ordering_table & 0xFF000000) | ((unsigned long)mode & 0xFFFFFF);
     return packet;
+}
+
+// FUNCTION: SCUS_943.58:0x8001E414
+void func_8001E414(void)
+{
+    int i;
+
+    D_80058000 = 0;
+    for (i = 0; i < 2; i++) {
+        D_80058004[i][0] = 0;
+        D_80058004[i][1] = 0;
+        D_80058004[i][2] = 0;
+        D_80058004[i][3] = 0;
+    }
 }
