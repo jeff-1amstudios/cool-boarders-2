@@ -797,3 +797,27 @@ unsigned char *func_8005E840(unsigned long *ot, unsigned char *packet, int *curs
     color.r = color.g = color.b = abs((D_80047DC0 & 31) - 16) * 8 + 96;
     return func_8005EDD8(ot, packet, x, y, 25, 16, &color);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005E9EC
+void func_8005E9EC(unsigned char **planes)
+{
+    int row;
+    int column;
+    int opposite;
+    unsigned short *pixel;
+    unsigned short saved;
+
+    row = 0;
+    do {
+        column = 0;
+        do {
+            pixel = (unsigned short *)((row * 64 + column) * 2 + (unsigned int)planes[0]);
+            opposite = ((31 - row) * 64 + column) * 2;
+            saved = *pixel;
+            *pixel = *(unsigned short *)(opposite + (unsigned int)planes[1]);
+            column++;
+            *(unsigned short *)(opposite + (unsigned int)planes[1]) = saved;
+        } while (column < 64);
+        row++;
+    } while (row < 32);
+}
