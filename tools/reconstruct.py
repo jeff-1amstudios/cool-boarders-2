@@ -126,6 +126,9 @@ def content_hashes(paths):
 
 
 def command(arguments, name, timeout=300, directory=None, input_text=None, env=None):
+    env = dict(os.environ if env is None else env)
+    # Splat's tqdm bars are interactive redraws, unsuitable for saved batch logs.
+    env.setdefault('TQDM_DISABLE', '1')
     path = (directory or STATE.parent) / f"{name}.log"
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
