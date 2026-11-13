@@ -23,6 +23,8 @@ extern unsigned char *func_8005F4AC(unsigned long *ot, unsigned char *packet,
 extern void func_8005C328(unsigned char **planes, int plane);
 extern int D_800631FC;
 
+extern BdEditPixelMasks D_80062E18;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -78,6 +80,46 @@ void func_8005C020(unsigned char **planes)
             pixel++;
         } while (pixel < 0x800);
         fill += 0x101;
+        plane++;
+        current++;
+    } while (plane < 2);
+    func_8005C328(planes, 0);
+    func_8005C328(planes, 1);
+    D_800631FC = 0;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005C0A8
+void func_8005C0A8(unsigned char **planes, unsigned char *packed)
+{
+    BdEditPixelMasks masks = D_80062E18;
+    unsigned short *source;
+    int plane;
+    int pixel;
+    unsigned short value;
+    unsigned short *maskValues;
+    unsigned char **current;
+
+    source = (unsigned short *)0x801F2000;
+    plane = 0;
+    maskValues = masks.values;
+    current = planes;
+    do {
+        pixel = 0;
+        do {
+            value = *source++;
+            value &= maskValues[*packed & 3];
+            ((unsigned short *)*current)[pixel] = value;
+            value = *source++;
+            value &= maskValues[(*packed >> 2) & 3];
+            ((unsigned short *)*current)[pixel + 1] = value;
+            value = *source++;
+            value &= maskValues[(*packed >> 4) & 3];
+            ((unsigned short *)*current)[pixel + 2] = value;
+            value = *source++;
+            value &= maskValues[*packed++ >> 6];
+            ((unsigned short *)*current)[pixel + 3] = value;
+            pixel += 4;
+        } while (pixel < 0x800);
         plane++;
         current++;
     } while (plane < 2);

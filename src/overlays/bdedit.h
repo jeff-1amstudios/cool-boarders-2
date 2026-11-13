@@ -12,4 +12,10 @@ unsigned char *func_8005BE94(unsigned long *ot, unsigned char *packet,
 
 void func_8005C020(unsigned char **planes);
 
+typedef struct BdEditPixelMasks {
+    unsigned short values[4];
+} BdEditPixelMasks;
+
+void func_8005C0A8(unsigned char **planes, unsigned char *packed);
+
 #endif
