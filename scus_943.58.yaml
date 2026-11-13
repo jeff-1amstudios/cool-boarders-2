@@ -181,6 +181,8 @@ segments:
       - [0xBDD0, asm, boot_after_globals]
       - [0xC1A4, c, func_8001B9A4]
       - [0xC278, asm, after_func_8001B9A4]
+      - [0xC2FC, c, func_8001BAFC]
+      - [0xC4B4, asm, after_func_8001BAFC]
       - [0xC708, asm, two_command_calls]
       - [0xC748, asm, after_two_command_calls]
       - [0xC8D4, asm, clear_words]

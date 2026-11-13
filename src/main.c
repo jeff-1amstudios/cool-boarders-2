@@ -364,6 +364,12 @@ extern int func_8003D714(int command, int selector, ...);
 extern int func_8001C068(int event);
 extern void func_8001BF08(void);
 
+extern int D_8005AB5C;
+extern unsigned char D_800506A0[7];
+extern unsigned char D_800506A7;
+extern unsigned char D_800506A8[7];
+extern unsigned char D_800506AF;
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3456,4 +3462,62 @@ void func_8001B9A4(void)
     func_8003D714(1, 4, 8);
     func_8003D714(4, 0, func_8001C068);
     func_8001BF08();
+}
+
+// FUNCTION: SCUS_943.58:0x8001BAFC
+unsigned char func_8001BAFC(unsigned char length, unsigned char *data, unsigned char status)
+{
+    unsigned char result = 0;
+    unsigned char *send;
+    unsigned char *destination;
+    unsigned char *input;
+    unsigned char *source;
+    unsigned char *status_byte;
+    int i;
+
+    if (D_8005AB5C >= 3)
+        goto inactive;
+    if (D_8005AB5C <= 0)
+        goto inactive;
+    {
+        input = data;
+        send = D_800506A0;
+        do {
+            if ((int)send < (int)(D_800506A0 + length))
+                *send = *input;
+            else
+                *send = 0;
+            send++;
+            input++;
+        } while ((int)send < (int)(D_800506A0 + 8));
+        status_byte = &D_800506A7;
+        *status_byte = status;
+        D_800506B0 = 500000;
+        D_800506B4 = 500000;
+        if (D_8005AB5C == 1) {
+            write(D_8005069C, status_byte - 7, 8);
+            if (D_8005AB5C != -1)
+                read(D_80050698, D_800506A8, 8);
+        } else {
+            read(D_80050698, D_800506A8, 8);
+            if (D_8005AB5C != -1)
+                write(D_8005069C, status_byte - 7, 8);
+        }
+        for (i = 0; i < length; i++)
+            data[i] = D_800506A8[i];
+        result = D_800506AF;
+        goto done;
+    }
+inactive:
+    {
+        if (length != 0) {
+            source = data;
+            destination = (unsigned char *)(length + (int)data);
+            do {
+                *source++ = 0;
+            } while ((int)source < (int)destination);
+        }
+    }
+done:
+    return result;
 }

@@ -477,3 +477,9 @@ D_8005069C = 0x8005069C; // type:s32 size:0x4
 D_800506B0 = 0x800506B0; // type:s32 size:0x4
 D_800506B4 = 0x800506B4; // type:s32 size:0x4
 sio_filename = 0x80010C50; // size:0x5
+
+D_8005AB5C = 0x8005AB5C; // type:s32 size:0x4
+D_800506A0 = 0x800506A0; // size:0x7
+D_800506A7 = 0x800506A7; // type:u8 size:0x1
+D_800506A8 = 0x800506A8; // size:0x7
+D_800506AF = 0x800506AF; // type:u8 size:0x1
