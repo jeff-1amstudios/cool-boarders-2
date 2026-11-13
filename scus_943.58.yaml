@@ -189,7 +189,7 @@ segments:
       - [0xC7FC, c, func_8001BFFC]
       - [0xC868, asm, after_func_8001BFFC]
       - [0xC8D4, c, clear_words]
-      - [0xC8F4, asm, clear_words_flag]
+      - [0xC8F4, c, clear_words_flag]
       - [0xC930, asm, after_clear_words_flag]
       - [0xE298, asm, record_find_greater]
       - [0xE2D4, asm, record_find_less]

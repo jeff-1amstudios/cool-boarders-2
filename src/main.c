@@ -3621,3 +3621,24 @@ void func_8001C0D4(unsigned int *words)
         words--;
     } while (remaining >= 0);
 }
+
+// FUNCTION: SCUS_943.58:0x8001C0F4
+int func_8001C0F4(int *state, int enabled)
+{
+    int remaining = 15;
+    int *cursor = state + 15;
+
+    do {
+        *cursor = 0;
+        remaining--;
+        cursor--;
+    } while (remaining >= 0);
+    state[0] = 0;
+    state[1] = 0;
+    if (enabled != 0) {
+        state[2] = -1;
+    } else {
+        state[2] = 0;
+    }
+    return 3;
+}
