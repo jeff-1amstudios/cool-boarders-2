@@ -174,3 +174,33 @@ confirmed `int func_80017DE8(void)` and `void func_8001827C(void)`. Both entries
 were removed from the persistent deferred queue only after those saves and
 confirmation; three older deferrals remain. The progress snapshot now records
 74 matching resident C functions.
+
+## Extern-insertion recoveries — 2026-11-14
+
+Recovered four preserved candidates that had reached 100% selected-object
+diagnostic similarity but were rejected before full-file acceptance:
+
+| Image | Function | C bytes |
+| --- | --- | ---: |
+| SCUS_943.58 | `0x8003CA24` | 24 |
+| BDEDIT.BIN | `0x8005C204` | 292 |
+| BDEDIT.BIN | `0x8005D0F0` | 164 |
+| BDEDIT.BIN | `0x8005E90C` | 224 |
+
+The old shared-source guard required the entire previous declaration area to be
+an exact prefix. Adding an extern among related declarations therefore failed
+even when no existing declaration changed. The guard now permits insertion-only
+extern declarations and local includes between existing lines, outside helper
+bodies. Existing lines, function blocks and header-layout protections remain
+enforced. The archived declaration additions pass this revised source review.
+
+Each recovered candidate passed an exact comparison of its containing file
+under the unchanged compiler recipe and pinned references, adding 704 bytes of
+matching C. Replayable analysis records are under `config/ghidra/`; recovery
+logs and feedback transactions are under ignored
+`reports/reconstruction/extern-recovery/`. Original attempt records are preserved.
+
+Final plain `make validate` passed all 15 pinned full-file comparisons. All four
+Ghidra saves succeeded; fresh read-only decompilations confirmed the accepted
+prototypes. The persistent queue now contains 38 deferred functions, and the
+progress snapshot records 187 matching C function instances.
