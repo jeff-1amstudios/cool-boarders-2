@@ -204,3 +204,30 @@ Final plain `make validate` passed all 15 pinned full-file comparisons. All four
 Ghidra saves succeeded; fresh read-only decompilations confirmed the accepted
 prototypes. The persistent queue now contains 38 deferred functions, and the
 progress snapshot records 187 matching C function instances.
+
+## Shared serial receive state — 2026-11-14
+
+The preserved `SCUS_943.58:0x8003D1B4` candidate had a 100% selected-object
+score but failed to link because its `serial_read_state` alias at `0x80054C7C`
+left the already accepted `func_8003D154` referencing an unresolved
+`D_80054C7C`. Recovery uses one authored `SerialReadState` in `main.h`, with
+`active`, `cursor` and `remaining` at offsets 0, 4 and 8. Both receive routines
+now use these fields; the three individual declarations and linker symbols
+are removed. The 12-byte grouping retains their combined original extent.
+
+The hardware pointer retains its existing `D_8004F3CC` name and volatile
+register pointee. Its pointer object is no longer volatile, allowing the
+pointer reuse required by the recovered routine without a second alias.
+`SerialIoRegisters` describes the accessed hardware registers separately from
+the established register prefix, and `SerialPollCallback` names the callback
+signature. The reconstructed routine contributes 640 bytes of matching C.
+
+Recovery diagnostics and Ghidra transactions are preserved under ignored
+`reports/reconstruction/serial-state-recovery/`; the original failed attempt
+is unchanged. Compiler settings and pinned references remain unchanged.
+
+Final plain `make validate` passed all 15 pinned full-file comparisons; both
+receive functions also report 100% object similarity. The Ghidra transaction
+saved the 12-byte state type and reviewed globals. Fresh read-only exports of
+both functions confirm `serial_read_state.active`, `.cursor` and `.remaining`
+references. The deferred queue is now 37, with 188 matching C function instances.
