@@ -257,7 +257,7 @@ segments:
       - [0x2D94C, c, func_8003D14C]
       - [0x2D954, c, func_8003D154]
       - [0x2D9B4, asm, after_func_8003D154]
-      - [0x2E95C, asm, func_8003E15C]
+      - [0x2E95C, c, func_8003E15C]
       - [0x2E964, asm, func_8003E164]
       - [0x2E96C, asm, after_func_8003E164]
       - [0x2EAF8, asm, func_8003E2F8]

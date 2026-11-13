@@ -4674,3 +4674,9 @@ int func_8003D154(unsigned char *destination, int count)
     serial->control |= 0x20;
     return 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8003E15C
+int func_8003E15C(void)
+{
+    return 0;
+}
