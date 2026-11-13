@@ -353,6 +353,17 @@ extern int StartPAD(void);
 
 extern int D_80047D18;
 
+extern int D_80050698;
+extern int D_8005069C;
+extern int D_800506B0;
+extern int D_800506B4;
+extern char sio_filename[5];
+extern void func_8003D0D4(void);
+/* Command-dependent third argument: serial settings or a callback. */
+extern int func_8003D714(int command, int selector, ...);
+extern int func_8001C068(int event);
+extern void func_8001BF08(void);
+
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -3427,4 +3438,22 @@ int func_8001B5B4(int port, int countdown)
     previous = (&D_80047D18)[port];
     (&D_80047D18)[port] = countdown;
     return previous;
+}
+
+// FUNCTION: SCUS_943.58:0x8001B9A4
+void func_8001B9A4(void)
+{
+    D_80050698 = -1;
+    D_8005069C = -1;
+    D_800506B0 = 500000;
+    D_800506B4 = 500000;
+    func_8003D0D4();
+    func_8003CB2C();
+    D_80050698 = open(sio_filename, 1);
+    D_8005069C = open(sio_filename, 2);
+    func_8003CB3C();
+    func_8003D714(1, 3, 0x1FA400);
+    func_8003D714(1, 4, 8);
+    func_8003D714(4, 0, func_8001C068);
+    func_8001BF08();
 }

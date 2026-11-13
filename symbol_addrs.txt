@@ -471,3 +471,9 @@ SendPAD = 0x8003CFB4;
 StartPAD = 0x8003CD04;
 
 D_80047D18 = 0x80047D18; // type:s32 size:0x4
+
+D_80050698 = 0x80050698; // type:s32 size:0x4
+D_8005069C = 0x8005069C; // type:s32 size:0x4
+D_800506B0 = 0x800506B0; // type:s32 size:0x4
+D_800506B4 = 0x800506B4; // type:s32 size:0x4
+sio_filename = 0x80010C50; // size:0x5
