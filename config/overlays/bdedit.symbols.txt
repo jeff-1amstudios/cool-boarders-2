@@ -1,3 +1,10 @@
 // BDEDIT.BIN; reference SHA-256 is pinned in config/overlays.json.
 D_8005AB68 = 0x8005AB68; // type:u32 size:0x4
 func_8005AB6C = 0x8005AB6C; // type:func
+func_80015948 = 0x80015948; // type:func
+func_8005AC10 = 0x8005AC10; // type:func
+func_8001B320 = 0x8001B320; // type:func
+rand = 0x800449F8; // type:func
+func_8001C130 = 0x8001C130; // type:func
+D_80045370 = 0x80045370; // type:u32 size:0x4
+D_8004536C = 0x8004536C; // type:u32 size:0x4
