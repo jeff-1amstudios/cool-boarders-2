@@ -1640,3 +1640,40 @@ unsigned char *func_8005EDD8(unsigned long *ot, unsigned char *packet,
     ((PrimitiveTag *)ot)->address = (unsigned long)line;
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005EEF8
+unsigned char *func_8005EEF8(unsigned long *ot, unsigned char *packet,
+                          int x, int y, int w, int h, CVECTOR *color, int flags)
+{
+    TILE *tile;
+    DR_TPAGE *mode;
+
+    tile = (TILE *)packet;
+    packet += sizeof(TILE);
+    ((PrimitiveTag *)tile)->length = 3;
+    tile->code = 0x60;
+    tile->x0 = x;
+    tile->y0 = y;
+    tile->w = w;
+    tile->h = h;
+    tile->r0 = color->r;
+    tile->g0 = color->g;
+    tile->b0 = color->b;
+    if (flags & 0x80) {
+        tile->code |= 2;
+    }
+    ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)tile;
+
+    if (flags & 0x80) {
+        mode = (DR_TPAGE *)packet;
+        packet += sizeof(DR_TPAGE);
+        ((PrimitiveTag *)mode)->length = 1;
+        mode->code[0] = 0xE1000000 |
+            ((GetGraphType() == 1 || GetGraphType() == 2) ?
+             (((flags & 3) << 5) & 0x27FF) : (((flags & 3) << 5) & 0x09FF));
+        ((PrimitiveTag *)mode)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)mode;
+    }
+    return packet;
+}
