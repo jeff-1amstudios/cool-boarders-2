@@ -681,3 +681,39 @@ void func_8005E454(GsOT *ot, BpPlayer *player)
         ot->org -= offset;
     }
 }
+
+// FUNCTION: BP.BIN:0x8005E594
+int func_8005E594(VECTOR *origin, MATRIX *matrix, VECTOR *normal)
+{
+    int x, y, z;
+    VECTOR difference;
+    int dx, dy, dz;
+    int nx, ny, nz;
+    int offset, first, second;
+
+    if (origin) {
+        x = origin->vx;
+        y = origin->vy;
+        z = origin->vz;
+    } else {
+        x = 0;
+        y = 0;
+        z = 0;
+    }
+    nx = normal->vx;
+    ny = normal->vy;
+    nz = normal->vz;
+    dx = x - nx;
+    dy = y - ny;
+    dz = z - nz;
+    offset = -(dx * nx + dy * ny + dz * nz);
+    first = x * nx + y * ny + z * nz + offset;
+    second = matrix->t[0] * nx + matrix->t[1] * ny + matrix->t[2] * nz + offset;
+    difference.vx = dx;
+    difference.vy = dy;
+    difference.vz = dz;
+    if ((first > 0 && second >= 0) || (first < 0 && second <= 0)) {
+        return -1;
+    }
+    return 0;
+}
