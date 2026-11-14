@@ -3029,3 +3029,36 @@ int func_80061DC4(unsigned char *pixels, int x, int y, int color,
     } while (x < 128 && func_80061FA0(pixels, visited, mask, original, color, x, y));
     return count;
 }
+
+// FUNCTION: BDEDIT.BIN:0x80061FA0
+int func_80061FA0(unsigned char *pixels, unsigned char *visited,
+                   unsigned char *mask, unsigned int original,
+                   int color, int x, int y)
+{
+    int result;
+    int mask_x;
+    int mask_y;
+    int allowed;
+
+    result = 0;
+    if (pixels[y * 128 + x] == original) {
+        mask_x = x;
+        mask_y = y;
+        allowed = 0;
+        if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+            if (x >= 128) {
+                mask_x = x - 128;
+                mask_y = y + 32;
+            }
+            if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                allowed = 1;
+            }
+        }
+        if (allowed) {
+            if (((visited[y * 16 + x / 8] >> (x % 8)) & 1) == 0) {
+                result = 1;
+            }
+        }
+    }
+    return result;
+}
