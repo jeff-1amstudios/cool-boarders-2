@@ -51,6 +51,16 @@ extern short D_8009E93A;
 extern short D_8009E93E;
 extern DVECTOR D_8009E940;
 
+extern void func_8005E95C(GsOT *ot, BpPlayer *player, int first, int second);
+extern int func_8005D33C(GsOT *ot, int player, int first, int second, int mode);
+extern void func_8005D760(GsOT *ot, int player, RECT *clip,
+                          unsigned char red, unsigned char green, unsigned char blue);
+extern void func_80016748(void);
+extern void func_80016AEC(void);
+extern unsigned char D_80097980[];
+extern unsigned char D_80097981[];
+extern unsigned char D_80097982[];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -293,4 +303,47 @@ void func_8005BAEC(int mode)
         D_8009E93A = D_80058E18;
         break;
     }
+}
+
+// FUNCTION: BP.BIN:0x8005D1AC
+void func_8005D1AC(int first, int second, int mode)
+{
+    int player = 0;
+    GsOT **base = &D_8009FC44;
+    GsOT **current;
+    int results[2];
+    int offset;
+    int color_offset;
+    RECT *clip;
+    GsOT *ot;
+    GsOT *initial_ot;
+
+    func_8005E95C(*base, D_8009FA4C[0], first, second);
+    current = base;
+    initial_ot = *current;
+    results[0] = func_8005D33C(initial_ot, 0, first, second, mode);
+    offset = 0;
+    VSync(D_8009D66C);
+    ResetGraph(1);
+    GsSwapDispBuff();
+    do {
+        GsSetOffset(*(short *)((unsigned char *)&D_8009E930.vx + offset),
+                    *(short *)((unsigned char *)&D_8009E930.vy + offset));
+        clip = (RECT *)(&D_8009E934 + player * 4);
+        GsSetClip(clip);
+        if (*(int *)((unsigned char *)results + offset) == -1) {
+            color_offset = D_8009E958 * 8;
+            GsSortClear(D_80097980[color_offset], D_80097981[color_offset],
+                        D_80097982[color_offset], D_8009FC44);
+        } else {
+            func_8005D760(*current, player, clip, 0, 0, 0);
+        }
+        ot = *current;
+        current++;
+        offset += 4;
+        player++;
+        DrawOTag((u_long *)(ot->org + 0x7FF));
+    } while (player < 1);
+    func_80016748();
+    func_80016AEC();
 }
