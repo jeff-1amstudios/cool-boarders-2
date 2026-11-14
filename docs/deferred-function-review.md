@@ -302,3 +302,75 @@ for extern bounds and symbol sizes. No supervisor string check was added.
 Recovery exports, measured lengths, validation reports and feedback transactions
 are under ignored `reports/reconstruction/string-bound-recovery/`; replayable
 feedback is in `config/ghidra/BDEDIT_BIN_0x8005FB54.json`.
+
+## Last four BP deferrals investigated — 2026-11-14
+
+The latest four persistent entries are from batch `1794646196952825000`.
+This review inspected saved candidates, object diagnostics, full-file reports,
+worker results and the supervisor's source checks. It did not retry reconstruction,
+accept candidates, update Ghidra or change the deferred queue. No new binary
+validation was run; the comparison results below are preserved attempt results.
+
+| Function | Finding | Next recovery step |
+| --- | --- | --- |
+| `BP.BIN:0x8005AB6C` (828 bytes) | Matching text diagnostics, but 76 bytes of generated switch-table rodata were added without replacing their retained originals. Full file grew from 283,488 to 283,564 bytes, with 226,195 differing bytes. | Review explicit rodata ownership at the original table spans, using the existing BDEDIT recovery approach; then validate the entire overlay. |
+| `BP.BIN:0x8005AEA8` (140 bytes) | Latest retry made no edits because the supplied image source/header did not exist. The earlier attempt already preserved a 100% object candidate and valid feedback JSON, but was interrupted by the worker usage limit. | Start with a fresh Ghidra export and review the preserved candidate against the now-existing image source/header; complete full-file and feedback gates. |
+| `BP.BIN:0x8005AF34` (1,392 bytes) | Real instruction differences: 95.888% reported similarity; full file retained its 283,488-byte size but differed by 100 bytes. | Refine indexed versus pointer loop access, register allocation and instruction scheduling under the unchanged recipe. |
+| `BP.BIN:0x8005B720` (196 bytes) | 100% object diagnostics, rejected before full-file validation by the strict header-prefix check. Existing declarations and guard were preserved, but the new prototype was inserted before an existing blank line. | Preserve that blank line too: append the prototype immediately before the final `#endif`, then complete full-file and feedback gates. |
+
+For `0x8005AB6C`, the saved `object-diff.json` contains an unmatched 76-byte
+compiled `.rodata` section. The original tables start at `0x8009587C` and
+`0x800958A4`, file offsets `0x3AD14` and `0x3AD3C`. Reading the pinned image
+confirms nine case pointers, a zero padding word, and nine further case pointers:
+40 + 36 bytes through exclusive address `0x800958C8`. The candidate split leaves
+the entire original data subsegment at `0x3AD14` retained and supplies no owned
+rodata sibling. This explains the file growth despite the text-only score.
+
+For `0x8005AEA8`, the initial attempt is preserved in
+`reports/reconstruction/sessions/1794646196952825000/BP_BIN_0x8005AEA8/`;
+its `candidate/sources.json`, `object-report.json` and `ghidra-update.json`
+survive. The persistent entry instead points at the empty retry ending
+`-retry-1794648456476605000`. The absent files were absent in that retry's
+baseline, rather than evidence that the 140-byte function could not match.
+The worker brief's instruction to report missing inputs explains the stop.
+
+For `0x8005B720`, `review_header_extension` in `tools/reconstruct_run.py`
+requires every byte preceding the old final `#endif` to remain an exact prefix.
+The baseline ends with `int func_8005B4A4(void);\n\n#endif\n`; the candidate
+places its new prototype between that declaration and its blank line. Moving
+the insertion after the blank line satisfies the existing prefix/suffix rule
+without weakening the guard. This is a formatting rejection, not evidence of
+an altered established type or prototype.
+
+All four remain retained assembly. Object diagnostics alone establish no new
+matching C; compiler settings, pinned references and the existing README edit
+are unchanged by this investigation.
+
+## BP cleanup recoveries — 2026-11-14
+
+Recovered `BP.BIN:0x8005AEA8` (140 bytes) and `BP.BIN:0x8005B720`
+(196 bytes) after fresh read-only exports of current Ghidra analysis. Their
+preserved C candidates were merged into the existing image source and header,
+retaining all previous function blocks and shared declarations. The first
+function reuses `FileLoadState`; its cursor is an intentional overlapping view
+of the existing mixed fields, not a replacement layout. The second reuses
+`BpPlayer` and established allocation declarations.
+
+The header rule needs no change. New prototypes are inserted immediately
+before the closing `#endif`, preserving the existing preceding blank line.
+The unchanged `review_header_extension` check accepts the result. The worker
+brief now states this whitespace requirement explicitly to prevent recurrence.
+
+Both selected objects report 100% diagnostics. The entire 283,488-byte BP image
+matches the pinned SHA-256
+`b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797`
+with zero differing bytes. Final plain `make validate` passed all 15 pinned
+files under the unchanged compiler recipe. The authored C, splits, symbols and
+replayable feedback records were committed as `2d4e415` before transactional
+Ghidra saving. Both saves and subsequent fresh read-only exports succeeded.
+The two entries were then removed from the persistent deferred queue.
+
+Recovery evidence is under ignored
+`reports/reconstruction/bp-pair-recovery/`; original attempt artifacts remain
+unchanged. These recoveries add 336 bytes of matching C. The other two reviewed
+BP deferrals remain assembly.
