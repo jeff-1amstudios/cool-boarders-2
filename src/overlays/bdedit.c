@@ -164,6 +164,10 @@ extern void func_8006198C(unsigned char **planes, int x0, int y0,
 extern void func_80061C98(unsigned char **planes, int x, int y,
                           int color, unsigned char *mask);
 
+extern int func_80061DC4(unsigned char *pixels, int x, int y, int color,
+                          unsigned char *mask, unsigned char *visited,
+                          unsigned char *pending, int count, unsigned int original);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2928,4 +2932,43 @@ int func_80061AC0(int x, int y, unsigned int buttons, unsigned int previous,
         }
     }
     return 1;
+}
+
+// FUNCTION: BDEDIT.BIN:0x80061C98
+void func_80061C98(unsigned char **planes, int x, int y,
+                   int color, unsigned char *mask)
+{
+    unsigned char *pixels;
+    unsigned int original;
+    unsigned char *visited;
+    unsigned char *pending;
+    unsigned char *clear;
+    int count;
+
+    if (x < 128) {
+        pixels = planes[0];
+    } else {
+        pixels = planes[1];
+        x -= 128;
+    }
+    original = pixels[y * 128 + x];
+    if (original != color) {
+        visited = func_8001F1A0(512);
+        count = 511;
+        clear = visited + 511;
+        do {
+            *clear-- = 0;
+        } while (--count >= 0);
+        pending = func_8001F1A0(2048);
+        pending[0] = x;
+        pending[1] = y;
+        count = 1;
+        do {
+            --count;
+            count = func_80061DC4(pixels, pending[count * 2], pending[count * 2 + 1],
+                                  color, mask, visited, pending, count, original);
+        } while (count > 0);
+        func_8001F378(pending);
+        func_8001F378(visited);
+    }
 }
