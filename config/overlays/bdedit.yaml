@@ -104,7 +104,8 @@ segments:
   - [0x5874, c, func_800603DC]
   - [0x598c, c, func_800604F4]
   - [0x5a9c, c, func_80060604]
-  - [0x5bac, asm, body_5BAC]
+  - [0x5bac, c, func_80060714]
+  - [0x5cbc, asm, body_5CBC]
   - [0x8020, data, data]
   # Two switch tables used only by func_8005B76C (10 and 7 words).
   - start: 0x8218
