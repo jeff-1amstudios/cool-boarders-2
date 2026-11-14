@@ -1594,3 +1594,49 @@ plane_loop:
         i++;
     } while (i < 0x100);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005EDD8
+unsigned char *func_8005EDD8(unsigned long *ot, unsigned char *packet,
+                          int x, int y, int w, int h, CVECTOR *color)
+{
+    LINE_F3 *line;
+    short right, bottom;
+
+    line = (LINE_F3 *)packet;
+
+    packet = (unsigned char *)(line + 1);
+    ((PrimitiveTag *)line)->length = 5;
+    line->code = 0x48;
+    line->pad = 0x55555555;
+    line->x0 = x;
+    line->y0 = y;
+    line->y1 = y;
+    right = x + w;
+    bottom = y + h;
+    line->x1 = right;
+    line->x2 = right;
+    line->y2 = bottom;
+    line->r0 = color->r;
+    line->g0 = color->g;
+    line->b0 = color->b;
+    ((PrimitiveTag *)line)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)line;
+
+    line = (LINE_F3 *)packet;
+    packet = (unsigned char *)(line + 1);
+    ((PrimitiveTag *)line)->length = 5;
+    line->code = 0x48;
+    line->pad = 0x55555555;
+    line->x0 = x;
+    line->y0 = y;
+    line->x1 = x;
+    line->y1 = bottom;
+    line->x2 = right;
+    line->y2 = bottom;
+    line->r0 = color->r;
+    line->g0 = color->g;
+    line->b0 = color->b;
+    ((PrimitiveTag *)line)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)line;
+    return packet;
+}
