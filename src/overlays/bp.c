@@ -41,6 +41,16 @@ extern void func_80077D74(void);
 extern TILE D_8009E96C;
 extern DR_MODE D_8009E988;
 
+extern int D_80058E10;
+extern int D_80058E18;
+extern DVECTOR D_8009E930;
+extern short D_8009E934;
+extern short D_8009E936;
+extern short D_8009E938;
+extern short D_8009E93A;
+extern short D_8009E93E;
+extern DVECTOR D_8009E940;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -239,5 +249,48 @@ void func_8005BA14(GsOT *ot, unsigned char intensity)
         ot->org[3].p = (unsigned long)D_80058ACC;
         D_80058ACC += sizeof(TILE);
         func_8009456C(&ot->org[3], &D_8009E988);
+    }
+}
+
+// FUNCTION: BP.BIN:0x8005BAEC
+void func_8005BAEC(int mode)
+{
+    switch (mode) {
+    case 1:
+        D_8009E930.vx = D_80058E10 / 4;
+        D_8009E930.vy = D_80058E18 / 2;
+        D_8009E934 = D_80058E10 * 3 / 4;
+        D_8009E936 = D_80058E18 / 2;
+        D_8009E934 = 0;
+        D_8009E936 = 0;
+        D_8009E938 = D_80058E10 / 2;
+        D_8009E93A = D_80058E18;
+        D_8009E93C = D_80058E10 / 2;
+        D_8009E93E = 0;
+        D_8009E940.vx = D_80058E10 / 2;
+        D_8009E940.vy = D_80058E18;
+        break;
+    case 2:
+        D_8009E930.vx = D_80058E10 / 2;
+        D_8009E930.vy = D_80058E18 / 4;
+        D_8009E934 = D_80058E10 / 2;
+        D_8009E936 = D_80058E18 * 3 / 4;
+        D_8009E934 = 0;
+        D_8009E936 = 0;
+        D_8009E938 = D_80058E10;
+        D_8009E93A = D_80058E18 / 2;
+        D_8009E93C = 0;
+        D_8009E93E = D_80058E18 / 2;
+        D_8009E940.vx = D_80058E10;
+        D_8009E940.vy = D_80058E18 / 2;
+        break;
+    default:
+        D_8009E934 = 0;
+        D_8009E936 = 0;
+        D_8009E930.vx = D_80058E10 / 2;
+        D_8009E930.vy = D_80058E18 / 2;
+        D_8009E938 = D_80058E10;
+        D_8009E93A = D_80058E18;
+        break;
     }
 }
