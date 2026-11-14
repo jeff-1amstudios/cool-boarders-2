@@ -168,6 +168,10 @@ extern int func_80061DC4(unsigned char *pixels, int x, int y, int color,
                           unsigned char *mask, unsigned char *visited,
                           unsigned char *pending, int count, unsigned int original);
 
+extern int func_80061FA0(unsigned char *pixels, unsigned char *visited,
+                          unsigned char *mask, unsigned int original,
+                          int color, int x, int y);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2971,4 +2975,57 @@ void func_80061C98(unsigned char **planes, int x, int y,
         func_8001F378(pending);
         func_8001F378(visited);
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x80061DC4
+int func_80061DC4(unsigned char *pixels, int x, int y, int color,
+                   unsigned char *mask, unsigned char *visited,
+                   unsigned char *pending, int count, unsigned int original)
+{
+    unsigned char *next;
+    int above;
+    int below;
+    int allowed;
+    int y_above;
+    int y_below;
+    unsigned char queued_y;
+
+    while (x > 0) {
+        if (!func_80061FA0(pixels, visited, mask, original, color, x - 1, y)) {
+            break;
+        }
+        --x;
+    }
+    below = 0;
+    above = 0;
+    y_above = y - 1;
+    y_below = y + 1;
+    next = (unsigned char *)(count * 2 + (int)pending);
+    do {
+        if (y > 0) {
+            allowed = func_80061FA0(pixels, visited, mask, original, color, x, y_above);
+            if (allowed && !above && count < 1024) {
+                next[0] = x;
+                queued_y = y_above;
+                next[1] = queued_y;
+                next += 2;
+                count++;
+            }
+            above = allowed;
+        }
+        if (y < 31) {
+            allowed = func_80061FA0(pixels, visited, mask, original, color, x, y_below);
+            if (allowed && !below && count < 1024) {
+                next[0] = x;
+                queued_y = y_below;
+                next[1] = queued_y;
+                next += 2;
+                count++;
+            }
+            below = allowed;
+        }
+        pixels[y * 128 + x] = color;
+        x++;
+    } while (x < 128 && func_80061FA0(pixels, visited, mask, original, color, x, y));
+    return count;
 }
