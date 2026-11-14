@@ -112,6 +112,8 @@ extern void func_80069934(GsOT *ot, int different);
 extern int D_8009D65C;
 extern int D_8009D660;
 
+extern int D_80097A44[10];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -794,4 +796,22 @@ void func_8005E95C(GsOT *ot, BpPlayer *player, int first, int second)
             func_80069934(ot, different);
         }
     }
+}
+
+// FUNCTION: BP.BIN:0x8005F0F0
+int func_8005F0F0(int index, int value, int elapsed, int penalty)
+{
+    int result;
+
+    value += 2500;
+    value += (D_80097A44[index] - elapsed) / 20;
+    if (penalty != 0) {
+        result = value - penalty * 10;
+    } else {
+        result = value + 500;
+    }
+    if (result < 0) {
+        result = 0;
+    }
+    return result;
 }
