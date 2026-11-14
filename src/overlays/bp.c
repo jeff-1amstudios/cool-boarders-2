@@ -1007,3 +1007,98 @@ int func_8005FC48(BpMotionState *state, int sample, int target)
     }
     return target;
 }
+
+// FUNCTION: BP.BIN:0x80060464
+void func_80060464(BpMotionPlayer *player, int progress, int unchanged)
+{
+    BpMotionState *state = player->motion;
+    short height = player->height;
+    unsigned int pitch = (unsigned short)state->mode;
+    int yaw = state->value;
+    int elevation = state->negative_height;
+    short airborne = player->airborne;
+    int *position = player->position;
+    BpMotionSample *current;
+    BpMotionSample *previous;
+    int selected;
+    int other;
+    int angle;
+    int length;
+    int height_clamp;
+    int delta;
+    int difference[3];
+    BpMotionTransform *transform;
+
+    if (!unchanged) {
+        selected = state->selected;
+        other = selected - 3;
+        if (other < 0) {
+            other = selected + 1;
+        }
+        current = &state->samples[selected];
+        previous = &state->samples[other];
+        delta = current->x - previous->x;
+        length = delta * delta;
+        delta = current->z - previous->z;
+        length = SquareRoot0(length + delta * delta);
+        if (length >= 11) {
+            length = ratan2(current->y - previous->y, length);
+        } else {
+            length = 0;
+        }
+        angle = (length * 3600) >> 12;
+        if (angle > 0) {
+            angle = angle > 800 ? 800 : angle;
+        } else {
+            angle = angle < -800 ? -800 : angle;
+        }
+        pitch = func_8005FC48(state, angle, (short)pitch);
+        other = state->selected + 1;
+        current = state->samples;
+        if (other < 4) current += other;
+        difference[0] = current->x - position[0];
+        difference[1] = current->y - position[1];
+        difference[2] = current->z - position[2];
+        if (player->progress < progress) {
+            angle = ratan2(difference[0], difference[2]);
+        } else if (player->reverse == 0) {
+            angle = player->heading;
+        } else {
+            angle = player->heading - 2048;
+        }
+        delta = angle - yaw;
+        delta = (delta << 20) >> 20;
+        if ((unsigned int)(delta + 91) > 182) {
+            if (delta > 0) yaw += 91;
+            else yaw -= 91;
+        } else {
+            yaw = angle;
+        }
+        yaw = (yaw << 20) >> 20;
+        if (player->vertical_speed < 0 && airborne != 0) {
+            elevation += 10;
+            delta = -state->unknown_086;
+            height_clamp = delta < elevation;
+        } else {
+            elevation -= 5;
+            delta = -state->height;
+            height_clamp = elevation < delta;
+        }
+        if (height_clamp) elevation = delta;
+    }
+    transform = (BpMotionTransform *)state;
+    transform->coordinate.coord = D_80058E20;
+    angle = ((short)pitch << 12) / 3600;
+    RotMatrixX(angle, &transform->coordinate.coord);
+    RotMatrixY(yaw, &transform->coordinate.coord);
+    transform->coordinate.coord.t[1] = elevation;
+    transform->coordinate.super = 0;
+    transform->coordinate.flg = 0;
+    transform->rotation.vx = angle;
+    transform->rotation.vy = yaw;
+    transform->rotation.vz = 0;
+    state->mode = pitch;
+    state->value = yaw;
+    state->negative_height = elevation;
+    ((BpMotionExtended *)state)->saved_height = height;
+}

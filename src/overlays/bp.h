@@ -116,4 +116,33 @@ typedef struct BpMotionState {
     int word_1a0;
 } BpMotionState;
 
+typedef struct BpMotionTransform {
+    unsigned char unknown_000[0x2C];
+    SVECTOR rotation;
+    GsCOORDINATE2 coordinate;
+} BpMotionTransform;
+
+typedef struct BpMotionPlayer {
+    unsigned char unknown_000[0x2C];
+    int position[3];
+    unsigned char unknown_038[4];
+    short height;
+    short airborne;
+    unsigned char unknown_040[0x19A];
+    short heading;
+    unsigned char unknown_1dc[0x4FC];
+    BpMotionState *motion;
+    unsigned char unknown_6dc[0x28];
+    int progress;
+    unsigned char unknown_708[0x544];
+    short reverse;
+    unsigned char unknown_c4e[0x3C96];
+    int vertical_speed;
+} BpMotionPlayer;
+
+typedef struct BpMotionExtended {
+    BpMotionState motion;
+    int saved_height;
+} BpMotionExtended;
+
 #endif
