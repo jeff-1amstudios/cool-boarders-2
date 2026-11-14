@@ -717,3 +717,24 @@ int func_8005E594(VECTOR *origin, MATRIX *matrix, VECTOR *normal)
     }
     return 0;
 }
+
+// FUNCTION: BP.BIN:0x8005E6C0
+void func_8005E6C0(BpPlayer *player)
+{
+    int scratch[2];
+    GsDOBJ3 *object = ((BpRenderView *)player)->objects;
+    int count = ((BpRenderView *)player)->object_count;
+    int i = 0;
+    GsCOORDINATE2 *coordinate;
+
+    ((BpRenderView *)player)->coordinate.flg = 0;
+    *(int *)((unsigned char *)player + 0xC58) = 0;
+    if (count > 0) {
+        do {
+            coordinate = object->coord2;
+            object++;
+            i++;
+            coordinate->flg = 0;
+        } while (i < count);
+    }
+}
