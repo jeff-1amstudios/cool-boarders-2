@@ -2823,3 +2823,51 @@ int func_8006177C(int x, int y, unsigned int buttons, unsigned int previous,
     }
     return changed;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8006198C
+void func_8006198C(unsigned char **planes, int x0, int y0,
+                   int x1, int y1, int color, unsigned char *mask)
+{
+    unsigned char *pixels[2];
+    int temp;
+    int y;
+    int mask_x;
+    int mask_y;
+    int allowed;
+
+    if (x1 < x0) {
+        temp = x1;
+        x1 = x0;
+        x0 = temp;
+    }
+    if (y1 < y0) {
+        temp = y1;
+        y1 = y0;
+        y0 = temp;
+    }
+    for (; x0 <= x1; x0++) {
+        pixels[0] = planes[0];
+        pixels[1] = planes[1];
+        for (y = y0; y <= y1; y++) {
+            mask_x = x0;
+            mask_y = y;
+            allowed = 0;
+            if ((unsigned int)x0 < 256 && (unsigned int)y < 32) {
+                if (x0 >= 128) {
+                    mask_x = x0 - 128;
+                    mask_y = y + 32;
+                }
+                if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                    allowed = 1;
+                }
+            }
+            if (allowed) {
+                if (x0 < 128) {
+                    pixels[0][y * 128 + x0] = color;
+                } else {
+                    pixels[1][y * 128 + x0 - 128] = color;
+                }
+            }
+        }
+    }
+}
