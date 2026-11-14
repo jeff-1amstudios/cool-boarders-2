@@ -115,6 +115,9 @@ extern BackgroundTextures D_80063064;
 extern BdEditFramePositions D_80063078;
 extern BdEditCapPositions D_800630A0;
 
+extern int D_80063204;
+extern int D_80063200;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -1861,4 +1864,11 @@ unsigned char *func_8005FCFC(unsigned long *ot, unsigned char *packet,
         ((PrimitiveTag *)ot)->address = (unsigned long)sprite;
     }
     return (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet, 5);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005FF08
+void func_8005FF08(void)
+{
+    D_80063204 = -1;
+    D_80063200 = -1;
 }
