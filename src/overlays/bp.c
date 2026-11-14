@@ -815,3 +815,14 @@ int func_8005F0F0(int index, int value, int elapsed, int penalty)
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x8005F570
+void func_8005F570(BpSetupState *state, BpSetupSource *source, int *progress)
+{
+    state->values = source->values;
+    state->word_0c = source->word_0c;
+    state->value = source->value;
+    state->link = source->link;
+    state->link->value = state->value;
+    state->link->progress = progress;
+}

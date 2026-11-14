@@ -71,5 +71,7 @@ segments:
   - [0x3ebc, asm, body_3ebc]
   - [0x4588, c, func_8005F0F0]
   - [0x45f0, asm, body_45f0]
+  - [0x4a08, c, func_8005F570]
+  - [0x4a54, asm, body_4a54]
   - [0x3ad14, data, data]
 - [0x45360]

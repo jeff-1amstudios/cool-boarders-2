@@ -57,4 +57,33 @@ typedef struct BpRenderView {
     short forward_order;
 } BpRenderView;
 
+typedef struct BpSetupValues {
+    unsigned int word_00, word_04, word_08;
+} BpSetupValues;
+
+typedef struct BpSetupLink {
+    unsigned char unknown_00[0x1C];
+    int value;
+    unsigned char unknown_20[0x28];
+    int *progress;
+} BpSetupLink;
+
+typedef struct BpSetupSource {
+    unsigned char unknown_0000[0x70];
+    BpSetupValues values;
+    unsigned int word_0c;
+    unsigned char unknown_0080[0x1200];
+    BpSetupLink *link;
+    short value;
+} BpSetupSource;
+
+typedef struct BpSetupState {
+    BpSetupValues values;
+    unsigned int word_0c;
+    unsigned char unknown_0010[0x4DC];
+    short value;
+    unsigned char unknown_04ee[2];
+    BpSetupLink *link;
+} BpSetupState;
+
 #endif
