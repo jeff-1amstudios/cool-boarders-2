@@ -155,6 +155,9 @@ extern unsigned char *func_80060C34(unsigned long *ot, unsigned char *packet,
 extern unsigned char *func_80060D50(unsigned long *ot, unsigned char *packet,
                                   int offset, int x, int y, int dx, int dy, int brightness);
 
+extern void func_8006107C(unsigned char **planes, int x0, int y0,
+                          int x1, int y1, int color, unsigned char *mask);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2640,4 +2643,62 @@ unsigned char *func_80060824(unsigned long *ot, unsigned char *packet,
         packet = func_80060D50(ot, packet, offset, x0, y0, x, dy, brightness);
     }
     return packet;
+}
+
+// FUNCTION: BDEDIT.BIN:0x80060E6C
+int func_80060E6C(int x, int y, unsigned int buttons, unsigned int previous,
+                   unsigned char **planes, int *color, unsigned char *mask)
+{
+    int changed = 0;
+    int mask_x;
+    int mask_y;
+    int allowed;
+    int plane;
+    int pixel_x;
+
+    if ((buttons & 0x20) == 0 && (previous & 0x40) != 0) {
+        if (D_80063200 < 0 || D_80063204 < 0) {
+            D_80063200 = x;
+            D_80063204 = y;
+        } else {
+            changed = 1;
+            func_8006107C(planes, D_80063200, D_80063204, x, y, *color, mask);
+            D_80063204 = -1;
+            D_80063200 = -1;
+        }
+    }
+    if ((buttons & 0x40) == 0 && (previous & 0x20) != 0) {
+        if (D_80063200 < 0 || D_80063204 < 0) {
+            mask_x = x;
+            mask_y = y;
+            allowed = 0;
+            if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+                if (x >= 128) {
+                    mask_x = x - 128;
+                    mask_y = y + 32;
+                }
+                if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                    allowed = 1;
+                }
+            }
+            if (allowed) {
+                func_80015B70(4, 128);
+                if (x < 128) {
+                    plane = 0;
+                    pixel_x = x;
+                } else {
+                    plane = 1;
+                    pixel_x = x - 128;
+                }
+                *color = planes[plane][y * 128 + pixel_x];
+            } else {
+                D_80063204 = -1;
+                D_80063200 = -1;
+            }
+        } else {
+            D_80063204 = -1;
+            D_80063200 = -1;
+        }
+    }
+    return changed;
 }
