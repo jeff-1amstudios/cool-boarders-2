@@ -227,7 +227,7 @@ segments:
       - [0xFB78, c, func_8001F378]
       - [0xFCA8, c, func_8001F4A8]
       - [0xFDDC, asm, after_func_8001F4A8]
-      - [0x19ED0, asm, func_800296D0]
+      - [0x19ED0, asm, GetGraphType]
       - [0x19EE0, asm, func_800296E0]
       - [0x19EF0, asm, after_func_800296E0]
       - [0x1CBBC, asm, func_8002C3BC]

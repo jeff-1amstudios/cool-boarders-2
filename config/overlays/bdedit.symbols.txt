@@ -1,4 +1,5 @@
 // BDEDIT.BIN; reference SHA-256 is pinned in config/overlays.json.
+GetGraphType = 0x800296D0; // type:func size:0x10
 D_8005AB68 = 0x8005AB68; // type:u32 size:0x4
 func_8005AB6C = 0x8005AB6C; // type:func
 func_80015948 = 0x80015948; // type:func
