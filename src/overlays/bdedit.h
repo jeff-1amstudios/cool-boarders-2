@@ -46,4 +46,10 @@ typedef struct BdEditCapPositions {
     int entries[2][2];
 } BdEditCapPositions;
 
+typedef struct BdEditMaskPositions {
+    int entries[3][2];
+} BdEditMaskPositions;
+
+void func_8005FB54(unsigned char *mask);
+
 #endif

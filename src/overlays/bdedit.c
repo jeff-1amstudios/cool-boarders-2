@@ -130,6 +130,12 @@ extern void func_80060604(unsigned char **planes, int x, int y,
 extern void func_80060714(unsigned char **planes, int x, int y,
                           int dx, int dy, int color, unsigned char *mask);
 
+extern BdEditMaskPositions D_800630B0;
+extern char D_800630C8[17];
+extern char D_800630DC[19];
+extern int func_8001EB28(char *path);
+
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2235,4 +2241,46 @@ void func_80060714(unsigned char **planes, int x, int y,
             x++;
         } while (step <= dx);
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005FB54
+void func_8005FB54(unsigned char *mask)
+{
+    RECT rect;
+    BdEditMaskPositions positions = D_800630B0;
+    unsigned short image[4096];
+    int region;
+    int i;
+    unsigned short *pixels;
+    unsigned short packed;
+    unsigned char bits;
+
+    region = 0;
+    func_8001EB28(D_800630C8);
+    func_8001EB28(D_800630DC);
+    do {
+        rect.x = positions.entries[region][0];
+        rect.y = positions.entries[region][1];
+        rect.w = 32;
+        rect.h = 64;
+        StoreImage(&rect, (unsigned long *)image);
+        DrawSync(0);
+        pixels = image;
+        i = 0;
+        do {
+            packed = *pixels++;
+            bits = (packed & 0xF) != 0;
+            bits |= (packed & 0xF0) ? 2 : 0;
+            bits |= (packed & 0xF00) ? 4 : 0;
+            bits |= (packed & 0xF000) ? 8 : 0;
+            packed = *pixels++;
+            bits |= (packed & 0xF) ? 16 : 0;
+            bits |= (packed & 0xF0) ? 32 : 0;
+            bits |= (packed & 0xF00) ? 64 : 0;
+            bits |= (packed & 0xF000) ? 128 : 0;
+            *mask++ = bits;
+            i++;
+        } while (i < 1024);
+        region++;
+    } while (region < 3);
 }

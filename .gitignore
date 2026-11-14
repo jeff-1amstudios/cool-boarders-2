@@ -28,6 +28,7 @@
 !/tools/reconstruction_backlog.py
 !/tools/reconstruction_ghidra.py
 !/tools/reconstruction_runtime.py
+!/tools/reconstruction_metrics.py
 !/tools/reconstruction_step.py
 !/tools/requirements.lock
 !/tools/target_queue.py

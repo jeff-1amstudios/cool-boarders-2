@@ -24,6 +24,13 @@ do not install dependencies, change tools or perform repository maintenance.
 - Read the selected context, current image header, cached type reference and
   relevant callers, callees and data. Keep reads focused; do not dump whole
   configurations, unrelated sources or full logs.
+- Keep tool responses bounded. Search exact files first; use `rg -l` to find
+  relevant files before printing bounded excerpts. `rg -m` limits each file,
+  not an entire directory. Read only relevant cached type declarations and
+  shared externs, rather than all previous function bodies. Use the compact
+  step diagnostics first; extract selected symbols/instructions from diff JSON
+  with Python instead of displaying the entire JSON. Avoid rereading unchanged
+  context, assembly and declarations on each iteration.
 - Review both boundaries. Boundary warnings are hints, not proof that matching C
   is impossible. Report factual split blockers and dependency conclusions.
 - Do not launch Ghidra, SDK audits, GUI tools or interactive diff viewers.
@@ -74,9 +81,15 @@ address. Use `SCUS_943.58` for resident globals even when matching an overlay.
 Headers and the selected prototype are imported automatically by the supervisor.
 Include supported recovered globals; do not add unrelated or speculative types.
 
-Preserve established data extents. Verify referenced string bytes in the pinned
-image and use explicit array bounds including the NUL, recording the lengths in
-evidence; `bu00:` needs `char[6]`. Do not infer capacity from alignment padding.
+Preserve established data extents. For each referenced NUL-terminated string,
+read its bytes from the pinned image and calculate the explicit array bound as
+`first NUL file offset - string start file offset + 1` using a script. Do not
+count displayed filename characters manually or infer length from a symbol name.
+Record the image, start and terminator file offsets, non-NUL byte count and
+NUL-inclusive bound in evidence; `bu00:` needs `char[6]`. Apply the measured bound
+to both the authored extern and symbol size. Do not infer capacity from alignment
+padding or scan beyond the evidenced containing data span; report uncertainty if
+a terminator cannot be established.
 An unsized `extern ...[]` supplies an element type, not an allocation size;
 feedback may attempt a one-element prefix and reject it for truncating saved
 data. Use other array bounds only when evidenced. If a type describes only a

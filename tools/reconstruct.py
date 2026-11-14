@@ -140,6 +140,7 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
     path.parent.mkdir(parents=True, exist_ok=True)
     print(f"Running {' '.join(map(str, arguments))}; log: {path.relative_to(ROOT)}", flush=True)
     with path.open("w") as log:
+        started_at, started = time.time(), time.monotonic()
         # Kill the whole build process group on timeout so compilers cannot
         # continue writing artifacts after this worker has stopped.
         process = subprocess.Popen(list(map(str, arguments)), cwd=ROOT, stdout=log,
@@ -176,6 +177,11 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
         finally:
             done.set()
             output.join()
+            if name == "agent":
+                write(path.parent / "worker-timing.json", {
+                    "started_at": started_at, "finished_at": time.time(),
+                    "seconds": round(time.monotonic() - started, 3),
+                    "source": "measured_monotonic"})
     if code:
         raise RuntimeError(f"Command failed ({code}); inspect {path}")
 
@@ -239,6 +245,7 @@ def next_target(session, address=None):
     session["active"] = {**{k: row[k] for k in ("identity", "image", "build_config", "symbol_file", "boundary_findings", "boundary_warnings", "source_directory", "ranges", "body_sha256") if k in row},
                          "address": row["address"], "name": row["name"], "size": row["size"],
                          "offset": row["offset"],
+                         "started_at": time.time(),
                          "context": str(directory.relative_to(ROOT))}
     save_state(session)
     return report

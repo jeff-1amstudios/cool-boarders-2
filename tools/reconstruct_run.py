@@ -242,12 +242,12 @@ class Runner:
             + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
         )
         prompt = (
-            instructions + "\n\n# Selected function\n"
+            "# Selected function\n"
             f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes).\n"
             f"Work on existing branch {active['branch']}; Python owns branch switches and commits.\n"
             f"Read {directory / 'context.json'} and {directory / 'target.s'}.\n"
             f"Start from current pseudocode in {directory / 'ghidra/target.ghidra.c'}.\n"
-            f"Read cached types in {directory / 'ghidra/ghidra-types.h'} and current image header "
+            f"Consult relevant cached types in {directory / 'ghidra/ghidra-types.h'} and read current image header "
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
             f"Append only this function to {source_file(active)}, with // FUNCTION: {key(active)}.\n"
             f"New headers belong under {source_dir(active)}. Split only this function in "
@@ -257,7 +257,7 @@ class Runner:
             f"Write evidence to {directory / 'ghidra-update.json'}.\n"
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
             "the selected object matches and evidence is written.\n")
-        (directory / "agent-prompt.md").write_text(prompt)
+        (directory / "agent-prompt.md").write_text(instructions + "\n\n" + prompt)
         env = os.environ.copy()
         temporary = self.w.ROOT / "tools/tmp/reconstruction-agents"
         temporary.mkdir(parents=True, exist_ok=True)
@@ -279,7 +279,10 @@ class Runner:
                      "--ask-for-approval", "never", "exec", "--ephemeral",
                      "--sandbox", "workspace-write", "--json", "-"]
         try:
-            self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=prompt, env=env)
+            # Default launcher already receives the brief as developer instructions.
+            # Custom launchers still need the complete brief on stdin.
+            task_input = instructions + "\n\n" + prompt if self.args.agent_command is not None else prompt
+            self.w.command(argv, "agent", timeout=seconds, directory=directory, input_text=task_input, env=env)
         except self.w.CommandTimeout:
             failure = agent_failure(directory / 'agent.log')
             if failure:
@@ -400,16 +403,14 @@ class Runner:
             # Keep the active identity so the next start retries it first.
             active['phase'] = 'interrupted'
             session.update(stop_reason=reason, phase='interrupted')
-            from reconstruction_runtime import attempt_result
-            self.w.write(self.w.ROOT / active['context'] / 'result.json',
-                         attempt_result(self.w.ROOT, active, 'interrupted', reason))
+            from reconstruction_runtime import record_attempt
+            record_attempt(self.w.ROOT, active, 'interrupted', reason)
             self.w.save_state(session)
             return
         self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
-        from reconstruction_runtime import attempt_result
-        result = attempt_result(self.w.ROOT, active, "deferred", reason)
-        self.w.write(self.w.ROOT / active["context"] / "result.json", result)
+        from reconstruction_runtime import record_attempt
+        record_attempt(self.w.ROOT, active, "deferred", reason)
         session["deferred"].append({**active, "reason": reason})
         self.w.remember_deferred(session["deferred"][-1])
         session["active"] = None
@@ -512,8 +513,8 @@ class Runner:
         # A failure here stops the batch with the accepted commit and pending
         # record intact. Never launch another worker using stale analysis.
         apply(self.w, active, payload)
-        from reconstruction_runtime import attempt_result
-        self.w.write(self.w.ROOT / active["context"] / "result.json", attempt_result(self.w.ROOT, active, "matched"))
+        from reconstruction_runtime import record_attempt
+        record_attempt(self.w.ROOT, active, "matched")
         session["completed"].append({**active, "phase": "integrated"})
         session["active"] = None
         self.w.save_state(session)

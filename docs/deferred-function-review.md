@@ -274,3 +274,31 @@ Final plain `make validate` passed all 15 pinned full-file comparisons. All five
 Ghidra saves and subsequent fresh read-only exports succeeded. The persistent
 queue now contains 32 deferred functions; the progress snapshot records 193
 matching C function instances.
+
+## Measured filename bounds — 2026-11-14
+
+The latest deferred function, `BDEDIT.BIN:0x8005FB54` (424 bytes), had already
+passed its full-overlay comparison, but its Ghidra feedback plan rejected
+`D_800630C8` for truncating existing data. Both authored filename bounds were
+one byte short despite evidence claiming that they included the NUL.
+
+Measured directly from the pinned BDEDIT image, the string at file offset
+`0x8560` has its first NUL at `0x8570`: 16 filename bytes plus one NUL, requiring
+`char[17]`. The string at `0x8574` terminates at `0x8586`: 18 filename bytes plus
+one NUL, requiring `char[19]`. The recovered externs, symbol sizes and feedback
+evidence now use those bounds, excluding alignment padding.
+
+Recovery began with a fresh read-only headless export of current saved analysis.
+The restored candidate matches the entire 34,464-byte overlay with zero differing
+bytes under the unchanged compiler recipe. Ghidra planning and transactional
+saving succeeded without changing the importer or its extent guards; a subsequent
+fresh read-only export confirmed the accepted function and string types. Final
+plain `make validate` passed all 15 pinned full-file comparisons. The persistent
+deferred entry was then removed; original session evidence is unchanged.
+
+The worker brief now requires a script to measure `first NUL file offset - string
+start file offset + 1`, record both offsets and byte counts, and use the result
+for extern bounds and symbol sizes. No supervisor string check was added.
+Recovery exports, measured lengths, validation reports and feedback transactions
+are under ignored `reports/reconstruction/string-bound-recovery/`; replayable
+feedback is in `config/ghidra/BDEDIT_BIN_0x8005FB54.json`.

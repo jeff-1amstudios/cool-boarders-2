@@ -173,3 +173,8 @@ func_800603DC = 0x800603DC; // type:func
 func_800604F4 = 0x800604F4; // type:func
 func_80060604 = 0x80060604; // type:func
 func_80060714 = 0x80060714; // type:func
+
+func_8005FB54 = 0x8005FB54; // type:func
+D_800630B0 = 0x800630B0; // size:0x18
+D_800630C8 = 0x800630C8; // type:char size:0x11
+D_800630DC = 0x800630DC; // type:char size:0x13

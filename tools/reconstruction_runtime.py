@@ -2,6 +2,7 @@
 import json
 import re
 import shlex
+import time
 from pathlib import PurePosixPath
 
 
@@ -143,7 +144,21 @@ def attempt_result(root, row, status, reason=None):
     custom_report = directory / 'agent-last-message.txt'
     if custom_report.exists():
         result['agent']['message'] = custom_report.read_text()
+    from reconstruction_metrics import timing
+    result['timing'] = {'worker': timing(directory)}
+    if 'started_at' in row:
+        finished = time.time()
+        result['timing'].update(started_at=row['started_at'], finished_at=finished,
+                               attempt_seconds=round(finished-row['started_at'], 3))
     return result
+
+
+def record_attempt(root, row, status, reason=None):
+    """Persist the result before refreshing the derived cross-session reports."""
+    from reconstruction_metrics import atomic_text, refresh
+    path = root / row['context'] / 'result.json'
+    atomic_text(path, json.dumps(attempt_result(root, row, status, reason), indent=2) + '\n')
+    refresh(root)
 
 
 def summary(root, session):

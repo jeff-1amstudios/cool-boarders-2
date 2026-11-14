@@ -181,8 +181,8 @@ def recover(worker):
         raise RuntimeError('Recovery requires the unchanged accepted commit on clean main')
     payload = worker.read(worker.ROOT / active['ghidra_record'])
     apply(worker, active, payload)
-    from reconstruction_runtime import attempt_result
-    worker.write(worker.ROOT / active['context'] / 'result.json', attempt_result(worker.ROOT, active, 'matched'))
+    from reconstruction_runtime import record_attempt
+    record_attempt(worker.ROOT, active, 'matched')
     session['completed'].append({**active, 'phase': 'integrated'})
     session.update(active=None, stop_reason='Recovered accepted Ghidra update; start a new batch', phase='recovered')
     worker.save_state(session)

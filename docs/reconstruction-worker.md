@@ -63,6 +63,10 @@ must configure their own working root, developer instructions and automatic
 instruction loading if supported. Workers are instructed not to edit the brief.
 Changes take effect on the next worker invocation.
 
+The default launcher sends only the selected task on stdin: the brief is already
+in developer instructions. The archived prompt retains both for review. Custom
+launchers continue to receive the complete brief and task on stdin.
+
 ## Targets and review
 
 Shared C declarations may gain standalone extern declarations and local includes
@@ -149,5 +153,31 @@ After successful final all-image validation, the supervisor runs `tools/readme_p
 Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores and validates `main` before continuing. Retries discard the selected function's old failed branches and recreate its original branch name from current `main`, starting from scratch. WIP commits never enter `main`.
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/reconstruction/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
+
+## Function usage report
+
+`tools/.venv/bin/python tools/reconstruction_metrics.py` rebuilds
+`reports/reconstruction/function-metrics.csv` (one row per attempt, including
+retries), `function-metrics.json` (totals) and `function-metrics.md` (readable
+summary). These ignored reports cover preserved automatic attempts under
+`sessions/`; they refresh whenever an attempt result is recorded, including
+interruption and accepted Ghidra recovery. Existing historical results are read
+without rewriting them. Manual chat work without an attempt record is excluded.
+
+Rows identify image/function, outcome, size, input/cached/uncached/output/reasoning
+tokens, total tokens, worker seconds, timing source and attempt directory.
+Input already includes cached input; output already includes reasoning output.
+Total means input plus output, not a billing estimate. Counts cover workers only,
+not the supervising chat. Missing usage stays blank, and incomplete turns may
+consume tokens that the launcher never reports.
+
+New launches save `worker-timing.json` using a monotonic subprocess timer,
+including timeouts. New results also record elapsed attempt time from selection
+through validation/integration or deferral. Recovery delays can extend attempt
+time. Historical worker times use prompt/log modification times and are marked
+`estimated_file_mtimes`; unavailable timing stays blank. File copies or timestamp
+edits can invalidate estimates. Summed worker time is not batch wall time.
+
+See [the session efficiency review](token-efficiency.md) for findings and changes.
 
 Launcher/authentication failures stop after preserving work. Ctrl-C/SIGTERM kills the agent process group, preserves its in-scope candidate and returns to main with the function eligible for retry. Unexpected source/index/ref changes stop with the checkout intact. If Git fails mid-commit/integration, inspect the recorded branch/commit and working tree before starting again; the runner does not guess or reset unexpected changes. Hard-killed worker attempts in known pre-integration phases can be recovered by `start` under the recovery guards above.
