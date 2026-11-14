@@ -145,3 +145,5 @@ D_8009FCA0 = 0x8009FCA0; // size:0x4
 func_8005FBFC = 0x8005FBFC; // type:func
 
 func_8005FC48 = 0x8005FC48; // type:func
+
+func_80060AD4 = 0x80060AD4; // type:func

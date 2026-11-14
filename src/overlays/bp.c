@@ -1118,3 +1118,19 @@ void func_80060A88(BpMotionPlayer *player, int *position)
     transform->coordinate.flg = 0;
     transform->coordinate.coord.t[2] = z - player_z;
 }
+
+// FUNCTION: BP.BIN:0x80060AD4
+void func_80060AD4(BpMotionPlayer *player, int *position)
+{
+    BpMotionTransform *transform = (BpMotionTransform *)player->motion;
+    int z;
+    int player_z;
+
+    transform->coordinate.coord.t[0] = position[0] - player->position[0];
+    transform->coordinate.coord.t[1] = position[1] - player->position[1] - player->motion->height;
+    z = position[2];
+    player_z = player->position[2];
+    transform->coordinate.super = 0;
+    transform->coordinate.flg = 0;
+    transform->coordinate.coord.t[2] = z - player_z;
+}
