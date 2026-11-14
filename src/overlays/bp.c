@@ -143,6 +143,7 @@ extern CardAudioSettings *D_8009FC88;
 extern int *D_8009FC4C;
 extern CardGameRecord *D_8009FA40;
 extern int D_8009FC84;
+extern void func_8002EE40(long projection);
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1341,4 +1342,128 @@ void func_8005F8F8(BpPlayer *player)
     }
     *(int *)((unsigned char *)view + 0x118) = angle;
     view->timer = 0;
+}
+
+// FUNCTION: BP.BIN:0x8005F964
+void func_8005F964(BpPlayer *player, int state)
+{
+    BpCameraState *camera = *(BpCameraState **)((unsigned char *)player + 0x6D8);
+    int active = -(*(signed char *)((unsigned char *)player + 0x4916) < 1);
+
+    switch (state) {
+    case 5:
+        camera = *(BpCameraState **)((unsigned char *)player + 0x6D8);
+        (*(short *)camera) = 5;
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 600;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpx = *(int *)((unsigned char *)player + 4);
+        camera->view.vpy = (*(int *)((unsigned char *)player + 8) +
+                            *(int *)((unsigned char *)player + 0x30)) >> 1;
+        camera->view.vpz = *(int *)((unsigned char *)player + 12);
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        camera->view.super = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        ((BpMotionTransform *)camera)->rotation.vx = 0;
+        ((BpMotionTransform *)camera)->rotation.vy = 0;
+        ((BpMotionTransform *)camera)->rotation.vz = 0;
+        break;
+    case 2:
+        (*(short *)camera) = 2;
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 150;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpz = 512;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        ((BpMotionTransform *)camera)->rotation.vx = 0;
+        ((BpMotionTransform *)camera)->rotation.vy = 0;
+        ((BpMotionTransform *)camera)->rotation.vz = 0;
+        break;
+    case 1:
+        (*(short *)camera) = 1;
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 150;
+        (*(short *)((unsigned char *)camera + 0x84)) = 250;
+        (*(short *)((unsigned char *)camera + 0x86)) = 250;
+        camera->view.vrz = -512;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vpz = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        break;
+    case 0:
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 150;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpz = 512;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        (*(short *)camera) = 0;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        break;
+    case 6:
+        (*(short *)camera) = 6;
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 250;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpz = 1024;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        break;
+    case 3:
+        (*(short *)camera) = 3;
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 150;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpz = 512;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        break;
+    case 4:
+        (*(unsigned short *)((unsigned char *)camera + 0xA)) = 150;
+        (*(short *)((unsigned char *)camera + 0x84)) = 350;
+        (*(short *)((unsigned char *)camera + 0x86)) = 200;
+        camera->view.vpz = 512;
+        camera->view.super = &((BpMotionTransform *)camera)->coordinate;
+        (*(short *)camera) = 0;
+        camera->view.vpx = 0;
+        camera->view.vpy = 0;
+        camera->view.vrx = 0;
+        camera->view.vry = 0;
+        camera->view.vrz = 0;
+        camera->view.rz = 0;
+        if (active == -1) func_8002EE40((*(unsigned short *)((unsigned char *)camera + 0xA)));
+        (*(short *)camera) = 4;
+        break;
+    }
 }

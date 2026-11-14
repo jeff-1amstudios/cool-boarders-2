@@ -161,3 +161,4 @@ D_8009FC88 = 0x8009FC88; // type:u32 size:0x4
 D_8009FC4C = 0x8009FC4C; // type:u32 size:0x4
 D_8009FA40 = 0x8009FA40; // type:u32 size:0x4
 D_8009FC84 = 0x8009FC84; // type:u32 size:0x4
+func_8002EE40 = 0x8002EE40; // type:func
