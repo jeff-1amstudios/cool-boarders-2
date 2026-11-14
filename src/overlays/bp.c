@@ -19,6 +19,10 @@ extern unsigned char D_80097985[];
 extern unsigned char D_80097986[];
 extern short D_80097A00[];
 extern short D_80097A02[];
+extern void func_8002F750(PACKET *work_base);
+extern GsOT D_8009E900[2];
+extern unsigned short D_8009E93C;
+extern GsOT *D_8009FC44;
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -100,4 +104,27 @@ int func_8005B4A4(void)
     return -1;
 failure:
     return 0;
+}
+
+// FUNCTION: BP.BIN:0x8005B7E4
+void func_8005B7E4(void)
+{
+    GsOT *ot;
+    int buffer = GsGetActiveBuff();
+    GsOT **current;
+    int index;
+    GsOT_TAG *tags;
+
+    func_8002F750(((PACKET **)&D_8009E93C)[buffer]);
+    index = 0;
+    current = &D_8009FC44;
+    ot = &D_8009E900[buffer];
+    do {
+        *current = ot;
+        current++;
+        tags = ot->org;
+        ot += 2;
+        index++;
+        ClearOTagR((u_long *)tags, 0x800);
+    } while (index < 1);
 }

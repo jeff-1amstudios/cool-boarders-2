@@ -44,5 +44,7 @@ segments:
   - [0x4, asm, body]
   - [0x93c, c, func_8005B4A4]
   - [0xbb8, asm, body_bb8]
+  - [0xc7c, c, func_8005B7E4]
+  - [0xd14, asm, body_d14]
   - [0x3ad14, data, data]
 - [0x45360]
