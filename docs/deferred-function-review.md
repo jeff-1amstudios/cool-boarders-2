@@ -416,3 +416,44 @@ validation, acceptance and interrupted-save recovery without another model
 worker. Its multi-target `run` command was exercised on the final five functions
 and includes final all-image validation. It reuses the existing source, split,
 full-file and Ghidra guards; no acceptance guard was relaxed.
+
+## Remaining 100% candidates recovered — 2026-11-15
+
+Recovered the remaining six persistent deferrals with preserved 100% object
+scores. Each attempt began with current byte-checked boundaries and a fresh
+headless export of saved Ghidra analysis. Original failed-session evidence is
+unchanged; recovery inputs, exact comparisons and feedback confirmations are
+under ignored `reports/reconstruction/remaining-100-recovery/`.
+
+| Function | C text bytes | Recovery |
+| --- | ---: | --- |
+| `SCUS_943.58:0x8001E8E0` | 136 | Preserved the established `int(char *, void *)` interface; SDK file-size arithmetic remains unsigned. The known caller ignores the return, so the body's return bits do not uniquely establish signedness. |
+| `SCUS_943.58:0x8003D434` | 100 | Reused `SerialIoRegisters` for status/control access without editing either saved register layout or the established hardware-pointer declaration. |
+| `BDEDIT.BIN:0x8005F77C` | 108 | Reviewed the wrapper's unsigned number and optional `CVECTOR *color` prototype. All three existing reconstructed calls pass null color; full-overlay validation includes those callers. |
+| `BP.BIN:0x8005AB6C` | 828 | Assigned its two switch tables to the original 76-byte span; reused current declarations and the established `short *D_8009FC94` through an explicit selection view. |
+| `BP.BIN:0x8005F8F8` | 108 | Assigned its seven-entry switch table to the original 28-byte span. |
+| `BP.BIN:0x8005F964` | 664 | Assigned its seven-entry switch table to the original 28-byte span; reused the larger accepted `BpCameraState` and `BpMotionTransform` views instead of redefining the camera layout. |
+
+The BP ownership mappings replace retained table copies with compiler-generated
+`.rodata` siblings at their original file positions, using
+`linker_section_order: .data`. Text precedes those trailing tables, while the
+four-byte header explicitly stays first. Pinned image measurements establish
+these spans:
+
+| Owner | Table addresses | File span (exclusive end) |
+| --- | --- | --- |
+| `0x8005AB6C` | `0x8009587C`, `0x800958A4` | `0x3AD14..0x3AD60` (76 bytes, including the inter-table padding word) |
+| `0x8005F8F8` | `0x80095990` | `0x3AE28..0x3AE44` (28 bytes) |
+| `0x8005F964` | `0x800959B0` | `0x3AE48..0x3AE64` (28 bytes) |
+
+All six candidates passed exact containing-file comparisons under the unchanged
+compiler recipe and pinned references. Their authored C and replayable feedback
+records were committed before transactional Ghidra saves and confirming fresh
+exports. Only then were their persistent deferrals removed. Final plain
+`make validate` passed all 15 pinned files.
+
+This adds 1,944 bytes of matching C text and reproduces 132 bytes of generated
+switch tables at their original locations. The inventory now contains 278
+matching C function instances and 36 deferred functions. No remaining persistent
+deferral has a preserved 100% object score. Retained assembly, SDK signature
+matches and unloaded overlay coverage remain separate from matching C.
