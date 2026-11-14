@@ -8,6 +8,14 @@ do not install dependencies, change tools or perform repository maintenance.
 
 ## Scope
 
+- The supplied repository root is your only workspace. Do not search, list or
+  read parent directories, sibling checkouts, home directories or other paths
+  outside it, including through symlinks. Invoke existing project tools from
+  this root; if required task inputs are missing, report the blocker.
+- This supplied brief is complete. Do not discover, search for or read
+  `AGENTS.md`, `AGENTS.override.md`, `SUPERVISOR.md` or other instruction files,
+  including this brief's source file. Do not perform repository onboarding or
+  instruction discovery. Begin with the selected context and Ghidra export.
 - Work on the existing branch and candidate checkout. Do not switch branches,
   stage, commit, reset, clean, invoke `reconstruct.py` or spawn agents.
 - Start from the supplied current Ghidra pseudocode, with SDK names and accepted

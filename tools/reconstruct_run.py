@@ -237,7 +237,10 @@ class Runner:
         seconds = min(self.args.agent_seconds, session["deadline"] - time.time())
         if seconds <= 0:
             raise Rejected("Session time budget expired before agent launch")
-        instructions = (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
+        instructions = (
+            f"Your only repository/workspace root is {self.w.ROOT.resolve()}.\n\n"
+            + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
+        )
         prompt = (
             instructions + "\n\n# Selected function\n"
             f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes).\n"
@@ -265,9 +268,13 @@ class Runner:
             cache = self.w.ROOT / "tools/cache/reconstruction-agents" / Path(session["directory"]).name / slug(active)
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
-            # The supplied worker brief replaces repository-wide setup guidance
-            # for this invocation only; retain the normal sandbox/approval policy.
-            argv += ["--no-daemon", "--config", "project_doc_max_bytes=0", "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
+            # Disable automatic project docs AND explicitly prohibit manual
+            # discovery in developer instructions. The byte limit alone does
+            # not prevent a worker from searching for AGENTS.md with shell tools.
+            argv += ["--no-daemon", "--cd", str(self.w.ROOT.resolve()),
+                     "--config", "project_doc_max_bytes=0",
+                     "--config", f"developer_instructions={json.dumps(instructions)}",
+                     "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
                      "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}",
                      "--ask-for-approval", "never", "exec", "--ephemeral",
                      "--sandbox", "workspace-write", "--json", "-"]

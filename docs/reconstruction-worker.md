@@ -52,9 +52,15 @@ The supervisor embeds `FUNCTION_AGENTS.md` into each archived `agent-prompt.md`,
 followed by the selected target's paths, identity and time allowance. The default
 Codex launcher uses the invocation-local `--config project_doc_max_bytes=0` so
 repository/global `AGENTS.md` discovery does not also inject maintenance guidance.
-This leaves sandbox and approval settings unchanged. Custom `--agent-command`
-launchers receive the same focused prompt on stdin and must configure their own
-automatic instruction loading if they support it. Workers are instructed not to edit the brief.
+The launcher also pins `--cd` to the repository root and supplies the brief as
+invocation-local `developer_instructions`. Workers must not manually discover or
+read instruction files, or search/list/read outside this checkout (including
+through symlinks). Disabling automatic loading alone does not prevent manual
+shell searches. These are worker instruction boundaries; `workspace-write` is
+not a repository-only read sandbox. `AGENTS.md` remains available to supervisors.
+Custom `--agent-command` launchers receive the same focused prompt on stdin and
+must configure their own working root, developer instructions and automatic
+instruction loading if supported. Workers are instructed not to edit the brief.
 Changes take effect on the next worker invocation.
 
 ## Targets and review

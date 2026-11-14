@@ -35,20 +35,24 @@ def update():
     remaining = non_sdk.keys() - matching - deferred
     held = sum(non_sdk[key]['status'] == 'held' for key in remaining)
     total = len(non_sdk)
-    counts = [('Matching C', len(matching)), ('Deferred', len(deferred)),
-              ('Remaining', len(remaining))]
+    totals_by_image = Counter(r['image'] for r in non_sdk.values())
+    matching_by_image = Counter(non_sdk[key]['image'] for key in matching)
+    deferred_by_image = Counter(non_sdk[key]['image'] for key in deferred)
+    images = sorted({r['image'] for r in targets},
+                    key=lambda image: (image != 'SCUS_943.58', image))
     date = datetime.now(ZoneInfo('Pacific/Auckland')).strftime('%d %B %Y').lstrip('0')
     lines = [f'Snapshot: **{date}**. Counts cover non-SDK function instances across all {inventory["summary"]["images"]} images.',
-             '', '| Status | Functions | Percent |', '| --- | ---: | ---: |']
-    for label, count in counts:
-        percent = 100 * count / total if total else 0
-        lines.append(f'| {label} | {count:,} | {percent:.2f}% |')
-    lines += [f'| **Total** | **{total:,}** | **{100 if total else 0:.2f}%** |', '',
+             '', '| Binary | Functions | Percent | Deferred |', '| --- | ---: | ---: | ---: |']
+    for image in images:
+        count, image_total = matching_by_image[image], totals_by_image[image]
+        percent = 100 * count / image_total if image_total else 0
+        lines.append(f'| `{image}` | {count:,} / {image_total:,} | {percent:.2f}% | {deferred_by_image[image]:,} |')
+    percent = 100 * len(matching) / total if total else 0
+    lines += [f'| **Total** | **{len(matching):,} / {total:,}** | **{percent:.2f}%** | **{len(deferred):,}** |', '',
+              'Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. '
               'Matching C requires an exact full-file comparison against the pinned original. '
               'Deferred targets remain assembly and await another attempt; '
-              f'remaining includes {held:,} curated {"hold" if held == 1 else "holds"}.', '']
-    by_image = Counter(non_sdk[key]['image'] for key in matching)
-    lines += ['C function instances by image: ' + (', '.join(f'`{image}`: {count:,}' for image, count in sorted(by_image.items())) or 'none') + '.', '',
+              f'{held:,} curated {"hold remains" if held == 1 else "holds remain"} outside the deferred count.', '',
               f'The inventory contains **{len(targets):,}** detected function instances, including '
               f'**{sum(r["status"] == "sdk" for r in targets):,} SDK signature matches** excluded from the table. '
               'Boundaries are provisional and duplicate bodies are counted per image. '

@@ -5,18 +5,28 @@ A matching decompilation of the USA PS1 release (`SCUS_943.58`) and its 14 known
 ## Progress
 
 <!-- progress:start -->
-Snapshot: **13 November 2026**. Counts cover non-SDK function instances across all 15 images.
+Snapshot: **14 November 2026**. Counts cover non-SDK function instances across all 15 images.
 
-| Status | Functions | Percent |
-| --- | ---: | ---: |
-| Matching C | 84 | 2.88% |
-| Deferred | 3 | 0.10% |
-| Remaining | 2,833 | 97.02% |
-| **Total** | **2,920** | **100.00%** |
+| Binary | Functions | Percent | Deferred |
+| --- | ---: | ---: | ---: |
+| `SCUS_943.58` | 155 / 187 | 82.89% | 31 |
+| `BDEDIT.BIN` | 55 / 81 | 67.90% | 5 |
+| `BP.BIN` | 0 / 246 | 0.00% | 0 |
+| `COMB.BIN` | 0 / 273 | 0.00% | 0 |
+| `ENDING.BIN` | 0 / 41 | 0.00% | 0 |
+| `FREE.BIN` | 0 / 291 | 0.00% | 0 |
+| `HP.BIN` | 0 / 269 | 0.00% | 0 |
+| `INIT.BIN` | 0 / 8 | 0.00% | 0 |
+| `MAIN_SEL.BIN` | 0 / 121 | 0.00% | 0 |
+| `MODE_SEL.BIN` | 0 / 90 | 0.00% | 0 |
+| `OMT.BIN` | 0 / 252 | 0.00% | 0 |
+| `SBC1.BIN` | 0 / 248 | 0.00% | 0 |
+| `SBC2.BIN` | 0 / 278 | 0.00% | 0 |
+| `TM.BIN` | 0 / 278 | 0.00% | 0 |
+| `VS.BIN` | 0 / 257 | 0.00% | 0 |
+| **Total** | **210 / 2,920** | **7.19%** | **36** |
 
-Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; remaining includes 1 curated hold.
-
-C function instances by image: `SCUS_943.58`: 84.
+Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; 1 curated hold remains outside the deferred count.
 
 The inventory contains **3,967** detected function instances, including **1,047 SDK signature matches** excluded from the table. Boundaries are provisional and duplicate bodies are counted per image. Counts come from `reports/reconstruction/targets.json` and the persistent `reports/reconstruction/deferred.json`, excluding targets already covered by C.
 
