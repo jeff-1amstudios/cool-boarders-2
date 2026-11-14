@@ -62,4 +62,16 @@ unsigned char *func_8006207C(unsigned long *ot, unsigned char *packet, void *unu
                             unsigned char **planes, CVECTOR *palette,
                             unsigned short *packed);
 
+typedef struct BdEditMenuColors {
+    CVECTOR entries[3];
+} BdEditMenuColors;
+
+typedef struct BdEditBoardPositions {
+    int entries[4][2];
+} BdEditBoardPositions;
+
+typedef struct BdEditBoardLabels {
+    unsigned char *entries[4];
+} BdEditBoardLabels;
+
 #endif

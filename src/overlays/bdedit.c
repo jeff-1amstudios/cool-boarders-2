@@ -176,6 +176,27 @@ extern unsigned char *func_8006230C(unsigned long *ot, unsigned char *packet, in
 extern void func_800628F4(int *state, unsigned char **planes,
                           CVECTOR *palette, unsigned short *packed);
 
+extern unsigned char *func_8005FCFC(unsigned long *ot, unsigned char *packet,
+                                  short x, short y, unsigned char *text, CVECTOR *color);
+extern RECT D_800630F0;
+extern BdEditMenuColors D_800630F8;
+extern BdEditMenuColors D_80063104;
+extern BdEditBoardPositions D_80063110;
+extern BdEditBoardLabels D_80063168;
+extern BdEditTextureChoices D_80063178;
+extern unsigned char D_80063198[17];
+extern unsigned char D_800631AC[11];
+extern unsigned char D_800631B8[11];
+extern unsigned char D_800631C4[7];
+extern unsigned char D_800631CC[7];
+extern unsigned char D_800631D4[7];
+extern unsigned char D_800631DC[7];
+extern unsigned char D_800631E4[4];
+extern unsigned char *func_800130F0(unsigned long *ot, unsigned char *packet,
+                                  RECT *texture, unsigned short clut,
+                                  int x, int y, unsigned int number,
+                                  int max_digits, CVECTOR *color);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -3132,4 +3153,78 @@ unsigned char *func_8006207C(unsigned long *ot, unsigned char *packet, void *unu
     }
     packet = func_8006230C(ot, packet, state);
     return packet;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8006230C
+unsigned char *func_8006230C(unsigned long *ot, unsigned char *packet, int *state)
+{
+    SpriteTexture texture;
+    RECT digits = D_800630F0;
+    unsigned short clut = 0x7334;
+    BdEditMenuColors heading_colors = D_800630F8;
+    BdEditMenuColors choice_colors = D_80063104;
+    BdEditBoardPositions positions = D_80063110;
+    BdEditBoardLabels labels = D_80063168;
+    BdEditTextureChoices textures = D_80063178;
+    int i;
+    unsigned int selected;
+    CVECTOR *color;
+    int x, y;
+
+    packet = func_8005FCFC(ot, packet, 0x60, 0x18, D_80063198,
+                          &heading_colors.entries[2]);
+    for (i = 0; i < 4; i++) {
+        packet = ((unsigned char *(*)(unsigned long *, unsigned char *, int, int,
+                                      unsigned char *, CVECTOR *))func_8005FCFC)
+                              (ot, packet, positions.entries[i][0],
+                              positions.entries[i][1], labels.entries[i],
+                              &heading_colors.entries[i == state[0]]);
+    }
+    choice_colors.entries[2].r = choice_colors.entries[2].g =
+        choice_colors.entries[2].b = abs((D_80047DC0 & 31) - 16) * 6 + 0x60;
+    selected = state[1] == 0;
+    if (state[0] == 0) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 20, 56, D_800631AC,
+                          &choice_colors.entries[selected]);
+    selected = state[1] == 1;
+    if (state[0] == 0) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 120, 56, D_800631B8,
+                          &choice_colors.entries[selected]);
+    selected = state[1] == 2;
+    if (state[0] == 0) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 236, 56, D_800631C4,
+                          &choice_colors.entries[selected]);
+    selected = state[2] == 0;
+    if (state[0] == 1) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 36, 92, D_800631CC,
+                          &choice_colors.entries[selected]);
+    selected = state[2] == 1;
+    if (state[0] == 1) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 136, 92, D_800631D4,
+                          &choice_colors.entries[selected]);
+    selected = state[2] == 2;
+    if (state[0] == 1) selected <<= 1;
+    packet = func_8005FCFC(ot, packet, 236, 92, D_800631DC,
+                          &choice_colors.entries[selected]);
+    selected = state[0] == 2;
+    selected <<= 1;
+    color = &choice_colors.entries[selected];
+    packet = func_8005FCFC(ot, packet, 0xd8, 0x72, D_800631E4, color);
+    packet = func_800130F0(ot, packet, &digits, clut, 0xf0, 0x72,
+                          state[3], 2, color);
+    packet = (unsigned char *)func_80012950(ot, (SPRT *)packet, 0x60, 0x80,
+                         &textures.entries[state[1]], abs((D_80047DC0 & 63) - 32) + 28);
+    packet = (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet,
+                         textures.entries[state[1]].tpage);
+    x = (state[3] % 4) * 64 + 512;
+    y = (state[3] / 4) * 64;
+    texture.u = (x % 64) * 4;
+    texture.v = y % 256;
+    texture.w = 128;
+    texture.h = 64;
+    texture.clut = ((state[3] + 0x1d7) << 6) | 0x30;
+    packet = (unsigned char *)func_80012950(ot, (SPRT *)packet, 0x60, 0x80,
+                                          &texture, 0x80);
+    return (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet,
+                             (unsigned short)(((y & 0x100) >> 4) | 0x80) | ((x & 0x3ff) >> 6));
 }
