@@ -125,6 +125,8 @@ extern void func_800173C0();
 extern long D_8009FC98;
 extern long D_8009FCA0;
 
+extern VECTOR D_800959CC;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1146,4 +1148,54 @@ void func_80060B20(BpMotionPlayer *player, int *position)
     camera->view.vrx = position[0] - player->position[0];
     camera->view.vry = position[1] - player->position[1] - 150;
     camera->view.vrz = position[2] - player->position[2];
+}
+
+// FUNCTION: BP.BIN:0x80060C44
+void func_80060C44(BpPosePlayer *player)
+{
+    VECTOR position;
+    VECTOR rotation;
+    BpPoseState *state = (BpPoseState *)player->player.motion;
+    int amount = player->pose->amount;
+    short *height = &player->player.height;
+    int threshold = 70;
+    int delta;
+    int angle;
+    int limit;
+    GsCOORDINATE2 *coordinate;
+
+    memset_800449E8((unsigned char *)&rotation, 0, sizeof(rotation));
+    rotation.vx = 0;
+    rotation.vy = -state->height;
+    rotation.vz = 0;
+    position = rotation;
+    rotation = D_800959CC;
+    state->transform.coordinate.coord = D_80058E20;
+    coordinate = &state->transform.coordinate;
+    if (amount > threshold) {
+        delta = amount - 70;
+        angle = 100;
+        angle *= delta;
+        position.vy -= angle;
+        angle = 17;
+        rotation.vz = delta * angle;
+    } else {
+        angle = 3072;
+        angle = ((threshold - amount) * angle) / threshold;
+        limit = 1024;
+        if (angle < 1025) limit = angle;
+        rotation.vx -= limit;
+    }
+    RotMatrixZ(rotation.vz, &coordinate->coord);
+    RotMatrixX(rotation.vx, &coordinate->coord);
+    coordinate->coord.t[0] = position.vx;
+    coordinate->coord.t[1] = position.vy;
+    coordinate->coord.t[2] = position.vz;
+    coordinate->super = 0;
+    coordinate->flg = 0;
+    state->transform.rotation.vx = rotation.vx;
+    state->transform.rotation.vy = rotation.vy;
+    state->transform.rotation.vz = rotation.vz;
+    *(int *)((unsigned char *)state + 0x24) = 0;
+    state->saved_height = *height;
 }

@@ -152,4 +152,22 @@ typedef struct BpCameraState {
     int position[3];
 } BpCameraState;
 
+typedef struct BpPoseInput {
+    unsigned char unknown_00[0x64];
+    short amount;
+} BpPoseInput;
+
+typedef struct BpPosePlayer {
+    BpMotionPlayer player;
+    unsigned char unknown_48e8[0x30];
+    BpPoseInput *pose;
+} BpPosePlayer;
+
+typedef struct BpPoseState {
+    BpMotionTransform transform;
+    short height;
+    unsigned char unknown_086[0x11E];
+    int saved_height;
+} BpPoseState;
+
 #endif
