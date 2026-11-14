@@ -163,8 +163,8 @@ class Runner:
     def __init__(self, worker, args):
         self.w = worker
         self.args = args
-        if min(args.limit, args.minutes, args.agent_seconds) < 1:
-            raise RuntimeError("Budgets must be positive")
+        if min(args.limit, args.agent_seconds) < 1:
+            raise RuntimeError("Target limit and worker timeout must be positive")
         try:
             self.launcher = shlex.split(args.agent_command) if args.agent_command is not None else ["codex"]
         except ValueError as error:
@@ -173,7 +173,6 @@ class Runner:
             raise RuntimeError("Agent launcher is unavailable; set --agent-command to an existing executable")
 
     def invariant(self, session):
-        # Cleanup must remain possible after the time budget expires.
         if self.w.git("rev-parse", "HEAD") != session["head"]:
             raise RuntimeError("Agent changed HEAD; stopping without resetting the checkout")
         if self.w.git("branch", "--show-current") != session["branch"]:
@@ -234,9 +233,8 @@ class Runner:
     def launch(self, session):
         active = session["active"]
         directory = self.w.ROOT / active["context"]
-        seconds = min(self.args.agent_seconds, session["deadline"] - time.time())
-        if seconds <= 0:
-            raise Rejected("Session time budget expired before agent launch")
+        # Ghidra/export time must not reduce the worker's own allowance.
+        seconds = self.args.agent_seconds
         instructions = (
             f"Your only repository/workspace root is {self.w.ROOT.resolve()}.\n\n"
             + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
@@ -332,6 +330,20 @@ class Runner:
             function_source(text, identity)
         except ValueError as error:
             raise Rejected(str(error)) from error
+        # Normalize cosmetic EOF separators only after scope/content review,
+        # before hashing, archiving and authoritative full-file validation.
+        for name in paths:
+            if Path(name).suffix not in ('.c', '.h'):
+                continue
+            path = self.w.ROOT / name
+            original = path.read_bytes()
+            lines = original.splitlines(keepends=True)
+            while lines and not lines[-1].strip():
+                lines.pop()
+            normalized = b''.join(lines)
+            if normalized != original:
+                path.write_bytes(normalized)
+                print(f"Removed trailing blank lines: {name}", flush=True)
         subprocess.run(["git", "diff", "--check"], cwd=self.w.ROOT, check=True)
         if "image" in active:
             active["unit"] = next('/'.join(p for p in (s.get('dir', ''), r[2]) if p)
@@ -472,8 +484,9 @@ class Runner:
                      attempt_result(self.w.ROOT, active, 'interrupted', active.get('failure', 'Interrupted batch')))
         session.setdefault('interrupted', []).append(dict(active))
         session.update(active=None, retry_target=key(active), stop_reason=None,
-                       phase='running', deadline=time.time() + self.args.minutes * 60,
+                       phase='running',
                        limit=max(self.args.limit, len(session['completed']) + len(session['deferred']) + 1))
+        session.pop('deadline', None)  # Discard deadlines from older sessions.
         self.w.save_state(session)
         print(f"Recovered interrupted batch; retrying {key(active)} first (previous attempt archived)", flush=True)
         return session
@@ -530,16 +543,13 @@ class Runner:
         else:
             if self.w.git("branch", "--show-current") != "main":
                 raise RuntimeError("Automatic batches must start on the main integration branch")
-            session = self.w.begin_batch(self.args.limit, self.args.minutes)
+            session = self.w.begin_batch(self.args.limit)
             session.update(branch="main", integration_head=session["head"],
                            sync_types=getattr(self.args, 'sync_types', False))
         sync_types_pending = session['sync_types']
         self.w.save_state(session)
         reason = "target limit reached"
         while len(session["completed"]) + len(session["deferred"]) < session["limit"]:
-            if time.time() >= session["deadline"]:
-                reason = "session time budget exhausted"
-                break
             try:
                 current_inventory = self.w.next_target(session, session.get('retry_target'))
                 session.pop('retry_target', None)
@@ -547,11 +557,6 @@ class Runner:
             except self.w.NoTarget:
                 reason = "eligible queue exhausted"
                 break
-            except RuntimeError:
-                if time.time() >= session["deadline"] and session["active"] is None:
-                    reason = "session time budget exhausted"
-                    break
-                raise
             active = session["active"]
             number = len(session["completed"]) + len(session["deferred"]) + 1
             print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)

@@ -4,7 +4,16 @@
 tools/.venv/bin/python tools/reconstruct.py start --limit 2
 ```
 
-The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets, 120 minutes per batch and a hard 900-second timeout per agent. Override with `--limit`, `--minutes` and `--agent-seconds`. `status` shows the current or last batch. Start on `main` with no pending game/source/config edits.
+The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets and a hard 900-second timeout per agent. Override with `--limit` and `--agent-seconds`. There is no batch time budget or `--minutes` option. `status` shows the current or last batch. Start on `main` with no pending game/source/config edits.
+
+The agent timeout measures only the worker subprocess, including its own tool
+calls. Supervisor Ghidra export, validation and feedback run separately with
+their own command timeouts. Each function worker receives its full allowance;
+Ghidra export, validation and feedback do not consume it.
+
+Candidate C and header files have trailing blank lines removed after source
+scope review, before the whitespace check and content hashing. Other whitespace
+errors still fail review. Exact full-file validation remains required.
 
 Session input fingerprints are informational snapshots, not stop conditions.
 Edits to tracked tools, documentation, `AGENTS.md` and `FUNCTION_AGENTS.md` may
@@ -15,7 +24,7 @@ reference verification and exact full-file comparisons remain enforced. Git can
 still refuse a branch switch that would overwrite pending maintenance.
 
 `start` also resumes a recorded interrupted batch. It preserves completed and
-deferred counts, renews the time budget, and uses `--limit` as the total batch
+deferred counts and uses `--limit` as the total batch
 target count (with room for at least the interrupted target). The interrupted
 function is retried first from a fresh Ghidra export; its previous logs, candidate
 archive and result remain in their original attempt directory. A retry uses a

@@ -155,7 +155,7 @@ class RunTests(unittest.TestCase):
         return report
 
     def runner(self, mode="match", limit=2):
-        return Runner(worker, SimpleNamespace(limit=limit, minutes=2, agent_seconds=10,
+        return Runner(worker, SimpleNamespace(limit=limit, agent_seconds=10,
             agent_command=shlex.join([sys.executable, str(self.agent), mode])))
 
     def test_paused_policy_stops_before_session_or_agent_launch(self):
@@ -375,18 +375,6 @@ class RunTests(unittest.TestCase):
         self.assertFalse(worker.changes())
         self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
 
-    def test_deadline_expiring_during_agent_prevents_commit(self):
-        runner = self.runner()
-        launch = runner.launch
-        def expired(session):
-            launch(session)
-            session["deadline"] = 0
-        with patch.object(runner, "launch", side_effect=expired):
-            runner.run()
-        self.assertEqual(worker.state()["stop_reason"], "session time budget exhausted")
-        self.assertFalse(worker.changes())
-        self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
-
     def test_same_path_edit_after_build_cannot_commit_stale_success(self):
         validate = worker.validate
         def changed_after_build(session):
@@ -400,28 +388,16 @@ class RunTests(unittest.TestCase):
         self.assertIn("contents changed", worker.state()["deferred"][0]["reason"])
         self.assertFalse(worker.changes())
 
-    def test_deadline_expiring_during_validation_restores_candidate(self):
-        validate = worker.validate
-        def expired_after_build(session):
-            result = validate(session)
-            session["deadline"] = 0
-            return result
-        with patch.object(worker, "validate", side_effect=expired_after_build):
-            self.runner().run()
-        self.assertEqual(self.git("rev-parse", "HEAD"), self.base)
-        self.assertEqual(worker.state()["stop_reason"], "session time budget exhausted")
-        self.assertFalse(worker.changes())
-
     def test_empty_or_misquoted_launcher_rejected_before_session(self):
         for text in ("", "'"):
-            args = SimpleNamespace(limit=1, minutes=1, agent_seconds=1, agent_command=text)
+            args = SimpleNamespace(limit=1, agent_seconds=1, agent_command=text)
             with self.subTest(text=text), self.assertRaises(RuntimeError):
                 Runner(worker, args)
         self.assertFalse(worker.STATE.exists())
 
     def test_batch_start_does_not_build_or_check_matching(self):
         with patch.object(worker, "command") as command:
-            session = worker.begin_batch(1, 2)
+            session = worker.begin_batch(1)
         command.assert_not_called()
         self.assertEqual(worker.state(), session)
         self.assertFalse(session["active"])
@@ -430,7 +406,7 @@ class RunTests(unittest.TestCase):
         runner = self.runner()
         runner.args.agent_command = None
         runner.launcher = ["codex"]
-        session = worker.begin_batch(1, 2)
+        session = worker.begin_batch(1)
         session.update(branch="main", integration_branch="main", integration_head=session["head"])
         worker.next_target(session)
         runner.start_branch(session)

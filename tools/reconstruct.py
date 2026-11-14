@@ -202,8 +202,6 @@ def check_session(session):
         raise RuntimeError("HEAD changed outside the worker; begin a new session")
     if session.get("branch") and git("branch", "--show-current") != session["branch"]:
         raise RuntimeError("Current branch changed outside the worker")
-    if time.time() > session["deadline"]:
-        raise RuntimeError("Session time budget exhausted; preserve/defer the attempt or begin again")
 
 
 def choose(report, session, identity=None):
@@ -266,8 +264,8 @@ def validate(session):
     attempt.mkdir(parents=True, exist_ok=True)
     archive_edits(attempt)
     try:
-        command(validation_command(active), "validate", directory=attempt,
-                timeout=min(300, max(1, session["deadline"] - time.time())))
+        # Validation has its own timeout, independent of the worker allowance.
+        command(validation_command(active), "validate", directory=attempt, timeout=300)
     finally:
         image = active.get("image", "SCUS_943.58")
         report_path = ROOT / 'reports/boot-rebuild.json' if image == 'SCUS_943.58' else ROOT / 'reports/overlay-rebuild' / (Path(active['build_config']).stem + '.json')
@@ -337,9 +335,9 @@ def audit_paths(requested, changed):
     return sorted(paths)
 
 
-def begin_batch(limit, minutes):
-    if min(limit, minutes) < 1:
-        raise RuntimeError("Budgets must be positive")
+def begin_batch(limit):
+    if limit < 1:
+        raise RuntimeError("Target limit must be positive")
     if STATE.exists() and state().get("active"):
         raise RuntimeError("Inspect the recorded active attempt before starting another batch")
     if changes() or git("diff", "--cached", "--name-only"):
@@ -348,7 +346,7 @@ def begin_batch(limit, minutes):
     directory = STATE.parent / "sessions" / str(time.time_ns())
     session = {"head": git("rev-parse", "HEAD"), "protected": fingerprints(),
                "directory": str(directory.relative_to(ROOT)),
-               "deadline": time.time() + minutes * 60, "limit": limit,
+               "limit": limit,
                "completed": [], "deferred": [], "active": None}
     save_state(session)
     return session
@@ -399,8 +397,7 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     batch = sub.add_parser("start", aliases=["run"], help="Match targets serially, streaming stdout")
     batch.add_argument("--limit", type=int, default=10)
-    batch.add_argument("--minutes", type=int, default=120)
-    batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout per agent")
+    batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout for the worker subprocess only; excludes supervisor Ghidra and validation")
     batch.add_argument("--sync-types", action="store_true",
                        help="Refresh cached Ghidra type declarations once before matching (default: reuse cache/source headers)")
     batch.add_argument("--verbose", action="store_true", help="Also print file-read output and echoed compiler/assembler commands")

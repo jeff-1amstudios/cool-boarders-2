@@ -24,12 +24,10 @@ class WorkerTests(unittest.TestCase):
             with self.subTest(paths=paths), self.assertRaises(RuntimeError):
                 worker.audit_paths(paths, changes)
 
-    def test_protected_recipe_head_and_deadline(self):
-        session = {"head": "a", "protected": {"recipe": "a"}, "deadline": time.time() + 60}
+    def test_protected_recipe_and_head(self):
+        session = {"head": "a", "protected": {"recipe": "a"}}
         with patch.object(worker, "git", return_value="a"), patch.object(worker, "fingerprints", return_value={"recipe": "a"}):
             worker.check_session(session)
-            with self.assertRaises(RuntimeError):
-                worker.check_session({**session, "deadline": 0})
             with self.assertRaises(RuntimeError):
                 worker.check_session({**session, "head": "b"})
             with self.assertRaises(RuntimeError):
