@@ -22,7 +22,8 @@ options:
   o_as_suffix: true
   use_legacy_include_asm: false
   migrate_rodata_to_functions: false
-  section_order: [.rodata, .text, .data, .bss]
+  # Header stays first; compiler switch tables occupy reviewed spans after text.
+  section_order: [.text, .rodata, .data, .bss]
   symbol_addrs_path: [config/overlays/bdedit.symbols.txt]
   reloc_addrs_path: []
   undefined_funcs_auto_path: build/overlays/bdedit/undefined_funcs.txt
@@ -40,9 +41,14 @@ segments:
   start: 0x0
   vram: 0x8005ab68
   subsegments:
-  - [0x0, rodata, header]
+  - start: 0x0
+    type: rodata
+    name: header
+    linker_section_order: .text
   - [0x4, c, func_8005AB6C]
   - [0xa8, asm, body]
+  - [0xC04, c, func_8005B76C]
+  - [0x1044, c, func_8005BBAC]
   - [0x132c, c, func_8005BE94]
   - [0x14b8, c, func_8005C020]
   - [0x1540, c, func_8005C0A8]
@@ -51,7 +57,7 @@ segments:
   - [0x180c, c, func_8005C374]
   - [0x1c64, c, func_8005C7CC]
   - [0x2034, c, func_8005CB9C]
-  - [0x21ac, asm, body_21AC]
+  - [0x21ac, c, func_8005CD14]
   - [0x23d0, c, func_8005CF38]
   - [0x2424, c, func_8005CF8C]
   - [0x2588, c, func_8005D0F0]
@@ -64,10 +70,10 @@ segments:
   - [0x2fe4, c, func_8005DB4C]
   - [0x301c, c, func_8005DB84]
   - [0x3320, c, func_8005DE88]
-  - [0x34a8, asm, body_34A8]
+  - [0x34a8, c, func_8005E010]
   - [0x36bc, c, func_8005E224]
   - [0x36dc, c, func_8005E244]
-  - [0x371c, asm, body_371C]
+  - [0x371c, c, func_8005E284]
   - [0x3b3c, c, func_8005E6A4]
   - [0x3c1c, c, func_8005E784]
   - [0x3cd8, c, func_8005E840]
@@ -80,4 +86,34 @@ segments:
   - [0x4114, c, func_8005EC7C]
   - [0x4160, asm, body_4160]
   - [0x8020, data, data]
+  # Two switch tables used only by func_8005B76C (10 and 7 words).
+  - start: 0x8218
+    type: .rodata
+    name: func_8005B76C
+    linker_section_order: .data
+  - [0x825c, data, data_825C]
+  # Compiler switch table at 0x80062DF8; retain its original file position.
+  - start: 0x8290
+    type: .rodata
+    name: func_8005BBAC
+    linker_section_order: .data
+  - [0x82a8, data, data_82A8]
+  # Compiler switch table at 0x80062E58; retain its original file position.
+  - start: 0x82f0
+    type: .rodata
+    name: func_8005CD14
+    linker_section_order: .data
+  - [0x8304, data, data_8304]
+  # Compiler switch table at 0x80062F88; retain its original file position.
+  - start: 0x8420
+    type: .rodata
+    name: func_8005E010
+    linker_section_order: .data
+  - [0x8444, data, data_8444]
+  # Compiler switch table at 0x80062FB0; retain its original file position.
+  - start: 0x8448
+    type: .rodata
+    name: func_8005E284
+    linker_section_order: .data
+  - [0x845c, data, data_845C]
 - [0x86a0]

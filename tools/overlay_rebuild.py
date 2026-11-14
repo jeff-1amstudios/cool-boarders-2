@@ -90,9 +90,11 @@ def split(name, item, *, reference=False):
                 continue
             for sub in segment.get("subsegments", []):
                 if isinstance(sub, list) and len(sub) > 1 and sub[1] == "c":
-                    sub[1] = "asm"
+                    # Keep explicit data/rodata siblings in the reference object
+                    # so diagnostics compare the complete reconstructed unit.
+                    sub[1] = "asmtu"
                 elif isinstance(sub, dict) and sub.get("type") == "c":
-                    sub["type"] = "asm"
+                    sub["type"] = "asmtu"
         directory = "build/overlays/" + slug(name) + "/reference"
         config["options"].update(base_path=str(ROOT), asm_path=directory + "/asm", build_path=".",
                                  asset_path=directory + "/assets", cache_path=directory + "/splat-cache",

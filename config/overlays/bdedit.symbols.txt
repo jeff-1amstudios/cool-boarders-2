@@ -73,3 +73,82 @@ func_8005F6A4 = 0x8005F6A4; // type:func
 func_8005E90C = 0x8005E90C; // type:func
 
 D_80062FC4 = 0x80062FC4; // size:0x64
+
+func_8005B76C = 0x8005B76C; // type:func
+
+func_8001AE14 = 0x8001AE14; // type:func
+
+func_8001F1A0 = 0x8001F1A0; // type:func
+
+func_8001A900 = 0x8001A900; // type:func
+
+func_8001F378 = 0x8001F378; // type:func
+
+func_80017DE8 = 0x80017DE8; // type:func
+
+D_80062C44 = 0x80062C44; // type:char size:0x10
+
+D_80062C54 = 0x80062C54; // type:char size:0x1E
+
+D_80062C74 = 0x80062C74; // type:char size:0x13
+
+D_80062C88 = 0x80062C88; // type:char size:0x21
+
+D_80062CAC = 0x80062CAC; // type:char size:0x1C
+
+D_80062CC8 = 0x80062CC8; // type:char size:0xE
+
+D_80062CD8 = 0x80062CD8; // type:char size:0x11
+
+D_80062CEC = 0x80062CEC; // type:char size:0x22
+
+D_80062D10 = 0x80062D10; // type:char size:0xD
+
+D_80062D20 = 0x80062D20; // type:char size:0x8
+
+D_80062D28 = 0x80062D28; // type:char size:0x1E
+
+D_80062D48 = 0x80062D48; // type:char size:0x12
+
+D_80062D5C = 0x80062D5C; // type:char size:0x10
+
+D_80062D6C = 0x80062D6C; // type:char size:0xE
+
+func_8005BBAC = 0x8005BBAC; // type:func
+
+func_8001AFD0 = 0x8001AFD0; // type:func
+
+bdedit_now_loading = 0x80062DC4; // type:char size:0xF
+
+bdedit_load_successful = 0x80062DD4; // type:char size:0x11
+
+
+bdedit_no_data = 0x80062DE8; // type:char size:0x9
+
+
+
+func_8005CD14 = 0x8005CD14; // type:func
+
+func_8005FF24 = 0x8005FF24; // type:func
+
+func_80060108 = 0x80060108; // type:func
+
+func_80060E6C = 0x80060E6C; // type:func
+
+func_8006177C = 0x8006177C; // type:func
+
+func_80061AC0 = 0x80061AC0; // type:func
+
+func_8005E010 = 0x8005E010; // type:func
+
+func_8005FF08 = 0x8005FF08; // type:func
+
+D_80062F24 = 0x80062F24; // type:char size:0x16
+
+D_80062F3C = 0x80062F3C; // type:char size:0x1C
+
+D_80062F58 = 0x80062F58; // type:char size:0x1B
+
+D_80062F74 = 0x80062F74; // type:char size:0x11
+
+func_8005E284 = 0x8005E284; // type:func

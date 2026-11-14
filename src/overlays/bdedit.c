@@ -67,6 +67,49 @@ extern BdEditMenuTextures D_80062E70;
 extern BdEditPixelMasks D_80062E20;
 extern void func_8005F6A4(CVECTOR *palette, unsigned short *packed, int count);
 extern BdEditHitRegions D_80062FC4;
+extern unsigned int func_8001AE14(short *results);
+extern void *func_8001F1A0(unsigned int size);
+extern int func_8001A900(unsigned int slot, short selected_record,
+                         unsigned short *values, unsigned char *data);
+extern int func_8001F378(void *allocation);
+extern int func_80017DE8(void);
+extern char D_80062C44[16];
+extern char D_80062C54[30];
+extern char D_80062C74[19];
+extern char D_80062C88[33];
+extern char D_80062CAC[28];
+extern char D_80062CC8[14];
+extern char D_80062CD8[17];
+extern char D_80062CEC[34];
+extern char D_80062D10[13];
+extern char D_80062D20[8];
+extern char D_80062D28[30];
+extern char D_80062D48[18];
+extern char D_80062D5C[16];
+extern char D_80062D6C[14];
+extern int func_8001AFD0(int slot, unsigned short *values, unsigned char *data);
+extern char bdedit_now_loading[15];
+extern char bdedit_load_successful[17];
+extern char bdedit_no_data[9];
+extern void func_8005E224(int tool, int *cursor);
+extern int func_8005FF24(int x, int y, unsigned int buttons, unsigned int previous,
+                       unsigned char **planes, int *color, unsigned char *mask);
+extern int func_80060108(int x, int y, unsigned int buttons, unsigned int previous,
+                       unsigned char **planes, int *color, unsigned char *mask);
+extern int func_80060E6C(int x, int y, unsigned int buttons, unsigned int previous,
+                       unsigned char **planes, int *color, unsigned char *mask);
+extern int func_8006177C(int x, int y, unsigned int buttons, unsigned int previous,
+                       unsigned char **planes, int *color, unsigned char *mask);
+extern int func_80061AC0(int x, int y, unsigned int buttons, unsigned int previous,
+                       unsigned char **planes, int *color, unsigned char *mask);
+extern void func_8005FF08(void);
+extern char D_80062F24[22];
+extern char D_80062F3C[28];
+extern char D_80062F58[27];
+extern char D_80062F74[17];
+extern void func_8005CB9C(int *cursor, unsigned int buttons);
+extern void func_8005D908(int *cursor, unsigned int buttons, void *unused,
+                          CVECTOR *palette, unsigned short *packed);
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -1036,4 +1079,469 @@ int func_8005E90C(int *cursor)
         }
     }
     return result;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005B76C
+int func_8005B76C(int *state, char **message, int *timer, unsigned int buttons,
+                  unsigned short **boards, unsigned short *values,
+                  int unused, int *selection)
+{
+    int result = 0;
+    int status;
+    unsigned short *data;
+    int board;
+    int sample;
+    short card_results[8];
+
+    switch (*state) {
+    case 8:
+        status = func_8001AE14(card_results);
+        switch (status) {
+        case -1:
+            *message = D_80062C44;
+            *timer = 240;
+            *state = 4;
+            break;
+        case -2:
+            *message = D_80062C54;
+            *timer = 240;
+            *state = 5;
+            break;
+        case -6:
+            *message = D_80062C74;
+            *timer = 240;
+            *state = 4;
+            break;
+        default:
+            if (status & 1) {
+                *message = D_80062C88;
+            } else {
+                *message = D_80062CAC;
+            }
+            *state = 0;
+            break;
+        }
+        break;
+    case 0:
+        if (buttons & 0x40) {
+            *message = D_80062CC8;
+            func_80015B70(1, 128);
+            result = 2;
+            *state = 1;
+        } else if (buttons & 0x20) {
+            *message = 0;
+            func_80015B70(3, 128);
+            *state = -1;
+        }
+        break;
+    case 1:
+        data = func_8001F1A0(0x2000);
+        for (board = 0; board < 2; board++) {
+            for (sample = 0; sample < 0x800; sample++) {
+                data[board * 0x800 + sample] = boards[board][sample];
+            }
+        }
+        values[255] = 0;
+        status = func_8001A900(0, (short)(selection[1] * 4 + selection[2]),
+                              values, (unsigned char *)data);
+        func_8001F378(data);
+        switch (status) {
+        case 0:
+            *message = D_80062CD8;
+            *timer = 120;
+            *state = 4;
+            break;
+        case -1:
+            *message = D_80062C44;
+            *timer = 240;
+            *state = 4;
+            break;
+        case -2:
+            *message = D_80062C54;
+            *timer = 240;
+            *state = 5;
+            break;
+        case -3:
+            *message = D_80062CEC;
+            *timer = 240;
+            *state = 4;
+            break;
+        case -4:
+            *message = D_80062D10;
+            *timer = 240;
+            *state = 4;
+            break;
+        case -6:
+            *message = D_80062D20;
+            *timer = 240;
+            *state = 4;
+            break;
+        }
+        break;
+    case 4:
+        if (*timer > 0) {
+            --*timer;
+        }
+        if (buttons & 0x70) {
+            func_80015B70(3, 128);
+            *timer = 0;
+        }
+        if (*timer == 0) {
+            *message = 0;
+            *state = -1;
+        }
+        break;
+    case 5:
+        if (*timer > 0) {
+            --*timer;
+        }
+        if (buttons & 0x70) {
+            func_80015B70(3, 128);
+            *timer = 0;
+        }
+        if (*timer == 0) {
+            *message = D_80062D28;
+            *state = 6;
+        }
+        break;
+    case 6:
+        if (buttons & 0x40) {
+            *message = D_80062D48;
+            func_80015B70(1, 128);
+            result = 2;
+            *state = 7;
+        } else if (buttons & 0x20) {
+            func_80015B70(3, 128);
+            *message = D_80062D5C;
+            *timer = 120;
+            *state = 4;
+        }
+        break;
+    case 7:
+        if (func_80017DE8() < 0) {
+            *message = D_80062D6C;
+            *timer = 240;
+            *state = 4;
+        } else {
+            result = 2;
+            *message = D_80062CC8;
+            *state = 1;
+        }
+        break;
+    }
+    return result;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005BBAC
+int func_8005BBAC(int *state, char **message, int *timer, unsigned int buttons,
+                  unsigned short **pixels, unsigned short *palette,
+                  int unused, int *selection)
+{
+    unsigned char *data;
+    unsigned short *values;
+    int result = 0;
+    int status;
+    int i;
+    int bank;
+
+    switch (*state) {
+    case 0:
+        if (buttons & 0x40) {
+            *message = bdedit_now_loading;
+            func_80015B70(1, 0x80);
+            *state = 2;
+            result = 2;
+        } else if (buttons & 0x20) {
+            *message = 0;
+            func_80015B70(3, 0x80);
+            *state = -1;
+        }
+        break;
+    case 2:
+        data = func_8001F1A0(0x2000);
+        values = func_8001F1A0(0x200);
+        status = func_8001AFD0(0, values, data);
+        if (status >= 0) {
+            for (bank = 0; bank < 2; bank++) {
+                for (i = 0; i < 0x800; i++) {
+                    pixels[bank][i] = ((unsigned short *)data)[bank * 0x800 + i];
+                }
+            }
+            for (bank = 0; bank < 0x40; bank++) {
+                palette[bank] = values[bank] | 0x8000;
+            }
+            for (bank = 0x40; bank < 0xff; bank++) {
+                palette[bank] = values[bank];
+            }
+            palette[0xff] = 0;
+            selection[1] = status / 4;
+            selection[2] = status % 4;
+            *message = bdedit_load_successful;
+            *timer = 0x78;
+            *state = -1;
+            result = -1;
+        } else {
+            switch (status) {
+            case -1:
+                *message = D_80062C44;
+                break;
+            case -5:
+            case -2:
+                *message = bdedit_no_data;
+                break;
+            case -4:
+                *message = D_80062D10;
+                break;
+            case -6:
+            case -3:
+            default:
+                *message = D_80062D20;
+                break;
+            }
+            *timer = 0xf0;
+            *state = 4;
+            func_8001F378(data);
+            func_8001F378(values);
+        }
+        break;
+    case 4:
+        if (*timer > 0) {
+            --*timer;
+        }
+        if (buttons & 0x70) {
+            func_80015B70(3, 0x80);
+            *timer = 0;
+        }
+        if (*timer == 0) {
+            *message = 0;
+            *state = -1;
+        }
+        break;
+    }
+    return result;
+
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005CD14
+void func_8005CD14(int tool, short *cursor, unsigned int buttons,
+                   unsigned int previous, unsigned int pressed,
+                   unsigned char **planes, unsigned char *mask)
+{
+    int x;
+    int y;
+    int changed;
+    RECT rect;
+
+    if ((buttons & 0xF000) == 0) {
+        if (pressed & 0x10) {
+            func_80015B70(2, 0x80);
+            func_8005D860((int *)cursor);
+        } else if (pressed & 0x80) {
+            func_80015B70(2, 0x80);
+            func_8005E224(tool, (int *)cursor);
+        }
+    }
+    x = (cursor[1] - 106) / 4 + D_800631FC;
+    y = (cursor[3] - 63) / 4;
+    switch (tool) {
+    case 0:
+        changed = func_8005FF24(x, y, buttons, previous, planes, &D_800631F8, mask);
+        break;
+    case 1:
+        changed = func_80060108(x, y, buttons, previous, planes, &D_800631F8, mask);
+        break;
+    case 2:
+        changed = func_80060E6C(x, y, buttons, previous, planes, &D_800631F8, mask);
+        break;
+    case 3:
+        changed = func_8006177C(x, y, buttons, previous, planes, &D_800631F8, mask);
+        break;
+    case 4:
+        changed = func_80061AC0(x, y, buttons, previous, planes, &D_800631F8, mask);
+        break;
+    default:
+        changed = 0;
+    }
+    if (changed) {
+        rect.x = 0x300;
+        rect.y = 0;
+        rect.w = 0x40;
+        rect.h = 0x20;
+        LoadImage(&rect, (unsigned long *)planes[0]);
+        rect.x = 0x300;
+        rect.y = 0x20;
+        rect.w = 0x40;
+        rect.h = 0x20;
+        LoadImage(&rect, (unsigned long *)planes[1]);
+    }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005E010
+int func_8005E010(int selection, int *cursor, unsigned int *flags,
+                  char **message, int *message_state, unsigned int buttons,
+                  unsigned int pressed, unsigned int repeated)
+{
+    int item = (((short *)cursor)[3] - 63) / 15;
+    char *text;
+    int action = -1;
+
+    if ((pressed & 0x400000) != 0 && item < 5) {
+        action = item;
+    } else if ((repeated & 0x400040) == 0x40 && (buttons & 0xF000) == 0) {
+        D_800631E8 = 0;
+        cursor[0] = D_800631F0;
+        cursor[1] = D_800631F4;
+        action = item;
+    } else if ((repeated & 0x200020) == 0x20 && (buttons & 0xF000) == 0) {
+        func_80015B70(3, 128);
+        D_800631E8 = 0;
+        cursor[0] = D_800631F0;
+        cursor[1] = D_800631F4;
+    }
+    if (action >= 0) {
+        selection = action;
+        switch (selection) {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+            func_80015B70(7, 128);
+            func_8005FF08();
+            *message = 0;
+            break;
+        case 6:
+            func_80015B70(5, 128);
+            text = D_80062F24;
+            selection |= 0x80;
+            *message = text;
+            *message_state = -1;
+            *flags &= ~2;
+            break;
+        case 5:
+            func_80015B70(5, 128);
+            text = D_80062F3C;
+            selection |= 0x80;
+            *message = text;
+            *message_state = -1;
+            *flags &= ~2;
+            break;
+        case 7:
+            func_80015B70(5, 128);
+            text = D_80062F58;
+            selection |= 0x80;
+            *message = text;
+            *message_state = -1;
+            *flags &= ~2;
+            break;
+        case 8:
+            func_80015B70(5, 128);
+            selection |= 0x80;
+            text = D_80062F74;
+            *message = text;
+            *message_state = -1;
+            *flags &= ~2;
+            break;
+        }
+    }
+    return selection;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005E284
+unsigned int func_8005E284(int *cursor, int mode, CVECTOR *palette, unsigned short *packed)
+{
+    unsigned char state[8];
+    unsigned int original;
+    unsigned int buttons;
+    unsigned int mouseButtons;
+    int column;
+    int row;
+    int value;
+
+    original = func_8001B320(0, 0);
+    buttons = original & 0xFFFF;
+    func_8001B320(1, state);
+    mouseButtons = state[3];
+    if ((original & 0xF000) == 0) {
+        D_800631EC = 0;
+    }
+    if (state[4] == 0x12) {
+        if (mouseButtons & 8) buttons |= 0x400040;
+        if (mouseButtons & 4) buttons |= 0x200020;
+        if (state[0] != 0 || state[1] != 0) {
+            D_800631E8 = 1;
+            cursor[0] += (signed char)state[0] << 16;
+            cursor[1] += (signed char)state[1] << 16;
+            if (cursor[0] < 0) cursor[0] = 0;
+            if (cursor[0] > 0x13FFFFF) cursor[0] = 0x13F0000;
+            if (cursor[1] < 0x100000) cursor[1] = 0x100000;
+            if (cursor[1] > 0xDFFFFF) cursor[1] = 0xDF0000;
+            D_800631EC = 0;
+            goto done;
+        }
+    }
+    switch (mode) {
+    case 1:
+        if ((buttons & 4) == 0) {
+            ((void (*)(int *, unsigned int, void *))func_8005CB9C)(cursor, buttons, state);
+        }
+        break;
+    case 2:
+        if (D_800631EC < 2 && (buttons & 0xF000) != 0) {
+            D_800631E8 = 0;
+            if (D_800631EC != 0) {
+                D_800631EC = 4;
+            } else {
+                D_800631EC = 11;
+            }
+            column = D_800631F8 % 8;
+            row = D_800631F8 / 8;
+            if (buttons & 0x8000) column--;
+            if (buttons & 0x2000) column++;
+            if (buttons & 0x1000) row--;
+            if (buttons & 0x4000) row++;
+            column = column < 0 ? 0 : column >= 8 ? 7 : column;
+            row = row < 0 ? 0 : row >= 8 ? 7 : row;
+            cursor[0] = (column * 8 + 29) << 16;
+            cursor[1] = (row * 8 + 73) << 16;
+            D_800631F8 = row * 8 + column;
+        }
+        break;
+    case 3:
+        func_8005D908(cursor, buttons, state, palette, packed);
+        break;
+    case 5:
+        if (D_800631EC < 2 && (buttons & 0x5000) != 0) {
+            D_800631E8 = 0;
+            if (D_800631EC == 0) {
+                D_800631EC = 11;
+            } else {
+                D_800631EC = 4;
+            }
+            value = (((short *)cursor)[3] - 63) / 15;
+            if (buttons & 0x1000) value--;
+            if (buttons & 0x4000) value++;
+            if (value < 0) {
+                value = 0;
+            } else if (value > 8) {
+                value = 8;
+            } else {
+                func_80015B70(0, 128);
+            }
+            cursor[0] = 290 << 16;
+            cursor[1] = (value * 15 + 70) << 16;
+        }
+        break;
+    case 4:
+    default:
+        if (buttons & 0xF000) {
+            D_800631E8 = 0;
+            cursor[0] = D_800631F0;
+            cursor[1] = D_800631F4;
+        }
+        break;
+    }
+done:
+    if (D_800631EC > 0) D_800631EC--;
+    return buttons;
 }
