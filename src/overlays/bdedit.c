@@ -2284,3 +2284,44 @@ void func_8005FB54(unsigned char *mask)
         region++;
     } while (region < 3);
 }
+// FUNCTION: BDEDIT.BIN:0x80060B18
+unsigned char *func_80060B18(unsigned long *ot, unsigned char *packet,
+                          int offset, int x, int y, int dx, int dy,
+                          int shade)
+{
+    int error;
+    int step;
+    TILE *tile;
+    unsigned char brightness;
+
+    error = dy / 2;
+    step = 0;
+    if (dy >= 0) {
+        do {
+            if (x >= offset && x < offset + 40) {
+                tile = (TILE *)packet;
+                packet += sizeof(TILE);
+                ((PrimitiveTag *)tile)->length = 3;
+                tile->code = 0x60;
+                tile->h = 4;
+                tile->w = 4;
+                tile->x0 = (x - offset) * 4 + 106;
+                tile->y0 = y * 4 + 63;
+                brightness = shade;
+                tile->b0 = brightness;
+                tile->g0 = brightness;
+                tile->r0 = brightness;
+                ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ot)->address;
+                ((PrimitiveTag *)ot)->address = (unsigned long)tile;
+            }
+            error += dx;
+            if (error >= dy) {
+                error -= dy;
+                x++;
+            }
+            step++;
+            y++;
+        } while (step <= dy);
+    }
+    return packet;
+}
