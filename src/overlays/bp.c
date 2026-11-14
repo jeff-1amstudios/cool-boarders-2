@@ -38,6 +38,9 @@ extern int D_800570E0;
 extern void func_80078E34(void *effects);
 extern void func_80077D74(void);
 
+extern TILE D_8009E96C;
+extern DR_MODE D_8009E988;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -222,4 +225,19 @@ void func_8005B720(void)
     } while (offset < 1);
     func_8001F378(D_8009E948);
     func_80077D74();
+}
+
+// FUNCTION: BP.BIN:0x8005BA14
+void func_8005BA14(GsOT *ot, unsigned char intensity)
+{
+    if (intensity != 0) {
+        D_8009E96C.r0 = intensity;
+        D_8009E96C.g0 = intensity;
+        D_8009E96C.b0 = intensity;
+        *(TILE *)D_80058ACC = D_8009E96C;
+        ((GsOT_TAG *)D_80058ACC)->p = ot->org[3].p;
+        ot->org[3].p = (unsigned long)D_80058ACC;
+        D_80058ACC += sizeof(TILE);
+        func_8009456C(&ot->org[3], &D_8009E988);
+    }
 }
