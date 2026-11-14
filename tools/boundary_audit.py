@@ -474,7 +474,7 @@ def build_inventory(path):
     subprocess.run([sys.executable, 'tools/objdiff.py'], cwd=ROOT, check=True)
     _, target, sha = reference()
     config = yaml.safe_load((ROOT / 'scus_943.58.yaml').read_text())
-    policy = json.loads((ROOT / 'config/reconstruction.json').read_text())
+    policy = json.loads((ROOT / 'config/decomp.json').read_text())
     sdk = json.loads((ROOT / 'config/psyq-sdk.json').read_text())
     if sdk['reference_sha256'] != sha:
         raise RuntimeError('SDK catalog differs from reference')
@@ -502,7 +502,7 @@ def build_inventory(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--inventory", type=Path, default=ROOT / "reports/reconstruction/inventory.json")
+    parser.add_argument("--inventory", type=Path, default=ROOT / "reports/decomp/inventory.json")
     parser.add_argument("--require-ghidra", action="store_true", help="Require matching saved Ghidra payload and reviewed-unit export")
     parser.add_argument("--prepare-ghidra-export", action="store_true", help="Remove old generated export files so a failed headless script cannot reuse stale evidence")
     parser.add_argument("--refresh-inventory", action="store_true", help="Rebuild the boot build-span inventory before auditing")
@@ -546,7 +546,7 @@ def main():
         row["reference_status"] = ("direct_call_seen" if row["direct_call_count"] else
             "possible_address_reference_seen" if row["possible_pointer_words_to_entry"] or row["ghidra_references_to_entry"]
             else "no_known_static_reference")
-    policy = json.loads((ROOT / "config/reconstruction.json").read_text())
+    policy = json.loads((ROOT / "config/decomp.json").read_text())
     coverage = coverage_gaps(inventory["functions"], target, yaml.safe_load((ROOT / "scus_943.58.yaml").read_text()))
     for gap in coverage["gaps"]:
         reviewed = review["regions"].get(gap["start"], {})

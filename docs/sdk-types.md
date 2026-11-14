@@ -24,7 +24,7 @@ The remaining 705 catalog entries have no same-name function definition in the a
 
 Examples of correctly applied public prototypes include `DrawSync`, `VSync`, `PutDrawEnv`, `PutDispEnv`, `LoadImage`, `SetDefDrawEnv` and `CdSearchFile`. `SetDefDrawEnv` has four arguments in `a0` through `a3` and its fifth at entry `sp + 16`. The saved calling-convention label is `__stdcall`; this name in the PSX language does not imply x86 stack argument passing. Inspect actual storage.
 
-The reconstruction worker now receives fresh Ghidra pseudocode, relevant type declarations and named callee prototypes with signature provenance. Accepted authored types, prototypes and reviewed global typings are saved back into the project before the next attempt. See [the reconstruction workflow](reconstruction-worker.md). The former provisional C layouts were removed in the fresh-start reset; new reconstructions should use existing SDK definitions as their starting evidence.
+The decomp worker now receives fresh Ghidra pseudocode, relevant type declarations and named callee prototypes with signature provenance. Accepted authored types, prototypes and reviewed global typings are saved back into the project before the next attempt. See [the decomp workflow](decomp-worker.md). The former provisional C layouts were removed in the fresh-start reset; new decomps should use existing SDK definitions as their starting evidence.
 
 ## Reproduce
 

@@ -8,7 +8,7 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from reconstruction_runtime import usage
+from decomp_runtime import usage
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -38,7 +38,7 @@ def timing(directory):
 
 
 def attempt_rows(root):
-    base = root / 'reports/reconstruction'
+    base = root / 'reports/decomp'
     # Include interrupted/missing-result attempts; keep retries as separate rows.
     directories = {p.parent for p in (base / 'sessions').glob('*/*/context.json')}
     directories.update(p.parent for p in (base / 'sessions').glob('*/*/result.json'))
@@ -71,7 +71,7 @@ def attempt_rows(root):
 
 def refresh(root=ROOT):
     rows = list(attempt_rows(root))
-    directory = root / 'reports/reconstruction'
+    directory = root / 'reports/decomp'
     directory.mkdir(parents=True, exist_ok=True)
     fields = list(rows[0]) if rows else ['identity', 'context']
     stream = io.StringIO()
@@ -88,7 +88,7 @@ def refresh(root=ROOT):
                    incomplete_usage=sum(not r['usage_complete'] for r in rows),
                    timing_sources=dict(Counter(r['timing_source'] for r in rows)), totals=totals)
     atomic_text(directory / 'function-metrics.json', json.dumps(summary, indent=2) + '\n')
-    lines = ['# Per-function reconstruction usage', '',
+    lines = ['# Per-function decomp usage', '',
              f"Generated: {summary['generated_at']}", '',
              f"{len(rows)} attempts across {summary['functions']} functions. "
              f"Statuses: {summary['statuses']}. Incomplete usage: {summary['incomplete_usage']}.", '',
@@ -108,7 +108,7 @@ def refresh(root=ROOT):
     for row in sorted(rows, key=lambda r: r['total_tokens'] or 0, reverse=True)[:15]:
         lines.append(f"| {row['identity']} | {row['status']} | {row['total_tokens'] or 'unknown'} | "
                      f"{row['worker_seconds']} | {row['timing_source']} | "
-                     f"[record]({row['context'].removeprefix('reports/reconstruction/')}/result.json) |")
+                     f"[record]({row['context'].removeprefix('reports/decomp/')}/result.json) |")
     atomic_text(directory / 'function-metrics.md', '\n'.join(lines) + '\n')
     return summary
 

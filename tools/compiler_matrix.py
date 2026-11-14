@@ -92,7 +92,7 @@ def main():
                        "failed_probes": sum(r["status"] == "failed" for r in group)})
     scores.sort(key=lambda item: -len(item["exact_probes"]))
     report = {"reference_sha256": expected_sha, "trials": len(records),
-              "scope": "Empirical evidence from proposed source reconstructions; ambiguous matches do not establish the original compiler or flags",
+              "scope": "Empirical evidence from proposed source decomps; ambiguous matches do not establish the original compiler or flags",
               "flags": "cc1 -mips1, GNU as -O1 -G0 -no-pad-sections; maspsx G matches tested cc1 G",
               "small_data_note": "G8 trials translate .extern size hints to .comm for maspsx. Results depend on the assumed external declarations.",
               "scores": scores, "results": records}

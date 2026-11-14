@@ -11,7 +11,7 @@ from rebuild import ROOT
 from overlays import load, summarize
 from c_sources import source_path
 
-OUTPUT = ROOT / 'reports/reconstruction/targets.json'
+OUTPUT = ROOT / 'reports/decomp/targets.json'
 
 
 def c_spans(config):
@@ -84,7 +84,7 @@ def assemble(entries, images, policy, boundaries, sdk):
         status = 'sdk' if is_sdk else 'c' if c else 'held' if held else 'needs_review'
         targets.append({'identity': identity, 'image': image, 'address': address,
                         'name': entry['name'], 'status': status,
-                        'reconstruction': 'c' if c else 'retained_assembly',
+                        'decomp': 'c' if c else 'retained_assembly',
                         'source': c['source'] if c else None,
                         'sdk_name': accepted.get(address),
                         'reference_sha256': context['sha256'],
@@ -93,7 +93,7 @@ def assemble(entries, images, policy, boundaries, sdk):
                         'ranges': entry['ranges'], 'body_bytes': entry['body_bytes'],
                         'body_sha256': entry['body_sha256'],
                         'file_offset': start - context['base'] + context['file_offset'],
-                        'boundary_review': 'required_before_reconstruction',
+                        'boundary_review': 'required_before_decomp',
                         'note': review.get('note', '')})
     targets.sort(key=lambda r: (r['image'] != 'SCUS_943.58', r['image'], int(r['address'], 16)))
     counts = Counter(r['status'] for r in targets)
@@ -132,7 +132,7 @@ def rebuild():
             if not (ROOT / span['source']).is_file():
                 raise RuntimeError('Missing C source: ' + span['source'])
     report = assemble(analysis['entries'], images,
-                      json.loads((ROOT / 'config/reconstruction.json').read_text()),
+                      json.loads((ROOT / 'config/decomp.json').read_text()),
                       json.loads((ROOT / 'config/function-boundaries.json').read_text()), sdk)
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(report, indent=2) + '\n')

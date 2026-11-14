@@ -1,6 +1,6 @@
 # Cool Boarders 2
 
-A matching decompilation of the USA PS1 release (`SCUS_943.58`) and its 14 known code overlays. The goal is to reconstruct C that rebuilds the original binaries byte for byte.
+A matching decompilation of the USA PS1 release (`SCUS_943.58`) and its 14 known code overlays. The goal is C that rebuilds the original binaries byte for byte.
 
 ## Progress
 
@@ -28,12 +28,12 @@ Snapshot: **14 November 2026**. Counts cover non-SDK function instances across a
 
 Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; 1 curated hold remains outside the deferred count.
 
-The inventory contains **3,967** detected function instances, including **1,047 SDK signature matches** excluded from the table. Boundaries are provisional and duplicate bodies are counted per image. Counts come from `reports/reconstruction/targets.json` and the persistent `reports/reconstruction/deferred.json`, excluding targets already covered by C.
+The inventory contains **3,967** detected function instances, including **1,047 SDK signature matches** excluded from the table. Boundaries are provisional and duplicate bodies are counted per image. Counts come from `reports/decomp/targets.json` and the persistent `reports/decomp/deferred.json`, excluding targets already covered by C.
 
-**Binary rebuild: 15/15 files exact (100%).** This includes retained assembly and data, so it measures build reproducibility separately from C reconstruction. Latest results: `reports/boot-rebuild.json` and `reports/overlay-rebuild.json`. The compiler recipe remains provisional.
+**Binary rebuild: 15/15 files exact (100%).** This includes retained assembly and data, so it measures build reproducibility separately from C decomp. Latest results: `reports/boot-rebuild.json` and `reports/overlay-rebuild.json`. The compiler recipe remains provisional.
 <!-- progress:end -->
 
-The reconstruction script refreshes this snapshot after successful batch validation. Run `make progress` to validate and refresh it manually. Review and commit the updated README before starting another batch.
+The decomp script refreshes this snapshot after successful batch validation. Run `make progress` to validate and refresh it manually. Review and commit the updated README before starting another batch.
 
 ## Build
 
@@ -45,7 +45,7 @@ make
 
 The default build validates every byte of all 15 pinned files and fails on a mismatch. For a fresh checkout, follow [setup and reproduction](docs/setup.md).
 
-## Reconstruct
+## Decomp
 
 Keep authored C in `src/main.c` or `src/overlays/<overlay>.c`, with image-qualified `// FUNCTION:` annotations and shared declarations/types. Review each function's boundaries before replacing assembly.
 
@@ -55,12 +55,12 @@ make validate IMAGE=SCUS_943.58   # validate the containing file during iteratio
 make validate                    # required all-image check at batch end
 ```
 
-Use the [headless reconstruction workflow](docs/reconstruction-worker.md) for selected-object diagnostics, automatic batches and accepted Ghidra feedback. Only full-file byte comparison establishes correctness.
+Use the [headless decomp workflow](docs/decomp-worker.md) for selected-object diagnostics, automatic batches and accepted Ghidra feedback. Only full-file byte comparison establishes correctness.
 
 ## Documentation
 
 - [Setup and reproduction](docs/setup.md)
-- [Reconstruction workflow](docs/reconstruction-worker.md)
+- [Decomp workflow](docs/decomp-worker.md)
 - [Function boundaries](docs/function-boundaries.md) and [deferred reviews](docs/deferred-function-review.md)
 - [Overlays and matching](docs/overlays.md)
 - [Ghidra in Docker](docs/ghidra-docker.md) and [SDK types](docs/sdk-types.md)

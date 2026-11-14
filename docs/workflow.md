@@ -72,7 +72,7 @@ not a substitute.
 Splat 0.50.1 considers absolute symbols already defined and excludes them from
 its auto-undefined linker output. `tools/rebuild.py` generates
 `build/absolute_symbols.ld` from those declarations, and both the assembly-only
-reference link and the C reconstruction link use it. New runtime-only symbol
+reference link and the C decomp link use it. New runtime-only symbol
 declarations should use the same attribute. The source symbol file remains the
 single source for their addresses.
 

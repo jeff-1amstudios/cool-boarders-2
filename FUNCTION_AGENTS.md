@@ -1,6 +1,6 @@
 # Per-function matching worker
 
-Your only task is to reconstruct the selected PS1 function as readable matching
+Your only task is to decompile the selected PS1 function as readable matching
 C. The supervisor supplies its identity, allowed files, fresh Ghidra export,
 reference assembly, compiler recipe and time allowance in the task prompt.
 Use existing project tools only. If a tool is unavailable, report the blocker;
@@ -17,10 +17,10 @@ do not install dependencies, change tools or perform repository maintenance.
   including this brief's source file. Do not perform repository onboarding or
   instruction discovery. Begin with the selected context and Ghidra export.
 - Work on the existing branch and candidate checkout. Do not switch branches,
-  stage, commit, reset, clean, invoke `reconstruct.py` or spawn agents.
+  stage, commit, reset, clean, invoke `decomp.py` or spawn agents.
 - Start from the supplied current Ghidra pseudocode, with SDK names and accepted
   analysis. Use assembly to resolve uncertainty and refine compiler output.
-  Do not restore earlier failed candidates or reconstruct from assembly alone.
+  Do not restore earlier failed candidates or decompile from assembly alone.
 - Read the selected context, current image header, cached type reference and
   relevant callers, callees and data. Keep reads focused; do not dump whole
   configurations, unrelated sources or full logs.
@@ -101,7 +101,7 @@ global replacement that would shrink it. Never invent bounds or weaken guards.
 
 ## Iterate and finish
 
-- Use `tools/.venv/bin/python tools/reconstruction_step.py --context <context>`
+- Use `tools/.venv/bin/python tools/decomp_step.py --context <context>`
   for each compile/edit iteration. Inspect its compact diagnostics and the
   selected `object-diff.json` when necessary.
 - Do not run unit tests, full-file validation or whole-project objdiff.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recover a preserved 100% candidate without launching a reconstruction worker.
+"""Recover a preserved 100% candidate without launching a decomp worker.
 
 run performs the full recovery; prepare merges additions; check validates and plans;
 accept commits and saves analysis; sync resumes a post-commit save interruption.
@@ -13,11 +13,11 @@ import re
 import shutil
 import subprocess
 
-import reconstruct as worker
-import reconstruction_ghidra as ghidra
+import decomp as worker
+import decomp_ghidra as ghidra
 from c_sources import sections
-from reconstruction_backlog import prepare, slug, source_file
-from reconstruct_run import review_header_extension, review_shared_extension, review_source, review_split
+from decomp_backlog import prepare, slug, source_file
+from decomp_run import review_header_extension, review_shared_extension, review_source, review_split
 from target_queue import c_spans
 import yaml
 
@@ -281,9 +281,9 @@ def main():
     require(len(args.target) == 1 or args.phase == 'run', 'Multiple targets require run')
     require(len(args.target) == 1 or not args.directory, 'Multiple targets use separate default directories')
     with worker.exclusive_worker(worker.STATE.parent):
-        require(not worker.state().get('active'), 'Automatic reconstruction has an active attempt')
+        require(not worker.state().get('active'), 'Automatic decomp has an active attempt')
         for identity in args.target:
-            directory = (ROOT / (args.directory or 'reports/reconstruction/recoveries/' + slug({'identity': identity}))).resolve()
+            directory = (ROOT / (args.directory or 'reports/decomp/recoveries/' + slug({'identity': identity}))).resolve()
             require(directory.is_relative_to(ROOT / 'reports'), 'Recovery directory must stay under reports/')
             if args.phase == 'prepare' or (args.phase == 'run' and not directory.exists()):
                 prepare_candidate(identity, directory)

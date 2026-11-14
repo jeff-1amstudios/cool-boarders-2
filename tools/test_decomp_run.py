@@ -15,8 +15,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import reconstruct as worker
-from reconstruct_run import Runner, Rejected, review_source, review_split, review_header_extension, review_shared_extension
+import decomp as worker
+from decomp_run import Runner, Rejected, review_source, review_split, review_header_extension, review_shared_extension
 
 
 class RunTests(unittest.TestCase):
@@ -26,7 +26,7 @@ class RunTests(unittest.TestCase):
         self.stack = ExitStack()
         self.addCleanup(self.stack.close)
         self.root = Path(self.stack.enter_context(tempfile.TemporaryDirectory(dir=temporary)))
-        for name in ("config", "src", "orig/disc/files", "tools/tmp", "reports/reconstruction"):
+        for name in ("config", "src", "orig/disc/files", "tools/tmp", "reports/decomp"):
             (self.root / name).mkdir(parents=True, exist_ok=True)
         self.config = {"options": {}, "segments": [{"type": "code", "start": 0, "vram": 0x80010000,
             "subsegments": [[0, "asm", "first"], [8, "asm", "second"], [16, "data", "data"]]}, [24]]}
@@ -40,7 +40,7 @@ class RunTests(unittest.TestCase):
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("{}\n")
-        (self.root / "config/reconstruction.json").write_text('{"pilot": [], "functions": {}}\n')
+        (self.root / "config/decomp.json").write_text('{"pilot": [], "functions": {}}\n')
         self.original = bytes(range(24))
         self.sha = hashlib.sha256(self.original).hexdigest()
         (self.root / "orig/disc/files/SCUS_943.58").write_bytes(self.original)
@@ -70,8 +70,8 @@ class RunTests(unittest.TestCase):
         self.git("add", ".")
         self.git("commit", "-qm", "Fixture baseline")
         self.base = self.git("rev-parse", "HEAD")
-        for name, value in {"ROOT": self.root, "STATE": self.root / "reports/reconstruction/state.json",
-                            "REVIEW": self.root / "config/reconstruction.json"}.items():
+        for name, value in {"ROOT": self.root, "STATE": self.root / "reports/decomp/state.json",
+                            "REVIEW": self.root / "config/decomp.json"}.items():
             self.stack.enter_context(patch.object(worker, name, value))
         self.stack.enter_context(patch.object(worker, "reference", side_effect=self.reference))
         self.stack.enter_context(patch.object(worker, "inventory", side_effect=self.inventory))
@@ -81,7 +81,7 @@ class RunTests(unittest.TestCase):
             from pathlib import Path
             mode = sys.argv[1]
             prompt = sys.stdin.read()
-            context = json.loads(Path(os.environ['CB2_RECONSTRUCTION_CONTEXT']).read_text())
+            context = json.loads(Path(os.environ['CB2_DECOMP_CONTEXT']).read_text())
             address = context['address']
             with Path('reports/agents.jsonl').open('a') as out:
                 out.write(json.dumps({'pid': os.getpid(), 'address': address, 'prompt': prompt,
@@ -159,7 +159,7 @@ class RunTests(unittest.TestCase):
             agent_command=shlex.join([sys.executable, str(self.agent), mode])))
 
     def test_paused_policy_stops_before_session_or_agent_launch(self):
-        (self.root / "config/reconstruction.json").write_text('{"matching_paused": true}\n')
+        (self.root / "config/decomp.json").write_text('{"matching_paused": true}\n')
         with patch.object(worker, "begin_batch") as begin:
             with self.assertRaisesRegex(RuntimeError, "paused.*no batch started"):
                 self.runner().run()

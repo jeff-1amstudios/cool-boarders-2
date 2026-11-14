@@ -9,9 +9,9 @@ The four deferrals from batch `1794447328651698000` had different causes. A work
 | `0x8001579C` | The 120-byte candidate passed the full-executable comparison, but Ghidra rejected replacing the filename data with an unsized array's shorter prefix. | Declared the independently evidenced 17-byte filename extent; retained matching C and its analysis feedback. |
 | `0x80015948` | The 552-byte candidate passed the full-executable comparison, but Ghidra rejected shrinking the existing four-byte object at `D_80057FC0` to a halfword. | Preserved that saved object's extent and omitted its unsupported global replacement from feedback. Retained matching C and the other recovered global types. |
 
-The GPU aliases use the existing SDK catalog's addresses: `MoveImage` at `0x80029B74`, `ClearOTag` at `0x80029C38`, `DrawPrim` at `0x80029D88`, `DrawOTag` at `0x80029DE8`, `PutDrawEnv` at `0x80029E5C`, and `PutDispEnv` at `0x8002A0B4`. These identify retained SDK assembly; they are not additional C reconstructions.
+The GPU aliases use the existing SDK catalog's addresses: `MoveImage` at `0x80029B74`, `ClearOTag` at `0x80029C38`, `DrawPrim` at `0x80029D88`, `DrawOTag` at `0x80029DE8`, `PutDrawEnv` at `0x80029E5C`, and `PutDispEnv` at `0x8002A0B4`. These identify retained SDK assembly; they are not additional C decomps.
 
-The later accepted playback function already declared `D_80058F84` and `D_80058F8C`. Their shared declarations now carry the volatile qualification required by the recovered transfer function's instruction sequence. Full-file comparison checks that playback and every other accepted C function remain exact. This supports a viable reconstruction, not proof of the original source qualifiers. `D_80057FC0` is accessed as an unsigned halfword in C; this does not establish the saved four-byte object's total layout.
+The later accepted playback function already declared `D_80058F84` and `D_80058F8C`. Their shared declarations now carry the volatile qualification required by the recovered transfer function's instruction sequence. Full-file comparison checks that playback and every other accepted C function remain exact. This supports a viable decomp, not proof of the original source qualifiers. `D_80057FC0` is accessed as an unsigned halfword in C; this does not establish the saved four-byte object's total layout.
 
 ## Remaining candidate
 
@@ -25,7 +25,7 @@ The selected object has the reference's instruction length; its relocated full-f
 
 Trials covered the available PSX/CDK GCC 2.7.2 and PSX GCC 2.8.1 compilers, O2/O3, scheduling, strength reduction, CSE, frame-pointer and related flag variations, plus focused C expression/type/lifetime changes. Unsupported historical compiler options were recorded as rejected trials. No trial established a better compiler recipe; `config/compiler.json` remains unchanged and provisional.
 
-Fresh headless exports and review artifacts are under ignored `reports/reconstruction/deferred-retry/`. The remaining candidate, its matching header/symbol/split inputs, instruction diagnostics and failed full-file comparison are preserved under `reports/reconstruction/deferred-retry/800143E0/`. Original batch evidence is unchanged except the selected-object iteration diagnostics, which are copied into the new directory for this review. Prior candidate patches and supervisor logs remain available in the original session.
+Fresh headless exports and review artifacts are under ignored `reports/decomp/deferred-retry/`. The remaining candidate, its matching header/symbol/split inputs, instruction diagnostics and failed full-file comparison are preserved under `reports/decomp/deferred-retry/800143E0/`. Original batch evidence is unchanged except the selected-object iteration diagnostics, which are copied into the new directory for this review. Prior candidate patches and supervisor logs remain available in the original session.
 
 Final acceptance uses plain `make validate`: exact full-file comparison of all 15 pinned images. The accepted source adds three resident C functions (1,332 bytes), increasing resident C objects from 31 to 34. Remaining executable assembly, SDK identifications and overlays retain their existing status.
 
@@ -57,7 +57,7 @@ altering prior users.
 
 Fresh read-only headless exports, compiler/C trials, selected-object diagnostics,
 full-file validation logs, and Ghidra feedback are preserved under ignored
-`reports/reconstruction/newest-deferred/`. The focused C experiment found the
+`reports/decomp/newest-deferred/`. The focused C experiment found the
 volume match after 74 compiler/C trials; the broader sweep recorded 995 successful
 trials before it was stopped. No compiler recipe change was needed.
 
@@ -65,7 +65,7 @@ The full 266,240-byte `SCUS_943.58` matches the pinned reference SHA-256
 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4` with
 zero differing bytes. These two functions add 688 bytes of matching C, taking
 resident C objects from 42 to 44. `CdMix` remains retained SDK assembly. The older
-`0x800143E0` deferral and the overlays' reconstruction status are unchanged.
+`0x800143E0` deferral and the overlays' decomp status are unchanged.
 
 Final `make validate` passed all 15 pinned full-file comparisons. Fresh read-only
 exports after transactional Ghidra saves confirmed both accepted prototypes.
@@ -86,7 +86,7 @@ The event function opens eight BIOS events for two event classes and enables all
 eight handles. Its calling convention and function-pointer types are unchanged;
 no type-conflict checks were weakened. `OpenEvent` and `EnableEvent` aliases name
 existing retained SDK assembly at `0x8003CAAC` and `0x8003CADC`; they are not
-additional C reconstructions.
+additional C decomps.
 
 The CD callback handles polling, fading, response copying and playback state.
 The best candidate's remaining differences are the first polling buffer's two
@@ -102,7 +102,7 @@ Some options were rejected by particular compilers. No compiler recipe change
 was accepted. The failed candidate did not update saved Ghidra analysis.
 
 Evidence is preserved under ignored
-`reports/reconstruction/deferred-review-20261113/`: `best-full-checked-main.c`,
+`reports/decomp/deferred-review-20261113/`: `best-full-checked-main.c`,
 `best-object-diff.json`, `best-boot-rebuild.json`, numbered trial records,
 fresh exports and validation/feedback logs. The remaining queue entry links this
 review while preserving the original attempt. The resolved event entry is removed
@@ -124,7 +124,7 @@ function typedefs and established data layouts retain conflict checks.
 Focused read-only headless checks cover the original failed payload, repeated and
 nested callback parameter names, deterministic replay, real struct-layout and
 named callback typedef conflicts, and representative accepted global/type records.
-Artifacts are under ignored `reports/reconstruction/callback-import-fix/`.
+Artifacts are under ignored `reports/decomp/callback-import-fix/`.
 
 The generic importer passed the original collision payload and replay checks for
 five accepted GPU, sound, CD-global and event records. An older sound record was
@@ -165,7 +165,7 @@ The importer and its conflict/extent guards are unchanged. Explicit verified
 array bounds let both feedback plans pass without reducing existing data.
 Replayable feedback records are under `config/ghidra/`; exports, object
 comparisons, full-file logs and feedback transactions are preserved under
-ignored `reports/reconstruction/deferred-card-review/`. Original failed-session
+ignored `reports/decomp/deferred-card-review/`. Original failed-session
 records remain intact.
 
 Final plain `make validate` passed all 15 pinned full-file comparisons. Both
@@ -198,7 +198,7 @@ Each recovered candidate passed an exact comparison of its containing file
 under the unchanged compiler recipe and pinned references, adding 704 bytes of
 matching C. Replayable analysis records are under `config/ghidra/`; recovery
 logs and feedback transactions are under ignored
-`reports/reconstruction/extern-recovery/`. Original attempt records are preserved.
+`reports/decomp/extern-recovery/`. Original attempt records are preserved.
 
 Final plain `make validate` passed all 15 pinned full-file comparisons. All four
 Ghidra saves succeeded; fresh read-only decompilations confirmed the accepted
@@ -223,7 +223,7 @@ the established register prefix, and `SerialPollCallback` names the callback
 signature. The reconstructed routine contributes 640 bytes of matching C.
 
 Recovery diagnostics and Ghidra transactions are preserved under ignored
-`reports/reconstruction/serial-state-recovery/`; the original failed attempt
+`reports/decomp/serial-state-recovery/`; the original failed attempt
 is unchanged. Compiler settings and pinned references remain unchanged.
 
 Final plain `make validate` passed all 15 pinned full-file comparisons; both
@@ -252,7 +252,7 @@ siblings at the reviewed original spans. `linker_section_order: .data` preserves
 their position among the retained trailing data; the header explicitly remains
 first. These generated sections replace the retained table copies. The original
 compiler/assembler flags and pinned reference remain unchanged. These ownership
-mappings describe the reconstruction units, not proven original translation-unit
+mappings describe the decomp units, not proven original translation-unit
 boundaries.
 
 Assembly-only overlay references now use Splat's `asmtu` text units, preserving
@@ -268,7 +268,7 @@ word-cursor callee prototypes with explicit representation conversions; existing
 function bodies are unchanged. Together these recoveries add 3,968 bytes of C
 text and reproduce 168 bytes of compiler-generated switch tables. Logs and
 feedback transactions are under ignored
-`reports/reconstruction/overlay-table-recovery/`.
+`reports/decomp/overlay-table-recovery/`.
 
 Final plain `make validate` passed all 15 pinned full-file comparisons. All five
 Ghidra saves and subsequent fresh read-only exports succeeded. The persistent
@@ -300,14 +300,14 @@ The worker brief now requires a script to measure `first NUL file offset - strin
 start file offset + 1`, record both offsets and byte counts, and use the result
 for extern bounds and symbol sizes. No supervisor string check was added.
 Recovery exports, measured lengths, validation reports and feedback transactions
-are under ignored `reports/reconstruction/string-bound-recovery/`; replayable
+are under ignored `reports/decomp/string-bound-recovery/`; replayable
 feedback is in `config/ghidra/BDEDIT_BIN_0x8005FB54.json`.
 
 ## Last four BP deferrals investigated — 2026-11-14
 
 The latest four persistent entries are from batch `1794646196952825000`.
 This review inspected saved candidates, object diagnostics, full-file reports,
-worker results and the supervisor's source checks. It did not retry reconstruction,
+worker results and the supervisor's source checks. It did not retry decomp,
 accept candidates, update Ghidra or change the deferred queue. No new binary
 validation was run; the comparison results below are preserved attempt results.
 
@@ -327,14 +327,14 @@ the entire original data subsegment at `0x3AD14` retained and supplies no owned
 rodata sibling. This explains the file growth despite the text-only score.
 
 For `0x8005AEA8`, the initial attempt is preserved in
-`reports/reconstruction/sessions/1794646196952825000/BP_BIN_0x8005AEA8/`;
+`reports/decomp/sessions/1794646196952825000/BP_BIN_0x8005AEA8/`;
 its `candidate/sources.json`, `object-report.json` and `ghidra-update.json`
 survive. The persistent entry instead points at the empty retry ending
 `-retry-1794648456476605000`. The absent files were absent in that retry's
 baseline, rather than evidence that the 140-byte function could not match.
 The worker brief's instruction to report missing inputs explains the stop.
 
-For `0x8005B720`, `review_header_extension` in `tools/reconstruct_run.py`
+For `0x8005B720`, `review_header_extension` in `tools/decomp_run.py`
 requires every byte preceding the old final `#endif` to remain an exact prefix.
 The baseline ends with `int func_8005B4A4(void);\n\n#endif\n`; the candidate
 places its new prototype between that declaration and its blank line. Moving
@@ -371,7 +371,7 @@ Ghidra saving. Both saves and subsequent fresh read-only exports succeeded.
 The two entries were then removed from the persistent deferred queue.
 
 Recovery evidence is under ignored
-`reports/reconstruction/bp-pair-recovery/`; original attempt artifacts remain
+`reports/decomp/bp-pair-recovery/`; original attempt artifacts remain
 unchanged. These recoveries add 336 bytes of matching C. The other two reviewed
 BP deferrals remain assembly.
 
@@ -409,8 +409,8 @@ Final plain `make validate` passed all 15 pinned files. The queue has 42 remaini
 deferrals and the inventory has 272 matching C function instances.
 
 The first two recovery records are under ignored
-`reports/reconstruction/blank-line-recovery/`; the remaining five are under
-`reports/reconstruction/recoveries/`. Original failed-session evidence is
+`reports/decomp/blank-line-recovery/`; the remaining five are under
+`reports/decomp/recoveries/`. Original failed-session evidence is
 unchanged. `tools/recover_deferred.py` now provides reusable preparation,
 validation, acceptance and interrupted-save recovery without another model
 worker. Its multi-target `run` command was exercised on the final five functions
@@ -423,7 +423,7 @@ Recovered the remaining six persistent deferrals with preserved 100% object
 scores. Each attempt began with current byte-checked boundaries and a fresh
 headless export of saved Ghidra analysis. Original failed-session evidence is
 unchanged; recovery inputs, exact comparisons and feedback confirmations are
-under ignored `reports/reconstruction/remaining-100-recovery/`.
+under ignored `reports/decomp/remaining-100-recovery/`.
 
 | Function | C text bytes | Recovery |
 | --- | ---: | --- |

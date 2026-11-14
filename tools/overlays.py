@@ -108,7 +108,7 @@ def summarize():
             referenced.update(value.decode("ascii") for value in re.findall(rb"[A-Z_0-9]+\.BIN", path.read_bytes()))
     report = {"scope": "Resident boot plus all 14 known raw root BIN overlays; Ghidra estimates, not reviewed source-function boundaries. "
                        "Distinct overlay/address identities retained. Identical body hashes group bytes only, not proven equivalent behavior. "
-                       "Reconstruction and full-file build status are reported separately by target_queue.py and overlay_rebuild.py; opaque asset containers may require further format analysis.",
+                       "Decomp and full-file build status are reported separately by target_queue.py and overlay_rebuild.py; opaque asset containers may require further format analysis.",
               "project": "CB2_USA", "program": "SCUS_943.58",
               "summary": {"programs": 1, "code_images": len(programs), "overlays": len(programs) - 1,
                           "function_instances": len(instances),

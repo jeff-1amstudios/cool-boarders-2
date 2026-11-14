@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Negative controls for the reconstruction worker's selection and commit gates."""
+"""Negative controls for the decomp worker's selection and commit gates."""
 import tempfile
 import time
 import sys
@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-import reconstruct as worker
+import decomp as worker
 from boundary_audit import parse_functions
 
 
@@ -53,11 +53,11 @@ class WorkerTests(unittest.TestCase):
             with worker.exclusive_worker(Path(tmp)):
                 result = subprocess.run([sys.executable, "-c",
                     "import sys; from pathlib import Path; sys.path.insert(0, 'tools'); "
-                    "from reconstruct import exclusive_worker; "
+                    "from decomp import exclusive_worker; "
                     "\nwith exclusive_worker(Path(sys.argv[1])): pass", tmp],
                     capture_output=True, text=True, cwd=worker.ROOT)
             self.assertNotEqual(result.returncode, 0)
-            self.assertIn("Another reconstruction worker", result.stderr)
+            self.assertIn("Another decomp worker", result.stderr)
 
 
 if __name__ == "__main__":

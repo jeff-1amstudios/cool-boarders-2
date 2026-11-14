@@ -27,16 +27,16 @@ These tools provide evidence and comparison, rather than a universal compiler/fl
 - **Ghidra's PSX/PsyQ signatures** identify known SDK routines and suggest library versions. The actual stored Program Information property is `PsyQ Version = 3.7.0`; the analyzer's separate fallback preference is 4.7.0. The fallback is not used as evidence of this game's version.
 - **[old-gcc](https://github.com/decompals/old-gcc)** supplies historical compiler candidates. The staged candidates are PSX GCC 2.7.2, CDK/Cygnus GCC 2.7.2, and PSX GCC 2.8.1, from release 0.17.
 - **[maspsx](https://github.com/mkst/maspsx)** translates period compiler assembly for GNU as and models selected ASPSX behaviors. Its version-mode option is experimental compatibility behavior, not proof that the original assembler had that exact version.
-- **The project's compiler matrix** compiles proposed C, links it at the original address with known external addresses, and compares the entire function's bytes. Candidate selection and C/type reconstruction still need analysis.
+- **The project's compiler matrix** compiles proposed C, links it at the original address with known external addresses, and compares the entire function's bytes. Candidate selection and C/type decomp still need analysis.
 - **[decomp-permuter](https://github.com/simonlindholm/decomp-permuter)** can search C source variations against a target once a compile command exists. It is not installed here yet and does not by itself establish the original compiler/flags.
 
-We accept the PSX plugin's **PsyQ 3.7.0** detection for the boot executable. Its existing SDK identifications are recorded in `config/psyq-sdk.json` and excluded from the reconstruction queue, including `DrawSyncCallback` at `0x800296F0`. This uses the plugin's result directly; no independent version/signature audit is required for this selection policy. It does not establish one compiler for all game objects and libraries. Different translation units, linked libraries and handwritten routines may require different settings.
+We accept the PSX plugin's **PsyQ 3.7.0** detection for the boot executable. Its existing SDK identifications are recorded in `config/psyq-sdk.json` and excluded from the decomp queue, including `DrawSyncCallback` at `0x800296F0`. This uses the plugin's result directly; no independent version/signature audit is required for this selection policy. It does not establish one compiler for all game objects and libraries. Different translation units, linked libraries and handwritten routines may require different settings.
 
 ## Empirical results
 
 `tools/compiler_matrix.py` tests three compilers × four optimization levels (`O0`–`O3`) × two small-data limits (`G0`, `G8`) × three maspsx ASPSX modes (2.21, 2.34, 2.56) × 25 reconstructed functions: **1,800 trials**.
 
-| Candidate | Best exact matches among the 25 C reconstructions |
+| Candidate | Best exact matches among the 25 C decomps |
 | --- | ---: |
 | PSX GCC 2.7.2 | 25/25 |
 | CDK/Cygnus GCC 2.7.2 | 13/25 |
@@ -50,11 +50,11 @@ maspsx:    --aspsx-version 2.56 -G0
 GNU as:    -EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections
 ```
 
-**Unresolved:** `-O3` also matches all 25 functions. Among the tested combinations, only PSX GCC 2.7.2 with G0 and maspsx 2.56 reaches 25/25, at either O2 or O3. Other assembler modes not tested may produce the same results. A different source/type reconstruction can change a candidate's score, so the table does not conclusively exclude another compiler. We have selected an evidence-backed working build recipe, not uniquely recovered every original option.
+**Unresolved:** `-O3` also matches all 25 functions. Among the tested combinations, only PSX GCC 2.7.2 with G0 and maspsx 2.56 reaches 25/25, at either O2 or O3. Other assembler modes not tested may produce the same results. A different source/type decomp can change a candidate's score, so the table does not conclusively exclude another compiler. We have selected an evidence-backed working build recipe, not uniquely recovered every original option.
 
-1,620 trials reached byte comparison. Another 180 G8 trials failed linking with GP displacement errors across six reconstructions (`flag_acquire`, `flag_release`, `fill_slots`, `clear_globals`, `two_command_calls`, `copy_bounded_name`): with the proposed scalar declarations, some GP-relative addresses exceed the available signed displacement. Those failures are recorded separately from byte mismatches. G8 trials preserve positive `.extern` size metadata through a common-symbol shim for maspsx; unknown-size arrays are not treated as small data. These results depend on the proposed declarations and do not establish a project-wide `-G0` policy. The retained assembly also contains a small group of GP-relative stores around `0x80020F00` that needs separate analysis.
+1,620 trials reached byte comparison. Another 180 G8 trials failed linking with GP displacement errors across six decomps (`flag_acquire`, `flag_release`, `fill_slots`, `clear_globals`, `two_command_calls`, `copy_bounded_name`): with the proposed scalar declarations, some GP-relative addresses exceed the available signed displacement. Those failures are recorded separately from byte mismatches. G8 trials preserve positive `.extern` size metadata through a common-symbol shim for maspsx; unknown-size arrays are not treated as small data. These results depend on the proposed declarations and do not establish a project-wide `-G0` policy. The retained assembly also contains a small group of GP-relative stores around `0x80020F00` that needs separate analysis.
 
-Before the reset, full scores and trial artifacts were recorded under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`. The earlier five-function matrix scored 5/5, 3/5 and 1/5 respectively; the expanded sample strengthens the PSX 2.7.2 lead but preserves the O2/O3 tie. Selection remains source-dependent because these C reconstructions were developed against the working recipe. The old matching sources, generated trial artifacts and reconstruction notes were cleared in the 10 November fresh-start reset; Git history retains the earlier experiments.
+Before the reset, full scores and trial artifacts were recorded under ignored `reports/compiler-matrix.json` and `build/compiler-probes/`. The earlier five-function matrix scored 5/5, 3/5 and 1/5 respectively; the expanded sample strengthens the PSX 2.7.2 lead but preserves the O2/O3 tie. Selection remains source-dependent because these C decomps were developed against the working recipe. The old matching sources, generated trial artifacts and decomp notes were cleared in the 10 November fresh-start reset; Git history retains the earlier experiments.
 
 ## First five C functions
 
@@ -80,7 +80,7 @@ Expand the sample to functions with signed/unsigned byte accesses, division, swi
 
 ## Deferred text sprite builder (`0x80012C30`)
 
-The fresh-start reconstruction of the 624-byte text sprite builder matches with the unchanged PSX GCC 2.7.2 recipe above. The preserved flat implementation matched the sprite loop but compiled to 620 bytes: GCC moved the final packet advance past the first `GetGraphType` call, filled the conditional branch delay slot with that advance, and shared the command constant load. The reference advances the cursor before the call and loads `0xE1000000` in both paths.
+The fresh-start decomp of the 624-byte text sprite builder matches with the unchanged PSX GCC 2.7.2 recipe above. The preserved flat implementation matched the sprite loop but compiled to 620 bytes: GCC moved the final packet advance past the first `GetGraphType` call, filled the conditional branch delay slot with that advance, and shared the command constant load. The reference advances the cursor before the call and loads `0xE1000000` in both paths.
 
 The matching C uses `static __inline__ append_draw_tpage`, with an explicit `DR_TPAGE *next = packet + 1` local, and assigns the helper's result back to the caller's `packet` variable before returning it. Returning the helper call directly, advancing its parameter with `packet++`, or flattening the helper back into the caller does not produce the same code. This is evidence that inline expansion and return-value handling can determine the instruction schedule even when the operations are equivalent; it does not uniquely establish the original source spelling. No inline assembly, register pinning, compiler change, flag change, reference change or binary patch is needed.
 

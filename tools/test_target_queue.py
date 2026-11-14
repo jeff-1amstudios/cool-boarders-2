@@ -35,7 +35,7 @@ class TargetQueueTest(unittest.TestCase):
         self.images['A.BIN']['c_spans'] = [{'address': 0x80000000, 'end': 0x80000008, 'source': 'src/a.c'}]
         row = self.build([self.entry('A.BIN', start=4, sdk=True)])['targets'][0]
         self.assertEqual(row['status'], 'sdk')
-        self.assertEqual(row['reconstruction'], 'c')
+        self.assertEqual(row['decomp'], 'c')
 
     def test_stale_bytes_and_sdk_disagreement_fail(self):
         entry = self.entry('A.BIN')
@@ -53,7 +53,7 @@ class TargetQueueTest(unittest.TestCase):
         boundaries = {'regions': {'0x80000000': {'size': 16, 'kind': 'multi_entry'}}}
         row = self.build([entry], boundaries=boundaries)['targets'][0]
         self.assertEqual(row['status'], 'held')
-        self.assertEqual(row['reconstruction'], 'retained_assembly')
+        self.assertEqual(row['decomp'], 'retained_assembly')
         # A boot-address hold must not leak into an overlay at the same address.
         row = self.build([self.entry('A.BIN')], boundaries=boundaries)['targets'][0]
         self.assertEqual(row['status'], 'needs_review')

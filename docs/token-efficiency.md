@@ -1,10 +1,10 @@
-# Reconstruction session efficiency review
+# Decomp session efficiency review
 
 Reviewed the repository's preserved automatic worker logs and result records on
 2026-11-14. Reproduce totals with
-`tools/.venv/bin/python tools/reconstruction_metrics.py`; the generated report
-is `reports/reconstruction/function-metrics.md`, with all attempts in the CSV.
-No new reconstruction workers were launched for this review.
+`tools/.venv/bin/python tools/decomp_metrics.py`; the generated report
+is `reports/decomp/function-metrics.md`, with all attempts in the CSV.
+No new decomp workers were launched for this review.
 
 The snapshot contains 259 attempts across 246 image-qualified functions:
 187 matched, 64 deferred and 8 interrupted. Usage is incomplete or absent for

@@ -41,7 +41,7 @@ def check(context_path, full=False):
     recipe_path = context.get('compiler_config', 'config/compiler.json')
     inputs = [context['build_config'], context['symbol_file'], recipe_path,
               'config/usa-disc.json', 'config/overlays.json', 'tools/objdiff.py',
-              'tools/rebuild.py', 'tools/overlay_rebuild.py', 'tools/reconstruction_step.py',
+              'tools/rebuild.py', 'tools/overlay_rebuild.py', 'tools/decomp_step.py',
               'tools/c_sources.py',
               'orig/disc/files/' + context['image']]
     inputs += [p.relative_to(ROOT).as_posix() for p in sorted((ROOT / 'config/sdk').glob('*.ld'))]
@@ -106,11 +106,11 @@ def check(context_path, full=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--context', default=os.environ.get('CB2_RECONSTRUCTION_CONTEXT'))
+    parser.add_argument('--context', default=os.environ.get('CB2_DECOMP_CONTEXT'))
     parser.add_argument('--validate', action='store_true', help='Also validate the entire selected EXE/BIN')
     args = parser.parse_args()
     if not args.context:
-        parser.error('--context or CB2_RECONSTRUCTION_CONTEXT is required')
+        parser.error('--context or CB2_DECOMP_CONTEXT is required')
     try:
         return check(Path(args.context), args.validate)
     except (RuntimeError, OSError, ValueError, subprocess.CalledProcessError) as error:

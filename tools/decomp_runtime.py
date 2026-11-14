@@ -144,7 +144,7 @@ def attempt_result(root, row, status, reason=None):
     custom_report = directory / 'agent-last-message.txt'
     if custom_report.exists():
         result['agent']['message'] = custom_report.read_text()
-    from reconstruction_metrics import timing
+    from decomp_metrics import timing
     result['timing'] = {'worker': timing(directory)}
     if 'started_at' in row:
         finished = time.time()
@@ -155,7 +155,7 @@ def attempt_result(root, row, status, reason=None):
 
 def record_attempt(root, row, status, reason=None):
     """Persist the result before refreshing the derived cross-session reports."""
-    from reconstruction_metrics import atomic_text, refresh
+    from decomp_metrics import atomic_text, refresh
     path = root / row['context'] / 'result.json'
     atomic_text(path, json.dumps(attempt_result(root, row, status, reason), indent=2) + '\n')
     refresh(root)

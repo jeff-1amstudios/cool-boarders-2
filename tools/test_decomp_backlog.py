@@ -8,10 +8,10 @@ from pathlib import Path
 from unittest.mock import patch
 
 import yaml
-import reconstruct as worker
-from reconstruction_backlog import prepare, key, slug, coverage
-from reconstruct_run import review_split, review_source, Runner, Rejected
-import test_reconstruct_run as fixtures
+import decomp as worker
+from decomp_backlog import prepare, key, slug, coverage
+from decomp_run import review_split, review_source, Runner, Rejected
+import test_decomp_run as fixtures
 
 
 class BacklogTests(unittest.TestCase):
@@ -141,7 +141,7 @@ sys.exit(0 if passed else 1)
 import json, os, sys, yaml
 from pathlib import Path
 sys.stdin.read()
-context_path = Path(os.environ['CB2_RECONSTRUCTION_CONTEXT'])
+context_path = Path(os.environ['CB2_DECOMP_CONTEXT'])
 r = json.loads(context_path.read_text())
 config_path = Path(r['build_config'])
 config = yaml.safe_load(config_path.read_text())
@@ -163,7 +163,7 @@ value = 8 if r['image']=='A.BIN' else 7
                 config = yaml.safe_load((self.root/row['build_config']).read_text())
                 c = config['segments'][0]['subsegments'][0][1]=='c'
                 current.append({**row,'status':'c' if c else 'needs_review',
-                                'reconstruction':'c' if c else 'retained_assembly'})
+                                'decomp':'c' if c else 'retained_assembly'})
             return {'targets':current}
         with patch.object(worker,'inventory',side_effect=inventory), patch('overlays.load',return_value=(catalog,b'')):
             self.fixture.runner().run()
@@ -179,7 +179,7 @@ value = 8 if r['image']=='A.BIN' else 7
 
     def test_analyzer_limit_is_advisory_and_does_not_block_selection(self):
         rows = self.rows()
-        with patch('reconstruction_backlog.analyze_cfg',return_value={'findings':{'analysis_state_limit':['0x80010000']}}):
+        with patch('decomp_backlog.analyze_cfg',return_value={'findings':{'analysis_state_limit':['0x80010000']}}):
             reviewed = prepare(self.root,rows[0],{'targets':rows})
         self.assertFalse(reviewed['boundary_findings'])
         self.assertIn('analysis_state_limit',reviewed['boundary_warnings'])
@@ -192,7 +192,7 @@ value = 8 if r['image']=='A.BIN' else 7
         from contextlib import redirect_stdout
         agent = self.fixture.agent
         agent.write_text(agent.read_text() + "\nprint('agent output '+address, flush=True)\nprint('agent stderr '+address, file=sys.stderr, flush=True)\n")
-        argv = ['reconstruct.py','start','--limit','2','--agent-command',
+        argv = ['decomp.py','start','--limit','2','--agent-command',
                 shlex.join([sys.executable,str(agent),'match'])]
         output = io.StringIO()
         with patch.object(sys,'argv',argv), redirect_stdout(output):
@@ -202,7 +202,7 @@ value = 8 if r['image']=='A.BIN' else 7
         self.assertLess(text.index('Target 2/2'),text.index('agent output 0x80010008'))
         self.assertIn('agent stderr 0x80010000',text)
         self.assertEqual(len(worker.state()['completed']),2)
-        self.assertFalse((self.root/'reports/reconstruction/launch.json').exists())
+        self.assertFalse((self.root/'reports/decomp/launch.json').exists())
         self.assertEqual(self.fixture.git('branch','--show-current'),'main')
 
 

@@ -1,14 +1,14 @@
 # Function-boundary audit
 
-The counts below describe the historical boundary review. On 10 November the authored C and attempt records were reset to zero for fresh Ghidra-based matching; reviewed boundaries and SDK analysis were preserved. Broad boundary exports remain explicit, while the reconstruction supervisor now asks Ghidra for current typed pseudocode before every worker and saves accepted analysis feedback afterward.
+The counts below describe the historical boundary review. On 10 November the authored C and attempt records were reset to zero for fresh Ghidra-based matching; reviewed boundaries and SDK analysis were preserved. Broad boundary exports remain explicit, while the decomp supervisor now asks Ghidra for current typed pseudocode before every worker and saves accepted analysis feedback afterward.
 
-9 November 2026. C reconstruction is paused. This pass corrected analysis and selection; it added no C functions. The boot executable still rebuilds to the pinned 266,240 bytes and SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`. The C total remains 35 functions / 1,560 bytes. SDK identification, original source language and overlay coverage are separate questions.
+9 November 2026. C decomp is paused. This pass corrected analysis and selection; it added no C functions. The boot executable still rebuilds to the pinned 266,240 bytes and SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`. The C total remains 35 functions / 1,560 bytes. SDK identification, original source language and overlay coverage are separate questions.
 
 ## Which representation is authoritative?
 
 Use the saved **reviewed Ghidra analysis** as the primary semantic workspace. Its code references, data definitions, function bodies and reviewed unit annotations support the decisions. The versioned curated export is [config/function-boundaries.json](../config/function-boundaries.json); Splat is the build/disassembly projection. The unchanged executable is authoritative for bytes.
 
-Ghidra's automatic function objects and Splat's generated labels are both hypotheses until reviewed. An entry label is not necessarily an independently compilable C function. A shared reconstruction region can contain several entry points; those entry labels remain distinct even when they must be reconstructed together.
+Ghidra's automatic function objects and Splat's generated labels are both hypotheses until reviewed. An entry label is not necessarily an independently compilable C function. A shared decomp region can contain several entry points; those entry labels remain distinct even when they must be reconstructed together.
 
 The catalog contains **83 reviewed region dispositions**: 45 standalone extents (35 existing C and ten future candidates), nine shared-entry regions, seven helpers with nonstandard register inputs, BIOS dispatch stubs, embedded data, startup and unresolved special regions. A disposition such as `multi_entry` or `unresolved_code_region` is not approval to compile it as ordinary C. Source language remains unconfirmed where provenance has not been recovered.
 
@@ -91,7 +91,7 @@ The static reference report has 408 units with direct calls, another 115 with po
 
 The counts and filtered candidates above describe the historical boot audit, not the current complete backlog. Matching has resumed. Normal batches process the image-qualified saved Ghidra backlog in recorded order, excluding accepted SDK entries and curated holds. Unknown does not establish game authorship.
 
-CFG findings are review hints, not proof of a boundary error or a reason to reject ordinary C automatically. Known shared-entry regions, data templates and custom-ABI holds remain protected. Each selected target is reviewed on demand; the pinned containing-file comparison is the acceptance gate. Ghidra exports and this build-span audit are refreshed explicitly with `make boundary-audit`, rather than on every matching batch. See [the batch workflow](reconstruction-worker.md).
+CFG findings are review hints, not proof of a boundary error or a reason to reject ordinary C automatically. Known shared-entry regions, data templates and custom-ABI holds remain protected. Each selected target is reviewed on demand; the pinned containing-file comparison is the acceptance gate. Ghidra exports and this build-span audit are refreshed explicitly with `make boundary-audit`, rather than on every matching batch. See [the batch workflow](decomp-worker.md).
 
 ## Reproduce and continue the audit
 

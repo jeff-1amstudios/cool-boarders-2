@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded, headless reconstruction work queue; an agent supplies the C edits."""
+"""Bounded, headless decomp work queue; an agent supplies the C edits."""
 import argparse
 import hashlib
 import json
@@ -13,19 +13,19 @@ from pathlib import Path
 
 from rebuild import ROOT, reference
 
-STATE = ROOT / "reports/reconstruction/state.json"
-REVIEW = ROOT / "config/reconstruction.json"
+STATE = ROOT / "reports/decomp/state.json"
+REVIEW = ROOT / "config/decomp.json"
 # Historical session-input snapshots are diagnostic only, never an acceptance gate.
 PROTECTED = ("FUNCTION_AGENTS.md", "config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
-             "tools/validate.py", "tools/objdiff.py", "tools/reconstruct.py",
-             "tools/reconstruct_run.py", "tools/readme_progress.py", "tools/reconstruction_ghidra.py", "tools/ghidra_scripts/ReconstructionGhidra.java", "tools/boundary_audit.py",
+             "tools/validate.py", "tools/objdiff.py", "tools/decomp.py",
+             "tools/decomp_run.py", "tools/readme_progress.py", "tools/decomp_ghidra.py", "tools/ghidra_scripts/DecompGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
              "tools/ghidra-docker.sh", "tools/ghidra.sh",
-             "config/function-boundaries.json", "config/reconstruction.json", "config/psyq-sdk.json",
+             "config/function-boundaries.json", "config/decomp.json", "config/psyq-sdk.json",
              "config/overlays.json", "tools/overlays.py", "tools/ghidra_scripts/ImportOverlays.java",
              "tools/ghidra_scripts/ExportOverlayInventory.java", "tools/ghidra_scripts/ExportAllOverlays.java",
              "tools/ghidra_scripts/AuditOverlayReferences.java", "tools/overlay_rebuild.py",
-             "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/reconstruction_backlog.py", "tools/reconstruction_step.py", "tools/reconstruction_runtime.py", "Makefile") + tuple(
+             "tools/splat_ext/bytes.py", "tools/target_queue.py", "tools/decomp_backlog.py", "tools/decomp_step.py", "tools/decomp_runtime.py", "Makefile") + tuple(
                  p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/overlays").glob("*")) if p.is_file()) + tuple(
                  p.relative_to(ROOT).as_posix() for p in sorted((ROOT / "config/sdk").glob("*.ld")))
 
@@ -59,7 +59,7 @@ def deferred_targets():
 
 
 def remember_deferred(row):
-    from reconstruction_backlog import key
+    from decomp_backlog import key
     entries = deferred_targets()
     entries[key(row)] = {k: row[k] for k in
                          ("identity", "image", "address", "name", "reason", "branch", "checkpoint", "context")
@@ -98,7 +98,7 @@ def exclusive_worker(directory):
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            raise RuntimeError("Another reconstruction worker command is running")
+            raise RuntimeError("Another decomp worker command is running")
         yield
 
 
@@ -147,7 +147,7 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
                                    stderr=subprocess.STDOUT, start_new_session=True,
                                    stdin=subprocess.PIPE if input_text is not None else subprocess.DEVNULL,
                                    text=True, env=env)
-        from reconstruction_runtime import follow_log
+        from decomp_runtime import follow_log
         import threading
         done = threading.Event()
         quiet_ghidra = name.startswith('ghidra-') and os.environ.get('CB2_GHIDRA_INFO') != '1'
@@ -187,7 +187,7 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
 
 
 def inventory():
-    from reconstruction_backlog import inventory as complete_inventory
+    from decomp_backlog import inventory as complete_inventory
     return complete_inventory()
 
 
@@ -206,8 +206,8 @@ def check_session(session):
 
 def choose(report, session, identity=None):
     if read(REVIEW).get("matching_paused", False):
-        raise NoTarget("C matching is paused by config/reconstruction.json")
-    from reconstruction_backlog import key
+        raise NoTarget("C matching is paused by config/decomp.json")
+    from decomp_backlog import key
     attempted = {key(r) for r in session["completed"] + session["deferred"]}
     attempted.update(deferred_targets())
     for row in report["targets"]:
@@ -227,10 +227,10 @@ def next_target(session, address=None):
     report = inventory()
     check_session(session)
     row = choose(report, session, address)
-    from reconstruction_backlog import prepare, slug
+    from decomp_backlog import prepare, slug
     if "targets" in report:
         row = prepare(ROOT, row, report)
-    directory = ROOT / session.get("directory", "reports/reconstruction") / slug(row)
+    directory = ROOT / session.get("directory", "reports/decomp") / slug(row)
     # A resumed target gets fresh pseudocode/logs without overwriting its archive.
     if directory.exists():
         directory = directory.with_name(directory.name + "-retry-" + str(time.time_ns()))
@@ -290,9 +290,9 @@ def validate(session):
         if not report['identical'] or rebuilt.read_bytes() != (ROOT / 'orig/disc/files' / image).read_bytes():
             raise RuntimeError('Full overlay gate failed: ' + image)
     current = inventory()
-    from reconstruction_backlog import key
+    from decomp_backlog import key
     target = next((r for r in current.get("targets", current.get("functions", [])) if key(r) == key(active)), None)
-    if target is None or target.get("reconstruction", target["status"]) != "c" or target.get("body_bytes", target.get("size")) != active["size"]:
+    if target is None or target.get("decomp", target["status"]) != "c" or target.get("body_bytes", target.get("size")) != active["size"]:
         raise RuntimeError("Target was not converted to C at its original boundary")
     print(f"Exact full-file match; {active['name']} is integrated as C.")
     return current
@@ -329,7 +329,7 @@ def audit_paths(requested, changed):
                    or (len(path.parts) > 1 and path.parts[0] == "src" and path.suffix in (".c", ".h"))
 )
         if not allowed or path.is_absolute() or ".." in path.parts:
-            raise RuntimeError(f"Not an authored reconstruction path: {name}")
+            raise RuntimeError(f"Not an authored decomp path: {name}")
         if (ROOT / path).is_symlink():
             raise RuntimeError(f"Refusing symlink: {name}")
     return sorted(paths)
@@ -416,7 +416,7 @@ def main():
     if getattr(args, 'ghidra_info', False):
         os.environ['CB2_GHIDRA_INFO'] = '1'
     if args.command in ('recover-ghidra', 'replay-ghidra'):
-        from reconstruction_ghidra import recover, replay
+        from decomp_ghidra import recover, replay
         if args.command == 'recover-ghidra':
             recover(sys.modules[__name__])
         else:
@@ -441,7 +441,7 @@ def main():
     else:
         if args.verbose:
             os.environ["CB2_VERBOSE"] = "1"
-        from reconstruct_run import run_batch
+        from decomp_run import run_batch
         run_batch(args, sys.modules[__name__])
 
 
@@ -457,7 +457,7 @@ if __name__ == "__main__":
             with exclusive_worker(STATE.parent):
                 main()
     except KeyboardInterrupt:
-        print("Stopped: interrupted; inspect reconstruction state and preserved work.", file=sys.stderr)
+        print("Stopped: interrupted; inspect decomp state and preserved work.", file=sys.stderr)
         sys.exit(130)
     except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
         print(f"Stopped: {error}", file=sys.stderr)

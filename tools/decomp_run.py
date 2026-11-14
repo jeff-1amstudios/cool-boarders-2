@@ -1,4 +1,4 @@
-"""Subprocess supervision for reconstruct.py run. Python alone accepts and commits."""
+"""Subprocess supervision for decomp.py run. Python alone accepts and commits."""
 import copy
 import difflib
 import json
@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 
 import yaml
-from reconstruction_backlog import key, slug, source_dir, source_file, coverage
+from decomp_backlog import key, slug, source_dir, source_file, coverage
 from c_sources import sections, function_source, header_path
 
 
@@ -251,19 +251,19 @@ class Runner:
             f"New headers belong under {source_dir(active)}. Split only this function in "
             f"{active.get('build_config', 'scus_943.58.yaml')}; append symbols only to "
             f"{active.get('symbol_file', 'symbol_addrs.txt')}.\n"
-            f"Use tools/.venv/bin/python tools/reconstruction_step.py --context {directory / 'context.json'}.\n"
+            f"Use tools/.venv/bin/python tools/decomp_step.py --context {directory / 'context.json'}.\n"
             f"Write evidence to {directory / 'ghidra-update.json'}.\n"
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
             "the selected object matches and evidence is written.\n")
         (directory / "agent-prompt.md").write_text(instructions + "\n\n" + prompt)
         env = os.environ.copy()
-        temporary = self.w.ROOT / "tools/tmp/reconstruction-agents"
+        temporary = self.w.ROOT / "tools/tmp/decomp-agents"
         temporary.mkdir(parents=True, exist_ok=True)
-        env.update(TMPDIR=str(temporary), CB2_RECONSTRUCTION_CONTEXT=str(directory / "context.json"),
+        env.update(TMPDIR=str(temporary), CB2_DECOMP_CONTEXT=str(directory / "context.json"),
                    CB2_AGENT_REPORT=str(directory / "agent-last-message.txt"))
         argv = list(self.launcher)
         if self.args.agent_command is None:
-            cache = self.w.ROOT / "tools/cache/reconstruction-agents" / Path(session["directory"]).name / slug(active)
+            cache = self.w.ROOT / "tools/cache/decomp-agents" / Path(session["directory"]).name / slug(active)
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
             # Disable automatic project docs AND explicitly prohibit manual
@@ -361,7 +361,7 @@ class Runner:
         if self.w.content_hashes(paths) != expected_hashes:
             raise Rejected("Candidate contents changed during acceptance validation")
         self.w.check_session(session)
-        from reconstruction_ghidra import prepare_update
+        from decomp_ghidra import prepare_update
         prepare_update(self.w, active)
         self.invariant(session)
         if self.w.content_hashes(paths) != expected_hashes:
@@ -415,13 +415,13 @@ class Runner:
             # Keep the active identity so the next start retries it first.
             active['phase'] = 'interrupted'
             session.update(stop_reason=reason, phase='interrupted')
-            from reconstruction_runtime import record_attempt
+            from decomp_runtime import record_attempt
             record_attempt(self.w.ROOT, active, 'interrupted', reason)
             self.w.save_state(session)
             return
         self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
-        from reconstruction_runtime import record_attempt
+        from decomp_runtime import record_attempt
         record_attempt(self.w.ROOT, active, "deferred", reason)
         session["deferred"].append({**active, "reason": reason})
         self.w.remember_deferred(session["deferred"][-1])
@@ -446,8 +446,8 @@ class Runner:
         # Supervisor fixes may be committed while a batch is stopped. Accept only
         # fast-forward maintenance changes on clean main, never changed game or
         # compiler inputs, merges, or history rewrites.
-        maintenance = {'tools/reconstruct.py', 'tools/reconstruct_run.py',
-                       'docs/reconstruction-worker.md', 'README.md'}
+        maintenance = {'tools/decomp.py', 'tools/decomp_run.py',
+                       'docs/decomp-worker.md', 'README.md'}
         if main_head != session['integration_head']:
             ancestry = self.w.git('rev-list', '--parents',
                                   session['integration_head'] + '..' + main_head).splitlines()
@@ -479,7 +479,7 @@ class Runner:
             raise RuntimeError('Unexpected recovery branch/commit; inspect preserved work')
         session.update(branch='main', head=session['integration_head'])
         self.invariant(session)
-        from reconstruction_runtime import attempt_result
+        from decomp_runtime import attempt_result
         self.w.write(self.w.ROOT / active['context'] / 'result.json',
                      attempt_result(self.w.ROOT, active, 'interrupted', active.get('failure', 'Interrupted batch')))
         session.setdefault('interrupted', []).append(dict(active))
@@ -497,7 +497,7 @@ class Runner:
         active = session["active"]
         self.w.check_session(session)
         self.invariant(session)
-        from reconstruction_ghidra import record, apply
+        from decomp_ghidra import record, apply
         payload = self.w.read(self.w.ROOT / active['context'] / 'ghidra-feedback/request.json')
         feedback_path = record(self.w, active, payload)
         paths = [*paths, feedback_path]
@@ -526,7 +526,7 @@ class Runner:
         # A failure here stops the batch with the accepted commit and pending
         # record intact. Never launch another worker using stale analysis.
         apply(self.w, active, payload)
-        from reconstruction_runtime import record_attempt
+        from decomp_runtime import record_attempt
         record_attempt(self.w.ROOT, active, "matched")
         session["completed"].append({**active, "phase": "integrated"})
         session["active"] = None
@@ -561,7 +561,7 @@ class Runner:
             number = len(session["completed"]) + len(session["deferred"]) + 1
             print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)
             if not active.get('boundary_findings'):
-                from reconstruction_ghidra import export
+                from decomp_ghidra import export
                 try:
                     export(self.w, active, sync_types=sync_types_pending)
                     sync_types_pending = False
@@ -612,7 +612,7 @@ class Runner:
             session.update(stop_reason="Final all-image validation failed: " + str(error), phase="validation_failed")
             raise
         finally:
-            from reconstruction_runtime import summary
+            from decomp_runtime import summary
             self.w.save_state(session)
             result = summary(self.w.ROOT, session)
             session["result"] = session["directory"] + "/result.json"

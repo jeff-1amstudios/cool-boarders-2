@@ -40,7 +40,7 @@ All installed project tools, sources, build products and download caches stay un
 
 Validation prepares independent reference objects from a fingerprint-checked all-assembly split, checks that reference link against the original, compiles current C and runs the pinned objdiff CLI. Per-unit scores live in `reports/objdiff.json`, with instruction/relocation diffs under `reports/objdiff/`. Object scores guide iteration; only the full-file comparison establishes a match. Old aggregate success reports are removed before validation begins.
 
-`make objdiff` runs object diagnostics alone. For selected-function iteration, use `tools/reconstruction_step.py` as described in the [reconstruction workflow](reconstruction-worker.md). These workflows are headless.
+`make objdiff` runs object diagnostics alone. For selected-function iteration, use `tools/decomp_step.py` as described in the [decomp workflow](decomp-worker.md). These workflows are headless.
 
 Regenerate the reviewed boot split with:
 

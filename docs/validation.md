@@ -2,7 +2,7 @@
 
 10 November 2026 fresh-start update: all 15 files validate byte for byte with zero C translation units. Old matching bodies, provisional headers, matching branches and attempt records were cleared. Earlier entries below are historical and do not describe current C coverage. Fresh Ghidra exports and transactional feedback were checked headlessly, including persisted struct/global fields on a disposable project copy.
 
-The default `make` / `make validate` gate now covers the boot EXE **and all 14 overlay BINs**. Full overlay results are in `reports/overlay-rebuild.json` and per-image reports under `reports/overlay-rebuild/`; object diagnostics for configured overlay C units share `reports/objdiff.json` with namespaced unit names. The exact retained-assembly overlay baseline includes the complete header/data and MAIN_SEL's two-byte tail. No overlay C reconstructions are retained. Earlier boot-only results below are historical. See [overlay matching](overlays.md#matching-overlays).
+The default `make` / `make validate` gate now covers the boot EXE **and all 14 overlay BINs**. Full overlay results are in `reports/overlay-rebuild.json` and per-image reports under `reports/overlay-rebuild/`; object diagnostics for configured overlay C units share `reports/objdiff.json` with namespaced unit names. The exact retained-assembly overlay baseline includes the complete header/data and MAIN_SEL's two-byte tail. No overlay C decomps are retained. Earlier boot-only results below are historical. See [overlay matching](overlays.md#matching-overlays).
 
 9 November 2026, macOS arm64, AppleClang 21.0.0, Python 3.13.
 
@@ -50,14 +50,14 @@ Docker image metadata, migration sizes and decompiler output are recorded under 
 
 - Built GNU binutils 2.42 for `mipsel-linux-gnu` locally under `tools/toolchain/`, using the pinned GNU source and tracked modern-macOS zlib compatibility patch. Candidate old-gcc compiler archives were verified against their upstream release SHA-256 digests; maspsx was pinned to its recorded commit. Native tools are arm64; no host packages were installed.
 - Established an all-assembly baseline, then replaced five functions with 236 bytes of compiled C. The integrated build produced exactly 266,240 bytes with SHA-256 `5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`, identical to the reference file. The linker map places every C function at its original address and size.
-- Ran 360 compiler/optimization/small-data/assembler-mode/function trials. PSX GCC 2.7.2 with G0 and maspsx 2.56 mode matched all five functions at both O2 and O3. CDK GCC 2.7.2 matched at most three of these reconstructions; GCC 2.8.1 matched at most one. 330 trials reached comparison, and 30 G8/global-scalar trials failed linking with GP displacement errors. Those failures depend on the assumed declarations and are not treated as project-wide flag identification.
+- Ran 360 compiler/optimization/small-data/assembler-mode/function trials. PSX GCC 2.7.2 with G0 and maspsx 2.56 mode matched all five functions at both O2 and O3. CDK GCC 2.7.2 matched at most three of these decomps; GCC 2.8.1 matched at most one. 330 trials reached comparison, and 30 G8/global-scalar trials failed linking with GP displacement errors. Those failures depend on the assumed declarations and are not treated as project-wide flag identification.
 - Exported Ghidra's stored metadata showing PsyQ Version 3.7.0, separately from its default fallback-version preference. This is an SDK lead, not proof of a single compiler/flag set for all game objects.
 - Negative control: temporarily changed one reconstructed C assignment from zero to one. The resulting build failed the full-file byte comparison. Restored the exact original C source and reran `make`; the integrated output again matched every byte. The final source and report contain the restored, passing version.
 - `tools/install_mips.py` was rerun against the local installation to verify pinned downloads/revisions and assembler version. A fresh toolchain compilation was not repeated after its successful build because no toolchain source changed.
 
 Reports are `reports/boot-rebuild.json`, `reports/boot-negative-control.json`, `reports/compiler-matrix.json`, and `reports/compiler-evidence/`. The current recipe is provisional: O2/O3 remain tied and an ASPSX compatibility mode does not uniquely identify the original assembler. Remaining assembly, overlays, detailed types, and runtime validation are unfinished.
 
-## Bounded reconstruction pilot
+## Bounded decomp pilot
 
 The ten-target pilot added nine matching C functions (436 bytes), bringing the total to fourteen functions and 672 bytes. One 88-byte function was deferred with register-allocation differences and remains assembly. Each C commit passed fresh full-file validation; the final executable retains the pinned hash above. Worker guard tests passed, and blocked-attempt restoration recovered the matching baseline before continuing. No compiler-recipe or reference changes were needed. Overlay mapping and runtime validation remain outstanding.
 
@@ -69,7 +69,7 @@ Removed the generated Splat macro headers from the source tree. The build now re
 
 ## Deferred-loop resolution and second batch
 
-The deferred `0x80017A00` now matches using indexed access under the unchanged compiler flags. Ten further functions also match, for 25 C functions / 1,432 bytes total. `make validate` reports 25/25 matching functions in its aggregate object report and zero full-file differences, retaining the original 266,240-byte size and SHA-256 above. A failed first batch attempt retained diagnostics; source-shape refinements recovered the match without changing the reference or gate. The compiler matrix has been expanded to all 25 functions. See historical reconstruction learnings and [current compiler results](compiler-identification.md).
+The deferred `0x80017A00` now matches using indexed access under the unchanged compiler flags. Ten further functions also match, for 25 C functions / 1,432 bytes total. `make validate` reports 25/25 matching functions in its aggregate object report and zero full-file differences, retaining the original 266,240-byte size and SHA-256 above. A failed first batch attempt retained diagnostics; source-shape refinements recovered the match without changing the reference or gate. The compiler matrix has been expanded to all 25 functions. See historical decomp learnings and [current compiler results](compiler-identification.md).
 
 The detailed `fill_slots` object diff retains a relocation-expression difference (`D_80058D07` versus `D_80058CC8 + 63`), scoring that symbol at 99.28571%. Both resolve to the same address and identical final bytes; see the learnings for why this does not invalidate the full-file match.
 

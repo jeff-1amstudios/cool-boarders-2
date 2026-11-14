@@ -1,4 +1,4 @@
-"""Adapter between Ghidra function instances and bounded reconstruction attempts."""
+"""Adapter between Ghidra function instances and bounded decomp attempts."""
 import hashlib
 import re
 from pathlib import Path
@@ -29,7 +29,7 @@ def source_file(row):
 
 def coverage(report):
     return {key(r): r.get('body_bytes', r.get('size')) for r in report['targets']
-            if r['status'] == 'c' or r.get('reconstruction') == 'c'}
+            if r['status'] == 'c' or r.get('decomp') == 'c'}
 
 
 def inventory():

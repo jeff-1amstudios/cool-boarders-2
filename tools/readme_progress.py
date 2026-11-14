@@ -28,8 +28,8 @@ def update():
     inventory = rebuild()
     targets = inventory['targets']
     non_sdk = {r['identity']: r for r in targets if r['status'] != 'sdk'}
-    matching = {key for key, r in non_sdk.items() if r['reconstruction'] == 'c'}
-    deferred_path = ROOT / 'reports/reconstruction/deferred.json'
+    matching = {key for key, r in non_sdk.items() if r['decomp'] == 'c'}
+    deferred_path = ROOT / 'reports/decomp/deferred.json'
     deferred = set(json.loads(deferred_path.read_text())) if deferred_path.exists() else set()
     deferred = (deferred & non_sdk.keys()) - matching
     remaining = non_sdk.keys() - matching - deferred
@@ -56,10 +56,10 @@ def update():
               f'The inventory contains **{len(targets):,}** detected function instances, including '
               f'**{sum(r["status"] == "sdk" for r in targets):,} SDK signature matches** excluded from the table. '
               'Boundaries are provisional and duplicate bodies are counted per image. '
-              'Counts come from `reports/reconstruction/targets.json` and the persistent '
-              '`reports/reconstruction/deferred.json`, excluding targets already covered by C.', '',
+              'Counts come from `reports/decomp/targets.json` and the persistent '
+              '`reports/decomp/deferred.json`, excluding targets already covered by C.', '',
               f'**Binary rebuild: {1 + overlays["matching_overlays"]}/{inventory["summary"]["images"]} files exact (100%).** '
-              'This includes retained assembly and data, so it measures build reproducibility separately from C reconstruction. '
+              'This includes retained assembly and data, so it measures build reproducibility separately from C decomp. '
               'Latest results: `reports/boot-rebuild.json` and `reports/overlay-rebuild.json`. The compiler recipe remains provisional.']
     updated = before + START + '\n' + '\n'.join(lines) + '\n' + END + after
     if updated != text:

@@ -6,7 +6,7 @@ import re
 import time
 
 from c_sources import sections, header_path
-from reconstruction_backlog import source_file, slug
+from decomp_backlog import source_file, slug
 
 
 def digest(payload):
@@ -32,7 +32,7 @@ def invoke(worker, directory, payload, mode):
         raise RuntimeError('Ghidra exchange must stay under ignored reports/')
     worker.command([str(worker.ROOT / 'tools/ghidra.sh'), 'headless', '/projects', 'CB2_USA',
                     '-process', 'SCUS_943.58', '-noanalysis', *(['-readOnly'] if mode != 'apply' else []),
-                    '-scriptPath', '/scripts', '-postScript', 'ReconstructionGhidra.java',
+                    '-scriptPath', '/scripts', '-postScript', 'DecompGhidra.java',
                     '/' + relative, mode, '-log', '/' + relative + '/headless.log'],
                    'ghidra-' + mode, directory=directory)
     if not completion.is_file():
@@ -55,7 +55,7 @@ def export(worker, active, *, sync_types=False):
     directory = worker.ROOT / active['context']
     payload = request(worker.ROOT, active) | {'sync_types': sync_types}
     result = invoke(worker, directory / 'ghidra', payload, 'export')
-    cache = worker.ROOT / 'reports/reconstruction/ghidra-types.h'
+    cache = worker.ROOT / 'reports/decomp/ghidra-types.h'
     manifest = cache.with_suffix('.json')
     catalog_hash = digest((worker.ROOT / 'config/psyq-sdk.json').read_bytes())
     if sync_types:
@@ -74,7 +74,7 @@ def export(worker, active, *, sync_types=False):
         # Missing cache never triggers an implicit Ghidra type synchronization.
         (directory / 'ghidra/ghidra-types.h').write_text(
             '/* No cached type export. Reuse authored image headers. '
-            'Refresh with reconstruct.py start --sync-types if needed. */\n')
+            'Refresh with decomp.py start --sync-types if needed. */\n')
     result['type_reference'] = {'synced': sync_types,
         'sha256': digest((directory / 'ghidra/ghidra-types.h').read_bytes())}
 
@@ -181,7 +181,7 @@ def recover(worker):
         raise RuntimeError('Recovery requires the unchanged accepted commit on clean main')
     payload = worker.read(worker.ROOT / active['ghidra_record'])
     apply(worker, active, payload)
-    from reconstruction_runtime import record_attempt
+    from decomp_runtime import record_attempt
     record_attempt(worker.ROOT, active, 'matched')
     session['completed'].append({**active, 'phase': 'integrated'})
     session.update(active=None, stop_reason='Recovered accepted Ghidra update; start a new batch', phase='recovered')

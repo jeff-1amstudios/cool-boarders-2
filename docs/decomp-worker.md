@@ -1,7 +1,13 @@
-# Reconstruction batches
+# Decomp batches
+
+The workflow namespace is `decomp`: `tools/decomp.py`, the `decomp_*` helper
+modules, `config/decomp.json`, `DecompGhidra.java`, `CB2_DECOMP_CONTEXT`, and
+`reports/decomp/`. Existing queue and navigational metadata move with the report
+directory. Archived logs, candidate-source snapshots and accepted Ghidra feedback
+records retain their original contents, including historical command spellings.
 
 ```sh
-tools/.venv/bin/python tools/reconstruct.py start --limit 2
+tools/.venv/bin/python tools/decomp.py start --limit 2
 ```
 
 The command blocks, prints each target's output to stdout, finishes that attempt, then moves to the next. Echoed compiler/assembler commands (`+ ...`) are hidden by default; use `--verbose` to show them. Full command echoes remain in the saved logs. `run` is an alias for `start`. Defaults are ten targets and a hard 900-second timeout per agent. Override with `--limit` and `--agent-seconds`. There is no batch time budget or `--minutes` option. `status` shows the current or last batch. Start on `main` with no pending game/source/config edits.
@@ -47,7 +53,7 @@ For standalone validation, use `TQDM_DISABLE=1 make validate` for the same outpu
 
 The loop is: select target → ask saved Ghidra for current typed pseudocode → run a worker matching only that function → supervisor compares the entire containing file → commit accepted C/analysis record → save recovered types, globals and prototype into Ghidra → decompile the next target. Python owns Git, Ghidra and acceptance. A custom `--agent-command` accepts shell-quoted argv and receives its prompt on stdin without a shell. Docker Desktop must be running, and the saved project must be closed in interactive Ghidra. An unavailable fresh export stops before worker launch and does not defer the target.
 
-SDK/layout declarations are reused by default (`--sync-types` defaults to false). Use `tools/.venv/bin/python tools/reconstruct.py start --limit 2 --sync-types` to refresh all saved program type declarations, including SDK types such as `CdlLOC` and `RECT`, during the first selected function's existing headless export. The cache lives in ignored `reports/reconstruction/ghidra-types.h` with a SHA-256/catalog manifest; subsequent targets and batches reuse it without exporting declarations again. With no cache, workers use authored image headers; there is no implicit refresh. Refresh explicitly when additional Ghidra layouts are needed or the SDK catalog changes. Workers must not launch extra SDK audits/type exports. Fresh function pseudocode, current signatures/global metadata and accepted analysis feedback remain enabled on every attempt.
+SDK/layout declarations are reused by default (`--sync-types` defaults to false). Use `tools/.venv/bin/python tools/decomp.py start --limit 2 --sync-types` to refresh all saved program type declarations, including SDK types such as `CdlLOC` and `RECT`, during the first selected function's existing headless export. The cache lives in ignored `reports/decomp/ghidra-types.h` with a SHA-256/catalog manifest; subsequent targets and batches reuse it without exporting declarations again. With no cache, workers use authored image headers; there is no implicit refresh. Refresh explicitly when additional Ghidra layouts are needed or the SDK catalog changes. Workers must not launch extra SDK audits/type exports. Fresh function pseudocode, current signatures/global metadata and accepted analysis feedback remain enabled on every attempt.
 
 ## Worker instructions
 
@@ -85,15 +91,15 @@ This permits grouping new externs with related declarations without requiring
 them to be appended at the end of the shared text. Exact full-file validation
 remains the acceptance gate.
 
-`make target-list` refreshes the complete byte-checked Ghidra backlog under `reports/reconstruction/targets.json`. Selection follows recorded order: boot first, then overlay filename, ascending address. IDs include the image, such as `INIT.BIN:0x8005AB6C`; equal RAM addresses in different overlays remain separate. SDK identifications and curated holds stay excluded. Unknown does not establish game authorship. Splat build spans and Ghidra function instances remain different counts.
+`make target-list` refreshes the complete byte-checked Ghidra backlog under `reports/decomp/targets.json`. Selection follows recorded order: boot first, then overlay filename, ascending address. IDs include the image, such as `INIT.BIN:0x8005AB6C`; equal RAM addresses in different overlays remain separate. SDK identifications and curated holds stay excluded. Unknown does not establish game authorship. Splat build spans and Ghidra function instances remain different counts.
 
-Deferrals persist across batches in ignored `reports/reconstruction/deferred.json`, keyed by image-qualified identity with the reason and preserved attempt links. Repeated `start --limit 1` runs move on to other eligible targets. Exhausting the eligible queue stops the batch; it does not automatically retry deferred work. The last batch's deferrals are imported automatically when upgrading from the previous worker. Keep this file to preserve queue progress.
+Deferrals persist across batches in ignored `reports/decomp/deferred.json`, keyed by image-qualified identity with the reason and preserved attempt links. Repeated `start --limit 1` runs move on to other eligible targets. Exhausting the eligible queue stops the batch; it does not automatically retry deferred work. The last batch's deferrals are imported automatically when upgrading from the previous worker. Keep this file to preserve queue progress.
 
-To make deferred work eligible again, run `tools/.venv/bin/python tools/reconstruct.py retry-deferred --target INIT.BIN:0x8005AB6C`, or use `retry-deferred --all`. These commands requeue targets without launching a batch or removing preserved attempts. A later `start` selects eligible targets in the usual recorded order.
+To make deferred work eligible again, run `tools/.venv/bin/python tools/decomp.py retry-deferred --target INIT.BIN:0x8005AB6C`, or use `retry-deferred --all`. These commands requeue targets without launching a batch or removing preserved attempts. A later `start` selects eligible targets in the usual recorded order.
 
 The selected target gets `context.json`, `target.s`, `ghidra/target.ghidra.c`, `ghidra/ghidra-types.h` and `agent-prompt.md` in its attempt directory. The fresh decompilation uses existing SDK names, prototypes and structs, plus accepted prior discoveries. Context includes byte fingerprints, stored/inferred prototypes, parameter storage, referenced typed globals, named callees, the containing span, neighbours and bounded caller/callee evidence. The worker starts from that pseudocode and consults assembly to resolve uncertainties and improve the match. Cached type declarations are reference material (and may predate later accepted game types; source headers remain current); authored types belong in guarded source headers.
 
-CFG warnings such as analysis-state limits or exceptional paths are advisory. They do not prove that C reconstruction is impossible and do not automatically skip the target. Factual split problems—noncontiguous bodies, embedded accepted SDK entries, shared interior entries or no containing assembly span—are recorded as blockers. Curated shared/nonstandard regions remain held. The former structural cache and score-plateau watchdog are no longer used.
+CFG warnings such as analysis-state limits or exceptional paths are advisory. They do not prove that C decomp is impossible and do not automatically skip the target. Factual split problems—noncontiguous bodies, embedded accepted SDK entries, shared interior entries or no containing assembly span—are recorded as blockers. Curated shared/nonstandard regions remain held. The former structural cache and score-plateau watchdog are no longer used.
 
 The broad function inventory and boundary audit remain explicit analysis commands. Each ordinary attempt now launches read-only headless Ghidra to decompile its selected function from the current saved project. Request/output fingerprints and a completion manifest reject failed or stale exports. Every pass verifies the original mapped bytes for all 15 pinned images. No GUI or interactive diff viewer is involved.
 
@@ -124,7 +130,7 @@ target is accepted before the next export. `run` finishes with plain
 matching commits.
 
 Resumable state and artifacts live under
-`reports/reconstruction/recoveries/<image-qualified-slug>/`; original sessions
+`reports/decomp/recoveries/<image-qualified-slug>/`; original sessions
 remain unchanged. Repeating `run` resumes a prepared, checked or committed
 recovery. For inspection between stages, use `prepare`, `check` and `accept`
 with one `--target`; `sync` retries a save after an accepted commit. A partial
@@ -146,8 +152,8 @@ remain in `agent.log`; this affects only the supervisor's console rendering.
 Ghidra console output defaults to WARN/ERROR, including their continuation lines.
 Full INFO logs are always retained in each attempt's `ghidra-*.log` files for
 diagnosis and the supervisor's save-confirmation check. Add `--ghidra-info` to
-`reconstruct.py start` (or `run`, `recover-ghidra`, `replay-ghidra`) to print INFO
-output too, for example `tools/.venv/bin/python tools/reconstruct.py start --limit 2 --ghidra-info`.
+`decomp.py start` (or `run`, `recover-ghidra`, `replay-ghidra`) to print INFO
+output too, for example `tools/.venv/bin/python tools/decomp.py start --limit 2 --ghidra-info`.
 This filters console output only; Ghidra's analysis and file logging are unchanged.
 
 The worker writes `ghidra-update.json` in its ignored attempt directory with exactly `function_evidence` (a nonempty string describing parameter/return evidence and uncertainty) and `globals` (a list, empty when no global types were recovered). Each global entry has `image`, hexadecimal `address`, `name` and `evidence`; it must correspond to an authored extern and a matching address in the selected image's symbols file. Declare each global separately. Use `SCUS_943.58` for a resident global even when reconstructing an overlay.
@@ -169,7 +175,7 @@ and omit a global replacement that would shrink it. Retain the recovered type
 evidence even when a replacement is unsafe. Never invent a bound or weaken the
 importer's extent/conflict guards to make feedback pass.
 
-After the supervisor's containing-file gate passes, it extracts the selected C prototype, authored headers and extern declarations. A headless planning transaction parses the types and checks that the proposal can be applied, then rolls back. The supervisor commits a replayable authored analysis record under `config/ghidra/` with the matching C. Only after integration does it apply that record transactionally and save Ghidra. The next fresh decompilation therefore sees the accepted types and global field names. A byte match supports one viable reconstruction; the evidence record must preserve remaining semantic uncertainty.
+After the supervisor's containing-file gate passes, it extracts the selected C prototype, authored headers and extern declarations. A headless planning transaction parses the types and checks that the proposal can be applied, then rolls back. The supervisor commits a replayable authored analysis record under `config/ghidra/` with the matching C. Only after integration does it apply that record transactionally and save Ghidra. The next fresh decompilation therefore sees the accepted types and global field names. A byte match supports one viable decomp; the evidence record must preserve remaining semantic uncertainty.
 
 Inline function-pointer types are assigned deterministic signature-based names under
 `/CB2Matching/callbacks` during feedback import. Parameter names such as `callback`
@@ -184,11 +190,11 @@ need callback-parameter naming conventions.
 
 Conflicting established layouts, custom function storage and globals overlapping instructions stop automatic feedback for review. The supervisor checks program bytes before and after updates. Failed/nonmatching worker attempts never update the saved project.
 
-If a saved update fails after the C commit was accepted, the batch stops with phase `syncing_ghidra`; another target cannot launch. Resolve the cause and run `tools/.venv/bin/python tools/reconstruct.py recover-ghidra` on the unchanged clean accepted `main` commit. To rebuild accepted analysis on a compatible saved project, use `replay-ghidra` from a clean checkout with no active attempt. Records replay in acceptance order. Originals, SDK archives, generated pseudocode and Ghidra databases are not committed.
+If a saved update fails after the C commit was accepted, the batch stops with phase `syncing_ghidra`; another target cannot launch. Resolve the cause and run `tools/.venv/bin/python tools/decomp.py recover-ghidra` on the unchanged clean accepted `main` commit. To rebuild accepted analysis on a compatible saved project, use `replay-ghidra` from a clean checkout with no active attempt. Records replay in acceptance order. Originals, SDK archives, generated pseudocode and Ghidra databases are not committed.
 
 ## Matching and preservation
 
-The agent uses `tools/.venv/bin/python tools/reconstruction_step.py` for compact selected-object diagnostics. It recompiles the selected C unit, reuses a hash-checked assembly reference when possible, and prints a short diff. Its task ends when that function matches and its feedback proposal is written; it does not run containing-file validation. A score is diagnostic only. The compiler recipe remains provisional and fixed during each attempt. The agent should restore its best candidate before finishing; the hard timeout preserves whatever is actually in the checkout.
+The agent uses `tools/.venv/bin/python tools/decomp_step.py` for compact selected-object diagnostics. It recompiles the selected C unit, reuses a hash-checked assembly reference when possible, and prints a short diff. Its task ends when that function matches and its feedback proposal is written; it does not run containing-file validation. A score is diagnostic only. The compiler recipe remains provisional and fixed during each attempt. The agent should restore its best candidate before finishing; the hard timeout preserves whatever is actually in the checkout.
 
 Python accepts only a new annotated function block in the image's shared C file (`src/main.c` or `src/overlays/<overlay>.c`), additions to the image header or new local headers, the exact selected asm/c/asm split, and appended symbols in the selected image. Use `// FUNCTION: <image>:0x<ADDRESS>` to begin the function block. Keep all extern declarations together at the top of the C file, before the first annotation, and reuse existing declarations. New externs and local includes may be appended to that shared top block; existing declarations must stay unchanged. Define structs once in guarded headers and reuse existing layouts. New definitions may be appended before the image header’s final `#endif`; existing definitions must stay unchanged. The build extracts that block into generated C and compiles its independent Splat object. Existing blocks and shared declarations, unrelated boundaries, game configuration, SDK policy and previous symbols stay protected by the candidate scope audit. Source checks reject assembly/byte embedding and unsupported source forms. Python runs fresh `make validate IMAGE=<EXE-or-BIN> UNIT=<unit>` and independently compares the **entire containing file** to its pinned unchanged reference. Candidate/staged/committed hashes and prior C coverage are checked. Only then is a matching commit fast-forwarded into `main`.
 
@@ -198,12 +204,12 @@ After successful final all-image validation, the supervisor runs `tools/readme_p
 
 Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores and validates `main` before continuing. Retries discard the selected function's old failed branches and recreate its original branch name from current `main`, starting from scratch. WIP commits never enter `main`.
 
-One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/reconstruction/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
+One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/decomp/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 
 ## Function usage report
 
-`tools/.venv/bin/python tools/reconstruction_metrics.py` rebuilds
-`reports/reconstruction/function-metrics.csv` (one row per attempt, including
+`tools/.venv/bin/python tools/decomp_metrics.py` rebuilds
+`reports/decomp/function-metrics.csv` (one row per attempt, including
 retries), `function-metrics.json` (totals) and `function-metrics.md` (readable
 summary). These ignored reports cover preserved automatic attempts under
 `sessions/`; they refresh whenever an attempt result is recorded, including

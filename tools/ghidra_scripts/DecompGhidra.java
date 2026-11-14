@@ -1,4 +1,4 @@
-// Fresh pseudocode and transactional feedback for supervised reconstruction.
+// Fresh pseudocode and transactional feedback for supervised decomp.
 // @category CoolBoarders2
 import ghidra.app.script.GhidraScript;
 import ghidra.app.decompiler.*;
@@ -15,7 +15,7 @@ import java.nio.file.*;
 import java.security.MessageDigest;
 import java.util.*;
 
-public class ReconstructionGhidra extends GhidraScript {
+public class DecompGhidra extends GhidraScript {
     private String sha(byte[] bytes) throws Exception {
         return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes));
     }
@@ -203,7 +203,7 @@ public class ReconstructionGhidra extends GhidraScript {
                      (previous != null && !previous.isEquivalent(candidate))))
                 throw new IllegalStateException("Conflicting existing type: " + candidate.getPathName());
         }
-        int transaction = staging.startTransaction("Stage checked reconstruction types");
+        int transaction = staging.startTransaction("Stage checked decomp types");
         boolean staged = false;
         try {
             for (DataType root : roots) staging.addDataType(root, DataTypeConflictHandler.REPLACE_HANDLER);
@@ -213,7 +213,7 @@ public class ReconstructionGhidra extends GhidraScript {
         return names.size();
     }
     private JsonObject update(JsonObject request, Function function, boolean apply) throws Exception {
-        int transaction = currentProgram.startTransaction("Reviewed matching reconstruction feedback");
+        int transaction = currentProgram.startTransaction("Reviewed matching decomp feedback");
         boolean success = false;
         JsonObject report = new JsonObject();
         try (var archive = FileDataTypeManager.openFileArchive(new File("/opt/ghidra/Ghidra/Extensions/ghidra_psx_ldr/data/psyq370.gdt"), false);
@@ -314,6 +314,6 @@ public class ReconstructionGhidra extends GhidraScript {
         }
         result.add("files", files);
         Files.writeString(directory.resolve("complete.json"), new GsonBuilder().setPrettyPrinting().create().toJson(result) + "\n");
-        println("Reconstruction Ghidra " + mode + " complete");
+        println("Decomp Ghidra " + mode + " complete");
     }
 }
