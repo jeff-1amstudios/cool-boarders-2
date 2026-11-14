@@ -2702,3 +2702,34 @@ int func_80060E6C(int x, int y, unsigned int buttons, unsigned int previous,
     }
     return changed;
 }
+
+// FUNCTION: BDEDIT.BIN:0x800615CC
+unsigned char *func_800615CC(unsigned long *ot, unsigned char *packet,
+                            int offset, int x0, int x1, int y, int brightness)
+{
+    TILE *tile;
+    unsigned char shade;
+
+    if (x0 <= x1) {
+        do {
+            if (x0 >= offset && x0 < offset + 40) {
+                tile = (TILE *)packet;
+                packet += sizeof(TILE);
+                ((PrimitiveTag *)tile)->length = 3;
+                tile->code = 0x60;
+                tile->h = 4;
+                tile->w = 4;
+                tile->x0 = (x0 - offset) * 4 + 106;
+                tile->y0 = y * 4 + 63;
+                shade = brightness;
+                tile->b0 = shade;
+                tile->g0 = shade;
+                tile->r0 = shade;
+                ((PrimitiveTag *)tile)->address = ((PrimitiveTag *)ot)->address;
+                ((PrimitiveTag *)ot)->address = (unsigned long)tile;
+            }
+            x0++;
+        } while (x0 <= x1);
+    }
+    return packet;
+}
