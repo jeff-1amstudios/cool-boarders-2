@@ -1313,3 +1313,32 @@ fallback:
     func_8001C130(state, 1);
     return 3;
 }
+
+// FUNCTION: BP.BIN:0x8005F8F8
+void func_8005F8F8(BpPlayer *player)
+{
+    BpViewState *view = *(BpViewState **)((unsigned char *)player + 0x6D8);
+    int state = view->state;
+    int angle;
+
+    switch (state) {
+    case 0:
+        state = 1;
+        break;
+    case 2:
+        state = 6;
+        break;
+    case 1:
+    case 5:
+    case 6:
+        state = 0;
+        break;
+    }
+    view->state = state;
+    angle = *(short *)((unsigned char *)player + 0x1DA);
+    if (*(short *)((unsigned char *)player + 0xC4C) != 0) {
+        angle += 0x800;
+    }
+    *(int *)((unsigned char *)view + 0x118) = angle;
+    view->timer = 0;
+}

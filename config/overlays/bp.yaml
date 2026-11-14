@@ -81,7 +81,8 @@ segments:
   - [0x4be4, c, func_8005F74C]
   - [0x4c28, asm, body_4c28]
   - [0x4c70, c, func_8005F7D8]
-  - [0x4d90, asm, body_4d90]
+  - [0x4D90, c, func_8005F8F8]
+  - [0x4DFC, asm, after_func_8005F8F8]
   - [0x5094, c, func_8005FBFC]
   - [0x50e0, c, func_8005FC48]
   - [0x52d0, asm, body_52d0]
@@ -99,4 +100,10 @@ segments:
     name: func_8005AB6C
     linker_section_order: .data
   - [0x3ad60, data, data_3AD60]
+  # Original switch-table span owned by func_8005F8F8.
+  - start: 0x3ae28
+    type: .rodata
+    name: func_8005F8F8
+    linker_section_order: .data
+  - [0x3ae44, data, data_3AE44]
 - [0x45360]
