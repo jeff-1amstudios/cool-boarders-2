@@ -213,7 +213,7 @@ segments:
       - [0xED60, c, func_8001E560]
       - [0xEDAC, asm, after_copy_bounded_name]
       - [0xF0C0, c, func_8001E8C0]
-      - [0xF0E0, asm, after_func_8001E8C0]
+      - [0xF0E0, c, func_8001E8E0]
       - [0xF168, c, func_8001E968]
       - [0xF254, c, func_8001EA54]
       - [0xF328, c, func_8001EB28]

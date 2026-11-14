@@ -5054,3 +5054,20 @@ reset:
     }
     return D_8005AB5C;
 }
+
+// FUNCTION: SCUS_943.58:0x8001E8E0
+int func_8001E8E0(char *path, void *destination)
+{
+    CdlFILE file;
+    unsigned char result[8];
+
+    if (CdSearchFile(&file, path) == 0) {
+        return -1;
+    }
+    do {
+        while (CdControlB(2, (unsigned char *)&file.pos, 0) == 0) {
+        }
+        CdRead((file.size + 0x7FF) >> 11, destination, 0x80);
+    } while (CdReadSync(0, result) != 0);
+    return file.size;
+}
