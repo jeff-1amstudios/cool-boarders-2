@@ -26,6 +26,8 @@ extern GsOT *D_8009FC44;
 
 extern unsigned int D_80097A40;
 
+extern int D_8009D66C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -144,4 +146,12 @@ unsigned int func_8005B87C(unsigned int value, int mode)
         break;
     }
     return D_80097A40;
+}
+
+// FUNCTION: BP.BIN:0x8005B91C
+void func_8005B91C(int value)
+{
+    if (value >= 0 && value != 1) {
+        D_8009D66C = value;
+    }
 }
