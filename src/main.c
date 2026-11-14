@@ -4844,3 +4844,85 @@ done:
     count -= serial_read_state.remaining;
     return count;
 }
+
+// FUNCTION: SCUS_943.58:0x80016354
+void func_80016354(unsigned char status, unsigned char *result)
+{
+    CdlLOC position[2];
+    SpuVoiceAttr voice;
+    int sector;
+    unsigned long size;
+    SoundDiscTransfer *transfer;
+    SoundDiscTransfer *current;
+    SoundDiscTransfer *active;
+    short level;
+    int sample;
+    unsigned long voices;
+    unsigned short pitch;
+
+    CdReadyCallback(0);
+    switch (status) {
+    case 1:
+        CdGetSector(sound_disc_transfer->data, 3);
+        position[0] = *(CdlLOC *)sound_disc_transfer->data;
+        sector = CdPosToInt((CdlLOC *)sound_disc_transfer->data);
+        if ((sound_disc_transfer->transfer_pending && !SpuIsTransferCompleted(0)) ||
+            sector != sound_disc_transfer->sector + 1) {
+            CdIntToPos(sound_disc_transfer->sector + 1, position);
+            CdReadyCallback(func_80016354);
+            CdControl(6, (unsigned char *)position, 0);
+            break;
+        }
+        CdGetSector(sound_disc_transfer->data, 0x200);
+        SpuWritePartly(sound_disc_transfer->data, 0x800);
+        active = sound_disc_transfer;
+        if (--active->remaining != 0) {
+            active->sector++;
+            CdReadyCallback(func_80016354);
+            break;
+        }
+        if (--active->bank_index < 0) {
+            goto completed;
+        }
+        CdControl(9, 0, 0);
+    case 5:
+        sector = CdPosToInt(&sound_disc_transfer->positions[sound_disc_transfer->bank_index]);
+        transfer = sound_disc_transfer;
+        transfer->sector = sector - 1;
+        size = transfer->sizes[transfer->bank_index];
+        transfer->transfer_pending = 0;
+        current = sound_disc_transfer;
+        transfer->remaining = (size + 0x7FFU) >> 11;
+        sound_transfer_status = 2;
+        SpuSetTransferStartAddr(sound_transfer_banks[current->bank_index].transfer_start);
+        CdReadyCallback(func_80016354);
+        CdControl(6, (unsigned char *)&sound_disc_transfer->positions[sound_disc_transfer->bank_index], 0);
+        break;
+    }
+    goto done;
+
+completed:
+    CdControl(9, 0, 0);
+    pitch = 0x1000;
+    voices = 0x800000;
+    sound_transfer_status = 0;
+    sample = sound_disc_transfer->voice;
+    if (sound_transfer_status == 0 && sample < sound_transfer_banks[0].sample_count) {
+        voice.voice = voices;
+        voice.mask = 0x93;
+        level = D_80057FBE * 0x20 - 1;
+        voice.pitch = pitch;
+        if (level > 0) {
+            voice.volume.left = level < 0x4000 ? level : 0x3FFF;
+        } else {
+            voice.volume.left = 0;
+        }
+        voice.volume.right = voice.volume.left = voice.volume.left;
+        voice.addr = sound_transfer_banks[0].transfer_start +
+            sound_transfer_banks[0].offsets[sample];
+        SpuSetKeyOnWithAttr(&voice);
+    }
+
+done:
+    sound_disc_transfer->transfer_pending = 1;
+}
