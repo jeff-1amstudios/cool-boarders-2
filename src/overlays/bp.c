@@ -61,6 +61,22 @@ extern unsigned char D_80097980[];
 extern unsigned char D_80097981[];
 extern unsigned char D_80097982[];
 
+extern void func_8005E81C(GsOT *ot, BpPlayer *player, int first, int second);
+extern void func_8005F8F8(BpPlayer *player);
+extern void func_8005F964(BpPlayer *player, int state);
+extern void func_80060E6C(BpPlayer *player, int different);
+extern void func_8005D8C4(GsOT *ot, BpViewState *state, int *position, int mode, void *data);
+extern int func_8005D820(int mode, int player_mode);
+extern void func_80077190(GsOT *ot, void *scratch, int distance);
+extern void func_80077E68(GsOT *ot, int x, int y, int z, int one, void *scratch, int different);
+extern void func_8007882C(GsOT *ot, void *effects, void *transform);
+extern void func_8005E0E0(GsOT *ot, BpPlayer *player, int index);
+extern void func_8005E454(GsOT *ot, BpPlayer *player);
+extern unsigned short D_8009D630;
+extern SVECTOR D_8009D648;
+extern int D_8009757C;
+extern int D_8009E994;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -346,4 +362,100 @@ void func_8005D1AC(int first, int second, int mode)
     } while (player < 1);
     func_80016748();
     func_80016AEC();
+}
+
+// FUNCTION: BP.BIN:0x8005D33C
+int func_8005D33C(GsOT *ot, int player, int first, int second, int mode)
+{
+    BpPlayer *selected = D_8009FA4C[player];
+    BpMotion *motion;
+    BpViewState *view = *(BpViewState **)((unsigned char *)selected + 0x6D8);
+    int state = view->state;
+    int busy = *(int *)((unsigned char *)selected + 0x738);
+    int different = -(first != second);
+    int result;
+    int distance;
+    int index;
+    BpPlayer **current;
+    BpPlayer *entry;
+
+    motion = (BpMotion *)((unsigned char *)selected + 0x28);
+    func_8005E81C(ot, selected, first, second);
+    if (first == second && first != 3) {
+        index = 0;
+        if (*(short *)((unsigned char *)selected + 0x48FE) == 0) {
+            if ((motion->buttons ^ motion->previous_buttons) & motion->buttons & D_8009D630) {
+                if (first == 0 && (unsigned int)(state - 3) >= 2)
+                    index = -(busy == 0);
+            } else if (first == 5) {
+                if (state == 1) index = -1;
+            } else if (*(short *)((unsigned char *)selected + 0x4900) != 0) {
+                if (view->previous_state != state && busy == 0) index = -1;
+            } else if (busy != 0) {
+                if (*(int *)((unsigned char *)selected + 0x73C) == 0) {
+                    view->previous_state = state;
+                    if (state == 1) index = -1;
+                }
+            } else {
+                if (*(int *)((unsigned char *)selected + 0x73C) != 0 && view->previous_state != state)
+                    index = -1;
+            }
+        } else if (*(short *)((unsigned char *)selected + 0x4900) == 0) {
+            view->previous_state = state;
+            if (state == 1) index = -1;
+        }
+        if (index == -1 && *(short *)(*(unsigned char **)((unsigned char *)selected + 0x4918) + 0x64) < 0) {
+            func_8005F8F8(selected);
+            state = view->state;
+            func_8005F964(selected, state);
+        }
+    }
+    func_80060E6C(selected, different);
+    func_8005D8C4(ot, view, &motion->x, 3, view->data);
+    GsScaleScreen(&D_8009D648);
+    result = func_8005D820(D_8009FC94[10], motion->mode);
+    if (result == -1) {
+        distance = 150;
+        if (second != 3) distance = -1;
+        func_80077190(ot, (void *)(D_8009757C * 4 + 0x1F800000), distance);
+    }
+    if (D_8009E994 != 0) {
+        if (state != 3 && state != 5) {
+            func_80077E68(ot, motion->camera_x - motion->previous_x,
+                         motion->camera_y - motion->previous_y,
+                         motion->camera_z - motion->previous_z,
+                         1, (void *)(D_8009757C * 4 + 0x1F800000), first != second);
+        } else {
+            func_80077E68(ot, 0, 0, 0, 1, (void *)(D_8009757C * 4 + 0x1F800000), 0);
+        }
+    }
+    index = 0;
+    current = D_8009FA4C;
+    do {
+        entry = *current;
+        if (*(int *)((unsigned char *)entry + 0xCBC) != 0) {
+            if (index == player) {
+                if (state == 1 && view->timer < 0 && busy == 0 &&
+                    *(short *)((unsigned char *)selected + 0x48FE) != 3) goto next;
+                *(int *)((unsigned char *)entry + 0x1A0) = 0;
+                *(int *)((unsigned char *)entry + 0x1A4) = 0;
+                *(int *)((unsigned char *)entry + 0x1A8) = 0;
+            } else {
+                if (mode == 0) goto next;
+                *(int *)((unsigned char *)entry + 0x1A0) = *(int *)((unsigned char *)entry + 0x2C) - motion->x;
+                *(int *)((unsigned char *)entry + 0x1A4) = *(int *)((unsigned char *)entry + 0x30) - motion->y;
+                *(int *)((unsigned char *)entry + 0x1A8) = *(int *)((unsigned char *)entry + 0x34) - motion->z;
+            }
+            func_8007882C(ot, entry->effects, (unsigned char *)entry + 0x188);
+            func_8005E0E0(ot, entry, index);
+            *(int *)((unsigned char *)entry + 0x1A0) = 0;
+            *(int *)((unsigned char *)entry + 0x1A4) = 0;
+            *(int *)((unsigned char *)entry + 0x1A8) = 0;
+        }
+next:
+        index++;
+        current++;
+    } while (index < 1);
+    func_8005E454(ot, selected);
+    return result;
 }

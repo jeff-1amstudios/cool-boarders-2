@@ -18,4 +18,27 @@ int func_8005B4A4(void);
 void func_8005AEA8(FileLoadState *state);
 void func_8005B720(void);
 
+typedef struct BpViewState {
+    short state;
+    short unknown_02;
+    short previous_state;
+    short unknown_06;
+    short timer;
+    unsigned char unknown_0a[0x19A];
+    void *data;
+} BpViewState;
+
+typedef struct BpMotion {
+    int unknown_00;
+    int x, y, z;
+    unsigned char unknown_10[4];
+    short mode;
+    unsigned char unknown_16[0x42];
+    unsigned int buttons;
+    int camera_x, camera_y, camera_z;
+    unsigned char unknown_68[0x48];
+    unsigned int previous_buttons;
+    int previous_x, previous_y, previous_z;
+} BpMotion;
+
 #endif
