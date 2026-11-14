@@ -121,6 +121,15 @@ extern int D_80063200;
 extern void func_80060318(unsigned char **planes, int x0, int y0,
                           int x1, int y1, int color, unsigned char *mask);
 
+extern void func_800603DC(unsigned char **planes, int x, int y,
+                          int dx, int dy, int color, unsigned char *mask);
+extern void func_800604F4(unsigned char **planes, int x, int y,
+                          int dx, int dy, int color, unsigned char *mask);
+extern void func_80060604(unsigned char **planes, int x, int y,
+                          int dx, int dy, int color, unsigned char *mask);
+extern void func_80060714(unsigned char **planes, int x, int y,
+                          int dx, int dy, int color, unsigned char *mask);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -1999,4 +2008,31 @@ int func_80060108(int x, int y, unsigned int buttons, unsigned int previous,
         }
     }
     return changed;
+}
+
+// FUNCTION: BDEDIT.BIN:0x80060318
+void func_80060318(unsigned char **planes, int x0, int y0,
+                   int x1, int y1, int color, unsigned char *mask)
+{
+    int temp;
+
+    if (x1 < x0) {
+        temp = x1;
+        x1 = x0;
+        x0 = temp;
+        temp = y1;
+        y1 = y0;
+        y0 = temp;
+    }
+    x1 -= x0;
+    y1 -= y0;
+    if (x1 < -y1) {
+        func_800603DC(planes, x0, y0, x1, y1, color, mask);
+    } else if (x1 < y1) {
+        func_800604F4(planes, x0, y0, x1, y1, color, mask);
+    } else if (y1 <= 0) {
+        func_80060604(planes, x0, y0, x1, y1, color, mask);
+    } else {
+        func_80060714(planes, x0, y0, x1, y1, color, mask);
+    }
 }

@@ -168,3 +168,7 @@ D_80063204 = 0x80063204; // size:0x4
 D_80063200 = 0x80063200; // size:0x4
 
 func_80060318 = 0x80060318; // type:func
+func_800603DC = 0x800603DC; // type:func
+func_800604F4 = 0x800604F4; // type:func
+func_80060604 = 0x80060604; // type:func
+func_80060714 = 0x80060714; // type:func
