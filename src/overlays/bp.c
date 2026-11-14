@@ -114,6 +114,8 @@ extern int D_8009D660;
 
 extern int D_80097A44[10];
 
+extern int func_8008C86C(int value);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -825,4 +827,24 @@ void func_8005F570(BpSetupState *state, BpSetupSource *source, int *progress)
     state->link = source->link;
     state->link->value = state->value;
     state->link->progress = progress;
+}
+
+// FUNCTION: BP.BIN:0x8005F6C0
+int func_8005F6C0(BpPlayer *player)
+{
+    int result;
+
+    result = func_8008C86C(*(short *)((unsigned char *)player + 0x4914));
+    if (result != 1) {
+        if (result < 2) {
+            if (result == 0) {
+                result = 2;
+            } else {
+                result = 0;
+            }
+        } else {
+            result = 0;
+        }
+    }
+    return result;
 }
