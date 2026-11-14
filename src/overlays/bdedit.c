@@ -141,6 +141,11 @@ extern void func_80061180(unsigned char **planes, int x0, int x1, int y,
 extern void func_8006126C(unsigned char **planes, int x, int y0, int y1,
                           int color, unsigned char *mask);
 
+extern unsigned char *func_800615CC(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x0, int x1, int y, int brightness);
+extern unsigned char *func_8006169C(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x, int y0, int y1, int brightness);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2521,4 +2526,64 @@ void func_8006126C(unsigned char **planes, int x, int y0, int y1,
             offset += 128;
         } while (y0 <= y1);
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8006135C
+unsigned char *func_8006135C(unsigned long *ot, unsigned char *packet,
+                          int offset, int x, int y, int brightness)
+{
+    LINE_F3 *line;
+    int left, top;
+
+    if (D_80063200 < 0 || D_80063204 < 0) {
+        return packet;
+    }
+    x += offset;
+    line = (LINE_F3 *)packet;
+    packet = (unsigned char *)(line + 1);
+    ((PrimitiveTag *)line)->length = 5;
+    line->code = 0x48;
+    line->pad = 0x55555555;
+    line->x0 = D_80063200 + 32;
+    line->y0 = D_80063204 + 24;
+    line->x1 = D_80063200 + 32;
+    line->y1 = y + 24;
+    line->x2 = x + 32;
+    line->y2 = y + 24;
+    line->r0 = line->g0 = line->b0 = brightness;
+    ((PrimitiveTag *)line)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)line;
+
+    line = (LINE_F3 *)packet;
+    packet = (unsigned char *)(line + 1);
+    ((PrimitiveTag *)line)->length = 5;
+    line->code = 0x48;
+    line->pad = 0x55555555;
+    line->x0 = D_80063200 + 32;
+    line->y0 = D_80063204 + 24;
+    line->x1 = x + 32;
+    line->y1 = D_80063204 + 24;
+    line->x2 = x + 32;
+    line->y2 = y + 24;
+    line->r0 = line->g0 = line->b0 = brightness;
+    ((PrimitiveTag *)line)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)line;
+
+    if (D_80063200 < x) {
+        left = D_80063200;
+    } else {
+        left = x;
+        x = D_80063200;
+    }
+    if (D_80063204 < y) {
+        top = D_80063204;
+    } else {
+        top = y;
+        y = D_80063204;
+    }
+    packet = func_800615CC(ot, packet, offset, left, x, top, brightness);
+    packet = func_800615CC(ot, packet, offset, left, x, y, brightness);
+    packet = func_8006169C(ot, packet, offset, left, top, y, brightness);
+    packet = func_8006169C(ot, packet, offset, x, top, y, brightness);
+    return packet;
 }
