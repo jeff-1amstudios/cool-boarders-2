@@ -146,6 +146,15 @@ extern unsigned char *func_800615CC(unsigned long *ot, unsigned char *packet,
 extern unsigned char *func_8006169C(unsigned long *ot, unsigned char *packet,
                                   int offset, int x, int y0, int y1, int brightness);
 
+extern unsigned char *func_800609EC(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x, int y, int dx, int dy, int brightness);
+extern unsigned char *func_80060B18(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x, int y, int dx, int dy, int brightness);
+extern unsigned char *func_80060C34(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x, int y, int dx, int dy, int brightness);
+extern unsigned char *func_80060D50(unsigned long *ot, unsigned char *packet,
+                                  int offset, int x, int y, int dx, int dy, int brightness);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2585,5 +2594,50 @@ unsigned char *func_8006135C(unsigned long *ot, unsigned char *packet,
     packet = func_800615CC(ot, packet, offset, left, x, y, brightness);
     packet = func_8006169C(ot, packet, offset, left, top, y, brightness);
     packet = func_8006169C(ot, packet, offset, x, top, y, brightness);
+    return packet;
+}
+
+// FUNCTION: BDEDIT.BIN:0x80060824
+unsigned char *func_80060824(unsigned long *ot, unsigned char *packet,
+                            int offset, int x, int y, int brightness)
+{
+    LINE_F2 *line;
+    int x0, y0, dy;
+    int draw_x, draw_y;
+    if (D_80063200 < 0 || D_80063204 < 0) return packet;
+    x += offset;
+    line = (LINE_F2 *)packet;
+    packet += sizeof(LINE_F2);
+    ((PrimitiveTag *)line)->length = 3;
+    line->code = 0x40;
+    line->x1 = x + 32;
+    line->y1 = y + 24;
+    draw_x = D_80063200;
+    draw_y = D_80063204;
+    line->r0 = line->g0 = line->b0 = brightness;
+    line->x0 = draw_x + 32;
+    line->y0 = draw_y + 24;
+    ((BdEditPrimitiveLink *)line)->tag.address = *ot;
+    ((PrimitiveTag *)ot)->address = (unsigned long)line;
+    if (x < D_80063200) {
+        x0 = x;
+        y0 = y;
+        x = D_80063200;
+        y = D_80063204;
+    } else {
+        x0 = D_80063200;
+        y0 = D_80063204;
+    }
+    x -= x0;
+    dy = y - y0;
+    if (x < -dy) {
+        packet = func_800609EC(ot, packet, offset, x0, y0, x, dy, brightness);
+    } else if (x < dy) {
+        packet = func_80060B18(ot, packet, offset, x0, y0, x, dy, brightness);
+    } else if (dy <= 0) {
+        packet = func_80060C34(ot, packet, offset, x0, y0, x, dy, brightness);
+    } else {
+        packet = func_80060D50(ot, packet, offset, x0, y0, x, dy, brightness);
+    }
     return packet;
 }

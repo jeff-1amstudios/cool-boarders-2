@@ -52,4 +52,9 @@ typedef struct BdEditMaskPositions {
 
 void func_8005FB54(unsigned char *mask);
 
+typedef union BdEditPrimitiveLink {
+    PrimitiveTag tag;
+    unsigned long word;
+} BdEditPrimitiveLink;
+
 #endif
