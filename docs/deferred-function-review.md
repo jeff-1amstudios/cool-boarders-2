@@ -231,3 +231,46 @@ receive functions also report 100% object similarity. The Ghidra transaction
 saved the 12-byte state type and reviewed globals. Fresh read-only exports of
 both functions confirm `serial_read_state.active`, `.cursor` and `.remaining`
 references. The deferred queue is now 37, with 188 matching C function instances.
+
+## BDEDIT switch-table ownership — 2026-11-14
+
+Five preserved candidates had matching text diagnostics but failed full-overlay
+comparison because compiler-emitted switch tables were added before text while
+the original copies remained in retained data. The file growth exactly equaled
+the generated table sizes:
+
+| Function | C text bytes | Original table addresses | Table bytes |
+| --- | ---: | --- | ---: |
+| `0x8005B76C` | 1,088 | `0x80062D80`, `0x80062DA8` | 68 |
+| `0x8005BBAC` | 744 | `0x80062DF8` | 24 |
+| `0x8005CD14` | 548 | `0x80062E58` | 20 |
+| `0x8005E010` | 532 | `0x80062F88` | 36 |
+| `0x8005E284` | 1,056 | `0x80062FB0` | 20 |
+
+The BDEDIT Splat configuration now gives these C units explicit `.rodata`
+siblings at the reviewed original spans. `linker_section_order: .data` preserves
+their position among the retained trailing data; the header explicitly remains
+first. These generated sections replace the retained table copies. The original
+compiler/assembler flags and pinned reference remain unchanged. These ownership
+mappings describe the reconstruction units, not proven original translation-unit
+boundaries.
+
+Assembly-only overlay references now use Splat's `asmtu` text units, preserving
+owned data/rodata siblings in the same object for diagnostics. The reference
+image must still independently reproduce the pinned original before any object
+scores are used. This supports future explicit ownership mappings without a
+custom linker implementation per function. Automatic discovery of ownership
+mappings is not implemented by this recovery.
+
+Overlapping string names from the independently saved candidates reuse existing
+symbols and declarations. The `0x8005CD14` candidate also reuses the accepted
+word-cursor callee prototypes with explicit representation conversions; existing
+function bodies are unchanged. Together these recoveries add 3,968 bytes of C
+text and reproduce 168 bytes of compiler-generated switch tables. Logs and
+feedback transactions are under ignored
+`reports/reconstruction/overlay-table-recovery/`.
+
+Final plain `make validate` passed all 15 pinned full-file comparisons. All five
+Ghidra saves and subsequent fresh read-only exports succeeded. The persistent
+queue now contains 32 deferred functions; the progress snapshot records 193
+matching C function instances.
