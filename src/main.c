@@ -483,6 +483,7 @@ extern SerialPollCallback D_80054C68;
 extern short D_8004F3FC[4];
 extern int DeliverEvent(unsigned long event, unsigned long spec);
 
+extern int D_80047D1C;
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4971,4 +4972,11 @@ int func_8001AEE0(int slot)
         close(fd);
     }
     return (short)result;
+}
+
+// FUNCTION: SCUS_943.58:0x8001B59C
+void func_8001B59C(void)
+{
+    D_80047D18 = 0;
+    D_80047D1C = 0;
 }
