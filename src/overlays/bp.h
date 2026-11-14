@@ -15,4 +15,7 @@ typedef struct BpPlayer {
 
 int func_8005B4A4(void);
 
+void func_8005AEA8(FileLoadState *state);
+void func_8005B720(void);
+
 #endif

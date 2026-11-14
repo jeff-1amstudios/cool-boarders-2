@@ -47,6 +47,8 @@ do not install dependencies, change tools or perform repository maintenance.
 - Include the image header. Reuse SDK and accepted game types. Define new
   structs/unions once in guarded local headers, adding types before the image
   header's final `#endif`; do not duplicate layouts in function blocks.
+  Preserve the complete existing header prefix, including blank lines: insert
+  additions immediately before the final `#endif`, after any existing blank line.
 - Give only the selected function a C subsegment. Change only its supplied
   split configuration, append symbols to its supplied symbol file, and add
   headers only under its source directory. Do not change other source files,

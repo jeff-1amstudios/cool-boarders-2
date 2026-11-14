@@ -33,6 +33,11 @@ extern TILE D_8009E95C;
 extern DR_MODE D_8009E97C;
 extern void func_8009456C(GsOT_TAG *tag, DR_MODE *mode);
 
+extern int func_8001F378(void *allocation);
+extern int D_800570E0;
+extern void func_80078E34(void *effects);
+extern void func_80077D74(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -174,4 +179,47 @@ void func_8005B93C(GsOT *ot, unsigned char intensity)
         D_80058ACC += sizeof(TILE);
         func_8009456C(&ot->org[3], &D_8009E97C);
     }
+}
+// FUNCTION: BP.BIN:0x8005AEA8
+void func_8005AEA8(FileLoadState *state)
+{
+    void *allocation;
+    void **entry;
+    int index;
+
+    if (D_800570E0 < 2 && (index = 2, D_800570E0 >= 0)) {
+        entry = (void **)&state->file_5c;
+        do {
+            allocation = *entry;
+            if (allocation != 0 && (unsigned int)allocation < (unsigned int)state->unknown_04) {
+                func_8001F378(allocation);
+            }
+            index++;
+            entry++;
+        } while (index < 16);
+    }
+}
+// FUNCTION: BP.BIN:0x8005B720
+void func_8005B720(void)
+{
+    int count = 0;
+    BpPlayer **player = D_8009FA4C;
+    void **allocation = D_8009D670;
+    int offset;
+
+    do {
+        count++;
+        func_80078E34((*player)->effects);
+        func_8001F378(*allocation++);
+        func_8001F378(*player++);
+    } while (count < 1);
+
+    offset = 0;
+    do {
+        func_8001F378(*(void **)((unsigned char *)D_8009E928 + offset));
+        func_8001F378(*(void **)((unsigned char *)D_8009E92C + offset));
+        offset += 8;
+    } while (offset < 1);
+    func_8001F378(D_8009E948);
+    func_80077D74();
 }
