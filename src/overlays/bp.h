@@ -145,4 +145,11 @@ typedef struct BpMotionExtended {
     int saved_height;
 } BpMotionExtended;
 
+typedef struct BpCameraState {
+    unsigned char unknown_000[0xC];
+    GsRVIEW2 view;
+    unsigned char unknown_02c[0x17C];
+    int position[3];
+} BpCameraState;
+
 #endif

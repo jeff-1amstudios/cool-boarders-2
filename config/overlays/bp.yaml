@@ -86,6 +86,7 @@ segments:
   - [0x5c88, asm, body_5c88]
   - [0x5f20, c, func_80060A88]
   - [0x5f6c, c, func_80060AD4]
-  - [0x5fb8, asm, body_5fb8]
+  - [0x5fb8, c, func_80060B20]
+  - [0x603c, asm, body_603c]
   - [0x3ad14, data, data]
 - [0x45360]
