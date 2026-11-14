@@ -3228,3 +3228,61 @@ unsigned char *func_8006230C(unsigned long *ot, unsigned char *packet, int *stat
     return (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet,
                              (unsigned short)(((y & 0x100) >> 4) | 0x80) | ((x & 0x3ff) >> 6));
 }
+
+// FUNCTION: BDEDIT.BIN:0x800628F4
+void func_800628F4(int *state, unsigned char **planes,
+                   CVECTOR *palette, unsigned short *packed)
+{
+    RECT rect;
+    int index;
+
+    rect.x = (state[3] % 4) * 64 + 512;
+    rect.y = (state[3] / 4) * 64;
+    rect.w = 64;
+    rect.h = 64;
+    MoveImage(&rect, 768, 0);
+    rect.x = 768;
+    rect.y = state[3] + 471;
+    rect.w = 256;
+    rect.h = 1;
+    StoreImage(&rect, (unsigned long *)packed);
+    rect.x = 768;
+    rect.y = 0;
+    rect.w = 64;
+    rect.h = 32;
+    StoreImage(&rect, (unsigned long *)planes[0]);
+    rect.x = 768;
+    rect.y = 32;
+    rect.w = 64;
+    rect.h = 32;
+    StoreImage(&rect, (unsigned long *)planes[1]);
+    DrawSync(0);
+    func_8005F6A4(palette, packed, 32);
+    for (index = 0; index < 32; index++) {
+        if ((index & 1) > 0)
+            palette[index + 32].b = (((31 - index) / 8 + 1) * 255) / 4;
+        else
+            palette[index + 32].b = 0;
+        if ((index & 2) > 0)
+            palette[index + 32].r = (((31 - index) / 8 + 1) * 255) / 4;
+        else
+            palette[index + 32].r = 0;
+        if ((index & 4) > 0)
+            palette[index + 32].g = (((31 - index) / 8 + 1) * 255) / 4;
+        else
+            palette[index + 32].g = 0;
+        palette[index + 32].cd = 1;
+    }
+    for (index = 64; index < 256; index++) {
+        palette[index].cd = 0;
+        palette[index].g = 0;
+        palette[index].r = 0;
+        palette[index].b = 0;
+    }
+    func_8005F634(packed, palette, 256);
+    rect.x = 768;
+    rect.y = 503;
+    rect.w = 256;
+    rect.h = 1;
+    LoadImage(&rect, (unsigned long *)packed);
+}
