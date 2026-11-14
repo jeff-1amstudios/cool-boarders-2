@@ -1677,3 +1677,47 @@ unsigned char *func_8005EEF8(unsigned long *ot, unsigned char *packet,
     }
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005F058
+unsigned char *func_8005F058(unsigned long *ot, unsigned char *packet,
+                          int x, int y, int w, int h, CVECTOR *color, int flags)
+{
+    POLY_G4 *poly;
+    DR_TPAGE *mode;
+
+    poly = (POLY_G4 *)packet;
+    packet += sizeof(POLY_G4);
+    ((PrimitiveTag *)poly)->length = 8;
+    poly->code = 0x38;
+    poly->x0 = x;
+    poly->y0 = y;
+    poly->y1 = y;
+    poly->x2 = x;
+    poly->x1 = x + w;
+    poly->y2 = y + h;
+    poly->x3 = x + w;
+    poly->y3 = y + h;
+    poly->r0 = poly->r3 = color->r;
+    poly->g0 = poly->g3 = color->g;
+    poly->b0 = poly->b3 = color->b;
+    poly->r1 = poly->r2 = color->r * 2 / 3;
+    poly->g1 = poly->g2 = color->g * 2 / 3;
+    poly->b1 = poly->b2 = color->b * 2 / 3;
+    if (flags & 0x80) {
+        poly->code |= 2;
+    }
+    ((PrimitiveTag *)poly)->address = ((PrimitiveTag *)ot)->address;
+    ((PrimitiveTag *)ot)->address = (unsigned long)poly;
+
+    if (flags & 0x80) {
+        mode = (DR_TPAGE *)packet;
+        packet += sizeof(DR_TPAGE);
+        ((PrimitiveTag *)mode)->length = 1;
+        mode->code[0] = 0xE1000000 |
+            ((GetGraphType() == 1 || GetGraphType() == 2) ?
+             (((flags & 3) << 5) & 0x27FF) : (((flags & 3) << 5) & 0x09FF));
+        ((PrimitiveTag *)mode)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)mode;
+    }
+    return packet;
+}
