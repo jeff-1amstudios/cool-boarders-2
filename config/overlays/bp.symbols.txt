@@ -152,3 +152,12 @@ func_80060B20 = 0x80060B20; // type:func
 
 func_80060C44 = 0x80060C44; // type:func
 D_800959CC = 0x800959CC; // size:0x10
+func_80061FB0 = 0x80061FB0; // type:func
+D_800570C8 = 0x800570C8;
+D_800570DC = 0x800570DC; // type:u16 size:0x2
+D_80047CF8 = 0x80047CF8; // type:u16 size:0x14
+D_8009FA54 = 0x8009FA54; // type:u32 size:0x4
+D_8009FC88 = 0x8009FC88; // type:u32 size:0x4
+D_8009FC4C = 0x8009FC4C; // type:u32 size:0x4
+D_8009FA40 = 0x8009FA40; // type:u32 size:0x4
+D_8009FC84 = 0x8009FC84; // type:u32 size:0x4

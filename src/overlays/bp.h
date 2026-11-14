@@ -170,4 +170,11 @@ typedef struct BpPoseState {
     int saved_height;
 } BpPoseState;
 
+typedef struct BpSelectionView {
+    unsigned char unknown_00[20];
+    short course;
+    short record;
+    int mode;
+} BpSelectionView;
+
 #endif

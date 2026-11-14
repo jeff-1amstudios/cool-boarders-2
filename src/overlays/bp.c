@@ -127,6 +127,22 @@ extern long D_8009FCA0;
 
 extern VECTOR D_800959CC;
 
+extern void func_8001BF08(void);
+extern void func_80012770(int width, int height);
+extern int func_80061FB0(FileLoadState *state, int mode);
+extern void func_80015C8C(int pitch, unsigned long voices, int sample, int volume);
+extern int func_8001EC78(void *data);
+extern int func_8001C67C(unsigned int *state, int mode);
+extern int func_8001C208(FileLoadState *state, int mode);
+extern int func_8001C130(FileLoadState *state, short mode);
+extern unsigned int D_800570C8;
+extern short D_800570DC;
+extern short D_80047CF8[10];
+extern CardGameSettings *D_8009FA54;
+extern CardAudioSettings *D_8009FC88;
+extern int *D_8009FC4C;
+extern CardGameRecord *D_8009FA40;
+extern int D_8009FC84;
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1198,4 +1214,102 @@ void func_80060C44(BpPosePlayer *player)
     state->transform.rotation.vz = rotation.vz;
     *(int *)((unsigned char *)state + 0x24) = 0;
     state->saved_height = *height;
+}
+
+// FUNCTION: BP.BIN:0x8005AB6C
+int func_8005AB6C(FileLoadState *state)
+{
+    short saved_record;
+    int result;
+    BpSelectionView *selection;
+    FileLoadState *assets;
+
+    func_8001BF08();
+    D_8009FC94 = (short *)&D_800570C8;
+    D_8009FA54 = (CardGameSettings *)((char *)&D_800570C8 + 0x2c);
+    D_8009FC88 = (CardAudioSettings *)((char *)&D_800570C8 + 0x46);
+    D_8009FC4C = (int *)((char *)&D_800570C8 + 0x50);
+    D_8009FA40 = (CardGameRecord *)((char *)&D_800570C8 + 0x59c) + D_800570DC;
+    SpuSetKey(0, 0x800000);
+    assets = 0;
+    if (((BpSelectionView *)D_8009FC94)->mode == 0) {
+        state->file_5c = 0;
+    }
+    func_80012770(320, 240);
+    D_8009FC84 = state->unknown_04;
+    saved_record = ((BpSelectionView *)D_8009FC94)->record;
+    switch (((BpSelectionView *)D_8009FC94)->mode) {
+    case 0:
+    case 5:
+        ((BpSelectionView *)D_8009FC94)->record = 14;
+        break;
+    case 1:
+        ((BpSelectionView *)D_8009FC94)->record = D_80047CF8[((BpSelectionView *)D_8009FC94)->course];
+        break;
+    case 2:
+    case 3:
+    case 4:
+        selection = (BpSelectionView *)D_8009FC94;
+        if (saved_record != 10) {
+            selection->record = D_80047CF8[saved_record];
+        } else {
+            selection->record = 0;
+        }
+        break;
+    case 7:
+        ((BpSelectionView *)D_8009FC94)->record = 15;
+        break;
+    case 8:
+        ((BpSelectionView *)D_8009FC94)->record = 20;
+        break;
+    default:
+        ((BpSelectionView *)D_8009FC94)->record = 0;
+        break;
+    }
+    result = func_80061FB0(state, 0);
+    ((BpSelectionView *)D_8009FC94)->record = saved_record;
+    if (result < 5) {
+        if (result > 1) goto process;
+    } else if (result == 5) {
+        return 3;
+    }
+    goto fallback;
+process:
+    switch (((BpSelectionView *)D_8009FC94)->mode) {
+    case 0:
+        ((BpSelectionView *)D_8009FC94)->mode = 1;
+        func_80015C8C(0xdc9, 0x800000, 12, 192);
+        func_8001EC78(assets->file_13);
+        DrawSync(0);
+        func_8001EC78(assets->file_14);
+        DrawSync(0);
+        func_8005AEA8(state);
+        return func_8001C67C((unsigned int *)state, 2);
+    case 1:
+        func_80015C8C(0xdc9, 0x800000, 12, 192);
+        ((BpSelectionView *)D_8009FC94)->mode = 0;
+        ++*D_8009FC4C;
+        if (result == 2) {
+            func_8005AEA8(state);
+            result = func_8001C67C((unsigned int *)state, 1);
+            state->file_5c = 0;
+            return result;
+        }
+        func_8001C208(state, result == 4);
+        return 6;
+    case 2: goto load_next;
+    case 3: goto load_next;
+    case 4: goto load_next;
+    case 5: goto load_next;
+    case 6: goto load_next;
+    case 7: goto load_next;
+    case 8: goto load_next;
+    }
+load_next:
+    func_8001C208(state, 0);
+    return 3;
+fallback:
+    func_8001BF08();
+    func_8001C130(state, 1);
+    return 3;
 }

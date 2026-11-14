@@ -22,7 +22,7 @@ options:
   o_as_suffix: true
   use_legacy_include_asm: false
   migrate_rodata_to_functions: false
-  section_order: [.rodata, .text, .data, .bss]
+  section_order: [.text, .rodata, .data, .bss]
   symbol_addrs_path: [config/overlays/bp.symbols.txt]
   reloc_addrs_path: []
   undefined_funcs_auto_path: build/overlays/bp/undefined_funcs.txt
@@ -40,8 +40,11 @@ segments:
   start: 0x0
   vram: 0x8005ab68
   subsegments:
-  - [0x0, rodata, header]
-  - [0x4, asm, body]
+  - start: 0x0
+    type: rodata
+    name: header
+    linker_section_order: .text
+  - [0x4, c, func_8005AB6C]
   - [0x340, c, func_8005AEA8]
   - [0x3cc, asm, body_3cc]
   - [0x93c, c, func_8005B4A4]
@@ -90,5 +93,10 @@ segments:
   - [0x603c, asm, body_603c]
   - [0x60dc, c, func_80060C44]
   - [0x6304, asm, body_6304]
-  - [0x3ad14, data, data]
+  # Original switch-table span owned by func_8005AB6C.
+  - start: 0x3ad14
+    type: .rodata
+    name: func_8005AB6C
+    linker_section_order: .data
+  - [0x3ad60, data, data_3AD60]
 - [0x45360]
