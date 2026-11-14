@@ -181,3 +181,4 @@ D_800630DC = 0x800630DC; // type:char size:0x13
 
 func_80060B18 = 0x80060B18; // type:func
 func_80060C34 = 0x80060C34; // type:func
+func_80060D50 = 0x80060D50; // type:func
