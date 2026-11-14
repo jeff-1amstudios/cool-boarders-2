@@ -172,6 +172,10 @@ extern int func_80061FA0(unsigned char *pixels, unsigned char *visited,
                           unsigned char *mask, unsigned int original,
                           int color, int x, int y);
 
+extern unsigned char *func_8006230C(unsigned long *ot, unsigned char *packet, int *state);
+extern void func_800628F4(int *state, unsigned char **planes,
+                          CVECTOR *palette, unsigned short *packed);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -3061,4 +3065,71 @@ int func_80061FA0(unsigned char *pixels, unsigned char *visited,
         }
     }
     return result;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8006207C
+unsigned char *func_8006207C(unsigned long *ot, unsigned char *packet, void *unused,
+                            unsigned int buttons, unsigned int pressed, int *state,
+                            unsigned char **planes, CVECTOR *palette,
+                            unsigned short *packed)
+{
+    int unchanged;
+
+    state[6] = 0;
+    unchanged = -1;
+    if ((buttons & 0x1000) && state[0] > 0) {
+        func_80015B70(0, 0x80);
+        unchanged = 0;
+        state[0]--;
+    }
+    if (unchanged) {
+        if ((buttons & 0x4000) && state[0] < 3) {
+            func_80015B70(0, 0x80);
+            unchanged = 0;
+            state[0]++;
+        }
+        if (unchanged) {
+            switch (state[0]) {
+            case 0:
+                if ((buttons & 0x8000) && state[1] > 0) {
+                    func_80015B70(0, 0x80);
+                    state[1]--;
+                }
+                if ((buttons & 0x2000) && state[1] < 2) {
+                    func_80015B70(0, 0x80);
+                    state[1]++;
+                }
+                break;
+            case 1:
+                if ((buttons & 0x8000) && state[2] > 0) {
+                    func_80015B70(0, 0x80);
+                    state[2]--;
+                }
+                if ((buttons & 0x2000) && state[2] < 2) {
+                    func_80015B70(0, 0x80);
+                    state[2]++;
+                }
+                break;
+            case 2:
+                if ((buttons & 0x8000) && state[3] > 0) {
+                    func_80015B70(0, 0x80);
+                    state[3]--;
+                }
+                if ((buttons & 0x2000) && state[3] < 31) {
+                    func_80015B70(0, 0x80);
+                    state[3]++;
+                }
+                break;
+            default:
+                if (pressed & 0x40) {
+                    func_80015B70(1, 0x80);
+                    func_800628F4(state, planes, palette, packed);
+                    state[6] = 1;
+                }
+                break;
+            }
+        }
+    }
+    packet = func_8006230C(ot, packet, state);
+    return packet;
 }

@@ -57,4 +57,9 @@ typedef union BdEditPrimitiveLink {
     unsigned long word;
 } BdEditPrimitiveLink;
 
+unsigned char *func_8006207C(unsigned long *ot, unsigned char *packet, void *unused,
+                            unsigned int buttons, unsigned int pressed, int *state,
+                            unsigned char **planes, CVECTOR *palette,
+                            unsigned short *packed);
+
 #endif
