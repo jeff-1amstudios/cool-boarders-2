@@ -103,6 +103,8 @@ extern void func_8007F368(void *data);
 extern void func_8007EF5C(GsOT *ot, int kind, int flags, int index,
                           int *position, int shift, void *scratch);
 
+extern void func_8007C37C(int distance, short angle, int enabled, int mode, int value);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -737,4 +739,34 @@ void func_8005E6C0(BpPlayer *player)
             coordinate->flg = 0;
         } while (i < count);
     }
+}
+
+// FUNCTION: BP.BIN:0x8005E700
+void func_8005E700(BpPlayer *player, int distance)
+{
+    int enabled;
+    int mode;
+    int value;
+    int angle;
+
+    mode = *(short *)((unsigned char *)player + 0x72E);
+    value = *(int *)((unsigned char *)player + 0x724);
+    enabled = -(*(short *)((unsigned char *)player + 0x96) == 0);
+    angle = ratan2(-*(int *)((unsigned char *)player + 0x48E0),
+                   -*(int *)((unsigned char *)player + 0x48E8))
+            - *(short *)((unsigned char *)player + 0x1DA);
+    angle = (short)(angle * 0x100000 >> 20);
+    switch (D_8009FC94[10]) {
+    case 3:
+    case 5:
+    case 9:
+        if (*(int *)((unsigned char *)player + 0x148) == -1 && enabled == -1) {
+            mode = 4;
+        }
+        break;
+    }
+    if ((unsigned int)(**(unsigned short **)((unsigned char *)player + 0x6D8) - 3) < 2) {
+        enabled = 0;
+    }
+    func_8007C37C(distance, (short)angle, enabled, mode, value);
 }

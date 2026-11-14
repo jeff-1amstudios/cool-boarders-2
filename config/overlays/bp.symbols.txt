@@ -110,3 +110,7 @@ D_8009FC64 = 0x8009FC64; // size:0x4
 
 func_8007EF5C = 0x8007EF5C; // type:func
 func_8005E594 = 0x8005E594; // type:func
+
+func_8005E700 = 0x8005E700; // type:func
+func_8007C37C = 0x8007C37C; // type:func
+ratan2 = 0x80025560; // type:func
