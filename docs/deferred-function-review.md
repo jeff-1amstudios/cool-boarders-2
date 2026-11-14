@@ -374,3 +374,45 @@ Recovery evidence is under ignored
 `reports/reconstruction/bp-pair-recovery/`; original attempt artifacts remain
 unchanged. These recoveries add 336 bytes of matching C. The other two reviewed
 BP deferrals remain assembly.
+
+## Whitespace deferrals and interrupted callback recovered — 2026-11-15
+
+Recovered seven resident functions from preserved candidates, with fresh current
+Ghidra exports before each attempt:
+
+| Function | Bytes | Historical obstacle |
+| --- | ---: | --- |
+| `SCUS_943.58:0x80016354` | 848 | Worker usage limit after reaching 100% object diagnostics. |
+| `SCUS_943.58:0x8001A608` | 176 | Existing separator blank line replaced while adding an extern. |
+| `SCUS_943.58:0x8001AEE0` | 240 | Same shared-declaration whitespace rejection. |
+| `SCUS_943.58:0x8001B59C` | 24 | Same shared-declaration whitespace rejection. |
+| `SCUS_943.58:0x8001B64C` | 92 | Same shared-declaration whitespace rejection. |
+| `SCUS_943.58:0x8001BA78` | 132 | Same shared-declaration whitespace rejection. |
+| `SCUS_943.58:0x8001BDD8` | 304 | Same shared-declaration whitespace rejection. |
+
+These candidates add 1,816 bytes of matching C. Recovery preserves current
+function blocks, declarations and separators, reuses declarations added by later
+accepted functions, and derives splits from current boundaries rather than
+replaying historical split patches. The ghost signature now reuses the accepted
+`card_ghost_read_signature` symbol at `0x80010A18`, avoiding a duplicate alias.
+Its measured NUL-inclusive extent is nine bytes (file offsets `0x1218` through
+`0x1220`); the board filename's is 24 bytes (`0x142C` through `0x1443`).
+`CardBoardReadWindow` is a local 128-byte read view appended to the image header;
+existing layouts remain unchanged.
+
+Each accepted candidate passed an exact full-file comparison of `SCUS_943.58`,
+retaining SHA-256
+`5b074057008353b1f901744fe82f51b110cf2afa7b78c65394786350b11ef1a4`.
+Feedback planning, committed authored records, transactional Ghidra saving and
+fresh confirmation exports completed before removing each persistent deferral.
+Final plain `make validate` passed all 15 pinned files. The queue has 42 remaining
+deferrals and the inventory has 272 matching C function instances.
+
+The first two recovery records are under ignored
+`reports/reconstruction/blank-line-recovery/`; the remaining five are under
+`reports/reconstruction/recoveries/`. Original failed-session evidence is
+unchanged. `tools/recover_deferred.py` now provides reusable preparation,
+validation, acceptance and interrupted-save recovery without another model
+worker. Its multi-target `run` command was exercised on the final five functions
+and includes final all-image validation. It reuses the existing source, split,
+full-file and Ghidra guards; no acceptance guard was relaxed.

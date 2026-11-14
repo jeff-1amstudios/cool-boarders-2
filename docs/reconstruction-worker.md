@@ -97,6 +97,43 @@ CFG warnings such as analysis-state limits or exceptional paths are advisory. Th
 
 The broad function inventory and boundary audit remain explicit analysis commands. Each ordinary attempt now launches read-only headless Ghidra to decompile its selected function from the current saved project. Request/output fingerprints and a completion manifest reject failed or stale exports. Every pass verifies the original mapped bytes for all 15 pinned images. No GUI or interactive diff viewer is involved.
 
+## Recover preserved 100% candidates
+
+Reuse a deferred attempt's preserved candidate without launching another model worker:
+
+```sh
+tools/.venv/bin/python tools/recover_deferred.py run \
+  --target SCUS_943.58:0x8001B59C \
+  --target SCUS_943.58:0x8001B64C
+```
+
+Each target requires a preserved 100% object report, current byte-checked
+inventory and boundary review, and a fresh read-only Ghidra export. Recovery
+merges the archived annotated block, externs and header additions into current
+sources. It preserves existing separator whitespace, reuses symbols established
+at the same address, and derives splits from current boundaries. It does not
+replay old source files or neighbouring split changes. Conflicting declarations,
+established header edits, ambiguous aliases and nonmatching files stop for manual
+review. The object score only selects candidates for recovery.
+
+Recovery runs the existing source/split checks, exact containing-file validation,
+a rollback-only feedback plan, an audited matching commit, transactional Ghidra
+saving and a confirming fresh export. Only then is the deferral removed. Each
+target is accepted before the next export. `run` finishes with plain
+`make validate` for all 15 images. Documentation/tool edits remain outside
+matching commits.
+
+Resumable state and artifacts live under
+`reports/reconstruction/recoveries/<image-qualified-slug>/`; original sessions
+remain unchanged. Repeating `run` resumes a prepared, checked or committed
+recovery. For inspection between stages, use `prepare`, `check` and `accept`
+with one `--target`; `sync` retries a save after an accepted commit. A partial
+preparation without `recovery.json` needs manual inspection; authored-file
+rollback inputs, if edits began, are archived in `before.json`. Use a fresh
+`--directory` after resolving a partial preparation. After phased recovery,
+run plain `make validate` at batch end. Refresh README progress only after that
+succeeds, and commit maintenance separately.
+
 ## Analysis feedback
 
 Successful worker file-display commands (`cat`, `head`, `tail`, `sed`, `rg`,

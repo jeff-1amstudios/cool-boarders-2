@@ -25,6 +25,7 @@
 !/tools/rebuild.py
 !/tools/reconstruct.py
 !/tools/reconstruct_run.py
+!/tools/recover_deferred.py
 !/tools/reconstruction_backlog.py
 !/tools/reconstruction_ghidra.py
 !/tools/reconstruction_runtime.py
