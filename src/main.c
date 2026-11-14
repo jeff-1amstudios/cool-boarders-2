@@ -485,6 +485,8 @@ extern int DeliverEvent(unsigned long event, unsigned long spec);
 
 extern int D_80047D1C;
 extern void func_8003D10C(void);
+extern int func_8001BF48(int countdown);
+extern int func_8001BFFC(void);
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -5010,4 +5012,45 @@ void func_8001BA78(void)
     }
     func_8003D10C();
     func_8003CB3C();
+}
+
+// FUNCTION: SCUS_943.58:0x8001BDD8
+int func_8001BDD8(int countdown)
+{
+    unsigned int status;
+
+    if (countdown < 0)
+        countdown = 500000;
+    switch (D_8005AB5C) {
+    case 0:
+        D_8005AB5C = 3;
+        status = func_8003D714(0, 0, 0);
+        if ((status & 0x180) == 0x180) {
+            func_8003D714(1, 1, 2);
+            goto wait_ready;
+        }
+        status = func_8003D714(0, 0, 0);
+        if ((status & 0x180) == 0x100) {
+            func_8003D714(1, 1, 1);
+            func_8001BFFC();
+            break;
+        }
+        goto reset;
+    case 3:
+        status = func_8003D714(0, 0, 0);
+        if ((status & 0x180) == 0x80) {
+wait_ready:
+            func_8001BF48(countdown);
+        }
+        break;
+    default:
+        status = func_8003D714(0, 0, 0);
+        if ((status & 0x180) == 0x180) {
+reset:
+            D_8005AB5C = 0;
+            func_8003D714(1, 1, 3);
+        }
+        break;
+    }
+    return D_8005AB5C;
 }

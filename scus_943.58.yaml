@@ -185,7 +185,7 @@ segments:
       - [0xC278, c, func_8001BA78]
       - [0xC2FC, c, func_8001BAFC]
       - [0xC4B4, c, func_8001BCB4]
-      - [0xC5D8, asm, after_func_8001BCB4]
+      - [0xC5D8, c, func_8001BDD8]
       - [0xC708, c, func_8001BF08]
       - [0xC748, c, func_8001BF48]
       - [0xC7FC, c, func_8001BFFC]
