@@ -1721,3 +1721,20 @@ unsigned char *func_8005F058(unsigned long *ot, unsigned char *packet,
     }
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005F634
+void func_8005F634(unsigned short *packed, CVECTOR *palette, int count)
+{
+    unsigned int blue;
+    int green;
+    unsigned int red;
+    int index;
+
+    for (index = 0; index < count; index++) {
+        blue = (palette[index].b << 7) & 0x7C00;
+        green = (palette[index].g << 2) & 0x3E0;
+        red = palette[index].r >> 3;
+        *packed = (blue | (unsigned short)(palette[index].cd ? green | 0x8000 : green)) | red;
+        packed++;
+    }
+}
