@@ -1565,3 +1565,32 @@ void func_8005ECC8(unsigned short **source_planes, unsigned short **destination_
         i++;
     } while (i < 0x100);
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005ED3C
+void func_8005ED3C(unsigned short **first_planes, unsigned short **second_planes,
+                   unsigned short *first_palette, unsigned short *second_palette)
+{
+    unsigned short temporary;
+    int i;
+
+    i = 0;
+plane_loop:
+        temporary = second_planes[0][i];
+        second_planes[0][i] = first_planes[0][i];
+        first_planes[0][i] = temporary;
+        temporary = second_planes[1][i];
+        second_planes[1][i] = first_planes[1][i];
+        first_planes[1][i] = temporary;
+        i++;
+    if (i < 0x1000) goto plane_loop;
+
+    i = 0;
+    do {
+        temporary = *second_palette;
+        *second_palette = *first_palette;
+        *first_palette = temporary;
+        first_palette++;
+        second_palette++;
+        i++;
+    } while (i < 0x100);
+}

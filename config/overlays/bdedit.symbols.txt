@@ -154,3 +154,4 @@ D_80062F74 = 0x80062F74; // type:char size:0x11
 func_8005E284 = 0x8005E284; // type:func
 
 func_8005ECC8 = 0x8005ECC8; // type:func
+func_8005ED3C = 0x8005ED3C; // type:func
