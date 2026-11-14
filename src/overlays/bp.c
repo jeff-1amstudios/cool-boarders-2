@@ -116,6 +116,9 @@ extern int D_80097A44[10];
 
 extern int func_8008C86C(int value);
 
+extern int func_80015F68(void);
+extern void func_800172B8(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -847,4 +850,12 @@ int func_8005F6C0(BpPlayer *player)
         }
     }
     return result;
+}
+
+// FUNCTION: BP.BIN:0x8005F714
+void func_8005F714(void)
+{
+    func_80015F68();
+    func_800172B8();
+    SpuSetKey(0, 0x780FF);
 }
