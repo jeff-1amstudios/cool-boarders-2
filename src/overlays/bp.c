@@ -28,6 +28,11 @@ extern unsigned int D_80097A40;
 
 extern int D_8009D66C;
 
+extern PACKET *D_80058ACC;
+extern TILE D_8009E95C;
+extern DR_MODE D_8009E97C;
+extern void func_8009456C(GsOT_TAG *tag, DR_MODE *mode);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -153,5 +158,20 @@ void func_8005B91C(int value)
 {
     if (value >= 0 && value != 1) {
         D_8009D66C = value;
+    }
+}
+
+// FUNCTION: BP.BIN:0x8005B93C
+void func_8005B93C(GsOT *ot, unsigned char intensity)
+{
+    if (intensity != 0) {
+        D_8009E95C.r0 = intensity;
+        D_8009E95C.g0 = intensity;
+        D_8009E95C.b0 = intensity;
+        *(TILE *)D_80058ACC = D_8009E95C;
+        ((GsOT_TAG *)D_80058ACC)->p = ot->org[3].p;
+        ot->org[3].p = (unsigned long)D_80058ACC;
+        D_80058ACC += sizeof(TILE);
+        func_8009456C(&ot->org[3], &D_8009E97C);
     }
 }
