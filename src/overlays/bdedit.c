@@ -1803,3 +1803,62 @@ unsigned char *func_8005F7E8(unsigned long *ot, unsigned char *packet)
     } while (index < 2);
     return packet;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005FCFC
+unsigned char *func_8005FCFC(unsigned long *ot, unsigned char *packet,
+                           short x, short y, unsigned char *text, CVECTOR *color)
+{
+    unsigned char glyph;
+    unsigned int index;
+    SPRT *sprite;
+    unsigned char *cursor;
+
+    if (text == 0) {
+        return packet;
+    }
+    cursor = text;
+    while (*cursor != 0) {
+        glyph = *cursor++;
+        sprite = (SPRT *)packet;
+        packet += sizeof(SPRT);
+        ((PrimitiveTag *)sprite)->length = 4;
+        sprite->code = 0x64;
+        sprite->x0 = x;
+        sprite->y0 = y;
+        if (glyph >= 0x20) {
+            sprite->w = 8;
+            sprite->h = 12;
+            sprite->clut = 0x7334;
+            if (color != 0) {
+                sprite->r0 = color->r;
+                sprite->g0 = color->g;
+                sprite->b0 = color->b;
+            } else {
+                sprite->r0 = sprite->g0 = sprite->b0 = 0x80;
+            }
+            glyph -= 0x20;
+            x += 8;
+            index = glyph;
+            sprite->u0 = (index & 15) << 3;
+            sprite->v0 = (index >> 4) * 12 - 0x50;
+        } else {
+            sprite->y0 = y - 2;
+            sprite->w = 16;
+            sprite->h = 16;
+            sprite->r0 = sprite->g0 = sprite->b0 = 0x80;
+            if (glyph == 2) {
+                sprite->clut = 0x7335;
+                sprite->u0 = 0x30;
+                sprite->v0 = 0xA0;
+            } else {
+                sprite->clut = 0x7336;
+                sprite->u0 = 0x40;
+                sprite->v0 = 0xA0;
+            }
+            x += 16;
+        }
+        ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)sprite;
+    }
+    return (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet, 5);
+}
