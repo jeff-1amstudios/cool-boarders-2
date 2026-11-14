@@ -484,6 +484,7 @@ extern short D_8004F3FC[4];
 extern int DeliverEvent(unsigned long event, unsigned long spec);
 
 extern int D_80047D1C;
+extern void func_8003D10C(void);
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -4992,4 +4993,21 @@ void func_8001B64C(void)
         pad_send_buffers[port][2] = 0;
         (&D_80047D18)[port] = 0;
     }
+}
+
+// FUNCTION: SCUS_943.58:0x8001BA78
+void func_8001BA78(void)
+{
+    func_8003CB2C();
+    func_8001BF08();
+    if (D_80050698 != -1) {
+        close(D_80050698);
+        D_80050698 = -1;
+    }
+    if (D_8005069C != -1) {
+        close(D_8005069C);
+        D_8005069C = -1;
+    }
+    func_8003D10C();
+    func_8003CB3C();
 }
