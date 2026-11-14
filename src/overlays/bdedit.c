@@ -110,6 +110,11 @@ extern char D_80062F74[17];
 extern void func_8005CB9C(int *cursor, unsigned int buttons);
 extern void func_8005D908(int *cursor, unsigned int buttons, void *unused,
                           CVECTOR *palette, unsigned short *packed);
+extern BdEditFrameTextures D_80063030;
+extern BackgroundTextures D_80063064;
+extern BdEditFramePositions D_80063078;
+extern BdEditCapPositions D_800630A0;
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -1751,4 +1756,50 @@ void func_8005F6A4(CVECTOR *palette, unsigned short *packed, int count)
         palette[index].cd = *packed >> 15;
         packed++;
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005F7E8
+unsigned char *func_8005F7E8(unsigned long *ot, unsigned char *packet)
+{
+    BdEditFrameTextures textures = D_80063030;
+    BackgroundTextures caps = D_80063064;
+    BdEditFramePositions positions = D_80063078;
+    BdEditCapPositions cap_positions = D_800630A0;
+    int index;
+    POLY_FT4 *poly;
+
+    index = 0;
+    do {
+        packet = (unsigned char *)((SPRT *(*)(unsigned long *, SPRT *, int, int,
+                    SpriteTexture *, unsigned char))func_80012950)(ot, (SPRT *)packet,
+                    positions.entries[index][0], positions.entries[index][1],
+                    &textures.entries[index], 128);
+        packet = (unsigned char *)func_80012B6C(ot, (DR_TPAGE *)packet,
+                    textures.entries[index].tpage);
+        index++;
+    } while (index < 5);
+
+    index = 0;
+    do {
+        poly = (POLY_FT4 *)packet;
+        packet += sizeof(POLY_FT4);
+        ((unsigned char *)poly)[3] = 9;
+        poly->code = 0x2C;
+        poly->x0 = poly->x1 = cap_positions.entries[index][0];
+        poly->x2 = poly->x3 = cap_positions.entries[index][0] + caps.entries[index].h;
+        poly->y0 = poly->y2 = cap_positions.entries[index][1];
+        poly->y1 = poly->y3 = cap_positions.entries[index][1] - caps.entries[index].w;
+        poly->u0 = poly->u2 = caps.entries[index].u - 1;
+        poly->u1 = poly->u3 = caps.entries[index].u + caps.entries[index].w - 1;
+        poly->v0 = poly->v1 = caps.entries[index].v;
+        poly->v2 = poly->v3 = caps.entries[index].v + caps.entries[index].h;
+        poly->tpage = caps.entries[index].tpage;
+        poly->clut = caps.entries[index].clut;
+        poly->r0 = poly->g0 = poly->b0 = 128;
+        ((PrimitiveTag *)poly)->address = ((PrimitiveTag *)ot)->address;
+        ((PrimitiveTag *)ot)->address = (unsigned long)poly;
+
+        index++;
+    } while (index < 2);
+    return packet;
 }

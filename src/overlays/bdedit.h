@@ -34,4 +34,16 @@ typedef struct BdEditHitRegions {
     int entries[5][5];
 } BdEditHitRegions;
 
+typedef struct BdEditFrameTextures {
+    SpriteTexture entries[5];
+} BdEditFrameTextures;
+
+typedef struct BdEditFramePositions {
+    int entries[5][2];
+} BdEditFramePositions;
+
+typedef struct BdEditCapPositions {
+    int entries[2][2];
+} BdEditCapPositions;
+
 #endif
