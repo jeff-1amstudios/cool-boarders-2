@@ -47,4 +47,14 @@ typedef struct BpRenderEntry {
     unsigned char unknown_12[38];
 } BpRenderEntry;
 
+typedef struct BpRenderView {
+    unsigned char unknown_000[0x188];
+    GsCOORDINATE2 coordinate;
+    unsigned char unknown_1d8[12];
+    GsDOBJ3 *objects;
+    int object_count;
+    unsigned char unknown_1ec[0xA60];
+    short forward_order;
+} BpRenderView;
+
 #endif

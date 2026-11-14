@@ -86,6 +86,11 @@ extern void func_8005DA14(GsOT *ot, BpViewState *state, int *position,
                           int index, int fifth, int sixth, int seventh,
                           int mode, int ninth);
 
+extern int D_80097578;
+extern long D_8009D658;
+extern void func_8005E6C0(BpPlayer *player);
+extern void func_80069A1C(GsOT *ot, BpPlayer *player, int shift);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -536,4 +541,63 @@ void func_8005D8C4(GsOT *ot, BpViewState *state, int *position, int mode, void *
     } while (index < 3);
     D_8009E9AC = (int)data;
     func_8005DA14(ot, state, position, (int)data, -1, 0, D_8009FC9C, mode, 2);
+}
+
+// FUNCTION: BP.BIN:0x8005E0E0
+void func_8005E0E0(GsOT *ot, BpPlayer *player, int index)
+{
+    MATRIX local_screen;
+    MATRIX local_world;
+    MATRIX saved;
+    VECTOR scale;
+    VECTOR temporary;
+    int count = ((BpRenderView *)player)->object_count;
+    GsDOBJ3 *objects = ((BpRenderView *)player)->objects;
+    int forward = ((BpRenderView *)player)->forward_order;
+    int shift;
+    int i;
+    int offset;
+    GsDOBJ3 *object;
+    SVECTOR rotation;
+    int value;
+    int invalid;
+
+    saved = ((BpRenderView *)player)->coordinate.coord;
+    shift = D_80097578 + 3;
+    memset_800449E8((unsigned char *)&temporary, 0, sizeof(temporary));
+    temporary.vx = (&D_8009D658)[index];
+    temporary.vy = (&D_8009D658)[index];
+    temporary.vz = (&D_8009D658)[index];
+    i = 0;
+    scale = temporary;
+    ScaleMatrix(&((BpRenderView *)player)->coordinate.coord, &scale);
+    func_8005E6C0(player);
+    if (count > 0) {
+        offset = 0;
+        do {
+            object = (GsDOBJ3 *)((unsigned char *)objects + offset);
+            if (forward == 0) {
+                value = count - 1;
+                value -= i;
+                invalid = value * 24;
+                object = (GsDOBJ3 *)((unsigned char *)objects + invalid);
+            }
+            value = object->id;
+            invalid = -1;
+            if (value != invalid && object->pmd != 0) {
+                object->attribute = 0;
+                GsGetLws(object->coord2, &local_world, &local_screen);
+                GsSetLsMatrix(&local_screen);
+                GsSortObject3(object, ot, shift);
+            }
+            i++;
+            offset += sizeof(GsDOBJ3);
+        } while (i < count);
+    }
+    GsGetLs(&((BpRenderView *)player)->coordinate, &local_screen);
+    GsSetLsMatrix(&local_screen);
+    ot->org += 4;
+    func_80069A1C(ot, player, shift);
+    ot->org -= 4;
+    ((BpRenderView *)player)->coordinate.coord = saved;
 }
