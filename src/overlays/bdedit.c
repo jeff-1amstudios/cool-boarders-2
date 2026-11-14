@@ -1872,3 +1872,70 @@ void func_8005FF08(void)
     D_80063204 = -1;
     D_80063200 = -1;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005FF24
+int func_8005FF24(int x, int y, unsigned int buttons, unsigned int previous,
+                   unsigned char **planes, int *color, unsigned char *mask)
+{
+    int changed = 0;
+    int mask_x;
+    int mask_y;
+    int allowed;
+    int plane;
+    int pixel_x;
+    unsigned char *pixels;
+
+    if ((buttons & 0x60) == 0x40) {
+        mask_x = x;
+        mask_y = y;
+        allowed = 0;
+        if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+            if (x >= 128) {
+                mask_x = x - 128;
+                mask_y = y + 32;
+            }
+            if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                allowed = 1;
+            }
+        }
+        if (allowed) {
+            if (x < 128) {
+                plane = 0;
+                pixel_x = x;
+            } else {
+                plane = 1;
+                pixel_x = x - 128;
+            }
+            changed = 1;
+            pixels = planes[plane];
+            pixels[y * 128 + pixel_x] = *color;
+        }
+    }
+    if ((buttons & 0x40) == 0 && (previous & 0x20) != 0) {
+        mask_x = x;
+        mask_y = y;
+        allowed = 0;
+        if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+            if (x >= 128) {
+                mask_x = x - 128;
+                mask_y = y + 32;
+            }
+            if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                allowed = 1;
+            }
+        }
+        if (allowed) {
+            func_80015B70(4, 128);
+            if (x < 128) {
+                plane = 0;
+                pixel_x = x;
+            } else {
+                plane = 1;
+                pixel_x = x - 128;
+            }
+            pixels = planes[plane];
+            *color = pixels[y * 128 + pixel_x];
+        }
+    }
+    return changed;
+}
