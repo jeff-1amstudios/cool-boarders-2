@@ -41,4 +41,10 @@ typedef struct BpMotion {
     int previous_x, previous_y, previous_z;
 } BpMotion;
 
+typedef struct BpRenderEntry {
+    unsigned char unknown_00[12];
+    short related[3];
+    unsigned char unknown_12[38];
+} BpRenderEntry;
+
 #endif

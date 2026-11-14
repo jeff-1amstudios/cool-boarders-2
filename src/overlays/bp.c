@@ -77,6 +77,15 @@ extern SVECTOR D_8009D648;
 extern int D_8009757C;
 extern int D_8009E994;
 
+extern int D_8009E944;
+extern int D_8009E9AC;
+extern MATRIX D_80058E20;
+extern BpRenderEntry *D_8009FA28;
+extern int D_8009FC9C;
+extern void func_8005DA14(GsOT *ot, BpViewState *state, int *position,
+                          int index, int fifth, int sixth, int seventh,
+                          int mode, int ninth);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -502,4 +511,29 @@ int func_8005D820(int mode, int player_mode)
         break;
     }
     return result;
+}
+
+// FUNCTION: BP.BIN:0x8005D8C4
+void func_8005D8C4(GsOT *ot, BpViewState *state, int *position, int mode, void *data)
+{
+    int related;
+    int index;
+    int empty = -1;
+
+    D_8009E944 = 0;
+    for (index = 19; index >= 0; index--) {
+        ((int *)D_8009E948)[index] = empty;
+    }
+    index = 0;
+    GsSetLightMatrix(&D_80058E20);
+    D_8009E9AC = -1;
+    do {
+        related = D_8009FA28[(int)data].related[index];
+        if (related >= 0) {
+            func_8005DA14(ot, state, position, related, -1, 0, 1, 0, 0);
+        }
+        index++;
+    } while (index < 3);
+    D_8009E9AC = (int)data;
+    func_8005DA14(ot, state, position, (int)data, -1, 0, D_8009FC9C, mode, 2);
 }
