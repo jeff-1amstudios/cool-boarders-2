@@ -487,6 +487,10 @@ extern int D_80047D1C;
 extern void func_8003D10C(void);
 extern int func_8001BF48(int countdown);
 extern int func_8001BFFC(void);
+extern volatile int D_80054C6C[1];
+extern unsigned char * volatile D_80054C70;
+extern volatile int D_80054C74;
+extern volatile unsigned int D_80054C78;
 // FUNCTION: SCUS_943.58:0x800121B8
 void boot_main(void)
 {
@@ -5070,4 +5074,21 @@ int func_8001E8E0(char *path, void *destination)
         CdRead((file.size + 0x7FF) >> 11, destination, 0x80);
     } while (CdReadSync(0, result) != 0);
     return file.size;
+}
+
+// FUNCTION: SCUS_943.58:0x8003D434
+int func_8003D434(unsigned char *source, int count)
+{
+    volatile SerialIoRegisters *serial;
+
+    if (D_80054C6C[0] != 0) {
+        return -1;
+    }
+    D_80054C74 = count;
+    D_80054C70 = source;
+    serial = (volatile SerialIoRegisters *)D_8004F3CC;
+    D_80054C6C[0] = 1;
+    D_80054C78 = serial->status & 0x80;
+    serial->control |= 0x400;
+    return 0;
 }
