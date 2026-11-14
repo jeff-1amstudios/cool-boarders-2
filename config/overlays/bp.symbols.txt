@@ -28,3 +28,5 @@ ClearOTagR = 0x80029CF0; // type:func
 D_8009E900 = 0x8009E900; // size:0x28
 D_8009E93C = 0x8009E93C; // size:0x2
 D_8009FC44 = 0x8009FC44; // size:0x4
+func_8005B87C = 0x8005B87C; // type:func
+D_80097A40 = 0x80097A40; // type:u32 size:0x4

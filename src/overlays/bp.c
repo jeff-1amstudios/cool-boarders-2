@@ -24,6 +24,8 @@ extern GsOT D_8009E900[2];
 extern unsigned short D_8009E93C;
 extern GsOT *D_8009FC44;
 
+extern unsigned int D_80097A40;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -127,4 +129,19 @@ void func_8005B7E4(void)
         index++;
         ClearOTagR((u_long *)tags, 0x800);
     } while (index < 1);
+}
+
+// FUNCTION: BP.BIN:0x8005B87C
+unsigned int func_8005B87C(unsigned int value, int mode)
+{
+    switch (mode) {
+    case 0:
+        D_80097A40 = value;
+        break;
+    case 1:
+        if (D_80097A40 < ~value)
+            D_80097A40 += value;
+        break;
+    }
+    return D_80097A40;
 }
