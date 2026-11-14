@@ -105,6 +105,13 @@ extern void func_8007EF5C(GsOT *ot, int kind, int flags, int index,
 
 extern void func_8007C37C(int distance, short angle, int enabled, int mode, int value);
 
+extern void func_8006A668(GsOT *ot, void *data, int different);
+extern void func_8006AE14(GsOT *ot, int mode, int first, int second, int value);
+extern void func_8006AF48(GsOT *ot, BpPlayer *player, int different);
+extern void func_80069934(GsOT *ot, int different);
+extern int D_8009D65C;
+extern int D_8009D660;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -769,4 +776,22 @@ void func_8005E700(BpPlayer *player, int distance)
         enabled = 0;
     }
     func_8007C37C(distance, (short)angle, enabled, mode, value);
+}
+
+// FUNCTION: BP.BIN:0x8005E95C
+void func_8005E95C(GsOT *ot, BpPlayer *player, int first, int second)
+{
+    int different = -(first != second);
+
+    func_8006A668(ot, (unsigned char *)player + 0x7C8, different);
+    if (second != 3) {
+        func_8006AE14(ot, ((BpMotion *)((unsigned char *)player + 0x28))->mode,
+                     *(int *)((unsigned char *)player + 0x748),
+                     *(int *)((unsigned char *)player + 0x744), D_8009D65C);
+        func_8006AF48(ot, player, different);
+    } else if (D_8009D660 < 8) {
+        if (D_8009D660 > 5) {
+            func_80069934(ot, different);
+        }
+    }
 }
