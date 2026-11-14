@@ -179,6 +179,8 @@ segments:
       - [0xBD9C, c, func_8001B59C]
       - [0xBDB4, c, func_8001B5B4]
       - [0xBDD0, asm, boot_after_globals]
+      - [0xBE4C, c, func_8001B64C]
+      - [0xBEA8, asm, after_func_8001B64C]
       - [0xC1A4, c, func_8001B9A4]
       - [0xC278, asm, after_func_8001B9A4]
       - [0xC2FC, c, func_8001BAFC]

@@ -4980,3 +4980,16 @@ void func_8001B59C(void)
     D_80047D18 = 0;
     D_80047D1C = 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001B64C
+void func_8001B64C(void)
+{
+    int port;
+
+    for (port = 0; port < 2; port++) {
+        pad_send_buffers[port][0] = 1;
+        pad_send_buffers[port][1] = 0x40;
+        pad_send_buffers[port][2] = 0;
+        (&D_80047D18)[port] = 0;
+    }
+}
