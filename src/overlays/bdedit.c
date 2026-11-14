@@ -161,6 +161,9 @@ extern void func_8006107C(unsigned char **planes, int x0, int y0,
 extern void func_8006198C(unsigned char **planes, int x0, int y0,
                           int x1, int y1, int color, unsigned char *mask);
 
+extern void func_80061C98(unsigned char **planes, int x, int y,
+                          int color, unsigned char *mask);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2870,4 +2873,59 @@ void func_8006198C(unsigned char **planes, int x0, int y0,
             }
         }
     }
+}
+
+// FUNCTION: BDEDIT.BIN:0x80061AC0
+int func_80061AC0(int x, int y, unsigned int buttons, unsigned int previous,
+                   unsigned char **planes, int *color, unsigned char *mask)
+{
+    int mask_x;
+    int mask_y;
+    int allowed;
+    int plane;
+    int pixel_x;
+
+    if ((previous & 0x40) != 0 && (buttons & 0x20) == 0) {
+        mask_x = x;
+        mask_y = y;
+        allowed = 0;
+        if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+            if (x >= 128) {
+                mask_x = x - 128;
+                mask_y = y + 32;
+            }
+            if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                allowed = 1;
+            }
+        }
+        if (allowed) {
+            func_80061C98(planes, x, y, *color, mask);
+        }
+    }
+    if ((buttons & 0x40) == 0 && (previous & 0x20) != 0) {
+        mask_x = x;
+        mask_y = y;
+        allowed = 0;
+        if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+            if (x >= 128) {
+                mask_x = x - 128;
+                mask_y = y + 32;
+            }
+            if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                allowed = 1;
+            }
+        }
+        if (allowed) {
+            func_80015B70(4, 128);
+            if (x < 128) {
+                plane = 0;
+                pixel_x = x;
+            } else {
+                plane = 1;
+                pixel_x = x - 128;
+            }
+            *color = planes[plane][y * 128 + pixel_x];
+        }
+    }
+    return 1;
 }
