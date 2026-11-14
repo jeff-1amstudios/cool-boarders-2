@@ -2136,3 +2136,53 @@ void func_800604F4(unsigned char **planes, int x, int y,
         } while (step <= dy);
     }
 }
+
+// FUNCTION: BDEDIT.BIN:0x80060604
+void func_80060604(unsigned char **planes, int x, int y,
+                   int dx, int dy, int color, unsigned char *mask)
+{
+    unsigned char *pixels[2];
+    int step;
+    int error;
+    int row;
+    int mask_x;
+    int mask_y;
+    int allowed;
+
+    error = dx / 2;
+    pixels[0] = planes[0];
+    pixels[1] = planes[1];
+    step = 0;
+    if (dx >= 0) {
+        row = y * 128;
+        do {
+            mask_x = x;
+            mask_y = y;
+            allowed = 0;
+            if ((unsigned int)x < 256 && (unsigned int)y < 32) {
+                if (x >= 128) {
+                    mask_x = x - 128;
+                    mask_y = y + 32;
+                }
+                if (((mask[mask_y * 16 + mask_x / 8] >> (mask_x % 8)) & 1) == 0) {
+                    allowed = 1;
+                }
+            }
+            if (allowed) {
+                if (x < 128) {
+                    pixels[0][row + x] = color;
+                } else {
+                    pixels[1][row + x - 128] = color;
+                }
+            }
+            error -= dy;
+            if (error >= dx) {
+                error -= dx;
+                row -= 128;
+                y--;
+            }
+            step++;
+            x++;
+        } while (step <= dx);
+    }
+}
