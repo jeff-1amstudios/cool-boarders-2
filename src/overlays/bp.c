@@ -100,6 +100,9 @@ extern void func_8007F1BC(void);
 extern void func_8007F2A8(void);
 extern void func_8007F368(void *data);
 
+extern void func_8007EF5C(GsOT *ot, int kind, int flags, int index,
+                          int *position, int shift, void *scratch);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -637,5 +640,44 @@ void func_8005E31C(GsOT *ot, int shift, int mode, int value)
     if (mode == 9 && ((unsigned int)(value - 0x8E) < 3 ||
                       (unsigned int)(value - 0xB4) < 5)) {
         func_8007F368(D_8009FC64);
+    }
+}
+
+// FUNCTION: BP.BIN:0x8005E454
+void func_8005E454(GsOT *ot, BpPlayer *player)
+{
+    int offset = 0;
+    int kind = -1;
+    int flags = 0;
+    int shift = D_80097578 + 3;
+    BpMotion *motion = (BpMotion *)((unsigned char *)player + 0x28);
+    int mode = motion->mode;
+    int *position = &motion->x;
+
+    switch (D_8009FC94[10]) {
+    case 3:
+        if ((unsigned int)(mode - 99) < 12) {
+            kind = 0;
+        } else {
+            offset = 8;
+            if (mode < 148) break;
+            kind = 1;
+        }
+        flags = -1;
+        offset = 8;
+        break;
+    case 4:
+        if (mode == 83) {
+            kind = 0;
+            flags = -1;
+            offset = 48;
+        }
+        break;
+    }
+    if ((unsigned int)(*(int *)(D_8009FC94 + 12) - 1) < 2 && kind >= 0) {
+        ot->org += offset;
+        func_8007EF5C(ot, kind, (short)flags >> 15, (short)D_80097BA4,
+                      position, shift, (void *)(D_8009757C * 4 + 0x1F800000));
+        ot->org -= offset;
     }
 }

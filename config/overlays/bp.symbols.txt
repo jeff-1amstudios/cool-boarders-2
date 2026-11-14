@@ -107,3 +107,5 @@ D_800958D0 = 0x800958D0; // size:0x2
 D_800958D2 = 0x800958D2; // size:0x2
 D_80097BA4 = 0x80097BA4; // size:0x4
 D_8009FC64 = 0x8009FC64; // size:0x4
+
+func_8007EF5C = 0x8007EF5C; // type:func
