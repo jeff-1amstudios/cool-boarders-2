@@ -1545,3 +1545,23 @@ done:
     if (D_800631EC > 0) D_800631EC--;
     return buttons;
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005ECC8
+void func_8005ECC8(unsigned short **source_planes, unsigned short **destination_planes,
+                   unsigned short *source_palette, unsigned short *destination_palette)
+{
+    int i;
+
+    i = 0;
+    do {
+        destination_planes[0][i] = source_planes[0][i];
+        destination_planes[1][i] = source_planes[1][i];
+        i++;
+    } while (i < 0x1000);
+
+    i = 0;
+    do {
+        *destination_palette++ = *source_palette++;
+        i++;
+    } while (i < 0x100);
+}
