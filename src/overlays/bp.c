@@ -91,6 +91,15 @@ extern long D_8009D658;
 extern void func_8005E6C0(BpPlayer *player);
 extern void func_80069A1C(GsOT *ot, BpPlayer *player, int shift);
 
+extern short D_800958D0;
+extern short D_800958D2;
+extern int D_80097BA4;
+extern void *D_8009FC64;
+extern PACKET *func_8007D4B8(GsOT *ot, int index, PACKET *packets, int shift);
+extern void func_8007F1BC(void);
+extern void func_8007F2A8(void);
+extern void func_8007F368(void *data);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -600,4 +609,33 @@ void func_8005E0E0(GsOT *ot, BpPlayer *player, int index)
     func_80069A1C(ot, player, shift);
     ot->org -= 4;
     ((BpRenderView *)player)->coordinate.coord = saved;
+}
+
+// FUNCTION: BP.BIN:0x8005E31C
+void func_8005E31C(GsOT *ot, int shift, int mode, int value)
+{
+    int offset = 0;
+
+    do {
+        if (mode == *(short *)((unsigned char *)&D_800958D0 + offset) &&
+            value == *(short *)((unsigned char *)&D_800958D2 + offset)) {
+            switch (mode) {
+            case 2:
+                D_80058ACC = func_8007D4B8(ot, (short)D_80097BA4, D_80058ACC, shift);
+                break;
+            case 7:
+                func_8007F1BC();
+                break;
+            case 9:
+                func_8007F2A8();
+                break;
+            }
+        }
+        offset += 4;
+    } while (offset < 16);
+
+    if (mode == 9 && ((unsigned int)(value - 0x8E) < 3 ||
+                      (unsigned int)(value - 0xB4) < 5)) {
+        func_8007F368(D_8009FC64);
+    }
 }
