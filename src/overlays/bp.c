@@ -479,3 +479,27 @@ void func_8005D760(GsOT *ot, int player, RECT *clip,
     ot->org[0x7FF].p = (unsigned long)tile;
     D_80058ACC = (PACKET *)(tile + 1);
 }
+
+// FUNCTION: BP.BIN:0x8005D820
+int func_8005D820(int mode, int player_mode)
+{
+    int result = -1;
+
+    switch (mode) {
+    case 0:
+        if ((unsigned int)(player_mode - 0x71) < 0x11) result = 0;
+        break;
+    case 7:
+        if ((unsigned int)(player_mode - 0x30) < 5) result = 0;
+        break;
+    case 8:
+        if ((unsigned int)(player_mode - 100) < 6) result = 0;
+        break;
+    case 9:
+        if ((unsigned int)(player_mode - 4) < 0x30 ||
+            (unsigned int)(player_mode - 0x39) < 0x10 ||
+            (unsigned int)(player_mode - 0x50) < 0x73) result = 0;
+        break;
+    }
+    return result;
+}
