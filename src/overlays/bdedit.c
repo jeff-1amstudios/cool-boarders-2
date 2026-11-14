@@ -50,7 +50,7 @@ extern CVECTOR D_80062E6C;
 extern unsigned char *func_8005EDD8(unsigned long *ot, unsigned char *packet,
                                   int x, int y, int w, int h, CVECTOR *color);
 extern unsigned char *func_8005F77C(unsigned long *ot, unsigned char *packet,
-                                  int x, int y, int value, int digits, int flags);
+                                  int x, int y, unsigned int value, int digits, CVECTOR *color);
 extern unsigned char *func_8005EEF8(unsigned long *ot, unsigned char *packet,
                                   int x, int y, int w, int h, CVECTOR *color, int flags);
 extern unsigned char *func_8005F238(unsigned long *ot, unsigned char *packet,
@@ -197,6 +197,7 @@ extern unsigned char *func_800130F0(unsigned long *ot, unsigned char *packet,
                                   int x, int y, unsigned int number,
                                   int max_digits, CVECTOR *color);
 
+extern RECT D_80063028;
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -3285,4 +3286,13 @@ void func_800628F4(int *state, unsigned char **planes,
     rect.w = 256;
     rect.h = 1;
     LoadImage(&rect, (unsigned long *)packed);
+}
+
+// FUNCTION: BDEDIT.BIN:0x8005F77C
+unsigned char *func_8005F77C(unsigned long *ot, unsigned char *packet,
+                          int x, int y, unsigned int value, int digits, CVECTOR *color)
+{
+    RECT texture = D_80063028;
+
+    return func_800130F0(ot, packet, &texture, 0x7333, x, y, value, digits, color);
 }

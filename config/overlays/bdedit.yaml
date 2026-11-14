@@ -92,7 +92,7 @@ segments:
   - [0x46d0, asm, body_46D0]
   - [0x4acc, c, func_8005F634]
   - [0x4b3c, c, func_8005F6A4]
-  - [0x4c14, asm, body_4C14]
+  - [0x4C14, c, func_8005F77C]
   - [0x4c80, c, func_8005F7E8]
   - [0x4fec, c, func_8005FB54]
   - [0x5194, c, func_8005FCFC]
