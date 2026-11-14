@@ -141,3 +141,5 @@ func_8005F7D8 = 0x8005F7D8; // type:func
 ReadGeomOffset = 0x8002012C; // type:func
 D_8009FC98 = 0x8009FC98; // size:0x4
 D_8009FCA0 = 0x8009FCA0; // size:0x4
+
+func_8005FBFC = 0x8005FBFC; // type:func

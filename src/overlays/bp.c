@@ -915,3 +915,16 @@ void func_8005F7D8(BpMotionState *state, short mode, int value, int x, int y, in
     state->word_1a0 = 0;
     ReadGeomOffset(&D_8009FC98, &D_8009FCA0);
 }
+
+// FUNCTION: BP.BIN:0x8005FBFC
+void func_8005FBFC(BpMotionState *state, int *position)
+{
+    unsigned int selected;
+
+    selected = state->selected + 1;
+    selected &= -(unsigned int)((int)selected < 4);
+    state->selected = selected;
+    state->samples[selected].x = position[0];
+    state->samples[selected].y = position[1];
+    state->samples[selected].z = position[2];
+}
