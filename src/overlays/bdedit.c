@@ -1738,3 +1738,17 @@ void func_8005F634(unsigned short *packed, CVECTOR *palette, int count)
         packed++;
     }
 }
+
+// FUNCTION: BDEDIT.BIN:0x8005F6A4
+void func_8005F6A4(CVECTOR *palette, unsigned short *packed, int count)
+{
+    int index;
+
+    for (index = 0; index < count; index++) {
+        palette[index].b = ((*packed >> 10 & 31) * 255) / 31;
+        palette[index].g = ((*packed >> 5 & 31) * 255) / 31;
+        palette[index].r = ((*packed & 31) * 255) / 31;
+        palette[index].cd = *packed >> 15;
+        packed++;
+    }
+}
