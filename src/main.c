@@ -4950,3 +4950,25 @@ int func_8001A608(CardGhostHeader *input, int check_payload)
     }
     return 0;
 }
+
+// FUNCTION: SCUS_943.58:0x8001AEE0
+int func_8001AEE0(int slot)
+{
+    CardBoardReadWindow block;
+    CardGhostFilename filename;
+    int fd;
+    int result;
+
+    filename = card_board_read_filename;
+    result = -1;
+    filename.text[22] = slot + '1';
+    fd = open(filename.text, 1);
+    if (fd >= 0) {
+        lseek(fd, 0x200, 0);
+        if (read(fd, &block, 0x80) == 0x80) {
+            result = block.selected_record;
+        }
+        close(fd);
+    }
+    return (short)result;
+}

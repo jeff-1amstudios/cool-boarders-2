@@ -405,4 +405,11 @@ typedef struct SerialReadState {
 
 typedef int (*SerialPollCallback)(int operation, int poll_count);
 
+/* Initial 128-byte read of the board record at file offset 512. */
+typedef struct CardBoardReadWindow {
+    unsigned char signature[8];
+    int selected_record;
+    unsigned char remaining[116];
+} CardBoardReadWindow;
+
 #endif
