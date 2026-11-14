@@ -119,6 +119,9 @@ extern int func_8008C86C(int value);
 extern int func_80015F68(void);
 extern void func_800172B8(void);
 
+extern int func_80015F98(void);
+extern void func_800173C0();
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -858,4 +861,16 @@ void func_8005F714(void)
     func_80015F68();
     func_800172B8();
     SpuSetKey(0, 0x780FF);
+}
+
+// FUNCTION: BP.BIN:0x8005F74C
+void func_8005F74C(void)
+{
+    int selected;
+
+    func_80015F98();
+    selected = D_8009FC94[11];
+    if (selected >= 0) {
+        func_800173C0(selected, 2);
+    }
 }
