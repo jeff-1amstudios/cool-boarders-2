@@ -459,3 +459,23 @@ next:
     func_8005E454(ot, selected);
     return result;
 }
+
+// FUNCTION: BP.BIN:0x8005D760
+void func_8005D760(GsOT *ot, int player, RECT *clip,
+                   unsigned char red, unsigned char green, unsigned char blue)
+{
+    TILE *tile = (TILE *)D_80058ACC;
+
+    ((GsOT_TAG *)tile)->num = 3;
+    tile->code = 0x60;
+    tile->r0 = red;
+    tile->g0 = green;
+    tile->b0 = blue;
+    tile->x0 = -clip->w / 2;
+    tile->y0 = -clip->h / 2;
+    tile->w = clip->w;
+    tile->h = clip->h;
+    ((GsOT_TAG *)tile)->p = ot->org[0x7FF].p;
+    ot->org[0x7FF].p = (unsigned long)tile;
+    D_80058ACC = (PACKET *)(tile + 1);
+}
