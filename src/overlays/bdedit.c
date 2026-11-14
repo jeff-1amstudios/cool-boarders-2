@@ -136,6 +136,11 @@ extern char D_800630DC[19];
 extern int func_8001EB28(char *path);
 
 
+extern void func_80061180(unsigned char **planes, int x0, int x1, int y,
+                          int color, unsigned char *mask);
+extern void func_8006126C(unsigned char **planes, int x, int y0, int y1,
+                          int color, unsigned char *mask);
+
 // FUNCTION: BDEDIT.BIN:0x8005AB6C
 int func_8005AB6C(FileLoadState *state)
 {
@@ -2408,4 +2413,26 @@ unsigned char *func_80060D50(unsigned long *ot, unsigned char *packet,
         } while (step <= dx);
     }
     return packet;
+}
+
+// FUNCTION: BDEDIT.BIN:0x8006107C
+void func_8006107C(unsigned char **planes, int x0, int y0,
+                   int x1, int y1, int color, unsigned char *mask)
+{
+    int temp;
+
+    if (x1 < x0) {
+        temp = x1;
+        x1 = x0;
+        x0 = temp;
+    }
+    if (y1 < y0) {
+        temp = y1;
+        y1 = y0;
+        y0 = temp;
+    }
+    func_80061180(planes, x0, x1, y0, color, mask);
+    func_80061180(planes, x0, x1, y1, color, mask);
+    func_8006126C(planes, x0, y0, y1, color, mask);
+    func_8006126C(planes, x1, y0, y1, color, mask);
 }
