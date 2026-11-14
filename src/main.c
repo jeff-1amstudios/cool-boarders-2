@@ -4926,3 +4926,27 @@ completed:
 done:
     sound_disc_transfer->transfer_pending = 1;
 }
+
+// FUNCTION: SCUS_943.58:0x8001A608
+int func_8001A608(CardGhostHeader *input, int check_payload)
+{
+    unsigned char *expected = card_ghost_read_signature;
+    CardGhostHeader *header = input;
+    unsigned char *payload = (unsigned char *)header + header->data_offset;
+
+    do {
+        if (*(unsigned char *)input != *expected++) {
+            return -1;
+        }
+        input = (CardGhostHeader *)((unsigned char *)input + 1);
+    } while ((int)expected < (int)(card_ghost_read_signature + 8));
+    if (func_800181D4((unsigned char *)&header->data_offset, 12) != header->checksum) {
+        return -2;
+    }
+    if (check_payload != 0) {
+        if (func_800181D4(payload, header->data_size) != header->data_checksum) {
+            return -1;
+        }
+    }
+    return 0;
+}

@@ -165,7 +165,7 @@ segments:
       - [0xABDC, c, func_8001A3DC]
       - [0xAC10, c, func_8001A410]
       - [0xACD4, c, func_8001A4D4]
-      - [0xAE08, asm, after_copy_bytes]
+      - [0xAE08, c, func_8001A608]
       - [0xAEB8, c, func_8001A6B8]
       - [0xB100, c, func_8001A900]
       - [0xB2D0, c, func_8001AAD0]
