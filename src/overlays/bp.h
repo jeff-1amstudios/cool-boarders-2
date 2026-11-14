@@ -86,4 +86,34 @@ typedef struct BpSetupState {
     BpSetupLink *link;
 } BpSetupState;
 
+typedef struct BpMotionSample {
+    int x, y, z;
+    SVECTOR rotation;
+    int active;
+} BpMotionSample;
+
+typedef struct BpMotionState {
+    unsigned char unknown_000[0x84];
+    short height;
+    short unknown_086;
+    int history_a[16];
+    int history_b[16];
+    short angles[4];
+    short *angle_buffer;
+    short mode;
+    short unknown_116;
+    int value;
+    int negative_height;
+    int timer;
+    int word_124;
+    int word_128;
+    BpMotionSample samples[4];
+    int selected;
+    int word_190;
+    int word_194;
+    int word_198;
+    int word_19c;
+    int word_1a0;
+} BpMotionState;
+
 #endif

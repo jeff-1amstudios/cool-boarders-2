@@ -137,3 +137,7 @@ SpuSetKey = 0x8003F3F4; // type:func
 func_8005F74C = 0x8005F74C; // type:func
 func_80015F98 = 0x80015F98; // type:func
 func_800173C0 = 0x800173C0; // type:func
+func_8005F7D8 = 0x8005F7D8; // type:func
+ReadGeomOffset = 0x8002012C; // type:func
+D_8009FC98 = 0x8009FC98; // size:0x4
+D_8009FCA0 = 0x8009FCA0; // size:0x4
