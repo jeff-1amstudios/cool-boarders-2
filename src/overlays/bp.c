@@ -1550,3 +1550,55 @@ void func_800612DC(BpPlayer *player)
     *(int *)((unsigned char *)player + 0x48D4) += delta.vy;
     *(int *)((unsigned char *)player + 0x48D8) += delta.vz;
 }
+
+// FUNCTION: BP.BIN:0x80061908
+int func_80061908(BpMotionPlayer *player, int limit, int divisor)
+{
+    int x;
+    int z;
+    int speed;
+    int magnitude;
+    unsigned short heading;
+    int scaled_x;
+    int folded;
+    int turn;
+    int angle;
+
+    x = *(int *)((unsigned char *)player + 0x48E0);
+    scaled_x = x >> 6;
+    z = *(int *)((unsigned char *)player + 0x48E8);
+    speed = scaled_x * scaled_x;
+    scaled_x = z >> 6;
+    heading = player->heading;
+    speed += scaled_x * scaled_x;
+    speed = SquareRoot12(speed);
+    angle = ratan2(-x, -z);
+    scaled_x = ((angle - (short)heading) << 20) >> 20;
+    magnitude = __builtin_abs(scaled_x);
+    folded = magnitude;
+    if (magnitude > 0x400)
+        folded = 0x800 - magnitude;
+    speed = (speed * (0x400 - folded / divisor)) >> 10;
+    if (limit < folded) {
+        turn = limit;
+        if (scaled_x < 0)
+            turn = -turn;
+        scaled_x = turn;
+        if (magnitude >= 0x400)
+            angle += scaled_x;
+        else
+            angle -= scaled_x;
+    } else {
+        if (magnitude < 0x400)
+            angle = (heading << 16) >> 16;
+        else
+            angle = ((((heading << 16) >> 16) - 0x800) << 20) >> 20;
+    }
+    x = rsin(angle);
+    x = -(speed * x);
+    z = rcos(angle);
+    z = -(speed * z);
+    *(int *)((unsigned char *)player + 0x48E0) = x >> 12;
+    *(int *)((unsigned char *)player + 0x48E8) = z >> 12;
+    return -(magnitude < 0x400);
+}

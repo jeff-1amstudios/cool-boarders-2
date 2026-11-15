@@ -168,3 +168,8 @@ func_8006E41C = 0x8006E41C; // type:func
 D_800959FC = 0x800959FC; // size:0x4
 D_80095A00 = 0x80095A00; // size:0x4
 D_80095A04 = 0x80095A04; // size:0x4
+
+func_80061908 = 0x80061908; // type:func
+SquareRoot12 = 0x8001FBDC; // type:func
+rsin = 0x8001F5DC; // type:func
+rcos = 0x8001F6A8; // type:func
