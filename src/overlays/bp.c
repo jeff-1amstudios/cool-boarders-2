@@ -1764,3 +1764,10 @@ int func_80062CC0(void)
     D_8009FC50 = func_8001F1A0(coordinate_count * sizeof(GsCOORDINATE2));
     return -(D_8009FC50 != 0);
 }
+
+// FUNCTION: BP.BIN:0x80062D38
+void func_80062D38(void)
+{
+    func_8001F378(D_8009FA44);
+    func_8001F378(D_8009FC50);
+}
