@@ -153,6 +153,8 @@ extern int func_8006EA84(BpSurfaceState *surface, int heading);
 extern int D_80095A08;
 extern int D_80095A0C;
 
+extern void func_80093D74(SVECTOR *input, SVECTOR *output);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1669,4 +1671,40 @@ void func_80061C24(BpMotionPlayer *player, int alternate)
         acceleration = -D_80095A08;
     acceleration *= **(int **)((unsigned char *)player + 0xC30) >> 6;
     *(int *)((unsigned char *)player + 0x48D4) += acceleration / 64;
+}
+
+// FUNCTION: BP.BIN:0x80061C88
+void func_80061C88(BpMotionPlayer *player, int direction)
+{
+    int force;
+    int x;
+    int z;
+    SVECTOR velocity;
+
+    force = 0x64000;
+    if (player->reverse == 0)
+        force = -0x64000;
+    x = 0;
+    z = 0;
+    switch (direction) {
+    case 0:
+        z = (force >> 4) / 900;
+        break;
+    case 1:
+        z = (-force >> 4) / 900;
+        break;
+    case 2:
+        x = (-force >> 4) / 900;
+        break;
+    case 3:
+        x = (force >> 4) / 900;
+        break;
+    }
+    velocity.vx = x;
+    velocity.vy = 0;
+    velocity.vz = z;
+    func_80093D74(&velocity, &velocity);
+    *(int *)((unsigned char *)player + 0x48D0) += velocity.vx * 0x3840;
+    *(int *)((unsigned char *)player + 0x48D4) += velocity.vy * 0x3840;
+    *(int *)((unsigned char *)player + 0x48D8) += velocity.vz * 0x3840;
 }
