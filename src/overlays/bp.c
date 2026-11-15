@@ -150,6 +150,9 @@ extern int D_80095A04;
 extern void func_8006E41C(BpSurfaceState *surface, VECTOR *position);
 extern int func_8006EA84(BpSurfaceState *surface, int heading);
 
+extern int D_80095A08;
+extern int D_80095A0C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1653,4 +1656,17 @@ unsigned int func_80061ABC(BpMotionPlayer *player)
     second /= 16;
     second = (second << 20) >> 20;
     return ((first << 20) >> 4) | (second & 0xFFFFU);
+}
+
+// FUNCTION: BP.BIN:0x80061C24
+void func_80061C24(BpMotionPlayer *player, int alternate)
+{
+    int acceleration;
+
+    if (alternate != 0)
+        acceleration = -D_80095A0C;
+    else
+        acceleration = -D_80095A08;
+    acceleration *= **(int **)((unsigned char *)player + 0xC30) >> 6;
+    *(int *)((unsigned char *)player + 0x48D4) += acceleration / 64;
 }
