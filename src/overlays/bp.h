@@ -177,4 +177,20 @@ typedef struct BpSelectionView {
     int mode;
 } BpSelectionView;
 
+typedef struct BpSurfaceState {
+    int kind;
+    int x, y, z;
+    int word_10;
+    short surface;
+    short mode;
+    int word_18;
+    SVECTOR offset;
+    unsigned char unknown_24[0x18];
+    int normal[3];
+    int word_48;
+    int height;
+    int word_50;
+    int word_54;
+} BpSurfaceState;
+
 #endif

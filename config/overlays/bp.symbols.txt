@@ -162,3 +162,9 @@ D_8009FC4C = 0x8009FC4C; // type:u32 size:0x4
 D_8009FA40 = 0x8009FA40; // type:u32 size:0x4
 D_8009FC84 = 0x8009FC84; // type:u32 size:0x4
 func_8002EE40 = 0x8002EE40; // type:func
+
+func_800612DC = 0x800612DC; // type:func
+func_8006E41C = 0x8006E41C; // type:func
+D_800959FC = 0x800959FC; // size:0x4
+D_80095A00 = 0x80095A00; // size:0x4
+D_80095A04 = 0x80095A04; // size:0x4

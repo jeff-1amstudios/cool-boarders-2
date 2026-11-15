@@ -144,6 +144,11 @@ extern int *D_8009FC4C;
 extern CardGameRecord *D_8009FA40;
 extern int D_8009FC84;
 extern void func_8002EE40(long projection);
+extern int D_800959FC;
+extern int D_80095A00;
+extern int D_80095A04;
+extern void func_8006E41C(BpSurfaceState *surface, VECTOR *position);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1466,4 +1471,82 @@ void func_8005F964(BpPlayer *player, int state)
         (*(short *)camera) = 4;
         break;
     }
+}
+
+// FUNCTION: BP.BIN:0x800612DC
+void func_800612DC(BpPlayer *player)
+{
+    VECTOR projected;
+    BpSurfaceState original;
+    BpSurfaceState moved;
+    VECTOR delta;
+    int slow = *(int *)((unsigned char *)player + 0xC54);
+    int mode = ((BpSurfaceState *)((unsigned char *)player + 0x80))->mode;
+    int alternate = *(int *)((unsigned char *)player + 0x148);
+
+    switch (mode) {
+    case 1:
+    case 2:
+        delta.vx = 0;
+        delta.vy = D_80095A04;
+        delta.vz = 0;
+        break;
+    case 0:
+    default:
+        delta.vx = 0;
+        if (((BpMotionPlayer *)player)->vertical_speed > 0xA000)
+            delta.vy = D_800959FC;
+        else
+            delta.vy = D_80095A00;
+        delta.vz = 0;
+    }
+    delta.vx = ((delta.vx << 4) >> 4) / 900;
+    delta.vy = ((delta.vy << 4) >> 4) / 900;
+    delta.vz = ((delta.vz << 4) >> 4) / 900;
+    if (mode == 0) {
+        original.kind = 0;
+        original.x = 0;
+        original.y = 0x800;
+        original.z = 0;
+        original.surface = -1;
+        original.mode = 2;
+        original.height = 0;
+        original.word_18 = 0;
+        original.word_54 = 0;
+        original.word_50 = 0;
+        moved.kind = 0;
+        moved.x = 0;
+        moved.y = 0x800;
+        moved.z = 0;
+        moved.surface = -1;
+        moved.mode = 2;
+        moved.height = 0;
+        moved.word_18 = 0;
+        moved.word_54 = 0;
+        moved.word_50 = 0;
+        if (alternate == 0)
+            original = *(BpSurfaceState *)((unsigned char *)player + 0x80);
+        else
+            original = *(BpSurfaceState *)((unsigned char *)player + 0x130);
+        moved = original;
+        moved.x += delta.vx;
+        moved.y += delta.vy;
+        moved.z += delta.vz;
+        if (original.height - moved.y < 0) {
+            func_8006E41C(&moved, &projected);
+            delta.vx = projected.vx - original.x;
+            delta.vy = projected.vy - original.y;
+            delta.vz = projected.vz - original.z;
+        }
+    }
+    delta.vx = delta.vx * 0x3840 >> 4;
+    delta.vy = delta.vy * 0x3840 >> 4;
+    delta.vz = delta.vz * 0x3840 >> 4;
+    if (slow > 0) {
+        delta.vx = delta.vx * 3 / 10;
+        delta.vz = delta.vz * 3 / 10;
+    }
+    *(int *)((unsigned char *)player + 0x48D0) += delta.vx;
+    *(int *)((unsigned char *)player + 0x48D4) += delta.vy;
+    *(int *)((unsigned char *)player + 0x48D8) += delta.vz;
 }
