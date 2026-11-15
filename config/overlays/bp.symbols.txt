@@ -173,3 +173,5 @@ func_80061908 = 0x80061908; // type:func
 SquareRoot12 = 0x8001FBDC; // type:func
 rsin = 0x8001F5DC; // type:func
 rcos = 0x8001F6A8; // type:func
+func_80061ABC = 0x80061ABC; // type:func
+func_8006EA84 = 0x8006EA84; // type:func

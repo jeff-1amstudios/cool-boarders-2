@@ -148,6 +148,7 @@ extern int D_800959FC;
 extern int D_80095A00;
 extern int D_80095A04;
 extern void func_8006E41C(BpSurfaceState *surface, VECTOR *position);
+extern int func_8006EA84(BpSurfaceState *surface, int heading);
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -1601,4 +1602,55 @@ int func_80061908(BpMotionPlayer *player, int limit, int divisor)
     *(int *)((unsigned char *)player + 0x48E0) = x >> 12;
     *(int *)((unsigned char *)player + 0x48E8) = z >> 12;
     return -(magnitude < 0x400);
+}
+
+// FUNCTION: BP.BIN:0x80061ABC
+unsigned int func_80061ABC(BpMotionPlayer *player)
+{
+    int index;
+    BpSurfaceState *surface;
+    int heading;
+    int *history_a;
+    int *history_b;
+    int first;
+    int second;
+    int *read_a;
+    int *read_b;
+    int count;
+    int value_a;
+    int value_b;
+
+    index = *(int *)((unsigned char *)player + 0xCB8) % 16;
+    if (*(int *)((unsigned char *)player + 0x148) == 0)
+        surface = (BpSurfaceState *)((unsigned char *)player + 0x28);
+    else
+        surface = (BpSurfaceState *)((unsigned char *)player + 0x130);
+    heading = (player->heading << 20) >> 20;
+    history_a = player->motion->history_a;
+    history_b = player->motion->history_b;
+    first = (short)func_8006EA84(surface, heading);
+    second = (short)func_8006EA84(surface,
+        heading = ((heading - 0x400) << 20) >> 20);
+    if (surface->mode == 0) {
+        history_a[index] = first;
+        history_b[index] = second;
+    } else {
+        history_b[index] = 0;
+    }
+    first = 0;
+    second = 0;
+    count = 0;
+    read_b = history_b;
+    read_a = history_a;
+    do {
+        value_b = *read_b++;
+        value_a = *read_a++;
+        count++;
+        first += value_a;
+        second += value_b;
+    } while (count < 16);
+    first /= 16;
+    second /= 16;
+    second = (second << 20) >> 20;
+    return ((first << 20) >> 4) | (second & 0xFFFFU);
 }
