@@ -193,4 +193,15 @@ typedef struct BpSurfaceState {
     int word_54;
 } BpSurfaceState;
 
+typedef struct BpModelHeader {
+    unsigned int unknown_00;
+    unsigned int unknown_04;
+    unsigned int object_count;
+} BpModelHeader;
+
+typedef struct BpCoordinateHeader {
+    unsigned int unknown_00;
+    unsigned short coordinate_count;
+} BpCoordinateHeader;
+
 #endif

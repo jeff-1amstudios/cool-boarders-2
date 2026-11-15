@@ -155,6 +155,11 @@ extern int D_80095A0C;
 
 extern void func_80093D74(SVECTOR *input, SVECTOR *output);
 
+extern BpModelHeader *D_8009E9BC;
+extern BpCoordinateHeader *D_8009E9C0;
+extern GsDOBJ2 *D_8009FA44;
+extern GsCOORDINATE2 *D_8009FC50;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1743,4 +1748,19 @@ void func_80061E1C(BpMotionPlayer *player, int direction)
     *(int *)((unsigned char *)player + 0x48D0) += velocity.vx * 0x3840;
     *(int *)((unsigned char *)player + 0x48D4) += velocity.vy * 0x3840;
     *(int *)((unsigned char *)player + 0x48D8) += velocity.vz * 0x3840;
+}
+
+// FUNCTION: BP.BIN:0x80062CC0
+int func_80062CC0(void)
+{
+    unsigned int object_count;
+    unsigned short coordinate_count;
+
+    object_count = D_8009E9BC->object_count;
+    coordinate_count = D_8009E9C0->coordinate_count;
+    D_8009FA44 = func_8001F1A0(object_count * sizeof(GsDOBJ2));
+    if (D_8009FA44 == 0)
+        return 0;
+    D_8009FC50 = func_8001F1A0(coordinate_count * sizeof(GsCOORDINATE2));
+    return -(D_8009FC50 != 0);
 }
