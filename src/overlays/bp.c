@@ -1708,3 +1708,39 @@ void func_80061C88(BpMotionPlayer *player, int direction)
     *(int *)((unsigned char *)player + 0x48D4) += velocity.vy * 0x3840;
     *(int *)((unsigned char *)player + 0x48D8) += velocity.vz * 0x3840;
 }
+
+// FUNCTION: BP.BIN:0x80061E1C
+void func_80061E1C(BpMotionPlayer *player, int direction)
+{
+    int force;
+    int x;
+    int z;
+    SVECTOR velocity;
+
+    force = 0x64000;
+    if (player->reverse == 0)
+        force = -0x64000;
+    x = 0;
+    z = 0;
+    switch (direction) {
+    case 0:
+        z = (force >> 4) / 900;
+        break;
+    case 1:
+        z = (-force >> 4) / 900;
+        break;
+    case 2:
+        x = (-force >> 4) / 900;
+        break;
+    case 3:
+        x = (force >> 4) / 900;
+        break;
+    }
+    velocity.vx = x;
+    velocity.vy = 0;
+    velocity.vz = z;
+    func_80093D74(&velocity, &velocity);
+    *(int *)((unsigned char *)player + 0x48D0) += velocity.vx * 0x3840;
+    *(int *)((unsigned char *)player + 0x48D4) += velocity.vy * 0x3840;
+    *(int *)((unsigned char *)player + 0x48D8) += velocity.vz * 0x3840;
+}
