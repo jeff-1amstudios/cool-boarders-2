@@ -1852,3 +1852,13 @@ void func_80062DB8(int course)
         GsSetLightMode(0);
     }
 }
+
+// FUNCTION: BP.BIN:0x80063000
+void func_80063000(GsOT *ot, GsOT_TAG *tags, unsigned long length)
+{
+    ot->org = tags;
+    ot->length = length;
+    ot->tag = tags + (1UL << length) - 1;
+    ot->offset = 0;
+    ot->point = 0;
+}

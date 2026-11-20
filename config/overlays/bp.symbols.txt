@@ -209,3 +209,5 @@ GsSetFogParam = 0x8002F4C0; // type:func
 D_80095AA0 = 0x80095AA0; // size:0xc0
 D_8009FC10 = 0x8009FC10; // size:0x30
 D_8009FEC0 = 0x8009FEC0;
+
+func_80063000 = 0x80063000; // type:func
