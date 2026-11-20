@@ -264,3 +264,7 @@ rand = 0x800449F8; // type:func
 D_8009610C = 0x8009610C; // size:0xE
 D_8009611C = 0x8009611C; // size:0xE
 D_8009612C = 0x8009612C; // size:0x20
+func_80015FC8 = 0x80015FC8; // type:func
+func_80016010 = 0x80016010; // type:func
+func_80016220 = 0x80016220; // type:func
+VSync = 0x8003BD60; // type:func

@@ -218,6 +218,12 @@ extern const BpCourseSoundBanks D_8009610C;
 extern const BpCourseSoundBanks D_8009611C;
 extern const BpModeSoundBanks D_8009612C;
 
+extern void func_80015FC8(void);
+/* The resident routine stores mode as an unsigned byte. This call passes -1
+   in the full argument register. */
+extern void func_80016010();
+extern int func_80016220(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2329,4 +2335,15 @@ void func_8006474C(void)
     course = D_8009FC94[0];
     func_800648D8(mode_banks.banks[mode], course_banks[course]);
     func_80016804();
+}
+
+// FUNCTION: BP.BIN:0x800648D8
+void func_800648D8(int first_bank, int second_bank)
+{
+    func_80015FC8();
+    VSync(3);
+    func_80016010(first_bank, second_bank, -1);
+    while (func_80016220() != 0) {
+        VSync(0);
+    }
 }
