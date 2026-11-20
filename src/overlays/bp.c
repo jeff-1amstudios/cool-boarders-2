@@ -212,6 +212,12 @@ extern RECT D_800960F4;
 extern RECT D_800960FC;
 extern RECT D_80096104;
 
+extern void func_800648D8(int first_bank, int second_bank);
+extern void func_80016804(void);
+extern const BpCourseSoundBanks D_8009610C;
+extern const BpCourseSoundBanks D_8009611C;
+extern const BpModeSoundBanks D_8009612C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2305,4 +2311,22 @@ void func_80064574(int flip_first, int flip_second)
         LoadImage(&second_detail, pixels);
         DrawSync(0);
     }
+}
+
+// FUNCTION: BP.BIN:0x8006474C
+void func_8006474C(void)
+{
+    BpCourseSoundBanks odd_banks = D_8009610C;
+    BpCourseSoundBanks even_banks = D_8009611C;
+    BpModeSoundBanks mode_banks;
+    const short *course_banks;
+    int mode;
+    int course;
+
+    course_banks = (rand() & 1) ? odd_banks.banks : even_banks.banks;
+    mode_banks = D_8009612C;
+    mode = D_8009FC94[10];
+    course = D_8009FC94[0];
+    func_800648D8(mode_banks.banks[mode], course_banks[course]);
+    func_80016804();
 }

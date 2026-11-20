@@ -393,4 +393,14 @@ typedef struct BpAnimationPlayback {
     GsCOORDINATE2 *root_coordinate;
 } BpAnimationPlayback;
 
+typedef struct BpCourseSoundBanks {
+    short banks[7];
+} BpCourseSoundBanks;
+
+typedef struct BpModeSoundBanks {
+    short banks[16];
+} BpModeSoundBanks;
+
+void func_8006474C(void);
+
 #endif

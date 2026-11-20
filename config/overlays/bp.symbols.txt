@@ -256,3 +256,11 @@ D_800960EC = 0x800960EC; // size:0x8
 D_800960F4 = 0x800960F4; // size:0x8
 D_800960FC = 0x800960FC; // size:0x8
 D_80096104 = 0x80096104; // size:0x8
+
+func_8006474C = 0x8006474C; // type:func
+func_800648D8 = 0x800648D8; // type:func
+func_80016804 = 0x80016804; // type:func
+rand = 0x800449F8; // type:func
+D_8009610C = 0x8009610C; // size:0xE
+D_8009611C = 0x8009611C; // size:0xE
+D_8009612C = 0x8009612C; // size:0x20
