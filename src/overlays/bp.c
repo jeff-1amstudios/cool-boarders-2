@@ -186,6 +186,19 @@ extern BpRiderCourseScales D_800960D8;
 extern BpRiderProfile D_80097AB8[8];
 extern int D_80097BA8;
 
+extern void func_8009479C(BpAnimationState *state, GsDOBJ3 *objects,
+                          GsCOORDINATE2 *coordinates, GsCOORD2PARAM *parameters,
+                          int object_count, unsigned long *pmd);
+extern void func_80064398(BpAnimationState *state, void *second, int animation,
+                          int offset, int extent);
+extern BpAnimationHeader **D_8009E9B0;
+extern BpAnimationHeader **D_8009E9B4;
+extern unsigned long *D_8009E9C8;
+extern unsigned long *D_8009E9D0;
+extern const int D_80097A6C[12];
+extern const int D_80097A9C[7];
+extern const unsigned char D_80097B3C[101];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2087,4 +2100,72 @@ void func_8006391C(BpPlayer *player, int reverse)
     state->byte_490a = 0;
     state->byte_490b = 0;
     state->value_48fc = 0;
+}
+
+// FUNCTION: BP.BIN:0x800641E8
+void func_800641E8(void *setup, void *second, int player, int special)
+{
+    unsigned long *pmd = 0;
+    const int *coordinate_indices;
+    int extent;
+    int offset;
+    int i;
+    BpAnimationHeader **source;
+    BpAnimationHeader **sequential;
+
+    switch (player) {
+    case 0:
+        pmd = D_8009E9C8;
+        break;
+    case 1:
+        pmd = D_8009E9D0;
+        break;
+    }
+
+    offset = 0;
+    if (special == 0) {
+        coordinate_indices = D_80097A6C;
+        offset = -120;
+        extent = 120;
+        i = 1;
+        sequential = D_8009E9B0 + 1;
+        do {
+            ((BpAnimationState *)setup)->animations[i].header = *sequential;
+            sequential++;
+            i++;
+        } while (i < 101);
+    } else {
+        coordinate_indices = D_80097A9C;
+        extent = 100;
+        i = 1;
+        source = D_8009E9B4;
+        do {
+            ((BpAnimationState *)setup)->animations[i].header = source[D_80097B3C[i]];
+            i++;
+        } while (i < 101);
+    }
+
+    ((BpAnimationState *)setup)->word_4dc = -1;
+    ((BpAnimationState *)setup)->word_4e0 = -1;
+    ((BpAnimationState *)setup)->word_4e8 = 1;
+    ((BpAnimationState *)setup)->pmd = pmd;
+    ((BpAnimationState *)setup)->coordinate_indices = coordinate_indices;
+    ((BpAnimationState *)setup)->word_4e4 = 0;
+    func_8009479C(setup, ((BpAnimationState *)setup)->object_buffer,
+                  ((BpAnimationState *)setup)->coordinates,
+                  ((BpAnimationState *)setup)->parameters, 32, ((BpAnimationState *)setup)->pmd);
+
+    /* Cache the header values before repointing each slot to its frame list. */
+    i = 1;
+    do {
+        ((BpAnimationState *)setup)->frame_counts[i] =
+            ((BpAnimationState *)setup)->animations[i].header->frame_count;
+        ((BpAnimationState *)setup)->first_frame_starts[i] =
+            ((BpAnimationState *)setup)->animations[i].header->first_frame->start;
+        ((BpAnimationState *)setup)->animations[i].frames =
+            &((BpAnimationState *)setup)->animations[i].header->first_frame;
+        i++;
+    } while (i < 101);
+
+    func_80064398(setup, second, 1, offset, extent);
 }

@@ -352,4 +352,39 @@ typedef struct BpPlayerReset {
 
 void func_8006391C(BpPlayer *player, int reverse);
 
+typedef struct BpAnimationFrame {
+    unsigned short word_00;
+    unsigned short command_count;
+    unsigned int start;
+} BpAnimationFrame;
+
+typedef struct BpAnimationHeader {
+    unsigned int flags;
+    int frame_count;
+    BpAnimationFrame *first_frame;
+} BpAnimationHeader;
+
+typedef union BpAnimationSlot {
+    BpAnimationHeader *header;
+    BpAnimationFrame **frames;
+} BpAnimationSlot;
+
+typedef struct BpAnimationState {
+    GsDOBJ3 *objects;
+    int active_count;
+    int object_count;
+    unsigned long *pmd;
+    GsDOBJ3 *object_buffer;
+    GsCOORDINATE2 *coordinates;
+    GsCOORD2PARAM *parameters;
+    BpAnimationSlot animations[101];
+    const int *coordinate_indices;
+    int frame_counts[101];
+    unsigned int first_frame_starts[101];
+    int word_4dc;
+    int word_4e0;
+    int word_4e4;
+    int word_4e8;
+} BpAnimationState;
+
 #endif
