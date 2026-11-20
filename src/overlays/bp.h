@@ -405,4 +405,17 @@ void func_8006474C(void);
 
 void func_80064944(BpAnimationPlayback *playback, int animation, int mode, int end_frame);
 
+typedef struct BpPlayerCoordinates {
+    unsigned char unknown_0000[0x188];
+    GsCOORDINATE2 body_coordinate;
+    SVECTOR body_rotation;
+    unsigned char unknown_01e0[0xA78];
+    GsCOORDINATE2 secondary_coordinate;
+    short secondary_pitch;
+    short unknown_0caa;
+    short secondary_heading;
+} BpPlayerCoordinates;
+
+void func_80068770(BpPlayerCoordinates *player);
+
 #endif
