@@ -169,6 +169,10 @@ extern unsigned int D_8009FC74;
 extern char *D_8009FC54;
 extern char D_80095A80[30];
 
+extern BpLightingTable D_80095AA0;
+extern GsF_LIGHT D_8009FC10[3];
+extern int D_8009FEC0;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1793,4 +1797,58 @@ void func_80062D70(void)
     D_8009FC70 = 0;
     D_8009FC74 = 0;
     D_8009FC54 = record_path;
+}
+
+// FUNCTION: BP.BIN:0x80062DB8
+void func_80062DB8(int course)
+{
+    GsFOGPARAM fog;
+    BpLightingTable table;
+    BpLightColor *colors;
+    int offset;
+
+    table = D_80095AA0;
+
+    D_8009FC10[0].vx = 0;
+    D_8009FC10[0].vy = 1;
+    D_8009FC10[0].vz = -1;
+    offset = course * sizeof(table.colors[0]);
+    colors = (BpLightColor *)((unsigned char *)&table + offset);
+    D_8009FC10[0].r = colors[0].r;
+    D_8009FC10[0].g = colors[0].g;
+    D_8009FC10[0].b = colors[0].b;
+    GsSetFlatLight(0, &D_8009FC10[0]);
+
+    D_8009FC10[1].vx = -2;
+    D_8009FC10[1].vy = 1;
+    D_8009FC10[1].vz = 1;
+    D_8009FC10[1].r = colors[1].r;
+    D_8009FC10[1].g = colors[1].g;
+    D_8009FC10[1].b = colors[1].b;
+    GsSetFlatLight(1, &D_8009FC10[1]);
+
+    D_8009FC10[2].vx = 1;
+    D_8009FC10[2].vy = 1;
+    D_8009FC10[2].vz = 1;
+    D_8009FC10[2].r = colors[2].r;
+    D_8009FC10[2].g = colors[2].g;
+    D_8009FC10[2].b = colors[2].b;
+    GsSetFlatLight(2, &D_8009FC10[2]);
+
+    GsSetAmbient(colors[0].ambient | 0x400, colors[1].ambient | 0x400,
+                 colors[2].ambient | 0x400);
+
+    if (course == 6) {
+        D_8009FEC0 = 1;
+        GsSetLightMode(1);
+        fog.dqa = -0x1C00;
+        fog.dqb = 0x147AE14;
+        fog.rfc = 0;
+        fog.gfc = 0;
+        fog.bfc = 0;
+        GsSetFogParam(&fog);
+    } else {
+        D_8009FEC0 = 0;
+        GsSetLightMode(0);
+    }
 }

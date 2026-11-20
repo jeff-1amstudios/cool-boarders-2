@@ -204,4 +204,13 @@ typedef struct BpCoordinateHeader {
     unsigned short coordinate_count;
 } BpCoordinateHeader;
 
+typedef struct BpLightColor {
+    unsigned char r, g, b;
+    unsigned char ambient;
+} BpLightColor;
+
+typedef struct BpLightingTable {
+    BpLightColor colors[16][3];
+} BpLightingTable;
+
 #endif
