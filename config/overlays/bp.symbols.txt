@@ -216,3 +216,8 @@ func_80063028 = 0x80063028; // type:func
 GsInitCoordinate2 = 0x8002E558; // type:func
 GsSetRefView2 = 0x8002F760; // type:func
 D_8009FEB8 = 0x8009FEB8; // size:0x4
+
+func_800633AC = 0x800633AC; // type:func
+func_8006889C = 0x8006889C; // type:func
+D_80095B78 = 0x80095B78; // size:0xc0
+D_80095C38 = 0x80095C38; // size:0xc0

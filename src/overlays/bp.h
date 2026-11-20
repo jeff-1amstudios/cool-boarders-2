@@ -213,4 +213,16 @@ typedef struct BpLightingTable {
     BpLightColor colors[16][3];
 } BpLightingTable;
 
+typedef struct BpStartOffsets {
+    int course[16][3];
+} BpStartOffsets;
+
+typedef struct BpStartPlayer {
+    unsigned char unknown_00[0x28];
+    BpSurfaceState surface;
+    BpSurfaceState initial_surface;
+} BpStartPlayer;
+
+void func_800633AC(BpStartPlayer *player, int course, int side);
+
 #endif

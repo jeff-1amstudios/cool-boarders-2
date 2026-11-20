@@ -174,6 +174,10 @@ extern GsF_LIGHT D_8009FC10[3];
 extern int D_8009FEC0;
 extern int D_8009FEB8;
 
+extern BpStartOffsets D_80095B78;
+extern BpStartOffsets D_80095C38;
+extern int func_8006889C(BpStartPlayer *player, int start, short x, short y, short z);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1873,4 +1877,30 @@ void func_80063028(BpPlayer *player)
     GsInitCoordinate2(0, &((BpMotionTransform *)camera)->coordinate);
     func_8005F964(player, 0);
     GsSetRefView2(&camera->view);
+}
+
+// FUNCTION: BP.BIN:0x800633AC
+void func_800633AC(BpStartPlayer *player, int course, int side)
+{
+    BpStartOffsets x_offsets;
+    BpStartOffsets z_offsets;
+    int column;
+    int x;
+    short z;
+
+    x_offsets = D_80095B78;
+    z_offsets = D_80095C38;
+
+    if (side != 0)
+        column = (side != -1) * 2;
+    else
+        column = 1;
+
+    x = x_offsets.course[course][column];
+    z = z_offsets.course[course][column];
+    if (D_80097BA4 == -1)
+        x = -x;
+
+    func_8006889C(player, 1, x, 0, z);
+    player->initial_surface = player->surface;
 }
