@@ -387,4 +387,10 @@ typedef struct BpAnimationState {
     int word_4e8;
 } BpAnimationState;
 
+typedef struct BpAnimationPlayback {
+    BpAnimationState animation;
+    short saved_y;
+    GsCOORDINATE2 *root_coordinate;
+} BpAnimationPlayback;
+
 #endif

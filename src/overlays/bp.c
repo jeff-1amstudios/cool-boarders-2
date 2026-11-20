@@ -199,6 +199,12 @@ extern const int D_80097A6C[12];
 extern const int D_80097A9C[7];
 extern const unsigned char D_80097B3C[101];
 
+extern BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFrame *frame,
+                                       BpAnimationState *state, const int *coordinate_indices,
+                                       unsigned long *pmd, int mode);
+extern GsCOORDINATE2 *func_80064460(BpAnimationState *state, GsCOORDINATE2 *parent,
+                                 int offset, int extent);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2168,4 +2174,27 @@ void func_800641E8(void *setup, void *second, int player, int special)
     } while (i < 101);
 
     func_80064398(setup, second, 1, offset, extent);
+}
+
+// FUNCTION: BP.BIN:0x80064398
+void func_80064398(BpAnimationState *state, void *parent, int animation,
+                   int offset, int extent)
+{
+    int i = 0;
+    BpAnimationFrame *frame = *(animation + state->animations)->frames;
+    int count = *(animation + state->frame_counts);
+    unsigned int start = *(animation + state->first_frame_starts);
+    GsCOORDINATE2 *coordinate;
+
+    if (i < count) {
+        do {
+            frame = func_80094910(i + start, frame, state, state->coordinate_indices,
+                                  state->pmd, 0);
+            i++;
+        } while (i < count);
+    }
+
+    coordinate = func_80064460(state, parent, offset, extent);
+    ((BpAnimationPlayback *)state)->root_coordinate = coordinate;
+    ((BpAnimationPlayback *)state)->saved_y = (short)coordinate->coord.t[1];
 }
