@@ -2895,3 +2895,20 @@ int func_800694E0(BpResetEntry *entry, int amount, unsigned int positive_input,
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x80069614
+void func_80069614(BpMotionPlayer *player)
+{
+    int i = 0;
+    BpMotionState *motion = player->motion;
+    int *history_b = motion->history_b;
+    int *history_a = motion->history_a;
+
+    do {
+        *history_a = 0;
+        *history_b = 0;
+        history_b++;
+        i++;
+        history_a++;
+    } while (i < 16);
+}
