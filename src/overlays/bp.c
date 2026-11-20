@@ -160,6 +160,15 @@ extern BpCoordinateHeader *D_8009E9C0;
 extern GsDOBJ2 *D_8009FA44;
 extern GsCOORDINATE2 *D_8009FC50;
 
+extern unsigned int D_8009FA24;
+extern unsigned int D_8009FC78;
+extern unsigned int D_8009FC80;
+extern unsigned int D_8009FD58;
+extern unsigned int D_8009FC70;
+extern unsigned int D_8009FC74;
+extern char *D_8009FC54;
+extern char D_80095A80[30];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1770,4 +1779,18 @@ void func_80062D38(void)
 {
     func_8001F378(D_8009FA44);
     func_8001F378(D_8009FC50);
+}
+
+// FUNCTION: BP.BIN:0x80062D70
+void func_80062D70(void)
+{
+    char *record_path = D_80095A80;
+
+    D_8009FA24 = 0;
+    D_8009FC78 = 0;
+    D_8009FC80 = 0;
+    D_8009FD58 = 0;
+    D_8009FC70 = 0;
+    D_8009FC74 = 0;
+    D_8009FC54 = record_path;
 }
