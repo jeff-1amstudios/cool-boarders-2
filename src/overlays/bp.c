@@ -248,6 +248,10 @@ extern char D_8009EA70[9];
 extern int D_8009EA80;
 extern int D_8009FC5C;
 
+extern int func_80092D7C(short x, short z);
+extern int func_800753D0(GsOT_TAG *tag, int value, int x, int y);
+extern void func_800745E4(GsOT_TAG *tag, int x, int y);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2953,4 +2957,25 @@ void func_80069648(int mode)
     D_8009EA48.u1 = u + 47;
     D_8009EA48.u2 = u;
     D_8009EA48.u3 = u + 47;
+}
+
+// FUNCTION: BP.BIN:0x8006978C
+int func_8006978C(GsOT *ot, BpDistancePlayer *player, int draw, int x, int y)
+{
+    GsOT_TAG *tag = &ot->org[4];
+    int distance;
+    int value;
+    int number_x = x + 88;
+    int number_y = y + 80;
+
+    distance = func_80092D7C((short)(player->x - player->previous_x),
+                             (short)(player->z - player->previous_z));
+    value = (distance * 108000) / 170500;
+    value = (value * 100) / 110;
+    value = (value * 100) / 160;
+    if (draw != 0) {
+        func_800753D0(tag, value, number_x, number_y);
+        func_800745E4(tag, x + 112, number_y);
+    }
+    return distance;
 }

@@ -531,4 +531,17 @@ void func_80069614(BpMotionPlayer *player);
 
 void func_80069648(int mode);
 
+typedef struct BpDistancePlayer {
+    unsigned char unknown_00[0x84];
+    int x;
+    int y;
+    int z;
+    unsigned char unknown_90[0x4C];
+    int previous_x;
+    int previous_y;
+    int previous_z;
+} BpDistancePlayer;
+
+int func_8006978C(GsOT *ot, BpDistancePlayer *player, int draw, int x, int y);
+
 #endif

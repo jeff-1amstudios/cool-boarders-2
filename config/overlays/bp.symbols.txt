@@ -302,3 +302,7 @@ D_8009EA48 = 0x8009EA48; // size:0x28
 D_8009EA70 = 0x8009EA70; // size:0x9
 D_8009EA80 = 0x8009EA80; // size:0x8
 D_8009FC5C = 0x8009FC5C; // type:u32 size:0x4
+func_8006978C = 0x8006978C; // type:func
+func_80092D7C = 0x80092D7C; // type:func
+func_800753D0 = 0x800753D0; // type:func
+func_800745E4 = 0x800745E4; // type:func
