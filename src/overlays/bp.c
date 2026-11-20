@@ -252,6 +252,10 @@ extern int func_80092D7C(short x, short z);
 extern int func_800753D0(GsOT_TAG *tag, int value, int x, int y);
 extern void func_800745E4(GsOT_TAG *tag, int x, int y);
 
+extern int D_80097D28;
+extern int D_80097D2C;
+extern void func_80074A38(GsOT *ot);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2978,4 +2982,16 @@ int func_8006978C(GsOT *ot, BpDistancePlayer *player, int draw, int x, int y)
         func_800745E4(tag, x + 112, number_y);
     }
     return distance;
+}
+
+// FUNCTION: BP.BIN:0x80069934
+void func_80069934(GsOT *ot, int different)
+{
+    if (D_80097D28 != 0) {
+        func_80074A38(ot);
+    }
+    if (different == 0 && --D_80097D2C == 0) {
+        D_80097D2C = 10;
+        D_80097D28 = -(D_80097D28 == 0);
+    }
 }
