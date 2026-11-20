@@ -427,4 +427,73 @@ typedef struct BpStartLocation {
 
 int func_8006889C(BpStartPlayer *player, int start, short x, short y, short z);
 
+typedef struct BpScoreLimit {
+    unsigned char unknown_00[0x20];
+    int maximum;
+} BpScoreLimit;
+
+typedef struct BpScoreMotion {
+    int unknown_00;
+    int reduced_score;
+    unsigned char unknown_08[0xC];
+    int heading_active;
+    int second_rotation;
+    int first_rotation;
+    int unknown_20;
+    int move_duration;
+} BpScoreMotion;
+
+typedef struct BpScoreMove {
+    unsigned char unknown_00[6];
+    short id;
+    unsigned char unknown_08[0x40];
+} BpScoreMove;
+
+typedef struct BpScoreSelection {
+    short fallback;
+    short override;
+} BpScoreSelection;
+
+typedef struct BpScorePlayer {
+    unsigned char unknown_0000[0x2C];
+    int position[3];
+    unsigned char unknown_0038[0x1A0];
+    SVECTOR rotation;
+    unsigned char unknown_01e0[0x4FC];
+    BpScoreLimit limit;
+    unsigned char unknown_0700[0x34];
+    BpScoreMotion motion;
+    unsigned char unknown_075c[0x12C];
+    BpScoreMove moves[13];
+    unsigned char unknown_0c30[0xA];
+    BpScoreSelection selections[2];
+    unsigned char unknown_0c42[0x3C9E];
+    VECTOR velocity;
+} BpScorePlayer;
+
+typedef struct BpScore {
+    unsigned char height_bonus;
+    unsigned char reverse;
+    unsigned char reverse_bonus;
+    unsigned char duration_bonus;
+    unsigned char move_bonus[2];
+    unsigned char heading_bonus;
+    unsigned char unknown_07;
+    unsigned char unknown_08[2];
+    short rotation_bonus[2];
+    short combined_bonus;
+    unsigned short distance_bonus;
+    unsigned char unknown_12[2];
+    int total;
+    int height;
+    short move_index[2];
+    short rotations[2];
+    short combined_flag;
+    short unknown_26;
+    int origin_x;
+    int origin_z;
+} BpScore;
+
+int func_80068BA0(BpScorePlayer *player, BpScore *score);
+
 #endif
