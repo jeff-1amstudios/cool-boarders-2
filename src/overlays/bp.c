@@ -2198,3 +2198,69 @@ void func_80064398(BpAnimationState *state, void *parent, int animation,
     ((BpAnimationPlayback *)state)->root_coordinate = coordinate;
     ((BpAnimationPlayback *)state)->saved_y = (short)coordinate->coord.t[1];
 }
+
+// FUNCTION: BP.BIN:0x80064460
+GsCOORDINATE2 *func_80064460(BpAnimationState *state, GsCOORDINATE2 *parent,
+                            int offset, int extent)
+{
+    int count = state->active_count;
+    GsDOBJ3 *objects = state->objects;
+    int i = 0;
+    GsDOBJ3 *entry;
+    GsCOORDINATE2 *root;
+    int roots;
+    unsigned int flags;
+    unsigned int root_bits;
+    unsigned int previous_flags;
+
+    if (i < count) {
+        entry = objects;
+        do {
+            if (entry->coord2->super == 0) {
+                goto check_index;
+            }
+            i++;
+            entry++;
+        } while (i < count);
+
+check_index:
+        if (i < count) {
+            root = (i++ + objects)->coord2;
+            root->super = parent;
+            root->flg = 0;
+            root->coord.t[1] += offset + extent;
+
+            roots = 1;
+            if (i < count) {
+                unsigned long address = i * sizeof(*objects);
+                address += (unsigned long)objects;
+                objects = (GsDOBJ3 *)address;
+                do {
+                    if (objects->coord2->super == 0) {
+                        roots++;
+                    }
+                    i++;
+                    objects++;
+                } while (i < count);
+            }
+
+            if (roots <= 1) {
+                goto done;
+            }
+            root = 0;
+            root_bits = (unsigned int)roots << 16;
+            previous_flags = D_8009FA24;
+            previous_flags |= 0x10;
+            flags = previous_flags | root_bits;
+            D_8009FA24 = flags;
+            goto done;
+        }
+    }
+
+    flags = D_8009FA24;
+    root = 0;
+    flags |= 2;
+    D_8009FA24 = flags;
+done:
+    return root;
+}
