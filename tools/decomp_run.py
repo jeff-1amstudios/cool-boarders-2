@@ -23,6 +23,16 @@ class AgentUnavailable(RuntimeError):
     """Infrastructure failure: stop the batch and keep the target eligible."""
 
 
+class AgentUsageLimited(AgentUnavailable):
+    """The worker can be retried after waiting for Codex usage to reset."""
+
+
+USAGE_LIMIT = re.compile(
+    r'usage[ _-]limit|quota exceeded|insufficient_quota|rate[ _-]limit[ _-]exceeded', re.I
+)
+USAGE_RETRY_SECONDS = 30 * 60
+
+
 def agent_failure(path):
     """Read error events only; quoted source/tool output is not a launcher error."""
     if not path.exists():
@@ -34,7 +44,7 @@ def agent_failure(path):
                 event = json.loads(line)
             except ValueError:
                 # Also support non-JSON custom launchers.
-                if re.search(r'usage limit|quota exceeded|insufficient_quota|rate.limit.exceeded', line, re.I):
+                if USAGE_LIMIT.search(line):
                     failure = line.strip()[:1000]
                 continue
             if not isinstance(event, dict):
@@ -43,7 +53,12 @@ def agent_failure(path):
                 failure = str(event.get('message', 'Agent error'))[:1000]
             elif event.get('type') == 'turn.failed':
                 failure = str(event.get('error', {}).get('message', 'Agent turn failed'))[:1000]
-    return failure
+            elif event.get('type') == 'turn.completed':
+                failure = None
+    if failure:
+        error_type = AgentUsageLimited if USAGE_LIMIT.search(failure) else AgentUnavailable
+        return error_type(failure)
+    return None
 
 
 def review_split(before, after, target):
@@ -235,9 +250,21 @@ class Runner:
         directory = self.w.ROOT / active["context"]
         # Ghidra/export time must not reduce the worker's own allowance.
         seconds = self.args.agent_seconds
+        resume_notes = ""
+        for previous in reversed(session.get("interrupted", [])):
+            if (key(previous) == key(active) and previous.get("candidate_archived")
+                    and USAGE_LIMIT.search(previous.get("failure", ""))):
+                archive = self.w.ROOT / previous["context"] / "candidate"
+                resume_notes = (
+                    f"\n\nFor this usage-limit retry, you may reuse candidate edits from {archive}. "
+                    "After reading the fresh function context, review attempt.patch and sources.json "
+                    "and carry forward relevant edits from the interrupted attempt."
+                )
+                break
         instructions = (
             f"Your only repository/workspace root is {self.w.ROOT.resolve()}.\n\n"
             + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
+            + resume_notes
         )
         prompt = (
             "# Selected function\n"
@@ -284,13 +311,13 @@ class Runner:
         except self.w.CommandTimeout:
             failure = agent_failure(directory / 'agent.log')
             if failure:
-                raise AgentUnavailable(failure)
+                raise failure
             raise
         except (RuntimeError, OSError) as error:
-            raise AgentUnavailable(agent_failure(directory / 'agent.log') or str(error)) from error
+            raise (agent_failure(directory / 'agent.log') or AgentUnavailable(str(error))) from error
         failure = agent_failure(directory / 'agent.log')
         if failure:
-            raise AgentUnavailable(failure)
+            raise failure
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
@@ -379,6 +406,8 @@ class Runner:
         # Never erase unexpected edits, index changes, or another process's commits.
         self.invariant(session)
         paths = self.paths(tracked, session["active"])
+        if retryable and paths:
+            active["candidate_archived"] = True
         try:
             # A WIP may be incomplete/nonmatching, but it must still obey the
             # repository boundary: never put assembly dumps or binaries in Git.
@@ -479,9 +508,11 @@ class Runner:
             raise RuntimeError('Unexpected recovery branch/commit; inspect preserved work')
         session.update(branch='main', head=session['integration_head'])
         self.invariant(session)
-        from decomp_runtime import attempt_result
-        self.w.write(self.w.ROOT / active['context'] / 'result.json',
-                     attempt_result(self.w.ROOT, active, 'interrupted', active.get('failure', 'Interrupted batch')))
+        result_path = self.w.ROOT / active['context'] / 'result.json'
+        if not result_path.exists():
+            from decomp_runtime import attempt_result
+            self.w.write(result_path, attempt_result(
+                self.w.ROOT, active, 'interrupted', active.get('failure', 'Interrupted batch')))
         session.setdefault('interrupted', []).append(dict(active))
         session.update(active=None, retry_target=key(active), stop_reason=None,
                        phase='running',
@@ -588,6 +619,12 @@ class Runner:
             except KeyboardInterrupt:
                 self.reject(session, tracked, "Interrupted during agent/validation; candidate archived", retryable=True)
                 raise
+            except AgentUsageLimited as error:
+                self.reject(session, tracked, str(error), retryable=True)
+                print(f"Codex usage limit reached for {key(active)}. Retrying in 30 minutes.", flush=True)
+                time.sleep(USAGE_RETRY_SECONDS)
+                self.resume(session)
+                continue
             except AgentUnavailable as error:
                 self.reject(session, tracked, str(error), retryable=True)
                 # Exit before final validation and before selecting another function.

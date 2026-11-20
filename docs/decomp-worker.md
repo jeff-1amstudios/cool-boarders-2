@@ -40,11 +40,16 @@ integration phases stop for inspection. Clean, linear commits changing only the
 supervisor scripts, this guide or README may be made before recovery; game,
 compiler and validation inputs must remain unchanged.
 
-Codex usage limits, failed turns and launcher failures stop the entire batch with
-a nonzero exit. The supervisor archives/checkpoints the candidate, restores main,
-and records an interrupted attempt without deferring the function or selecting
-another target. No final rebuild runs on this infrastructure exit. Once access
-is available again, run `start` to retry that function and continue the batch.
+When Codex reports a usage limit, the supervisor archives the attempt and
+restores main. Every 30 minutes it retries the same function with a fresh
+Ghidra export. The retry doubles as the availability check. The new worker
+can pick up archived candidate edits, and the batch keeps its completed and
+deferred counts. Ctrl-C during the wait leaves the batch available for `start`
+to resume.
+
+Other failed turns and launcher failures still exit with a nonzero status
+after archiving the attempt and restoring main. Run `start` after resolving
+the failure to retry that function and continue the batch.
 
 Batch subprocesses default to `TQDM_DISABLE=1`, so Splat progress bars are disabled
 for workers and supervisor validation alike. Warnings, errors and summaries remain
