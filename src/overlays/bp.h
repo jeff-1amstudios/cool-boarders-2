@@ -496,4 +496,32 @@ typedef struct BpScore {
 
 int func_80068BA0(BpScorePlayer *player, BpScore *score);
 
+typedef struct BpMoveInput {
+    unsigned char timer;
+    unsigned char timeout;
+    unsigned char step;
+    unsigned char step_count;
+    short state;
+    short id;
+    unsigned int masks[16];
+} BpMoveInput;
+
+typedef struct BpMovePlayer {
+    unsigned char unknown_000[0x28];
+    unsigned int input;
+    unsigned char unknown_02c[0x12];
+    short airborne;
+    unsigned char unknown_040[0x40];
+    unsigned int previous_input;
+    unsigned char unknown_084[0x804];
+    BpMoveInput moves[13];
+} BpMovePlayer;
+
+typedef struct BpMoveAlias {
+    short id;
+    short alias;
+} BpMoveAlias;
+
+int func_80069028(BpMovePlayer *player);
+
 #endif

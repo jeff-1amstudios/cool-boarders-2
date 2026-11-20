@@ -236,6 +236,12 @@ extern int D_80097BAC[13];
 extern unsigned short D_80097BE0[16];
 extern unsigned short D_80097C00[8];
 
+extern BpMoveAlias D_80097C10[6];
+extern unsigned short D_8009D63E;
+extern unsigned short D_8009D640;
+extern unsigned short D_8009D642;
+extern unsigned short D_8009D644;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2710,4 +2716,126 @@ int func_80068FD0(BpScore *score)
          + score->duration_bonus + score->heading_bonus
          + score->rotation_bonus[0] + score->rotation_bonus[1]
          + score->combined_bonus + score->distance_bonus;
+}
+
+// FUNCTION: BP.BIN:0x80069028
+int func_80069028(BpMovePlayer *player)
+{
+    int allowed[4];
+    int value;
+    int result = 0;
+    unsigned int input = player->input;
+    int clear_other_moves = -(player->airborne == 0);
+    unsigned int previous_input = player->previous_input;
+    int i;
+
+    {
+        int empty = -1;
+
+        for (i = 3; i >= 0; i--) {
+            allowed[i] = empty;
+        }
+    }
+
+    i = 0;
+    if (!clear_other_moves) {
+        unsigned int pressed = (input ^ previous_input) & input;
+
+        do {
+            BpMoveInput *move = player->moves + i;
+
+        check_step:
+            value = move->masks[move->step];
+            if (move->step < move->step_count && (pressed & value)) {
+                move->timer = 0;
+                if (move->step == move->step_count - 1) {
+                    int alias;
+
+                    clear_other_moves = -1;
+                    value = 1;
+                    alias = 0;
+                    result = move->id;
+                    move->state = -1;
+                    allowed[0] = result;
+                    do {
+                        if (result == D_80097C10[alias].id) {
+                            allowed[value++] = D_80097C10[alias].alias;
+                        }
+                        alias++;
+                    } while (alias < 5);
+
+                    if (value < 4) {
+                        int *fill = (int *)(value * sizeof(int) + (unsigned int)allowed);
+
+                        do {
+                            *fill++ = -1;
+                            value++;
+                        } while (value < 4);
+                    }
+                } else {
+                    unsigned char step = move->step + 1;
+                    unsigned int direction_mask;
+
+                    move->step = step;
+                    direction_mask = D_8009D642 | D_8009D644 | D_8009D63E | D_8009D640;
+                    if (!(value & direction_mask) && (move->masks[step] & direction_mask)) {
+                        goto check_step;
+                    }
+                }
+            } else if (move->state == -1) {
+                if ((value & input) == value) {
+                    result = move->id;
+                    move->timer = 0;
+                } else {
+                    move->timer = move->timeout + 1;
+                }
+            } else {
+                move->timer++;
+            }
+
+            if (move->timer > move->timeout) {
+                move->timer = 0;
+                move->step = 0;
+                move->state = 0;
+            }
+            i++;
+        } while (i < 13);
+
+        if (!clear_other_moves) {
+            return result;
+        }
+        i = 0;
+    }
+
+    {
+        int index = 0;
+
+        do {
+            BpMoveInput *move = player->moves + index;
+            int count;
+            int *next;
+
+            value = move->id;
+            count = 0;
+            next = allowed;
+
+            do {
+                if (value == *next) {
+                    goto check_match_count;
+                }
+                count++;
+                next++;
+            } while (count < 4);
+
+        check_match_count:
+            if (count >= 4) {
+                move->timer = 0;
+                move->step = 0;
+                move->state = 0;
+            }
+            index++;
+            i++;
+        } while (i < 13);
+    }
+    return result;
 }
