@@ -172,6 +172,7 @@ extern char D_80095A80[30];
 extern BpLightingTable D_80095AA0;
 extern GsF_LIGHT D_8009FC10[3];
 extern int D_8009FEC0;
+extern int D_8009FEB8;
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -1861,4 +1862,15 @@ void func_80063000(GsOT *ot, GsOT_TAG *tags, unsigned long length)
     ot->tag = tags + (1UL << length) - 1;
     ot->offset = 0;
     ot->point = 0;
+}
+
+// FUNCTION: BP.BIN:0x80063028
+void func_80063028(BpPlayer *player)
+{
+    BpCameraState *camera = *(BpCameraState **)((unsigned char *)player + 0x6D8);
+
+    D_8009FEB8 = 0;
+    GsInitCoordinate2(0, &((BpMotionTransform *)camera)->coordinate);
+    func_8005F964(player, 0);
+    GsSetRefView2(&camera->view);
 }
