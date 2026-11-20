@@ -242,6 +242,12 @@ extern unsigned short D_8009D640;
 extern unsigned short D_8009D642;
 extern unsigned short D_8009D644;
 
+extern POLY_FT4 D_8009EA48;
+extern char D_800961B0[9];
+extern char D_8009EA70[9];
+extern int D_8009EA80;
+extern int D_8009FC5C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2911,4 +2917,40 @@ void func_80069614(BpMotionPlayer *player)
         i++;
         history_a++;
     } while (i < 16);
+}
+
+// FUNCTION: BP.BIN:0x80069648
+void func_80069648(int mode)
+{
+    int texture_index = 4;
+    int texture_stride;
+    int u;
+
+    if (mode != 0) {
+        D_8009EA80 = -1;
+    } else {
+        D_8009EA80 = 0;
+    }
+
+    __builtin_memcpy(D_8009EA70, D_800961B0, sizeof(D_800961B0));
+    D_8009FC5C = 0;
+    D_8009EA70[4] = '"';
+
+    SetPolyFT4(&D_8009EA48);
+    D_8009EA48.r0 = 128;
+    D_8009EA48.g0 = 128;
+    D_8009EA48.b0 = 128;
+    D_8009EA48.clut = GetClut(816, 464);
+    D_8009EA48.tpage = GetTPage(0, 2, 384, 256);
+
+    texture_stride = 24;
+    D_8009EA48.v0 = 0;
+    D_8009EA48.v1 = 0;
+    D_8009EA48.v2 = 47;
+    D_8009EA48.v3 = 47;
+    u = texture_index * texture_stride;
+    D_8009EA48.u0 = u;
+    D_8009EA48.u1 = u + 47;
+    D_8009EA48.u2 = u;
+    D_8009EA48.u3 = u + 47;
 }

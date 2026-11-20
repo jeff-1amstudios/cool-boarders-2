@@ -529,4 +529,6 @@ int func_800694E0(BpResetEntry *entry, int amount, unsigned int positive_input,
 
 void func_80069614(BpMotionPlayer *player);
 
+void func_80069648(int mode);
+
 #endif
