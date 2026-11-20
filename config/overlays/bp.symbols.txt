@@ -270,3 +270,4 @@ func_80016220 = 0x80016220; // type:func
 VSync = 0x8003BD60; // type:func
 func_80064944 = 0x80064944; // type:func
 func_8009538C = 0x8009538C; // type:func
+func_80064B7C = 0x80064B7C; // type:func

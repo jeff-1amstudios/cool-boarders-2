@@ -2439,3 +2439,9 @@ inactive:
         playback->animation.word_4dc = -1;
     }
 }
+
+// FUNCTION: BP.BIN:0x80064B7C
+void func_80064B7C(void)
+{
+    return;
+}
