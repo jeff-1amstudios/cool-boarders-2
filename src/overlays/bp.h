@@ -418,4 +418,13 @@ typedef struct BpPlayerCoordinates {
 
 void func_80068770(BpPlayerCoordinates *player);
 
+typedef struct BpStartLocation {
+    BpRenderEntry *entry;
+    int x, y, z;
+    unsigned char unknown_10[4];
+    short related[3];
+} BpStartLocation;
+
+int func_8006889C(BpStartPlayer *player, int start, short x, short y, short z);
+
 #endif
