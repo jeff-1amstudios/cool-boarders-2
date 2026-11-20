@@ -2839,3 +2839,59 @@ int func_80069028(BpMovePlayer *player)
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x800694E0
+int func_800694E0(BpResetEntry *entry, int amount, unsigned int positive_input,
+                  unsigned int negative_input, unsigned int held)
+{
+    int result = amount;
+    int saved_amount;
+    int timer;
+
+    if (held) {
+        if (entry->value_08 == 0) {
+            if (result != 0 && ((result > 0 && !positive_input) ||
+                                (result < 0 && !negative_input))) {
+                entry->word_00 = 30;
+                entry->word_04 = amount;
+            }
+
+            saved_amount = entry->word_04;
+            if (saved_amount != 0 && ((saved_amount > 0 && negative_input) ||
+                                      (saved_amount < 0 && positive_input))) {
+                entry->value_08 = -1;
+            }
+        }
+
+        saved_amount = entry->word_04;
+        if (entry->value_08 != 0) {
+            entry->value_08 = ((saved_amount > 0 && positive_input) ||
+                               (saved_amount < 0 && negative_input)) ? -2 : -1;
+        }
+    }
+
+    if (!held) {
+        if (entry->word_00 <= 0) {
+            goto expired;
+        }
+        if (entry->value_08 == -2) {
+            entry->value_0a = -1;
+            saved_amount = entry->word_04;
+            result = saved_amount + saved_amount / 2;
+        }
+    }
+
+    if (entry->word_00 > 0) {
+        timer = entry->word_00 - 1;
+    } else {
+    expired:
+        timer = 0;
+    }
+    entry->word_00 = timer;
+    if (!held || timer == 0) {
+        entry->word_00 = 0;
+        entry->value_08 = 0;
+        entry->word_04 = 0;
+    }
+    return result;
+}

@@ -524,4 +524,7 @@ typedef struct BpMoveAlias {
 
 int func_80069028(BpMovePlayer *player);
 
+int func_800694E0(BpResetEntry *entry, int amount, unsigned int positive_input,
+                  unsigned int negative_input, unsigned int held);
+
 #endif
