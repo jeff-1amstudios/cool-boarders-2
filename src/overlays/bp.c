@@ -205,6 +205,13 @@ extern BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFram
 extern GsCOORDINATE2 *func_80064460(BpAnimationState *state, GsCOORDINATE2 *parent,
                                  int offset, int extent);
 
+extern void func_800139C4(unsigned char *buffer);
+extern void func_80013A20(unsigned char *data);
+extern RECT D_800960EC;
+extern RECT D_800960F4;
+extern RECT D_800960FC;
+extern RECT D_80096104;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2263,4 +2270,39 @@ check_index:
     D_8009FA24 = flags;
 done:
     return root;
+}
+
+// FUNCTION: BP.BIN:0x80064574
+void func_80064574(int flip_first, int flip_second)
+{
+    RECT first_image = D_800960EC;
+    RECT second_image = D_800960F4;
+    RECT first_detail = D_800960FC;
+    RECT second_detail = D_80096104;
+    u_long pixels[2048];
+
+    if (flip_first == -1) {
+        StoreImage(&first_image, pixels);
+        DrawSync(0);
+        func_800139C4((unsigned char *)pixels);
+        LoadImage(&first_image, pixels);
+        DrawSync(0);
+        StoreImage(&first_detail, pixels);
+        DrawSync(0);
+        func_80013A20((unsigned char *)pixels);
+        LoadImage(&first_detail, pixels);
+        DrawSync(0);
+    }
+    if (flip_second == -1) {
+        StoreImage(&second_image, pixels);
+        DrawSync(0);
+        func_800139C4((unsigned char *)pixels);
+        LoadImage(&second_image, pixels);
+        DrawSync(0);
+        StoreImage(&second_detail, pixels);
+        DrawSync(0);
+        func_80013A20((unsigned char *)pixels);
+        LoadImage(&second_detail, pixels);
+        DrawSync(0);
+    }
 }
