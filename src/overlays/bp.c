@@ -2701,3 +2701,13 @@ void func_80068F40(BpScore *score)
     score->move_index[1] = -1;
     score->unknown_26 = 0;
 }
+
+// FUNCTION: BP.BIN:0x80068FD0
+int func_80068FD0(BpScore *score)
+{
+    return score->height_bonus + score->reverse + score->reverse_bonus
+         + score->move_bonus[0] + score->move_bonus[1]
+         + score->duration_bonus + score->heading_bonus
+         + score->rotation_bonus[0] + score->rotation_bonus[1]
+         + score->combined_bonus + score->distance_bonus;
+}
