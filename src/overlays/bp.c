@@ -2678,3 +2678,26 @@ int func_80068BA0(BpScorePlayer *player, BpScore *score)
     }
     return func_80068FD0(score);
 }
+
+// FUNCTION: BP.BIN:0x80068F40
+void func_80068F40(BpScore *score)
+{
+    int move;
+
+    score->combined_bonus = 0;
+    score->rotation_bonus[0] = score->rotation_bonus[0] / 3;
+    move = score->move_bonus[1] != 0;
+    score->rotation_bonus[1] = score->rotation_bonus[1] / 3;
+    ((unsigned char *)score + move)[4] = 0;
+    score->duration_bonus = 0;
+    score->heading_bonus = 0;
+    score->unknown_07 = 0;
+    score->reverse = 0;
+    score->unknown_08[0] = 0;
+    score->reverse_bonus = 0;
+    score->rotations[0] = 0;
+    score->rotations[1] = 0;
+    score->move_index[0] = -1;
+    score->move_index[1] = -1;
+    score->unknown_26 = 0;
+}
