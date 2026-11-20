@@ -276,3 +276,4 @@ RotMatrixX = 0x8002093C; // type:func
 RotMatrixY = 0x80020ADC; // type:func
 RotMatrixZ = 0x80020C7C; // type:func
 func_8006E328 = 0x8006E328; // type:func
+func_80068B10 = 0x80068B10; // type:func

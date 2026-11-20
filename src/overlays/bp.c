@@ -2519,3 +2519,12 @@ int func_8006889C(BpStartPlayer *player, int start, short x, short y, short z)
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x80068B10
+int func_80068B10(int id)
+{
+    /* Preserve the original unused stack frame. */
+    volatile unsigned char unused[16];
+
+    return 0;
+}
