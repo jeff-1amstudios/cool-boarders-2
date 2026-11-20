@@ -178,6 +178,14 @@ extern BpStartOffsets D_80095B78;
 extern BpStartOffsets D_80095C38;
 extern int func_8006889C(BpStartPlayer *player, int start, short x, short y, short z);
 
+extern void func_80064B84(BpRiderTuning *tuning, int mode);
+extern BpRiderCourseValues D_80095CF8;
+extern BpRiderBaseValues D_80095D18;
+extern BpRiderCourseFlags D_80095F98;
+extern BpRiderCourseScales D_800960D8;
+extern BpRiderProfile D_80097AB8[8];
+extern int D_80097BA8;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -1903,4 +1911,87 @@ void func_800633AC(BpStartPlayer *player, int course, int side)
 
     func_8006889C(player, 1, x, 0, z);
     player->initial_surface = player->surface;
+}
+
+// FUNCTION: BP.BIN:0x80063510
+void func_80063510(BpRider *rider, int player, int character, int tuning, int option,
+                   void *first, void *second, void *third)
+{
+    BpRiderCourseValues course_values;
+    BpRiderBaseValues base_values;
+    BpRiderCourseFlags course_flags;
+    BpRiderCourseScales course_scales;
+    BpRiderTuning *rider_tuning;
+    BpSetupState *setup;
+    BpSetupInputs *inputs;
+    int course;
+    int alternate;
+    int course_flag;
+    short course_value;
+    int scaled_value;
+    int base_value;
+
+    course_values = D_80095CF8;
+    base_values = D_80095D18;
+    course_flags = D_80095F98;
+    course_scales = D_800960D8;
+
+    course = ((BpSelectionView *)D_8009FC94)->course;
+    rider_tuning = &rider->tuning;
+    setup = func_8001F1A0(sizeof(*setup));
+
+    if (character >= 0) {
+        alternate = 0;
+    } else {
+        alternate = -character;
+        character = ~character;
+    }
+
+    course_flag = course_flags.values[D_80097BA8][course][character];
+    base_value = base_values.values[D_80097BA8][course][character];
+
+    rider->unknown_66 = -1;
+    rider->active = 1;
+    rider->flags = 0xFF;
+    rider->profile = &D_80097AB8[character];
+    rider->variant = alternate + 1;
+    rider->character = character;
+    rider->alternate = alternate;
+    rider->unknown_5b = 0;
+
+    if (character == 5)
+        tuning = 12;
+    if (character == 6)
+        tuning = 13;
+
+    rider_tuning->index = tuning;
+    rider_tuning->word_44 = 0;
+    rider_tuning->word_48 = 0;
+    func_80064B84(rider_tuning, 0);
+
+    course_value = course_values.values[course];
+    rider->course_flag = course_flag;
+    rider->course_value = course_value;
+    scaled_value = base_value * course_scales.values[course] / 100;
+    rider->unknown_6c = 0;
+    rider->unknown_62 = 0;
+    rider->interval = 30;
+    rider->scaled_value = scaled_value;
+
+    if (option != 0)
+        rider->option = option;
+    else
+        rider->option = -1;
+
+    inputs = (BpSetupInputs *)setup->unknown_0010;
+    inputs->first = first;
+    inputs->second = second;
+    inputs->third = third;
+    func_800641E8(setup, 0, alternate != 0, -(character == 6));
+
+    rider->values = setup->values;
+    rider->word_7c = setup->word_0c;
+    rider->value = setup->value;
+    rider->link = setup->link;
+    func_8001F378(setup);
 }

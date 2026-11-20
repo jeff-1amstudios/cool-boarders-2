@@ -225,4 +225,65 @@ typedef struct BpStartPlayer {
 
 void func_800633AC(BpStartPlayer *player, int course, int side);
 
+typedef struct BpRiderProfile {
+    unsigned char bytes[16];
+} BpRiderProfile;
+
+typedef struct BpRiderTuning {
+    int index;
+    unsigned char unknown_04[0x40];
+    int word_44;
+    int word_48;
+    unsigned char unknown_4c[4];
+} BpRiderTuning;
+
+typedef struct BpRider {
+    short active;
+    unsigned char flags;
+    unsigned char character;
+    BpRiderTuning tuning;
+    BpRiderProfile *profile;
+    short variant;
+    unsigned char alternate;
+    unsigned char unknown_5b;
+    short course_value;
+    short course_flag;
+    short interval;
+    short unknown_62;
+    short option;
+    short unknown_66;
+    int scaled_value;
+    int unknown_6c;
+    BpSetupValues values;
+    unsigned int word_7c;
+    unsigned char unknown_0080[0x1200];
+    BpSetupLink *link;
+    short value;
+} BpRider;
+
+typedef struct BpRiderCourseValues {
+    short values[16];
+} BpRiderCourseValues;
+
+typedef struct BpRiderBaseValues {
+    int values[2][10][8];
+} BpRiderBaseValues;
+
+typedef struct BpRiderCourseFlags {
+    short values[2][10][8];
+} BpRiderCourseFlags;
+
+typedef struct BpRiderCourseScales {
+    short values[10];
+} BpRiderCourseScales;
+
+typedef struct BpSetupInputs {
+    void *first;
+    void *second;
+    void *third;
+} BpSetupInputs;
+
+void func_80063510(BpRider *rider, int player, int character, int tuning, int option,
+                   void *first, void *second, void *third);
+
 #endif
