@@ -257,6 +257,8 @@ extern int D_80097D2C;
 extern void func_80074A38(GsOT *ot);
 extern void func_800749E0(GsOT *ot, int x, int y);
 
+extern PACKET *func_80078E54(GsOT_TAG *tag, PACKET *packets, int *data, int different);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3014,4 +3016,10 @@ int func_800699B4(GsOT *ot, int move_left, int position, int x, int y)
     }
     func_800749E0(ot, position + x, y - 52);
     return position;
+}
+
+// FUNCTION: BP.BIN:0x8006A668
+void func_8006A668(GsOT *ot, void *data, int different)
+{
+    D_80058ACC = func_80078E54(&ot->org[3], D_80058ACC, data, different);
 }
