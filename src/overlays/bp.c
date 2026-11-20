@@ -228,6 +228,8 @@ extern void func_80015FC8(void);
 extern void func_80016010();
 extern int func_80016220(void);
 
+extern int func_80016A24(unsigned long voice_bit, int sample_index);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -2527,4 +2529,34 @@ int func_80068B10(int id)
     volatile unsigned char unused[16];
 
     return 0;
+}
+
+// FUNCTION: BP.BIN:0x80068B24
+void func_80068B24(int sample_index, int mode)
+{
+    if (sample_index < 0) {
+        return;
+    }
+    if (mode == 5) {
+        if (sample_index < 34) {
+            if (sample_index < 29) {
+                sample_index = 27;
+            } else {
+                sample_index = 26;
+            }
+        } else {
+            sample_index = 27;
+        }
+    } else if (mode == 6) {
+        if (sample_index < 34) {
+            if (sample_index >= 29) {
+                sample_index = 26;
+            } else {
+                sample_index = 27;
+            }
+        } else {
+            sample_index = 27;
+        }
+    }
+    func_80016A24(0x10000UL, sample_index);
 }
