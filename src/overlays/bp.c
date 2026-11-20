@@ -255,6 +255,7 @@ extern void func_800745E4(GsOT_TAG *tag, int x, int y);
 extern int D_80097D28;
 extern int D_80097D2C;
 extern void func_80074A38(GsOT *ot);
+extern void func_800749E0(GsOT *ot, int x, int y);
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -2994,4 +2995,23 @@ void func_80069934(GsOT *ot, int different)
         D_80097D2C = 10;
         D_80097D28 = -(D_80097D28 == 0);
     }
+}
+
+// FUNCTION: BP.BIN:0x800699B4
+int func_800699B4(GsOT *ot, int move_left, int position, int x, int y)
+{
+    if (move_left != 0) {
+        position -= 4;
+    } else {
+        position += 4;
+    }
+    if (position < 80) {
+        position = 80;
+    }
+
+    if (position > 160) {
+        position = 160;
+    }
+    func_800749E0(ot, position + x, y - 52);
+    return position;
 }
