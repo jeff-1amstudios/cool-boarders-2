@@ -403,4 +403,6 @@ typedef struct BpModeSoundBanks {
 
 void func_8006474C(void);
 
+void func_80064944(BpAnimationPlayback *playback, int animation, int mode, int end_frame);
+
 #endif
