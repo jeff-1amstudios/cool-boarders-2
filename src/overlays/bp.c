@@ -277,6 +277,17 @@ extern PACKET *func_80085824(GsOT_TAG *tag, PACKET *packets, short different,
                              short score, short first_flag, short second_flag,
                              short x, short y);
 
+extern int D_8009EA88;
+extern int D_8009EA8C;
+extern BpCoursePoint *D_8009EA90[2];
+extern int D_8009EA98[2];
+extern BpCoursePoint D_80097D88[2];
+extern BpCoursePoint D_80097DB0[5];
+extern BpCoursePoint D_80097E14[6];
+extern BpCoursePoint D_80097E8C[3];
+extern BpCoursePoint D_80097EC8[4];
+extern BpCoursePoint D_80097F18[2];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3146,4 +3157,69 @@ void func_8006AF48(GsOT *ot, BpPlayer *player, int different)
     }
     D_80058ACC = func_80085824(tag, D_80058ACC, (short)different, (short)delta,
                               first_flag, second_flag, x, y);
+}
+
+// FUNCTION: BP.BIN:0x8006B088
+void func_8006B088(int course, int direction)
+{
+    int limit;
+    int list;
+    int point;
+
+    switch (course) {
+    case 0:
+    case 9:
+    case 15:
+        limit = 0x7FFF;
+        break;
+    default:
+        limit = 0x200;
+        break;
+    }
+    D_8009EA88 = limit;
+
+    switch (course) {
+    case 3:
+        D_8009EA90[0] = D_80097D88;
+        D_8009EA98[0] = 2;
+        D_8009EA98[1] = 0;
+        D_8009EA8C = 1;
+        break;
+    case 5:
+        D_8009EA90[0] = D_80097DB0;
+        D_8009EA90[1] = D_80097E14;
+        D_8009EA98[1] = 6;
+        D_8009EA98[0] = course;
+        D_8009EA8C = 2;
+        break;
+    case 9:
+        D_8009EA90[0] = D_80097E8C;
+        D_8009EA98[0] = 3;
+        D_8009EA98[1] = 0;
+        D_8009EA8C = 1;
+        break;
+    case 15:
+        D_8009EA90[0] = D_80097EC8;
+        D_8009EA90[1] = D_80097F18;
+        D_8009EA98[0] = 4;
+        D_8009EA98[1] = 2;
+        D_8009EA8C = 2;
+        break;
+    default:
+        D_8009EA98[0] = 0;
+        D_8009EA98[1] = 0;
+        D_8009EA8C = 0;
+        break;
+    }
+
+    if (direction == -1) {
+        for (list = 0; list < D_8009EA8C; list++) {
+            for (point = 0; point < D_8009EA98[list]; point++) {
+                BpCoursePoint *entry = (BpCoursePoint *)(
+                    (unsigned int)(point * sizeof(BpCoursePoint)) + (unsigned int)D_8009EA90[list]);
+                long *x = &entry->position.vx;
+                *x = -*x;
+            }
+        }
+    }
 }

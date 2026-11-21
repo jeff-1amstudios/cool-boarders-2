@@ -573,4 +573,11 @@ typedef struct BpHudPlayer {
     short state_48fe;
 } BpHudPlayer;
 
+typedef struct BpCoursePoint {
+    int index;
+    VECTOR position;
+} BpCoursePoint;
+
+void func_8006B088(int course, int direction);
+
 #endif
