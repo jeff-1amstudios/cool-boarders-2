@@ -4381,3 +4381,10 @@ int func_800744DC(void)
     D_8009EC2C = func_8001F1A0(18 * sizeof(DR_MODE));
     return -(D_8009EC2C != 0);
 }
+
+// FUNCTION: BP.BIN:0x80074524
+void func_80074524(void)
+{
+    func_8001F378(D_8009EC28);
+    func_8001F378(D_8009EC2C);
+}
