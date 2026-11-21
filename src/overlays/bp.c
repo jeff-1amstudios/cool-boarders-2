@@ -351,6 +351,10 @@ extern void func_800783FC(void *effects, int first, int second, int third, int e
 extern unsigned short D_8009D62E;
 extern unsigned short D_8009D632;
 
+extern unsigned int D_8009EBD8;
+extern int D_8009FE64;
+extern int D_8009FE68;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4264,4 +4268,12 @@ void func_80073CE4(BpPlayer *player, int side)
         func_80061E1C((BpMotionPlayer *)player, 0);
         func_80061E1C((BpMotionPlayer *)player, 0);
     }
+}
+
+// FUNCTION: BP.BIN:0x80073E98
+void func_80073E98(void)
+{
+    D_8009EBD8 = 0;
+    D_8009FE64 = 0;
+    D_8009FE68 = 0;
 }
