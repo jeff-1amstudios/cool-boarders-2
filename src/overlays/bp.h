@@ -616,4 +616,7 @@ typedef struct BpCourseStatus {
     short active;
 } BpCourseStatus;
 
+int func_800707F4(VECTOR *start, VECTOR *end, VECTOR *edge_start,
+                  VECTOR *edge_end, VECTOR *intersection);
+
 #endif
