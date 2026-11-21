@@ -580,4 +580,7 @@ typedef struct BpCoursePoint {
 
 void func_8006B088(int course, int direction);
 
+int func_8006BB90(BpPlayer *player, BpCoursePoint *points, VECTOR *position,
+                  int list, int index);
+
 #endif

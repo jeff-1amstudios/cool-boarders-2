@@ -288,6 +288,8 @@ extern BpCoursePoint D_80097E8C[3];
 extern BpCoursePoint D_80097EC8[4];
 extern BpCoursePoint D_80097F18[2];
 
+extern int func_8006EEF0(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3222,4 +3224,32 @@ void func_8006B088(int course, int direction)
             }
         }
     }
+}
+
+// FUNCTION: BP.BIN:0x8006BB90
+int func_8006BB90(BpPlayer *player, BpCoursePoint *points, VECTOR *position,
+                  int list, int index)
+{
+    int unused[2]; /* Preserves the reference stack frame. */
+    int matched = -1;
+    int segment = 0;
+
+    if (D_8009EA98[list] - 1 > 0) {
+        do {
+            if (points[segment].index <= index && index <= points[segment + 1].index) {
+                matched = func_8006EEF0(&points[segment].position,
+                                      &points[segment + 1].position, position, 0);
+                if (matched != 0) {
+                    break;
+                }
+            } else {
+                matched = 0;
+            }
+            segment++;
+        } while (segment < D_8009EA98[list] - 1);
+    }
+    if (matched == 0) {
+        segment = -1;
+    }
+    return segment;
 }
