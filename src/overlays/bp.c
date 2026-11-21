@@ -365,6 +365,8 @@ extern void func_800743A8(int index, int texture_x, int texture_y,
 
 extern DR_MODE *D_8009EC2C;
 
+extern void func_800944E8(GsOT_TAG *tag, SPRT *sprite);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4387,4 +4389,15 @@ void func_80074524(void)
 {
     func_8001F378(D_8009EC28);
     func_8001F378(D_8009EC2C);
+}
+
+// FUNCTION: BP.BIN:0x800745E4
+void func_800745E4(GsOT_TAG *tag, int x, int y)
+{
+    SPRT *sprite = D_8009EC28;
+
+    sprite->x0 = x;
+    sprite->y0 = y;
+    func_800944E8(tag, sprite);
+    func_8009456C(tag, D_8009EC2C);
 }
