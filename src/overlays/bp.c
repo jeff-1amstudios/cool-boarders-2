@@ -4722,3 +4722,9 @@ void func_800782C0(void)
 {
     func_8001F378(D_8009FC40);
 }
+
+// FUNCTION: BP.BIN:0x80078E34
+void func_80078E34(void *effects)
+{
+    func_8001F378(effects);
+}
