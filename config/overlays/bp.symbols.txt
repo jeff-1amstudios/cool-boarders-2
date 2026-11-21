@@ -424,3 +424,5 @@ D_8009EC3C = 0x8009EC3C; // size:0x34
 D_8009EC30 = 0x8009EC30; // size:0x4
 D_8009EC34 = 0x8009EC34; // size:0x4
 D_8009EC38 = 0x8009EC38; // size:0x4
+
+func_8007516C = 0x8007516C; // type:func

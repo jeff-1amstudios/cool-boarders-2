@@ -4576,3 +4576,18 @@ void func_80074EA0(POLY_GT4 *polygon, int texture_x, int texture_y,
     polygon->x3 = display_width;
     polygon->y3 = display_height;
 }
+
+// FUNCTION: BP.BIN:0x8007516C
+int func_8007516C(void)
+{
+    D_8009EC30 = func_8001F1A0(0xB4);
+    if (D_8009EC30 == 0) {
+        return 0;
+    }
+    D_8009EC34 = func_8001F1A0(0x6C);
+    if (D_8009EC34 == 0) {
+        return 0;
+    }
+    D_8009EC38 = func_8001F1A0(0x24);
+    return -(D_8009EC38 != 0);
+}
