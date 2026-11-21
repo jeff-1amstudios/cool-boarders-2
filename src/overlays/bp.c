@@ -4716,3 +4716,9 @@ void func_80077D9C(int count)
         D_8009FC40[i].previous_screen.packed = 0x7FFF7FFF;
     }
 }
+
+// FUNCTION: BP.BIN:0x800782C0
+void func_800782C0(void)
+{
+    func_8001F378(D_8009FC40);
+}
