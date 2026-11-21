@@ -336,6 +336,8 @@ extern void func_8007C358(int value);
 extern int func_80072BA0(GsOT *ot, int *options, int count, int x, int y,
                          unsigned int buttons, unsigned int previous);
 
+extern int D_8009EBC8;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4025,4 +4027,10 @@ int func_800720D8(BpPlayer *player, BpPlayer *second)
     } while (1);
     SpuSetKey(0, 0x100000);
     return result;
+}
+
+// FUNCTION: BP.BIN:0x80072680
+void func_80072680(void)
+{
+    D_8009EBC8 = 0;
 }
