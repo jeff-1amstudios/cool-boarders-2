@@ -4890,3 +4890,18 @@ int func_8007BD9C(int course, int value)
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x8007BEC4
+int func_8007BEC4(int value, int divisor)
+{
+    int result;
+
+    if (value < 62) {
+        result = value;
+    } else if (value < 72) {
+        result = (value - 61) * 12 / 10 + 61;
+    } else {
+        result = value - 10;
+    }
+    return result * 255 / divisor;
+}
