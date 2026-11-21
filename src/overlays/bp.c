@@ -4303,3 +4303,9 @@ unsigned int func_80073EB8(void)
     first.value = first.buttons;
     return D_8009EBD8 = first.buttons | second;
 }
+
+// FUNCTION: BP.BIN:0x80073F6C
+unsigned int func_80073F6C(unsigned int buttons)
+{
+    return 0;
+}
