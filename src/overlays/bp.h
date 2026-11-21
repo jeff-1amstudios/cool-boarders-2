@@ -619,4 +619,7 @@ typedef struct BpCourseStatus {
 int func_800707F4(VECTOR *start, VECTOR *end, VECTOR *edge_start,
                   VECTOR *edge_end, VECTOR *intersection);
 
+int func_80070AE8(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
+                  SVECTOR *edge_end, SVECTOR *intersection);
+
 #endif
