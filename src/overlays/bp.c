@@ -290,6 +290,11 @@ extern BpCoursePoint D_80097F18[2];
 
 extern int func_8006EEF0(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection);
 
+extern int func_8006DC24(BpCollisionGeometry *geometry, SVECTOR *start, SVECTOR *end,
+                         SVECTOR *hit_start, SVECTOR *hit_end, int mode);
+extern void func_80071744(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
+extern void func_80070DE8(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3252,4 +3257,96 @@ int func_8006BB90(BpPlayer *player, BpCoursePoint *points, VECTOR *position,
         segment = -1;
     }
     return segment;
+}
+
+// FUNCTION: BP.BIN:0x8006D8CC
+int func_8006D8CC(BpPlayer *player, VECTOR *start, VECTOR *end, int entry_index, int mode)
+{
+    BpRenderEntry *entry = &D_8009FA28[entry_index];
+    BpCollisionEntries entries = {entry_index, entry->related[0], entry->related[1],
+                                 entry->related[2]};
+    SVECTOR local_start;
+    SVECTOR local_end;
+    SVECTOR hit_starts[4];
+    SVECTOR hit_ends[4];
+    SVECTOR movement;
+    SVECTOR edge;
+    int surface;
+    int best;
+    int selected;
+    int i;
+    int distance;
+    BpCollisionModel *model;
+    BpCollisionGeometry *geometry;
+
+    best = -1;
+    selected = -1;
+    surface = 0;
+    i = 0;
+    do {
+        int candidate_index = *(int *)((char *)&entries + i * sizeof(int));
+
+        if (candidate_index >= 0) {
+            entry = &D_8009FA28[candidate_index];
+            local_start.vx = start->vx - ((int *)entry->unknown_00)[0];
+            local_start.vy = start->vy - ((int *)entry->unknown_00)[1];
+            local_start.vz = start->vz - ((int *)entry->unknown_00)[2];
+            local_end.vx = end->vx - ((int *)entry->unknown_00)[0];
+            local_end.vy = end->vy - ((int *)entry->unknown_00)[1];
+            local_end.vz = end->vz - ((int *)entry->unknown_00)[2];
+            switch (mode) {
+            case 0: {
+                SVECTOR *segment_start = &local_start;
+
+                geometry = (*(BpCollisionModel **)(entry->unknown_12 + 0xE))->geometry;
+                distance = func_8006DC24(geometry, segment_start, &local_end,
+                                         &hit_starts[i], &hit_ends[i], 1);
+                if (distance >= 0 && best < distance) {
+                    best = distance;
+                    selected = i;
+                }
+                surface = *(short *)((char *)player + 0x730);
+                break;
+            }
+            case 1:
+                geometry = 0;
+                model = *(BpCollisionModel **)(entry->unknown_12 + 0x1A);
+                if (model != 0) {
+                    geometry = model->geometry;
+                }
+                if (geometry != 0) {
+                    distance = func_8006DC24(geometry, &local_start, &local_end,
+                                             &hit_starts[i], &hit_ends[i], 0);
+                    if (distance >= 0 && (best < 0 || distance < best)) {
+                        best = distance;
+                        selected = i;
+                    }
+                    surface = *(short *)((char *)player + 0x732);
+                }
+                break;
+            }
+        }
+        i++;
+    } while (i < 4);
+    if (selected >= 0) {
+        movement.vx = end->vx - start->vx;
+        movement.vy = end->vy - start->vy;
+        movement.vz = end->vz - start->vz;
+        edge.vx = hit_ends[selected].vx - hit_starts[selected].vx;
+        edge.vy = hit_ends[selected].vy - hit_starts[selected].vy;
+        edge.vz = hit_ends[selected].vz - hit_starts[selected].vz;
+        switch (surface) {
+        case 6:
+        case 30:
+        case 76:
+            func_80071744(player, &movement, &edge, surface);
+            break;
+        default:
+            func_80070DE8(player, &movement, &edge, surface);
+            break;
+        }
+    } else {
+        surface = 0;
+    }
+    return surface;
 }

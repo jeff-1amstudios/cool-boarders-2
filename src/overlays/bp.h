@@ -583,4 +583,20 @@ void func_8006B088(int course, int direction);
 int func_8006BB90(BpPlayer *player, BpCoursePoint *points, VECTOR *position,
                   int list, int index);
 
+typedef struct BpCollisionGeometry BpCollisionGeometry;
+
+typedef struct BpCollisionModel {
+    unsigned char unknown_00[8];
+    BpCollisionGeometry *geometry;
+} BpCollisionModel;
+
+typedef struct BpCollisionEntries {
+    int first;
+    int second;
+    int third;
+    int fourth;
+} BpCollisionEntries;
+
+int func_8006D8CC(BpPlayer *player, VECTOR *start, VECTOR *end, int entry_index, int mode);
+
 #endif
