@@ -4452,3 +4452,12 @@ void func_800749E0(GsOT *ot, int x, int y)
     func_800944E8(tag, sprites + 13);
     func_8009456C(tag, D_8009EC2C + 13);
 }
+
+// FUNCTION: BP.BIN:0x80074A38
+void func_80074A38(GsOT *ot)
+{
+    GsOT_TAG *tag = ot->org + 3;
+
+    func_800944E8(tag, D_8009EC28 + 16);
+    func_8009456C(tag, D_8009EC2C + 16);
+}
