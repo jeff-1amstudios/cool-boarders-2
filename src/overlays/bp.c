@@ -5006,3 +5006,22 @@ int func_8007D318(short side, short first, short second, VECTOR *position, short
     }
     return (short)result;
 }
+
+// FUNCTION: BP.BIN:0x8007D464
+int func_8007D464(int x1, int z1, int x2, int z2)
+{
+    short angle;
+
+    x1 = x2 - x1;
+    z1 = z1 - z2;
+    if (x1 == 0) {
+        if (z1 == 0) {
+            angle = -1;
+        } else {
+            angle = (~z1 >> 31) & 0xF800;
+        }
+    } else {
+        angle = -ratan2(x1, z1);
+    }
+    return angle;
+}
