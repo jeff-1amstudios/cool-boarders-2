@@ -698,4 +698,16 @@ void func_800762C8(GsOT *ot, int x, int y, int value, int draw_mode);
 void func_800766E4(GsOT *ot, int x, int y, unsigned int first_time,
                    unsigned int second_time);
 
+typedef union BpEffectScreen {
+    DVECTOR position;
+    unsigned int packed;
+} BpEffectScreen;
+
+typedef struct BpRandomPoint {
+    SVECTOR position;
+    BpEffectScreen previous_screen;
+} BpRandomPoint;
+
+void func_80077D9C(int count);
+
 #endif

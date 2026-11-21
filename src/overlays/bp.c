@@ -391,6 +391,9 @@ extern void func_80076158(GsOT *ot, int x, int y, unsigned int time);
 
 extern void *D_8009EC70;
 
+extern int D_8009FA30;
+extern BpRandomPoint *D_8009FC40;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4697,4 +4700,19 @@ void func_800766E4(GsOT *ot, int x, int y, unsigned int first_time,
 void func_80077D74(void)
 {
     func_8001F378(D_8009EC70);
+}
+
+// FUNCTION: BP.BIN:0x80077D9C
+void func_80077D9C(int count)
+{
+    int i;
+
+    D_8009FA30 = count;
+    D_8009FC40 = func_8001F1A0(count * sizeof(BpRandomPoint));
+    for (i = 0; i < count; i++) {
+        D_8009FC40[i].position.vx = rand() << 1;
+        D_8009FC40[i].position.vy = rand() << 1;
+        D_8009FC40[i].position.vz = rand() << 1;
+        D_8009FC40[i].previous_screen.packed = 0x7FFF7FFF;
+    }
 }
