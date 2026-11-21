@@ -420,3 +420,7 @@ func_80074D60 = 0x80074D60; // type:func
 func_80074EA0 = 0x80074EA0; // type:func
 D_8009FC60 = 0x8009FC60; // type:u32 size:0x4
 D_8009EC3C = 0x8009EC3C; // size:0x34
+
+D_8009EC30 = 0x8009EC30; // size:0x4
+D_8009EC34 = 0x8009EC34; // size:0x4
+D_8009EC38 = 0x8009EC38; // size:0x4
