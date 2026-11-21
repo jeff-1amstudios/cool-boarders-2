@@ -427,6 +427,9 @@ extern void func_8007E29C(BpModelHeader *model);
 extern void func_8007E954(BpCoordinateHeader *coordinates);
 extern void func_8007E998(void *data);
 
+extern u_long D_8009EFA8[16];
+extern u_long D_8009EFE8[16];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5499,4 +5502,19 @@ void func_8007E954(BpCoordinateHeader *coordinates)
     for (i = 0; i < count; i++, coordinates = (BpCoordinateHeader *)((BpCoordinateEntry *)coordinates + 1)) {
         ((BpCoordinateEntry *)coordinates)->word_00 = -((BpCoordinateEntry *)coordinates)->word_00;
     }
+}
+
+// FUNCTION: BP.BIN:0x8007EAAC
+void func_8007EAAC(void)
+{
+    RECT rect;
+
+    rect.x = 0x300;
+    rect.y = 0x1C7;
+    rect.w = 0x10;
+    rect.h = 1;
+    StoreImage(&rect, D_8009EFA8);
+    rect.x = 0x310;
+    StoreImage(&rect, D_8009EFA8 + 16);
+    DrawSync(0);
 }
