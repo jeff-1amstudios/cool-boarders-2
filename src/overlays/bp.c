@@ -271,6 +271,12 @@ extern u_long D_8009FD18[16];
 extern PACKET *func_8008510C(GsOT_TAG *tag, PACKET *packets, short x, short y,
                             short width, short height, short mode, short amount);
 
+extern int D_80097D80;
+extern int D_8009FE70;
+extern PACKET *func_80085824(GsOT_TAG *tag, PACKET *packets, short different,
+                             short score, short first_flag, short second_flag,
+                             short x, short y);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3103,4 +3109,41 @@ void func_8006AE14(GsOT *ot, int mode, int first, int second, int value)
     } else {
         LoadImage(&rect, D_8009FCD8);
     }
+}
+
+// FUNCTION: BP.BIN:0x8006AF48
+void func_8006AF48(GsOT *ot, BpPlayer *player, int different)
+{
+    BpHudPlayer *hud = (BpHudPlayer *)player;
+    GsOT_TAG *tag = &ot->org[3];
+    short first_flag = 0;
+    short second_flag = 0;
+    BpHudMotion *motion = &hud->motion;
+    BpScore *score = &hud->score;
+    short x = 250;
+    short y = 200;
+    int state_0096 = hud->state_0096;
+    int state_00ee = hud->state_00ee;
+    int delta;
+    int mode;
+
+    if (hud->state_00d0 == 0) {
+        D_80097D80 = 0;
+    }
+    mode = D_8009FE70;
+    delta = score->total;
+    if (mode == -1 && state_0096 == 0 && state_00ee != 0 &&
+        hud->state_0148 == -1 && hud->word_48f0 >= D_80097D80) {
+        delta += 500U;
+        D_80097D80 = 0xE610;
+    }
+    score->total = 0;
+    if (hud->word_48f0 > 0xE610 && hud->state_48fe == 3) {
+        first_flag = -1;
+    }
+    if (motion->word_08 == 0 && motion->reduced_score != 0) {
+        second_flag = -1;
+    }
+    D_80058ACC = func_80085824(tag, D_80058ACC, (short)different, (short)delta,
+                              first_flag, second_flag, x, y);
 }

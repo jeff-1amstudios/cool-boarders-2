@@ -548,4 +548,29 @@ int func_800699B4(GsOT *ot, int move_left, int position, int x, int y);
 
 void func_8006ACC0(GsOT *ot, int *counter, int different, int value, int direction);
 
+typedef struct BpHudMotion {
+    int word_00;
+    int reduced_score;
+    int word_08;
+} BpHudMotion;
+
+typedef struct BpHudPlayer {
+    unsigned char unknown_0000[0x96];
+    short state_0096;
+    unsigned char unknown_0098[0x38];
+    int state_00d0;
+    unsigned char unknown_00d4[0x1A];
+    short state_00ee;
+    unsigned char unknown_00f0[0x58];
+    int state_0148;
+    unsigned char unknown_014c[0x5E8];
+    BpHudMotion motion;
+    unsigned char unknown_0740[0x10C];
+    BpScore score;
+    unsigned char unknown_087c[0x4074];
+    int word_48f0;
+    unsigned char unknown_48f4[0xA];
+    short state_48fe;
+} BpHudPlayer;
+
 #endif
