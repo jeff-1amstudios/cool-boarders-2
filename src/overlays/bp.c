@@ -394,6 +394,14 @@ extern void *D_8009EC70;
 extern int D_8009FA30;
 extern BpRandomPoint *D_8009FC40;
 
+extern POLY_FT4 *func_80013654(unsigned long *tag, POLY_FT4 *packet,
+                                  int spacing, int x, int y, SpriteTexture *texture);
+extern POLY_FT4 *func_80079104(unsigned long *tag, POLY_FT4 *packet,
+                                  int angle, int scale);
+extern POLY_FT4 *func_800792E0(unsigned long *tag, POLY_FT4 *packet, int frame);
+extern BpTransitionTexture D_8009692C;
+extern short D_80099BB0[12];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4727,4 +4735,42 @@ void func_800782C0(void)
 void func_80078E34(void *effects)
 {
     func_8001F378(effects);
+}
+
+// FUNCTION: BP.BIN:0x80078E54
+PACKET *func_80078E54(GsOT_TAG *tag, PACKET *packet, int *counter, int paused)
+{
+    SpriteTexture texture = D_8009692C.texture;
+    int frame = *counter;
+
+    if (frame >= 0) {
+        if (frame < 5) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet, 6,
+                                   (5 - frame) * 223 / 5 - 63, -47, &texture);
+        } else if ((frame -= 5) < 11) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet, D_80099BB0[frame], -63, -47, &texture);
+        } else if ((frame -= 11) < 20) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet, 0, -63, -47, &texture);
+        } else if ((frame -= 20) < 10) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet, 0, -63, -47, &texture);
+            packet = (PACKET *)func_80079104((unsigned long *)tag, (POLY_FT4 *)packet, (frame - 10) * 768, frame * 1024);
+        } else if ((frame -= 10) < 4) {
+            packet = (PACKET *)func_800792E0((unsigned long *)tag, (POLY_FT4 *)packet, frame);
+            packet = (PACKET *)func_80079104((unsigned long *)tag, (POLY_FT4 *)packet, 0, (4 - frame) * 1024 + 6144);
+        } else if ((frame -= 4) < 20) {
+            packet = (PACKET *)func_800792E0((unsigned long *)tag, (POLY_FT4 *)packet, frame + 4);
+            packet = (PACKET *)func_80079104((unsigned long *)tag, (POLY_FT4 *)packet, 0, 6144);
+        } else if ((frame -= 20) < 10) {
+            packet = (PACKET *)func_800792E0((unsigned long *)tag, (POLY_FT4 *)packet, frame + 24);
+            packet = (PACKET *)func_80079104((unsigned long *)tag, (POLY_FT4 *)packet, -frame * 768, (10 - frame) * 6144 / 10);
+        } else if (frame < 5) {
+            packet = (PACKET *)func_800792E0((unsigned long *)tag, (POLY_FT4 *)packet, frame + 24);
+        } else {
+            *counter = -1;
+        }
+        if (*counter >= 0 && paused == 0) {
+            ++*counter;
+        }
+    }
+    return (PACKET *)packet;
 }

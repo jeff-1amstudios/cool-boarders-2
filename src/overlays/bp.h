@@ -710,4 +710,9 @@ typedef struct BpRandomPoint {
 
 void func_80077D9C(int count);
 
+typedef struct BpTransitionTexture {
+    SpriteTexture texture;
+    unsigned short padding;
+} BpTransitionTexture;
+
 #endif

@@ -438,3 +438,8 @@ D_8009FA30 = 0x8009FA30; // type:u32 size:0x4
 D_8009FC40 = 0x8009FC40; // size:0x4
 
 func_800782C0 = 0x800782C0; // type:func
+
+func_80079104 = 0x80079104; // type:func
+func_800792E0 = 0x800792E0; // type:func
+D_8009692C = 0x8009692C; // size:0xC
+D_80099BB0 = 0x80099BB0; // size:0x18
