@@ -5488,3 +5488,15 @@ void func_8007E29C(BpModelHeader *model)
         }
     }
 }
+
+// FUNCTION: BP.BIN:0x8007E954
+void func_8007E954(BpCoordinateHeader *coordinates)
+{
+    unsigned short count = coordinates->coordinate_count;
+    short i;
+
+    coordinates++;
+    for (i = 0; i < count; i++, coordinates = (BpCoordinateHeader *)((BpCoordinateEntry *)coordinates + 1)) {
+        ((BpCoordinateEntry *)coordinates)->word_00 = -((BpCoordinateEntry *)coordinates)->word_00;
+    }
+}

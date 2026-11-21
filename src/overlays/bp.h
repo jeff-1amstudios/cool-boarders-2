@@ -765,4 +765,9 @@ typedef struct BpModelObject {
     unsigned int unknown_18;
 } BpModelObject;
 
+typedef struct BpCoordinateEntry {
+    int word_00;
+    unsigned char unknown_04[0x34];
+} BpCoordinateEntry;
+
 #endif
