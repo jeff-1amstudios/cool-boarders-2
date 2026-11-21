@@ -4440,3 +4440,15 @@ void func_800748B0(GsOT *ot, int selection)
     sprite->x0 = saved_x;
     sprite->y0 = saved_y;
 }
+
+// FUNCTION: BP.BIN:0x800749E0
+void func_800749E0(GsOT *ot, int x, int y)
+{
+    GsOT_TAG *tag = ot->org + 3;
+    SPRT *sprites = D_8009EC28;
+
+    sprites[13].x0 = x;
+    sprites[13].y0 = y;
+    func_800944E8(tag, sprites + 13);
+    func_8009456C(tag, D_8009EC2C + 13);
+}
