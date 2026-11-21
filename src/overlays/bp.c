@@ -5518,3 +5518,29 @@ void func_8007EAAC(void)
     StoreImage(&rect, D_8009EFA8 + 16);
     DrawSync(0);
 }
+
+// FUNCTION: BP.BIN:0x8007EB1C
+void func_8007EB1C(short mode)
+{
+    RECT rect;
+    u_long *pixels;
+
+    rect.x = 0x300;
+    rect.y = 0x1C7;
+    rect.w = 0x10;
+    rect.h = 1;
+    if (mode == 1) {
+        pixels = D_8009EFE8;
+    } else if (mode == 2) {
+        pixels = D_8009EFA8;
+        LoadImage(&rect, pixels);
+        rect.x = 0x310;
+        LoadImage(&rect, pixels + 16);
+        return;
+    } else {
+        pixels = D_8009EFA8;
+    }
+    LoadImage(&rect, pixels);
+    rect.x = 0x310;
+    LoadImage(&rect, D_8009EFA8);
+}
