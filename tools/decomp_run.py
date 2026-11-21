@@ -7,12 +7,15 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import yaml
 from decomp_backlog import key, slug, source_dir, source_file, coverage
 from c_sources import sections, function_source, header_path
+from decomp_runtime import DEFAULT_AGENT_TOKENS, usage
 
 
 class Rejected(RuntimeError):
@@ -180,6 +183,13 @@ class Runner:
         self.args = args
         if min(args.limit, args.agent_seconds) < 1:
             raise RuntimeError("Target limit and worker timeout must be positive")
+        self.agent_tokens = getattr(args, "agent_tokens", None)
+        if self.agent_tokens is None:
+            self.agent_tokens = DEFAULT_AGENT_TOKENS if args.agent_command is None else 0
+        if self.agent_tokens < 0:
+            raise RuntimeError("Worker token budget must be nonnegative")
+        if self.agent_tokens and args.agent_command is not None:
+            raise RuntimeError("A positive --agent-tokens budget requires the default Codex launcher")
         try:
             self.launcher = shlex.split(args.agent_command) if args.agent_command is not None else ["codex"]
         except ValueError as error:
@@ -250,6 +260,8 @@ class Runner:
         directory = self.w.ROOT / active["context"]
         # Ghidra/export time must not reduce the worker's own allowance.
         seconds = self.args.agent_seconds
+        budget_note = (f"The supervisor also stops you at {self.agent_tokens:,} uncached input plus output "
+                       "tokens. Save useful edits and evidence as you go.\n" if self.agent_tokens else "")
         resume_notes = ""
         for previous in reversed(session.get("interrupted", [])):
             if (key(previous) == key(active) and previous.get("candidate_archived")
@@ -280,6 +292,7 @@ class Runner:
             f"{active.get('symbol_file', 'symbol_addrs.txt')}.\n"
             f"Use tools/.venv/bin/python tools/decomp_step.py --context {directory / 'context.json'}.\n"
             f"Write evidence to {directory / 'ghidra-update.json'}.\n"
+            f"{budget_note}"
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
             "the selected object matches and evidence is written.\n")
         (directory / "agent-prompt.md").write_text(instructions + "\n\n" + prompt)
@@ -296,13 +309,17 @@ class Runner:
             # Disable automatic project docs AND explicitly prohibit manual
             # discovery in developer instructions. The byte limit alone does
             # not prevent a worker from searching for AGENTS.md with shell tools.
-            argv += ["--no-daemon", "--cd", str(self.w.ROOT.resolve()),
-                     "--config", "project_doc_max_bytes=0",
+            config = ["--config", "project_doc_max_bytes=0",
                      "--config", f"developer_instructions={json.dumps(instructions)}",
                      "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
-                     "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}",
-                     "--ask-for-approval", "never", "exec", "--ephemeral",
-                     "--sandbox", "workspace-write", "--json", "-"]
+                     "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}"]
+            if self.agent_tokens:
+                argv = [sys.executable, str(self.w.ROOT / "tools/decomp_agent.py"),
+                        str(self.agent_tokens), *argv, "app-server", *config]
+            else:
+                argv += ["--no-daemon", "--cd", str(self.w.ROOT.resolve()), *config,
+                         "--ask-for-approval", "never", "exec", "--ephemeral",
+                         "--sandbox", "workspace-write", "--json", "-"]
         try:
             # Default launcher already receives the brief as developer instructions.
             # Custom launchers still need the complete brief on stdin.
@@ -318,6 +335,8 @@ class Runner:
         failure = agent_failure(directory / 'agent.log')
         if failure:
             raise failure
+        if self.agent_tokens:
+            return usage(directory / 'agent.log').get('budget_stop')
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
@@ -475,8 +494,9 @@ class Runner:
         # Supervisor fixes may be committed while a batch is stopped. Accept only
         # fast-forward maintenance changes on clean main, never changed game or
         # compiler inputs, merges, or history rewrites.
-        maintenance = {'tools/decomp.py', 'tools/decomp_run.py',
-                       'docs/decomp-worker.md', 'README.md'}
+        maintenance = {'.gitignore', 'tools/decomp.py', 'tools/decomp_run.py', 'tools/decomp_agent.py',
+                       'tools/decomp_runtime.py', 'tools/decomp_metrics.py',
+                       'docs/decomp-worker.md', 'docs/token-efficiency.md', 'README.md'}
         if main_head != session['integration_head']:
             ancestry = self.w.git('rev-list', '--parents',
                                   session['integration_head'] + '..' + main_head).splitlines()
@@ -565,18 +585,46 @@ class Runner:
         print(f"Integrated {active['branch']} into main at {commit[:12]}", flush=True)
 
     def run(self):
+        started = datetime.now(timezone.utc).isoformat()
         if self.w.read(self.w.REVIEW).get("matching_paused", False):
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
         previous = self.w.state() if self.w.STATE.exists() else None
-        if previous and (previous.get('active') or previous.get('retry_target')):
-            session = self.resume(previous)
-            session['sync_types'] = getattr(self.args, 'sync_types', False)
-        else:
+        resuming = bool(previous and (previous.get('active') or previous.get('retry_target')))
+        if not resuming:
             if self.w.git("branch", "--show-current") != "main":
                 raise RuntimeError("Automatic batches must start on the main integration branch")
-            session = self.w.begin_batch(self.args.limit)
+        session = previous if resuming else self.w.begin_batch(self.args.limit)
+        batch_path = self.w.ROOT / session["directory"] / "batch.json"
+        batch = self.w.read(batch_path) if batch_path.exists() else {"session": session["directory"], "runs": []}
+        argv = list(getattr(self.args, "invocation", []))
+        run = dict(argv=argv, command=shlex.join(argv) if argv else None, started_at=started,
+                   ended_at=None, outcome="running", target_limit=self.args.limit,
+                   agent_seconds=self.args.agent_seconds, agent_tokens=self.agent_tokens, functions=[])
+        batch["runs"].append(run)
+        self.w.write(batch_path, batch)
+        try:
+            self.run_session(session, resuming, batch_path, batch, run)
+            run["outcome"] = "finished"
+            run["reason"] = session.get("stop_reason")
+        except KeyboardInterrupt:
+            run.update(outcome="interrupted", reason="Interrupted")
+            raise
+        except Exception as error:
+            run.update(outcome="failed", reason=str(error))
+            raise
+        finally:
+            run["ended_at"] = datetime.now(timezone.utc).isoformat()
+            self.w.write(batch_path, batch)
+            from decomp_metrics import refresh_batches
+            refresh_batches(self.w.ROOT)
+
+    def run_session(self, session, resuming, batch_path, batch, run):
+        if resuming:
+            self.resume(session)
+        else:
             session.update(branch="main", integration_head=session["head"],
-                           sync_types=getattr(self.args, 'sync_types', False))
+                           phase="running")
+        session["sync_types"] = getattr(self.args, "sync_types", False)
         sync_types_pending = session['sync_types']
         self.w.save_state(session)
         reason = "target limit reached"
@@ -589,6 +637,10 @@ class Runner:
                 reason = "eligible queue exhausted"
                 break
             active = session["active"]
+            active["agent_tokens"] = self.agent_tokens
+            run["functions"].append(dict(identity=key(active), name=active["name"], context=active["context"]))
+            self.w.write(batch_path, batch)
+            self.w.save_state(session)
             number = len(session["completed"]) + len(session["deferred"]) + 1
             print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)
             if not active.get('boundary_findings'):
@@ -608,11 +660,12 @@ class Runner:
             tracked = set(self.w.git("ls-files").splitlines())
             prior_c = coverage(current_inventory)
             launched = False
+            budget_stop = None
             try:
                 if session["active"].get("boundary_findings"):
                     launched = True
                     raise Rejected("Selected-target split blocker: " + json.dumps(session["active"]["boundary_findings"]))
-                self.launch(session)
+                budget_stop = self.launch(session)
                 launched = True
                 self.invariant(session)
                 paths, expected_hashes = self.candidate(session, tracked, before, old_symbols, prior_c)
@@ -630,7 +683,11 @@ class Runner:
                 # Exit before final validation and before selecting another function.
                 raise
             except (RuntimeError, subprocess.CalledProcessError, OSError, UnicodeError) as error:
-                self.reject(session, tracked, str(error))
+                reason_detail = str(error)
+                if budget_stop:
+                    reason_detail = (f"Worker token budget reached ({budget_stop['spent']:,}/"
+                                     f"{budget_stop['budget']:,}): {reason_detail}")
+                self.reject(session, tracked, reason_detail)
                 if not launched and not isinstance(error, self.w.CommandTimeout):
                     # A broken/auth-failing launcher should not burn the entire queue.
                     reason = "agent launcher failed; inspect the archived log"

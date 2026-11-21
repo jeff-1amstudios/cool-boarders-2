@@ -95,6 +95,8 @@ class Output:
             print('Agent error: ' + str(event.get('message', 'unknown error')), flush=True)
         elif event.get('type') == 'turn.failed':
             print('Agent failed: ' + str(event.get('error', {}).get('message', 'unknown error')), flush=True)
+        elif event.get('type') == 'budget.reached':
+            print(f"Worker token budget reached ({event['spent']:,}/{event['budget']:,})", flush=True)
 
     def finish(self):
         if self.pending:
@@ -116,13 +118,18 @@ def follow_log(path, done, agent=False, verbose=False, ghidra=False):
     output.finish()
 
 
+DEFAULT_AGENT_TOKENS = 100_000
+
+
 def usage(path):
-    totals, complete, error, message = {}, False, None, None
+    totals, latest, complete, error, message, budget_stop = {}, {}, False, None, None, None
     if path.exists():
-        for line in path.read_text().splitlines():
+        for line in path.read_text(errors='replace').splitlines():
             try:
                 event = json.loads(line)
             except ValueError:
+                continue
+            if not isinstance(event, dict):
                 continue
             if event.get('type') == 'item.completed' and event.get('item',{}).get('type') == 'agent_message':
                 message = event['item'].get('text')
@@ -130,17 +137,26 @@ def usage(path):
                 error = str(event.get('message', 'Agent error'))[:600]
             if event.get('type') == 'turn.failed':
                 error = str(event.get('error', {}).get('message', error or 'Agent failed'))[:600]
+            if event.get('type') == 'usage.updated':
+                latest = event['usage']
+            if event.get('type') == 'budget.reached':
+                budget_stop = {k: event[k] for k in ('budget', 'spent')}
             if event.get('type') == 'turn.completed' and 'usage' in event:
                 complete = True
                 for key, count in event['usage'].items():
                     totals[key] = totals.get(key, 0) + count
-    return {'complete': complete, 'tokens': totals, 'error': error, 'message': message}
+    result = {'complete': complete, 'tokens': totals if complete else latest, 'error': error, 'message': message}
+    if budget_stop:
+        result['budget_stop'] = budget_stop
+    return result
 
 
 def attempt_result(root, row, status, reason=None):
     result = {k:row[k] for k in ('identity','image','address','name','size','context','branch','base_commit','commit','checkpoint') if k in row}
     directory = root / row['context']
     result.update(status=status, reason=reason, agent=usage(directory / 'agent.log'))
+    if 'agent_tokens' in row:
+        result['agent_tokens'] = row['agent_tokens']
     custom_report = directory / 'agent-last-message.txt'
     if custom_report.exists():
         result['agent']['message'] = custom_report.read_text()

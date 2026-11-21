@@ -1,5 +1,22 @@
 # Decomp session efficiency review
 
+## November 21 budget
+
+The November 21 CSV had 400 attempts, with complete usage on 366. Across the
+281 recorded matches, median uncached input plus output was 40,648 tokens.
+A 75,000-token threshold covered 256 of those matches and 26 of 35 in the
+latest batch. At 100,000, coverage rose to 275 of 281 overall and 32 of 35 in
+the latest batch. The latest batch also had 11 deferrals and eight interrupted
+attempts. Four of its five deferrals with complete usage exceeded 100,000
+tokens. This comparison uses observed usage at the end of each attempt.
+
+The default worker now uses a 100,000-token threshold alongside its 900-second
+timer. The threshold uses `uncached_input_tokens + output_tokens` from the
+function CSV, including reasoning within output. It is a worker-side limit for
+iteration. Codex account quota is measured separately.
+
+## November 14 review
+
 Reviewed the repository's preserved automatic worker logs and result records on
 2026-11-14. Reproduce totals with
 `tools/.venv/bin/python tools/decomp_metrics.py`; the generated report
@@ -45,11 +62,9 @@ extract the relevant symbol and a small instruction range before requesting
 more. Do not make whole-file JSON dumps the default diagnostic path.
 
 Among attempts with reported usage, matched workers had median input of 358,867
-tokens; deferred workers had median input of 534,484. The latter include difficult
-functions and do not prove that a smaller budget would improve success. Keep the
-current time allowance until measured timing and function-size comparisons can
-show whether an opt-in smaller first-pass budget is worthwhile. A token cap or
-score-plateau cutoff could discard solvable functions and has not been added.
+tokens and deferred workers had median input of 534,484. The higher median
+among deferrals includes difficult functions. These data describe how long
+workers persisted under the November 14 time allowance.
 
 Console filtering already suppresses successful file-display contents for the
 supervisor, but the worker still receives those contents. Further console-only

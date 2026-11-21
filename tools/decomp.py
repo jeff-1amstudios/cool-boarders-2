@@ -12,13 +12,14 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from rebuild import ROOT, reference
+from decomp_runtime import DEFAULT_AGENT_TOKENS
 
 STATE = ROOT / "reports/decomp/state.json"
 REVIEW = ROOT / "config/decomp.json"
 # Historical session-input snapshots are diagnostic only, never an acceptance gate.
 PROTECTED = ("FUNCTION_AGENTS.md", "config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
              "tools/validate.py", "tools/objdiff.py", "tools/decomp.py",
-             "tools/decomp_run.py", "tools/readme_progress.py", "tools/decomp_ghidra.py", "tools/ghidra_scripts/DecompGhidra.java", "tools/boundary_audit.py",
+             "tools/decomp_run.py", "tools/decomp_agent.py", "tools/readme_progress.py", "tools/decomp_ghidra.py", "tools/ghidra_scripts/DecompGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
              "tools/ghidra-docker.sh", "tools/ghidra.sh",
              "config/function-boundaries.json", "config/decomp.json", "config/psyq-sdk.json",
@@ -398,6 +399,7 @@ def main():
     batch = sub.add_parser("start", aliases=["run"], help="Match targets serially, streaming stdout")
     batch.add_argument("--limit", type=int, default=10)
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout for the worker subprocess only; excludes supervisor Ghidra and validation")
+    batch.add_argument("--agent-tokens", type=int, help=f"Stop Codex at {DEFAULT_AGENT_TOKENS:,} uncached input plus output tokens by default; 0 disables the budget")
     batch.add_argument("--sync-types", action="store_true",
                        help="Refresh cached Ghidra type declarations once before matching (default: reuse cache/source headers)")
     batch.add_argument("--verbose", action="store_true", help="Also print file-read output and echoed compiler/assembler commands")
@@ -433,14 +435,17 @@ def main():
             print(json.dumps({'status': 'not_started', 'active': None, 'completed': 0, 'deferred': 0}, indent=2))
             return
         session = state()
+        batch_path = ROOT / session['directory'] / 'batch.json'
         print(json.dumps({"directory":session['directory'], "head":session['head'],
                          "completed":len(session['completed']), "deferred":len(session['deferred']),
                          "persistent_deferred":len(deferred_targets()),
                          "active":session.get('active'), "stop_reason":session.get('stop_reason'),
-                         "result":session.get('result')},indent=2))
+                         "result":session.get('result'),
+                         "batch": str(batch_path.relative_to(ROOT)) if batch_path.exists() else None},indent=2))
     else:
         if args.verbose:
             os.environ["CB2_VERBOSE"] = "1"
+        args.invocation = sys.orig_argv
         from decomp_run import run_batch
         run_batch(args, sys.modules[__name__])
 

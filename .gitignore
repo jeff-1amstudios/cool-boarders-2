@@ -24,6 +24,7 @@
 !/tools/readme_progress.py
 !/tools/rebuild.py
 !/tools/decomp.py
+!/tools/decomp_agent.py
 !/tools/decomp_run.py
 !/tools/recover_deferred.py
 !/tools/decomp_backlog.py

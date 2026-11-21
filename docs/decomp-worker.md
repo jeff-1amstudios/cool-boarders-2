@@ -17,6 +17,15 @@ calls. Supervisor Ghidra export, validation and feedback run separately with
 their own command timeouts. Each function worker receives its full allowance;
 Ghidra export, validation and feedback do not consume it.
 
+The default Codex launcher also stops each attempt at **100,000 uncached input
+plus output tokens**. Set `--agent-tokens N` to change the threshold or
+`--agent-tokens 0` to use the time limit alone. The worker stops on the first
+Codex usage update at or above the threshold. An individual model response can
+take it past the threshold before usage is reported. The supervisor archives the
+observed usage and checks any candidate already left on disk through the usual
+validation and feedback gates. A retry gets a fresh worker budget. Custom
+`--agent-command` launchers use the time limit and have no live token budget.
+
 Candidate C and header files have trailing blank lines removed after source
 scope review, before the whitespace check and content hashing. Other whitespace
 errors still fail review. Exact full-file validation remains required.
@@ -72,7 +81,7 @@ The supervisor embeds `FUNCTION_AGENTS.md` into each archived `agent-prompt.md`,
 followed by the selected target's paths, identity and time allowance. The default
 Codex launcher uses the invocation-local `--config project_doc_max_bytes=0` so
 repository/global `AGENTS.md` discovery does not also inject maintenance guidance.
-The launcher also pins `--cd` to the repository root and supplies the brief as
+The launcher also pins the working directory to the repository root and supplies the brief as
 invocation-local `developer_instructions`. Workers must not manually discover or
 read instruction files, or search/list/read outside this checkout (including
 through symlinks). Disabling automatic loading alone does not prevent manual
@@ -151,8 +160,8 @@ Successful worker file-display commands (`cat`, `head`, `tail`, `sed`, `rg`,
 `grep`, including shell-wrapped combinations) print their command but omit the
 file contents from the default console stream. `--verbose` restores that output.
 Failed reads remain visible, as do compiler/object diagnostics and worker
-messages. The worker still receives the full tool output, and raw agent events
-remain in `agent.log`; this affects only the supervisor's console rendering.
+messages. The worker still receives the full tool output, and command and usage
+events remain in `agent.log`.
 
 Ghidra console output defaults to WARN/ERROR, including their continuation lines.
 Full INFO logs are always retained in each attempt's `ghidra-*.log` files for
@@ -211,22 +220,35 @@ Each attempt retains its prompt, context, agent/build logs, candidate patch/sour
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/decomp/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 
+Each new batch writes `reports/decomp/sessions/<id>/batch.json` as it runs.
+It records the command line, UTC start and end times, exit outcome, budget
+settings and functions in selection order. Resuming adds a command invocation
+to the same batch. Each selection includes the image-qualified function ID
+and the attempt directory. Join `context` to `function-metrics.csv` for an
+individual attempt or use `session` to group the whole batch. A forced process
+kill can leave the invocation without an end time.
+
 ## Function usage report
 
 `tools/.venv/bin/python tools/decomp_metrics.py` rebuilds
 `reports/decomp/function-metrics.csv` (one row per attempt, including
 retries), `function-metrics.json` (totals) and `function-metrics.md` (readable
-summary). These ignored reports cover preserved automatic attempts under
+summary). It also rebuilds `reports/decomp/batches.json`, the cross-session
+index of batch commands, timestamps and selected functions. Earlier batch
+entries use their session IDs for start times and final result file timestamps
+for estimated end times where available. Their command lines are unavailable.
+These ignored reports cover preserved automatic attempts under
 `sessions/`; they refresh whenever an attempt result is recorded, including
 interruption and accepted Ghidra recovery. Existing historical results are read
 without rewriting them. Manual chat work without an attempt record is excluded.
 
 Rows identify image/function, outcome, size, input/cached/uncached/output/reasoning
-tokens, total tokens, worker seconds, timing source and attempt directory.
+tokens, total tokens, token budget and whether it was reached, worker seconds,
+timing source, session and attempt directory.
 Input already includes cached input; output already includes reasoning output.
 Total means input plus output, not a billing estimate. Counts cover workers only,
-not the supervising chat. Missing usage stays blank, and incomplete turns may
-consume tokens that the launcher never reports.
+not the supervising chat. Incomplete turns include the last observed usage when
+available. Missing usage stays blank.
 
 New launches save `worker-timing.json` using a monotonic subprocess timer,
 including timeouts. New results also record elapsed attempt time from selection

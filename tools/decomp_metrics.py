@@ -4,7 +4,7 @@ import argparse
 import csv
 import io
 import json
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,6 +56,7 @@ def attempt_rows(root):
         inp, out = tokens.get('input_tokens'), tokens.get('output_tokens')
         cached = tokens.get('cached_input_tokens')
         clock = timing(directory)
+        attempt_timing = result.get('timing', {})
         yield dict(identity=identity, name=result.get('name', context.get('name')),
                    size_bytes=result.get('size', context.get('size')),
                    status=result.get('status', 'unrecorded'),
@@ -64,21 +65,65 @@ def attempt_rows(root):
                    output_tokens=out, reasoning_output_tokens=tokens.get('reasoning_output_tokens'),
                    total_tokens=inp+out if inp is not None and out is not None else None,
                    usage_complete=agent.get('complete', False),
+                   agent_tokens=result.get('agent_tokens'),
+                   budget_reached=bool(agent.get('budget_stop')),
                    worker_seconds=clock['seconds'], timing_source=clock['source'],
-                   attempt_seconds=result.get('timing', {}).get('attempt_seconds'),
+                   attempt_seconds=attempt_timing.get('attempt_seconds'),
+                   attempt_started_at=attempt_timing.get('started_at'),
+                   session=directory.parent.relative_to(root).as_posix(),
                    context=directory.relative_to(root).as_posix())
+
+
+def refresh_batches(root, rows=None):
+    directory = root / 'reports/decomp'
+    history = defaultdict(list)
+    for row in attempt_rows(root) if rows is None else rows:
+        history[row['session']].append(row)
+    batches = []
+    for session in sorted((directory / 'sessions').glob('*'), reverse=True):
+        if not session.is_dir():
+            continue
+        path = session.relative_to(root).as_posix()
+        runs = read(session / 'batch.json').get('runs', [])
+        functions = {row['context']: row for row in history[path]}
+        selected = {row['context']: row for run in runs for row in run['functions']}
+        legacy = sorted(functions.keys() - selected.keys(),
+                        key=lambda context: (functions[context]['attempt_started_at']
+                                             or (root / context).stat().st_mtime, context))
+        ordered = [*legacy, *selected]
+        final = session / 'result.json'
+        started_at, ended_at = None, None
+        started_source, ended_source = None, None
+        if runs:
+            started_at, started_source = runs[0]['started_at'], 'recorded'
+            ended_at, ended_source = runs[-1]['ended_at'], 'recorded' if runs[-1]['ended_at'] else None
+        if (not runs or legacy) and session.name.isdecimal():
+            started_at = datetime.fromtimestamp(int(session.name) / 1e9, timezone.utc).isoformat()
+            started_source = 'session_id'
+        if not runs and final.is_file():
+            ended_at = datetime.fromtimestamp(final.stat().st_mtime, timezone.utc).isoformat()
+            ended_source = 'estimated_result_mtime'
+        targets = []
+        for context in ordered:
+            row = functions.get(context) or selected[context]
+            targets.append({key: row.get(key) for key in ('identity', 'name', 'status', 'context')})
+        batches.append(dict(session=path, started_at=started_at, started_source=started_source,
+                            ended_at=ended_at, ended_source=ended_source, runs=runs, functions=targets))
+    directory.mkdir(parents=True, exist_ok=True)
+    atomic_text(directory / 'batches.json', json.dumps(batches, indent=2) + '\n')
 
 
 def refresh(root=ROOT):
     rows = list(attempt_rows(root))
     directory = root / 'reports/decomp'
     directory.mkdir(parents=True, exist_ok=True)
-    fields = list(rows[0]) if rows else ['identity', 'context']
+    fields = list(rows[0]) if rows else ['identity', 'session', 'context']
     stream = io.StringIO()
     writer = csv.DictWriter(stream, fieldnames=fields)
     writer.writeheader()
     writer.writerows(rows)
     atomic_text(directory / 'function-metrics.csv', stream.getvalue())
+    refresh_batches(root, rows)
     totals = {key: sum(row[key] or 0 for row in rows) for key in
               ('input_tokens', 'cached_input_tokens', 'uncached_input_tokens',
                'output_tokens', 'reasoning_output_tokens', 'total_tokens', 'worker_seconds')}
