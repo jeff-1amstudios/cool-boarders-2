@@ -715,4 +715,7 @@ typedef struct BpTransitionTexture {
     unsigned short padding;
 } BpTransitionTexture;
 
+POLY_FT4 *func_8007A108(unsigned long *ordering_table, POLY_FT4 *packet,
+                       int x, int y, SpriteTexture *texture, int scale, int angle);
+
 #endif

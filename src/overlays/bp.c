@@ -4774,3 +4774,77 @@ PACKET *func_80078E54(GsOT_TAG *tag, PACKET *packet, int *counter, int paused)
     }
     return (PACKET *)packet;
 }
+
+// FUNCTION: BP.BIN:0x8007A108
+POLY_FT4 *func_8007A108(unsigned long *ordering_table, POLY_FT4 *packet,
+                       int x, int y, SpriteTexture *texture, int scale, int angle)
+{
+    POLY_FT4 *primitive = packet++;
+    int sine, cosine;
+    int left, top, right, bottom;
+    int width, height;
+    int x0, y0, x1, y1, x2, y2, x3, y3;
+    unsigned char u, v;
+    int cos_left, sin_top, sin_left, cos_top;
+    int cos_right, sin_right, sin_bottom, cos_bottom;
+
+    ((PrimitiveTag *)primitive)->length = 9;
+    primitive->code = 0x2C;
+    if (angle) {
+        sine = rsin(angle);
+        cosine = rcos(angle);
+        width = texture->w;
+        height = texture->h;
+        left = -width / 2;
+        top = -height / 2;
+        cos_left = cosine * left;
+        sin_top = sine * top;
+        sin_left = sine * left;
+        cos_top = cosine * top;
+        x0 = (((cos_left - sin_top) >> 12) * scale >> 12) + x;
+        y0 = (((sin_left + cos_top) >> 12) * scale >> 12) + y;
+        right = (width + 1) / 2;
+        cos_right = cosine * right;
+        sin_right = sine * right;
+        x1 = (((cos_right - sin_top) >> 12) * scale >> 12) + x;
+        y1 = (((sin_right + cos_top) >> 12) * scale >> 12) + y;
+        bottom = (height + 1) / 2;
+        sin_bottom = sine * bottom;
+        cos_bottom = cosine * bottom;
+        x2 = (((cos_left - sin_bottom) >> 12) * scale >> 12) + x;
+        y2 = (((sin_left + cos_bottom) >> 12) * scale >> 12) + y;
+        x3 = (((cos_right - sin_bottom) >> 12) * scale >> 12) + x;
+        y3 = (((sin_right + cos_bottom) >> 12) * scale >> 12) + y;
+        primitive->x0 = x0;
+        primitive->y0 = y0;
+        primitive->x1 = x1;
+        primitive->y1 = y1;
+        primitive->x2 = x2;
+        primitive->y2 = y2;
+        primitive->x3 = x3;
+        primitive->y3 = y3;
+    } else {
+        primitive->x0 = primitive->x2 = ((-texture->w / 2) * scale >> 12) + x;
+        primitive->x1 = primitive->x3 = (((texture->w + 1) / 2) * scale >> 12) + x;
+        primitive->y0 = primitive->y1 = ((-texture->h / 2) * scale >> 12) + y;
+        primitive->y2 = primitive->y3 = (((texture->h + 1) / 2) * scale >> 12) + y;
+    }
+    u = texture->u;
+    primitive->u0 = primitive->u2 = u;
+    primitive->u1 = primitive->u3 = u + (unsigned char)texture->w;
+    v = texture->v;
+    primitive->v0 = primitive->v1 = v;
+    primitive->v2 = primitive->v3 = v + (unsigned char)texture->h;
+    if (scale > 0x1000) {
+        primitive->u1--;
+        primitive->u3--;
+        primitive->v2--;
+        primitive->v3--;
+    }
+    primitive->r0 = primitive->g0 = primitive->b0 = 0x80;
+    primitive->tpage = texture->tpage;
+    primitive->clut = texture->clut;
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return packet;
+}
