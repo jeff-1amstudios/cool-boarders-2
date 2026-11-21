@@ -4146,3 +4146,35 @@ void func_800733BC(BpRunScore *run)
     score->origin_z = 0;
     score->reverse = 0;
 }
+
+// FUNCTION: BP.BIN:0x800734C0
+void func_800734C0(BpPlayer *player, int timer, VECTOR *position)
+{
+    BpViewState *view = *(BpViewState **)((unsigned char *)player + 0x6D8);
+    unsigned char sound_enabled = player->unknown_4910[7];
+    int mode = *(signed char *)((unsigned char *)player + 0x4916);
+    unsigned char sound_mode = (*(unsigned char **)((unsigned char *)player + 0x4918))[3];
+    short *height = (short *)((unsigned char *)player + 0x3C);
+
+    if (view->state != 3) {
+        if (view->unknown_02 == 1 || view->unknown_02 == 5) {
+            view->state = 3;
+        } else {
+            func_8005F964(player, 3);
+            ((BpPoseState *)view)->saved_height = *(short *)((unsigned char *)player + 0x3C);
+        }
+        *(int *)((unsigned char *)player + 0x48CC) = *height;
+        *(VECTOR *)((unsigned char *)player + 0x48BC) = *position;
+        *(int *)((unsigned char *)player + 0x48E0) >>= 1;
+        *(short *)((unsigned char *)player + 0xCA8) = 0;
+        *(int *)((unsigned char *)player + 0x48B4) = timer;
+        *(short *)((unsigned char *)player + 0x7C2) = 0;
+        *(int *)((unsigned char *)player + 0x48E8) >>= 1;
+        if (*(short *)player->unknown_4910 != 0) {
+            (*(short *)((unsigned char *)player + 0xCCE))++;
+        }
+        if (mode == 0 && sound_enabled != 0) {
+            func_80068B24(28, sound_mode);
+        }
+    }
+}

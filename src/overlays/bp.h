@@ -678,4 +678,6 @@ typedef struct BpRunPlayer {
 
 void func_80073204(BpRunPlayer *player, short *values, BpRunRecord *saved);
 
+void func_800734C0(BpPlayer *player, int timer, VECTOR *position);
+
 #endif
