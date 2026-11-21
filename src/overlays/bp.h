@@ -637,4 +637,11 @@ void func_800718A4(BpPlayer *player, BpMotionPlayer *second, int mode);
 
 int func_800720D8(BpPlayer *player, BpPlayer *second);
 
+typedef struct BpCourseStartSelection {
+    short *entries;
+    unsigned int unknown_04;
+} BpCourseStartSelection;
+
+void func_8007315C(int course);
+
 #endif

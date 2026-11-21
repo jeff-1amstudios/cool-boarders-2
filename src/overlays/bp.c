@@ -338,6 +338,11 @@ extern int func_80072BA0(GsOT *ot, int *options, int count, int x, int y,
 
 extern int D_8009EBC8;
 
+extern short D_80097FC0[10][348];
+extern int D_80099AF0[16][3];
+extern BpCourseStartSelection D_8009EBD0;
+extern int *D_8009FA20;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4033,4 +4038,11 @@ int func_800720D8(BpPlayer *player, BpPlayer *second)
 void func_80072680(void)
 {
     D_8009EBC8 = 0;
+}
+
+// FUNCTION: BP.BIN:0x8007315C
+void func_8007315C(int course)
+{
+    D_8009EBD0.entries = D_80097FC0[course];
+    D_8009FA20 = D_80099AF0[course];
 }
