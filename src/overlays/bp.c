@@ -4116,3 +4116,33 @@ void func_80073204(BpRunPlayer *player, short *values, BpRunRecord *saved)
         *record = *saved;
     }
 }
+
+// FUNCTION: BP.BIN:0x800733BC
+void func_800733BC(BpRunScore *run)
+{
+    BpScore *score = &run->score;
+
+    score->move_bonus[0] = 0;
+    score->move_bonus[1] = 0;
+    score->duration_bonus = 0;
+    score->heading_bonus = 0;
+    score->reverse_bonus = 0;
+    score->unknown_07 = 0;
+    score->unknown_08[0] = 0;
+    score->rotation_bonus[0] = 0;
+    score->rotation_bonus[1] = 0;
+    score->combined_bonus = 0;
+    score->distance_bonus = 0;
+    score->total = 0;
+    score->height = 0;
+    score->move_index[0] = -1;
+    score->move_index[1] = -1;
+    score->rotations[0] = 0;
+    score->rotations[1] = 0;
+    run->value_30 = 0;
+    score->combined_flag = 0;
+    score->unknown_26 = -1;
+    score->origin_x = 0;
+    score->origin_z = 0;
+    score->reverse = 0;
+}
