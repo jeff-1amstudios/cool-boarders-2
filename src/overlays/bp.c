@@ -5202,3 +5202,289 @@ void func_8007E24C(BpModelResources *resources)
     func_8007E954(coordinates);
     func_8007E998(data);
 }
+
+// FUNCTION: BP.BIN:0x8007E29C
+void func_8007E29C(BpModelHeader *model)
+{
+    BpModelObject *object;
+    unsigned int object_count = model->object_count;
+    short i, j;
+    SVECTOR *vertices, *normals;
+    unsigned int vertex_count, normal_count, primitive_count;
+    unsigned int *primitive;
+    short *data;
+    int saved;
+    int value;
+
+    model++;
+    for (i = 0; (unsigned int)(short)i < object_count; model = (BpModelHeader *)((BpModelObject *)model + 1), i++) {
+        object = (BpModelObject *)model;
+        vertices = object->vertices;
+        normals = object->normals;
+        vertex_count = object->vertex_count;
+        primitive = object->primitives;
+        normal_count = object->normal_count;
+        primitive_count = object->primitive_count;
+        for (j = 0; (unsigned int)(short)j < vertex_count; j++, vertices++) {
+            value = vertices->vx;
+            vertices->vx = -value;
+        }
+        for (j = 0; (unsigned int)(short)j < normal_count; j++, normals++) {
+            value = normals->vx;
+            normals->vx = -value;
+        }
+        j = 0;
+        if ((unsigned int)j < primitive_count) {
+            data = (short *)primitive;
+            do {
+                data += 2;
+                value = *primitive++ & 0xFD050000;
+                switch ((unsigned int)value) {
+                case 0x20000000:
+                    saved = data[4];
+                    data[4] = data[5];
+                    data[5] = saved;
+                    primitive += 3;
+                    data += 6;
+                    break;
+                case 0x30000000:
+                    saved = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = *(unsigned int *)(data + 6);
+                    *(unsigned int *)(data + 6) = saved;
+                    primitive += 4;
+                    data += 8;
+                    break;
+                case 0x20040000:
+                    saved = data[8];
+                    data[8] = data[9];
+                    data[9] = saved;
+                    saved = *(unsigned int *)(data + 2);
+                    *(unsigned int *)(data + 2) = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = saved;
+                    primitive += 5;
+                    data += 10;
+                    break;
+                case 0x30040000:
+                    saved = *(unsigned int *)(data + 2);
+                    *(unsigned int *)(data + 2) = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    primitive += 6;
+                    data += 12;
+                    break;
+                case 0x24000000:
+                    saved = data[2];
+                    data[2] = data[4];
+                    data[4] = saved;
+                    saved = data[8];
+                    data[8] = data[9];
+                    data[9] = saved;
+                    primitive += 5;
+                    data += 10;
+                    break;
+                case 0x34000000:
+                    saved = data[2];
+                    data[2] = data[4];
+                    data[4] = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    primitive += 6;
+                    data += 12;
+                    break;
+                case 0x21010000:
+                    saved = data[3];
+                    data[3] = data[4];
+                    data[4] = saved;
+                    primitive += 3;
+                    data += 6;
+                    break;
+                case 0x31010000:
+                    saved = *(unsigned int *)(data + 2);
+                    *(unsigned int *)(data + 2) = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = saved;
+                    saved = data[7];
+                    data[7] = data[8];
+                    data[8] = saved;
+                    primitive += 5;
+                    data += 10;
+                    break;
+                case 0x25010000:
+                    saved = data[2];
+                    data[2] = data[4];
+                    data[4] = saved;
+                    saved = data[9];
+                    data[9] = data[10];
+                    data[10] = saved;
+                    primitive += 6;
+                    data += 12;
+                    break;
+                case 0x35010000:
+                    saved = data[2];
+                    data[2] = data[4];
+                    data[4] = saved;
+                    saved = data[13];
+                    data[13] = data[14];
+                    data[14] = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    primitive += 8;
+                    data += 16;
+                    break;
+                case 0x28000000:
+                    saved = data[3];
+                    data[3] = data[4];
+                    data[4] = saved;
+                    saved = data[5];
+                    data[5] = data[6];
+                    data[6] = saved;
+                    primitive += 4;
+                    data += 8;
+                    break;
+                case 0x38000000:
+                    saved = *(unsigned int *)(data + 2);
+                    *(unsigned int *)(data + 2) = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = saved;
+                    saved = *(unsigned int *)(data + 6);
+                    *(unsigned int *)(data + 6) = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = saved;
+                    primitive += 5;
+                    data += 10;
+                    break;
+                case 0x28040000:
+                    saved = *primitive;
+                    *primitive = *(unsigned int *)(data + 2) | 0x28000000;
+                    *(unsigned int *)(data + 2) = saved & 0xFFFFFF;
+                    saved = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = *(unsigned int *)(data + 6);
+                    *(unsigned int *)(data + 6) = saved;
+                    saved = data[9];
+                    data[9] = data[10];
+                    data[10] = saved;
+                    saved = data[11];
+                    data[11] = data[12];
+                    data[12] = saved;
+                    primitive += 7;
+                    data += 14;
+                    break;
+                case 0x38040000:
+                    saved = *primitive;
+                    *primitive = *(unsigned int *)(data + 2) | 0x38000000;
+                    *(unsigned int *)(data + 2) = saved & 0xFFFFFF;
+                    saved = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = *(unsigned int *)(data + 6);
+                    *(unsigned int *)(data + 6) = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    saved = *(unsigned int *)(data + 12);
+                    *(unsigned int *)(data + 12) = *(unsigned int *)(data + 14);
+                    *(unsigned int *)(data + 14) = saved;
+                    primitive += 8;
+                    data += 16;
+                    break;
+                case 0x2C000000:
+                    saved = *(short *)primitive;
+                    *(short *)primitive = data[2];
+                    data[2] = saved;
+                    saved = data[4];
+                    data[4] = data[6];
+                    data[6] = saved;
+                    saved = data[9];
+                    data[9] = data[10];
+                    data[10] = saved;
+                    saved = data[11];
+                    data[11] = data[12];
+                    data[12] = saved;
+                    primitive += 7;
+                    data += 14;
+                    break;
+                case 0x3C000000:
+                    saved = *(short *)primitive;
+                    *(short *)primitive = data[2];
+                    data[2] = saved;
+                    saved = data[4];
+                    data[4] = data[6];
+                    data[6] = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    saved = *(unsigned int *)(data + 12);
+                    *(unsigned int *)(data + 12) = *(unsigned int *)(data + 14);
+                    *(unsigned int *)(data + 14) = saved;
+                    primitive += 8;
+                    data += 16;
+                    break;
+                case 0x29010000:
+                    saved = data[2];
+                    data[2] = data[3];
+                    data[3] = saved;
+                    saved = data[4];
+                    data[4] = data[5];
+                    data[5] = saved;
+                    primitive += 3;
+                    data += 6;
+                    break;
+                case 0x39010000:
+                    saved = *primitive;
+                    *primitive = *(unsigned int *)(data + 2) | 0x39000000;
+                    *(unsigned int *)(data + 2) = saved & 0xFFFFFF;
+                    saved = *(unsigned int *)(data + 4);
+                    *(unsigned int *)(data + 4) = *(unsigned int *)(data + 6);
+                    *(unsigned int *)(data + 6) = saved;
+                    saved = data[8];
+                    data[8] = data[9];
+                    data[9] = saved;
+                    saved = data[10];
+                    data[10] = data[11];
+                    data[11] = saved;
+                    primitive += 6;
+                    data += 12;
+                    break;
+                case 0x2D010000:
+                    saved = *(short *)primitive;
+                    *(short *)primitive = data[2];
+                    data[2] = saved;
+                    saved = data[4];
+                    data[4] = data[6];
+                    data[6] = saved;
+                    saved = data[10];
+                    data[10] = data[11];
+                    data[11] = saved;
+                    saved = data[12];
+                    data[12] = data[13];
+                    data[13] = saved;
+                    primitive += 7;
+                    data += 14;
+                    break;
+                case 0x3D010000:
+                    saved = *(short *)primitive;
+                    *(short *)primitive = data[2];
+                    data[2] = saved;
+                    saved = data[4];
+                    data[4] = data[6];
+                    data[6] = saved;
+                    saved = *(unsigned int *)(data + 8);
+                    *(unsigned int *)(data + 8) = *(unsigned int *)(data + 10);
+                    *(unsigned int *)(data + 10) = saved;
+                    saved = *(unsigned int *)(data + 12);
+                    *(unsigned int *)(data + 12) = *(unsigned int *)(data + 14);
+                    *(unsigned int *)(data + 14) = saved;
+                    saved = data[16];
+                    data[16] = data[17];
+                    data[17] = saved;
+                    saved = data[18];
+                    data[18] = data[19];
+                    data[19] = saved;
+                    primitive += 10;
+                    data += 20;
+                    break;
+                }
+                j++;
+            } while ((unsigned int)j < primitive_count);
+        }
+    }
+}

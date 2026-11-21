@@ -755,4 +755,14 @@ typedef struct BpModelResources {
 
 void func_8007E24C(BpModelResources *resources);
 
+typedef struct BpModelObject {
+    SVECTOR *vertices;
+    unsigned int vertex_count;
+    SVECTOR *normals;
+    unsigned int normal_count;
+    unsigned int *primitives;
+    unsigned int primitive_count;
+    unsigned int unknown_18;
+} BpModelObject;
+
 #endif
