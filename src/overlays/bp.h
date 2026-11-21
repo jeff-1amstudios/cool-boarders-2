@@ -693,4 +693,6 @@ void func_80074D60(int index, int texture_x, int texture_y, int clut_x,
                    int clut_y, int width, int height,
                    int display_width, int display_height, int blend);
 
+void func_800762C8(GsOT *ot, int x, int y, int value, int draw_mode);
+
 #endif

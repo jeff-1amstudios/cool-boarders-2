@@ -385,6 +385,8 @@ extern SPRT *D_8009EC30;
 extern DR_MODE *D_8009EC34;
 extern DVECTOR *D_8009EC38;
 
+#include "bp_digits.h"
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4657,4 +4659,23 @@ int func_800753D0(GsOT_TAG *tag, int value, int x, int y)
     D_8009EC30->g0 = 0x80;
     D_8009EC30->b0 = 0x80;
     return count;
+}
+
+// FUNCTION: BP.BIN:0x800762C8
+void func_800762C8(GsOT *ot, int x, int y, int value, int draw_mode)
+{
+    int suffix_zero = 0;
+    int suffix_one = 1;
+    GsOT_TAG *tag = ot->org + 3;
+    SPRT *sprite = D_8009EC30 + 5;
+    int width = D_8009EC38[5].vx;
+    SPRT *suffix = D_8009EC30 + 6;
+
+    BpDrawDigits(tag, sprite, x, y, value, width, 6, 6, 1);
+    x += width * 6;
+    BpDrawDigits(tag, suffix, x, y, suffix_zero, width, 1, 1, 0);
+    BpDrawDigits(tag, suffix, x + width, y, suffix_one, width, 1, 1, 0);
+    if (draw_mode) {
+        func_8009456C(tag, D_8009EC34 + 5);
+    }
 }
