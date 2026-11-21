@@ -4370,3 +4370,14 @@ void func_800743A8(int index, int texture_x, int texture_y,
     sprite->x0 = (short)x;
     sprite->y0 = (short)y;
 }
+
+// FUNCTION: BP.BIN:0x800744DC
+int func_800744DC(void)
+{
+    D_8009EC28 = func_8001F1A0(18 * sizeof(SPRT));
+    if (D_8009EC28 == 0) {
+        return 0;
+    }
+    D_8009EC2C = func_8001F1A0(18 * sizeof(DR_MODE));
+    return -(D_8009EC2C != 0);
+}
