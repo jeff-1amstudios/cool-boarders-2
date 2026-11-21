@@ -265,6 +265,12 @@ extern void func_80093A40(int font, int translucent, unsigned char red,
                           unsigned char green, unsigned char blue);
 extern void func_80093684(GsOT_TAG *tag, int font, char *text, int x, int y, int mode);
 
+extern const RECT D_800962C4;
+extern u_long D_8009FCD8[16];
+extern u_long D_8009FD18[16];
+extern PACKET *func_8008510C(GsOT_TAG *tag, PACKET *packets, short x, short y,
+                            short width, short height, short mode, short amount);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3062,5 +3068,39 @@ void func_8006ACC0(GsOT *ot, int *counter, int different, int value, int directi
         } else {
             --*counter;
         }
+    }
+}
+
+// FUNCTION: BP.BIN:0x8006AE14
+void func_8006AE14(GsOT *ot, int mode, int first, int second, int value)
+{
+    GsOT_TAG *tag = &ot->org[3];
+    int width = 8;
+    int height = 112;
+    RECT rect = D_800962C4;
+    int magnitude;
+    int amount;
+
+    if (value != 0) {
+        magnitude = first;
+        if (magnitude < 0) {
+            magnitude = -magnitude;
+        }
+        if (second >= 0) {
+            magnitude += second;
+        } else {
+            magnitude -= second;
+        }
+        amount = 255;
+        if (magnitude < 256) {
+            amount = magnitude;
+        }
+        magnitude = amount;
+        magnitude = magnitude * 100 / 255;
+        D_80058ACC = func_8008510C(tag, D_80058ACC, 8, 16, width, height,
+                                  (short)mode, (short)magnitude);
+        LoadImage(&rect, D_8009FD18);
+    } else {
+        LoadImage(&rect, D_8009FCD8);
     }
 }

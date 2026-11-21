@@ -318,3 +318,7 @@ func_80093684 = 0x80093684; // type:func
 func_80093A40 = 0x80093A40; // type:func
 D_800962BC = 0x800962BC; // type:char size:0x6
 D_8009FC6C = 0x8009FC6C; // type:u32 size:0x4
+func_8008510C = 0x8008510C; // type:func
+D_800962C4 = 0x800962C4; // size:0x8
+D_8009FCD8 = 0x8009FCD8; // size:0x40
+D_8009FD18 = 0x8009FD18; // size:0x40
