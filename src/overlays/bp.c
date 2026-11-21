@@ -389,6 +389,8 @@ extern DVECTOR *D_8009EC38;
 
 extern void func_80076158(GsOT *ot, int x, int y, unsigned int time);
 
+extern void *D_8009EC70;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4689,4 +4691,10 @@ void func_800766E4(GsOT *ot, int x, int y, unsigned int first_time,
     func_80076158(ot, x, y, first_time);
     y += 9;
     func_80076158(ot, x, y, second_time);
+}
+
+// FUNCTION: BP.BIN:0x80077D74
+void func_80077D74(void)
+{
+    func_8001F378(D_8009EC70);
 }
