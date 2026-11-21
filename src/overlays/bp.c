@@ -297,6 +297,17 @@ extern void func_80070DE8(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, in
 
 extern int func_8006C9C0(VECTOR *position, int entry, BpSurfaceState *surface, int mode);
 
+extern BpCourseStatus D_80097F40[][2];
+extern BpCourseStatus *D_8009EAC0;
+extern int D_8009EAB0;
+extern int D_8009EAB4;
+extern int D_8009EAB8;
+extern int D_8009EABC;
+extern int D_8009FC48;
+extern int D_8009FC58;
+extern int D_8009FC68;
+extern void func_80070660(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3478,4 +3489,49 @@ int func_8006ECA4(BpPlayer *player, BpSurfaceState *start, BpSurfaceState *end)
         end->word_50 = -2;
     }
     return result;
+}
+
+// FUNCTION: BP.BIN:0x8006F454
+void func_8006F454(void)
+{
+    int i = 0;
+    BpCourseStatus *entry;
+    int course;
+
+    D_8009EAB0 = 0;
+    entry = D_8009EAC0 = D_80097F40[((BpSelectionView *)D_8009FC94)->course];
+    do {
+        i++;
+        entry->active = ~entry->id >> 31;
+        entry++;
+    } while (i < 2);
+    course = ((BpSelectionView *)D_8009FC94)->course;
+    D_8009EAB4 = 0;
+    D_8009EAB8 = -1;
+    D_8009EABC = 0;
+    D_8009FC48 = 0;
+    switch (course) {
+    case 0:
+        D_8009FC58 = 1;
+        D_8009FC68 = 1;
+        break;
+    case 1:
+        D_8009FC58 = 1;
+        D_8009FC68 = 4;
+        break;
+    case 10:
+        D_8009FC58 = 3;
+        D_8009FC68 = 3;
+        break;
+    case 14:
+        D_8009FC58 = 0x4C;
+        D_8009FC68 = 0x4C;
+        break;
+    default:
+        D_8009FC58 = 1;
+        D_8009FC68 = 4;
+        break;
+    }
+    D_8009FE70 = 0;
+    func_80070660();
 }

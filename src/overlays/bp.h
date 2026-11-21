@@ -610,4 +610,10 @@ typedef struct BpSurfacePlayer {
 
 int func_8006E23C(BpSurfacePlayer *player);
 
+typedef struct BpCourseStatus {
+    short id;
+    short value;
+    short active;
+} BpCourseStatus;
+
 #endif
