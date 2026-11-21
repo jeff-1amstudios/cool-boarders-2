@@ -348,6 +348,9 @@ extern void func_800733BC(BpRunScore *score);
 extern void func_80073CE4(BpPlayer *player, int side);
 extern void func_800783FC(void *effects, int first, int second, int third, int enabled);
 
+extern unsigned short D_8009D62E;
+extern unsigned short D_8009D632;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4222,5 +4225,43 @@ void func_80073B2C(BpPlayer *player, int side, int entry)
     for (i = 2; i != 0; i--) {
         history = (BpStartPlayer *)((unsigned char *)player + i * sizeof(BpSurfaceState));
         history->surface = *(BpSurfaceState *)((unsigned char *)history - 0x30);
+    }
+}
+
+// FUNCTION: BP.BIN:0x80073CE4
+void func_80073CE4(BpPlayer *player, int side)
+{
+    BpMotionState *motion = ((BpMotionPlayer *)player)->motion;
+    unsigned int buttons = ((BpMovePlayer *)player)->input;
+    unsigned int previous_buttons = ((BpMovePlayer *)player)->previous_input;
+    int shift;
+    int animation;
+
+    ((BpPlayerCoordinates *)player)->body_rotation.vx = 0;
+    ((BpPlayerCoordinates *)player)->body_rotation.vz = 0;
+    func_80093E9C(&((BpPlayerCoordinates *)player)->body_rotation);
+    shift = side << 4;
+    if (buttons & (D_8009D62E << shift)) {
+        ((BpPlayerCoordinates *)player)->body_rotation.vy += 40;
+    }
+    if (buttons & (D_8009D62C << shift)) {
+        ((BpPlayerCoordinates *)player)->body_rotation.vy -= 40;
+    }
+    ((BpPlayerCoordinates *)player)->body_coordinate.coord = D_80058E20;
+    RotMatrixY(((BpPlayerCoordinates *)player)->body_rotation.vy,
+               &((BpPlayerCoordinates *)player)->body_coordinate.coord);
+    animation = ((BpMotionPlayer *)player)->reverse + 7;
+    ((BpPlayerCoordinates *)player)->body_coordinate.flg = 0;
+    ((BpAnimationPlayback *)((unsigned char *)player + 0x1E4))->animation.word_4e0 = animation;
+    func_80061ABC((BpMotionPlayer *)player);
+    func_80064944((BpAnimationPlayback *)((unsigned char *)player + 0x1E4), animation, 2, 0);
+    func_80060464((BpMotionPlayer *)player, 0, 0);
+    **(int **)((unsigned char *)motion + 0x28) = 0;
+    if (((buttons ^ previous_buttons) & buttons) & (D_8009D632 << shift)) {
+        func_8005F964(player, 0);
+        func_80061E1C((BpMotionPlayer *)player, 0);
+        func_80061E1C((BpMotionPlayer *)player, 0);
+        func_80061E1C((BpMotionPlayer *)player, 0);
+        func_80061E1C((BpMotionPlayer *)player, 0);
     }
 }
