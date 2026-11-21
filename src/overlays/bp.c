@@ -4922,3 +4922,18 @@ int func_8007BF50(int value, int divisor)
     }
     return result * 255 / divisor;
 }
+
+// FUNCTION: BP.BIN:0x8007BFE8
+int func_8007BFE8(int value, int divisor)
+{
+    int result;
+
+    if (value < 83) {
+        result = value;
+    } else if (value < 129) {
+        result = (value - 82) * 59 / 46 + 82;
+    } else {
+        result = value - 46;
+    }
+    return result * 255 / divisor;
+}
