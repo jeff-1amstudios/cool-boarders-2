@@ -622,4 +622,17 @@ int func_800707F4(VECTOR *start, VECTOR *end, VECTOR *edge_start,
 int func_80070AE8(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
                   SVECTOR *edge_end, SVECTOR *intersection);
 
+typedef struct BpTransitionPlayer {
+    unsigned char unknown_0000[0x28];
+    unsigned int buttons;
+    unsigned char unknown_002c[0x79C];
+    int transition;
+    unsigned char unknown_07cc[0x480];
+    short reverse;
+    unsigned char unknown_0c4e[2];
+    int alternate;
+} BpTransitionPlayer;
+
+void func_800718A4(BpPlayer *player, BpMotionPlayer *second, int mode);
+
 #endif

@@ -311,6 +311,17 @@ extern void func_80070660(void);
 extern int D_8009EAC4;
 extern int D_8009EAC8[64];
 
+extern int func_80016860(int sample_index, unsigned char volume);
+extern unsigned short D_8009D646;
+extern short D_8009FA50;
+extern unsigned int func_80073EB8(void);
+extern unsigned int func_80073F6C(unsigned int buttons);
+extern void func_80071D78(void *player, int animation, int mode, int end_frame);
+extern void func_8007EBD8(int value);
+extern void func_80093E9C(SVECTOR *rotation);
+extern void func_80061C88(BpMotionPlayer *player, int direction);
+extern void func_80073E98(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3774,4 +3785,117 @@ void func_80071744(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surfa
     if (flag << 16 <= 0) {
         D_8009EAB8 = 0;
     }
+}
+
+// FUNCTION: BP.BIN:0x800718A4
+void func_800718A4(BpPlayer *player, BpMotionPlayer *second, int mode)
+{
+    int animation;
+    unsigned int previous;
+    unsigned int previous_other;
+    unsigned int buttons = 0;
+    int frame;
+    unsigned int other = 0;
+    long x;
+    long z;
+    long squared;
+
+    func_80078DAC(player->effects);
+    if (second != 0) {
+        func_80078DAC(((BpPlayer *)second)->effects);
+    }
+    if (mode == 4) {
+        animation = 0x60;
+        frame = 0;
+        do {
+            previous = buttons;
+            previous_other = other;
+            func_8005B7E4();
+            buttons = func_80073EB8();
+            other = func_80073F6C(buttons);
+            ((BpTransitionPlayer *)player)->buttons = buttons;
+            if (((buttons ^ previous) & buttons & D_8009D646) != 0 ||
+                ((other ^ previous_other) & other & D_8009D646) != 0) break;
+            if (((buttons ^ previous) & buttons & ((unsigned int)D_8009D63E << 16)) != 0) {
+                D_8009FC74 = ~D_8009FC74;
+            }
+            func_80071D78(player, animation, 1, 0);
+            if (second != 0) func_80071D78(second, animation, 1, 0);
+            func_8005D1AC(mode, mode, 0);
+            frame++;
+        } while (frame < 60);
+        func_80016860(0x10, 0x80);
+        func_80068B10(1);
+        ((BpTransitionPlayer *)player)->transition = 0;
+        frame = 0;
+        do {
+            previous = buttons;
+            func_8005B7E4();
+            buttons = func_80073EB8();
+            func_80073F6C(buttons);
+            ((BpTransitionPlayer *)player)->buttons = buttons;
+            if (((buttons ^ previous) & buttons & ((unsigned int)D_8009D63E << 16)) != 0) {
+                D_8009FC74 = ~D_8009FC74;
+            }
+            animation = 99;
+            if (((BpTransitionPlayer *)player)->alternate == 0) animation = 97;
+            if (((BpSelectionView *)D_8009FC94)->mode != 3) animation = 97;
+            func_80071D78(player, animation, 1, 0);
+            if (second != 0) {
+                animation = 99;
+                if (((BpTransitionPlayer *)second)->alternate == 0) animation = 97;
+                if (((BpSelectionView *)D_8009FC94)->mode != 3) animation = 97;
+                func_80071D78(second, animation, 1, 0);
+            }
+            func_8005D1AC(mode, mode, 0);
+            frame++;
+        } while (frame < 30);
+        frame = 0;
+        do {
+            frame++;
+            func_8005B7E4();
+            func_8005D1AC(mode, mode, 0);
+        } while (frame < 8);
+        func_80016860(0x19, 0x80);
+        func_80068B10(2);
+    }
+    func_8007EBD8(D_8009FA50);
+    func_80093E9C(&((BpPlayerReset *)player)->rotation);
+    func_80061C88((BpMotionPlayer *)player, 0);
+    if (second != 0) func_80061C88(second, 0);
+    frame = 0;
+    do {
+        previous = buttons;
+        func_8005B7E4();
+        buttons = func_80073EB8();
+        func_80073F6C(buttons);
+        ((BpTransitionPlayer *)player)->buttons = buttons;
+        if (((buttons ^ previous) & buttons & ((unsigned int)D_8009D63E << 16)) != 0) {
+            D_8009FC74 = ~D_8009FC74;
+        }
+        if (frame < 20) {
+            animation = 100;
+            if (((BpTransitionPlayer *)player)->alternate == 0) animation = 98;
+            if (((BpSelectionView *)D_8009FC94)->mode != 3) animation = 98;
+            func_80071D78(player, animation, 1, -1);
+            if (second != 0) {
+                animation = 100;
+                if (((BpTransitionPlayer *)second)->alternate == 0) animation = 98;
+                if (((BpSelectionView *)D_8009FC94)->mode != 3) animation = 98;
+                func_80071D78(second, animation, 1, -1);
+            }
+        } else {
+            func_80071D78(player, ((BpTransitionPlayer *)player)->reverse + 36, 1, -1);
+            if (second != 0) func_80071D78(second, second->reverse + 36, 1, -1);
+        }
+        x = (((BpPlayerReset *)player)->vector_48e0.vx >> 4) / 30 >> 6;
+        z = (((BpPlayerReset *)player)->vector_48e0.vz >> 4) / 30;
+        squared = x * x;
+        x = z >> 6;
+        x = x * x;
+        frame++;
+        func_8005E700(player, SquareRoot12(squared + x) >> 12);
+        func_8005D1AC(mode, mode, 0);
+    } while (frame < 30);
+    func_80073E98();
 }
