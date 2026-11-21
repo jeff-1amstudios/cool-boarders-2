@@ -687,4 +687,6 @@ typedef union BpControllerResult {
 
 void func_80073F74(void);
 
+void func_800748B0(GsOT *ot, int selection);
+
 #endif

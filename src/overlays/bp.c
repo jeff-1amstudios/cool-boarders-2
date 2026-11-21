@@ -4401,3 +4401,42 @@ void func_800745E4(GsOT_TAG *tag, int x, int y)
     func_800944E8(tag, sprite);
     func_8009456C(tag, D_8009EC2C);
 }
+
+// FUNCTION: BP.BIN:0x800748B0
+void func_800748B0(GsOT *ot, int selection)
+{
+    int saved_x;
+    int saved_y;
+    SPRT *sprite;
+    int index;
+    GsOT_TAG *tag = ot->org + 3;
+
+    func_800944E8(tag, D_8009EC28 + 3);
+    func_8009456C(tag, D_8009EC2C + 3);
+    func_800944E8(tag, D_8009EC28 + 4);
+    func_8009456C(tag, D_8009EC2C + 4);
+    switch (selection) {
+    case 0:
+    case 1:
+        index = 5;
+        break;
+    case 2:
+        index = 6;
+        break;
+    case 3:
+        index = 7;
+        break;
+    default:
+        index = 7;
+        break;
+    }
+    sprite = D_8009EC28 + index;
+    saved_x = sprite->x0;
+    saved_y = sprite->y0;
+    sprite->x0 = 0x34;
+    sprite->y0 = -0x4A;
+    func_800944E8(tag, sprite);
+    func_8009456C(tag, D_8009EC2C + index);
+    sprite->x0 = saved_x;
+    sprite->y0 = saved_y;
+}
