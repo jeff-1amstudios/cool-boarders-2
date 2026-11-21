@@ -400,3 +400,5 @@ D_8009D632 = 0x8009D632; // size:0x2
 D_8009EBD8 = 0x8009EBD8; // type:u32 size:0x4
 D_8009FE64 = 0x8009FE64; // type:u32 size:0x4
 D_8009FE68 = 0x8009FE68; // type:u32 size:0x4
+
+D_8009EBDC = 0x8009EBDC;

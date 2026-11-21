@@ -355,6 +355,9 @@ extern unsigned int D_8009EBD8;
 extern int D_8009FE64;
 extern int D_8009FE68;
 
+extern unsigned int func_8001B320(int port, unsigned char *state);
+extern unsigned char D_8009EBDC[];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4276,4 +4279,27 @@ void func_80073E98(void)
     D_8009EBD8 = 0;
     D_8009FE64 = 0;
     D_8009FE68 = 0;
+}
+
+// FUNCTION: BP.BIN:0x80073EB8
+unsigned int func_80073EB8(void)
+{
+    BpControllerResult first;
+    unsigned int second;
+
+    first.value = func_8001B320(0, D_8009EBDC);
+    second = func_8001B320(1, D_8009EBDC + 0x24);
+    if (first.value & 0xFFFF0000) {
+        D_8009FE64 = -1;
+    } else {
+        D_8009FE64 = 0;
+    }
+    if (second & 0xFFFF0000) {
+        D_8009FE68 = -1;
+    } else {
+        D_8009FE68 = 0;
+    }
+    second <<= 16;
+    first.value = first.buttons;
+    return D_8009EBD8 = first.buttons | second;
 }
