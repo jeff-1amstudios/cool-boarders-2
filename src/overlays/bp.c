@@ -4599,3 +4599,62 @@ void func_800751CC(void)
     func_8001F378(D_8009EC34);
     func_8001F378(D_8009EC38);
 }
+
+// FUNCTION: BP.BIN:0x800753D0
+int func_800753D0(GsOT_TAG *tag, int value, int x, int y)
+{
+    short digits[16];
+    int places = 3;
+    int empty = -1;
+    int padding;
+    int i;
+    int width = D_8009EC38->vx;
+    SPRT *sprite;
+    int count;
+    unsigned char saved_u;
+
+    D_8009EC30->r0 = 0x80;
+    D_8009EC30->g0 = 0x40;
+    D_8009EC30->b0 = 0x40;
+    sprite = D_8009EC30;
+    if (value < 0) {
+        value = -value;
+    }
+    i = 0;
+    padding = 3;
+    while (value > 0) {
+        if (i >= places) {
+            break;
+        }
+        digits[i++] = value % 10;
+        value /= 10;
+    }
+    if (i == 0) {
+        i = 1;
+        digits[0] = 0;
+    }
+    while (i < places) {
+        digits[i++] = empty;
+    }
+    count = 0;
+    sprite->x0 = x;
+    sprite->y0 = y;
+    for (i = places - 1; i >= 0; i--) {
+        if (digits[i] >= 0) {
+            saved_u = sprite->u0;
+            sprite->u0 += sprite->w * digits[i];
+            func_800944E8(tag, sprite);
+            sprite->u0 = saved_u;
+            count++;
+            sprite->x0 += width;
+        } else if (padding >= 0) {
+            count++;
+            sprite->x0 += width;
+        }
+    }
+    func_8009456C(tag, D_8009EC34);
+    D_8009EC30->r0 = 0x80;
+    D_8009EC30->g0 = 0x80;
+    D_8009EC30->b0 = 0x80;
+    return count;
+}
