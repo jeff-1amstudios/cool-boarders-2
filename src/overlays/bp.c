@@ -420,6 +420,9 @@ extern BpScrollingQuad D_8009ED10[4];
 extern DR_TWIN D_8009EE30[2];
 extern DR_TWIN D_8009EE48[2];
 
+extern BpQuadTemplate D_80096AEC;
+extern BpQuadTemplate D_80096B1C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5115,4 +5118,72 @@ PACKET *func_8007D4B8(GsOT *ot, int index, PACKET *packets, int shift)
         ((PrimitiveTag *)&ot->org[depth >> shift])->address = (unsigned long)twin2;
     }
     return packets;
+}
+
+// FUNCTION: BP.BIN:0x8007DC9C
+void func_8007DC9C(short reverse)
+{
+    BpQuadTemplate vertices;
+    BpQuadTemplate normals;
+    SVECTOR saved;
+    short i, j, side;
+
+    vertices = D_80096AEC;
+    normals = D_80096B1C;
+    D_8009ED10[0].scroll_step = 4;
+    D_8009ED10[1].scroll_step = 4;
+    D_8009ED10[2].scroll_step = 2;
+    D_8009ED10[3].scroll_step = 2;
+    for (i = 0; i < 4; i++) {
+        D_8009ED10[i].texture_v = 128;
+        side = i % 2;
+        for (j = 0; j < 4; j++) {
+            D_8009ED10[i].vertices[j].vx = vertices.vectors[side][j].vx;
+            D_8009ED10[i].vertices[j].vy = vertices.vectors[side][j].vy;
+            D_8009ED10[i].vertices[j].vz = vertices.vectors[side][j].vz;
+            D_8009ED10[i].normals[j].vx = normals.vectors[side][j].vx;
+            D_8009ED10[i].normals[j].vy = normals.vectors[side][j].vy;
+            D_8009ED10[i].normals[j].vz = normals.vectors[side][j].vz;
+        }
+    }
+    if (reverse) {
+        for (i = 0; i < 4; i++) {
+            saved.vx = -D_8009ED10[i].vertices[0].vx;
+            saved.vy = D_8009ED10[i].vertices[0].vy;
+            saved.vz = D_8009ED10[i].vertices[0].vz;
+            D_8009ED10[i].vertices[0].vx = -D_8009ED10[i].vertices[1].vx;
+            D_8009ED10[i].vertices[0].vy = D_8009ED10[i].vertices[1].vy;
+            D_8009ED10[i].vertices[0].vz = D_8009ED10[i].vertices[1].vz;
+            D_8009ED10[i].vertices[1].vx = saved.vx;
+            D_8009ED10[i].vertices[1].vy = saved.vy;
+            D_8009ED10[i].vertices[1].vz = saved.vz;
+            saved.vx = -D_8009ED10[i].vertices[2].vx;
+            saved.vy = D_8009ED10[i].vertices[2].vy;
+            saved.vz = D_8009ED10[i].vertices[2].vz;
+            D_8009ED10[i].vertices[2].vx = -D_8009ED10[i].vertices[3].vx;
+            D_8009ED10[i].vertices[2].vy = D_8009ED10[i].vertices[3].vy;
+            D_8009ED10[i].vertices[2].vz = D_8009ED10[i].vertices[3].vz;
+            D_8009ED10[i].vertices[3].vx = saved.vx;
+            D_8009ED10[i].vertices[3].vy = saved.vy;
+            D_8009ED10[i].vertices[3].vz = saved.vz;
+            saved.vx = -D_8009ED10[i].normals[0].vx;
+            saved.vy = D_8009ED10[i].normals[0].vy;
+            saved.vz = D_8009ED10[i].normals[0].vz;
+            D_8009ED10[i].normals[0].vx = -D_8009ED10[i].normals[1].vx;
+            D_8009ED10[i].normals[0].vy = D_8009ED10[i].normals[1].vy;
+            D_8009ED10[i].normals[0].vz = D_8009ED10[i].normals[1].vz;
+            D_8009ED10[i].normals[1].vx = saved.vx;
+            D_8009ED10[i].normals[1].vy = saved.vy;
+            D_8009ED10[i].normals[1].vz = saved.vz;
+            saved.vx = -D_8009ED10[i].normals[2].vx;
+            saved.vy = D_8009ED10[i].normals[2].vy;
+            saved.vz = D_8009ED10[i].normals[2].vz;
+            D_8009ED10[i].normals[2].vx = -D_8009ED10[i].normals[3].vx;
+            D_8009ED10[i].normals[2].vy = D_8009ED10[i].normals[3].vy;
+            D_8009ED10[i].normals[2].vz = D_8009ED10[i].normals[3].vz;
+            D_8009ED10[i].normals[3].vx = saved.vx;
+            D_8009ED10[i].normals[3].vy = saved.vy;
+            D_8009ED10[i].normals[3].vz = saved.vz;
+        }
+    }
 }

@@ -736,4 +736,14 @@ typedef struct BpScrollingQuad {
     short scroll_step;
 } BpScrollingQuad;
 
+typedef struct BpPackedVector {
+    short vx, vy, vz;
+} BpPackedVector;
+
+typedef struct BpQuadTemplate {
+    BpPackedVector vectors[2][4];
+} BpQuadTemplate;
+
+void func_8007DC9C(short reverse);
+
 #endif
