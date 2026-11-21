@@ -718,4 +718,6 @@ typedef struct BpTransitionTexture {
 POLY_FT4 *func_8007A108(unsigned long *ordering_table, POLY_FT4 *packet,
                        int x, int y, SpriteTexture *texture, int scale, int angle);
 
+int func_8007BD9C(int course, int value);
+
 #endif

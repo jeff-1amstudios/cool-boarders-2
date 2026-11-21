@@ -445,3 +445,15 @@ D_8009692C = 0x8009692C; // size:0xC
 D_80099BB0 = 0x80099BB0; // size:0x18
 
 func_8007A108 = 0x8007A108; // type:func
+
+func_8007BD9C = 0x8007BD9C; // type:func
+func_8007BEC4 = 0x8007BEC4; // type:func
+func_8007BF50 = 0x8007BF50; // type:func
+func_8007BFE8 = 0x8007BFE8; // type:func
+func_8007C07C = 0x8007C07C; // type:func
+D_80099BD0 = 0x80099BD0; // size:0x4
+D_80099BD4 = 0x80099BD4; // size:0x28
+D_80099BFC = 0x80099BFC; // size:0x8
+D_80099C04 = 0x80099C04; // size:0x10
+D_80099C14 = 0x80099C14; // size:0x8
+D_80099C1C = 0x80099C1C; // size:0x4

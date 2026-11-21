@@ -402,6 +402,17 @@ extern POLY_FT4 *func_800792E0(unsigned long *tag, POLY_FT4 *packet, int frame);
 extern BpTransitionTexture D_8009692C;
 extern short D_80099BB0[12];
 
+extern int func_8007BEC4(int value, int divisor);
+extern int func_8007BF50(int value, int divisor);
+extern int func_8007BFE8(int value, int divisor);
+extern int func_8007C07C(int value, int divisor);
+extern int D_80099BD0;
+extern int D_80099BD4[10];
+extern int D_80099BFC[2];
+extern int D_80099C04[4];
+extern int D_80099C14[2];
+extern int D_80099C1C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4847,4 +4858,35 @@ POLY_FT4 *func_8007A108(unsigned long *ordering_table, POLY_FT4 *packet,
     ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     return packet;
+}
+
+// FUNCTION: BP.BIN:0x8007BD9C
+int func_8007BD9C(int course, int value)
+{
+    int result;
+
+    if (value < 0) {
+        result = 0;
+    } else if (value > (&D_80099BD0)[course * 2]) {
+        result = 255;
+    } else {
+        switch (course) {
+        case 5:
+            result = func_8007BEC4(value, D_80099BFC[0]);
+            break;
+        case 6:
+            result = func_8007BF50(value, D_80099C04[0]);
+            break;
+        case 8:
+            result = func_8007BFE8(value, D_80099C14[0]);
+            break;
+        case 9:
+            result = func_8007C07C(value, D_80099C1C);
+            break;
+        default:
+            result = value * 255 / D_80099BD4[course * 2];
+            break;
+        }
+    }
+    return result;
 }
