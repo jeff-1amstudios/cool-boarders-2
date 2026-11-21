@@ -599,4 +599,15 @@ typedef struct BpCollisionEntries {
 
 int func_8006D8CC(BpPlayer *player, VECTOR *start, VECTOR *end, int entry_index, int mode);
 
+typedef struct BpSurfacePlayer {
+    BpStartLocation location;
+    unsigned char unknown_1c[0x20];
+    short surface;
+    unsigned char unknown_3e[0x46];
+    VECTOR position;
+    short start;
+} BpSurfacePlayer;
+
+int func_8006E23C(BpSurfacePlayer *player);
+
 #endif

@@ -3350,3 +3350,38 @@ int func_8006D8CC(BpPlayer *player, VECTOR *start, VECTOR *end, int entry_index,
     }
     return surface;
 }
+
+// FUNCTION: BP.BIN:0x8006E23C
+int func_8006E23C(BpSurfacePlayer *player)
+{
+    BpSurfaceState query;
+    int result;
+    int surface;
+
+    query.y = 0x800;
+    query.surface = -1;
+    query.kind = 0;
+    query.x = 0;
+    query.z = 0;
+    query.mode = 2;
+    query.height = 0;
+    query.word_18 = 0;
+    query.word_54 = 0;
+    query.word_50 = 0;
+    func_8006E328(&player->position, player->start, &query, 0);
+    surface = query.surface;
+    if (surface >= 0) {
+        player->surface = surface;
+        player->location.entry = &D_8009FA28[surface];
+        player->location.related[0] = player->location.entry->related[0];
+        player->location.related[1] = player->location.entry->related[1];
+        player->location.related[2] = player->location.entry->related[2];
+        player->location.x = ((int *)player->location.entry->unknown_00)[0];
+        player->location.y = ((int *)player->location.entry->unknown_00)[1];
+        result = -1;
+        player->location.z = ((int *)player->location.entry->unknown_00)[2];
+    } else {
+        result = 0;
+    }
+    return result;
+}
