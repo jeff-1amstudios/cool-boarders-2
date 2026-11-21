@@ -635,4 +635,6 @@ typedef struct BpTransitionPlayer {
 
 void func_800718A4(BpPlayer *player, BpMotionPlayer *second, int mode);
 
+int func_800720D8(BpPlayer *player, BpPlayer *second);
+
 #endif

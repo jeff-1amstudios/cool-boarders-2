@@ -322,6 +322,20 @@ extern void func_80093E9C(SVECTOR *rotation);
 extern void func_80061C88(BpMotionPlayer *player, int direction);
 extern void func_80073E98(void);
 
+extern int D_8009FEA8;
+extern unsigned short D_8009D62C;
+extern unsigned short D_8009D634;
+extern short D_800958CC;
+extern short D_800958CE;
+extern unsigned char D_8009FC90;
+extern unsigned char D_8009FCC8;
+extern int D_8009FEA0[];
+extern void func_80064F38(BpPlayer *player, int first, int second);
+extern void func_8005F024(int mode, int value);
+extern void func_8007C358(int value);
+extern int func_80072BA0(GsOT *ot, int *options, int count, int x, int y,
+                         unsigned int buttons, unsigned int previous);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3898,4 +3912,117 @@ void func_800718A4(BpPlayer *player, BpMotionPlayer *second, int mode)
         func_8005D1AC(mode, mode, 0);
     } while (frame < 30);
     func_80073E98();
+}
+
+// FUNCTION: BP.BIN:0x800720D8
+int func_800720D8(BpPlayer *player, BpPlayer *second)
+{
+    short *airborne = &((BpMotionPlayer *)player)->airborne;
+    int delay = 0;
+    int count = 30;
+    int i;
+    unsigned int input;
+    unsigned int buttons;
+    unsigned int previous;
+    int choice;
+    int limit;
+    int result;
+    int x;
+    GsOT **ot;
+
+    D_8009FEA8 = 0;
+    *(short *)player->unknown_4910 = 0;
+    *(int *)(player->unknown_0200 + 0x5cc) = 0;
+    *(int *)(player->unknown_0200 + 0x5d0) = 0;
+    ((BpPlayerReset *)player)->word_0754 = 0;
+    ((BpPlayerReset *)player)->value_001a = 0;
+    /* Scalar views preserve the original word-access scheduling. */
+    *(int *)&((BpPlayerReset *)player)->vector_48e0.vx /= 2;
+    *(int *)&((BpPlayerReset *)player)->vector_48e0.vz /= 2;
+    do {
+        func_8005B7E4();
+        buttons = func_80073EB8();
+        input = func_80073F6C(buttons);
+        if (delay) {
+            buttons = 0;
+            delay--;
+            input = 0;
+        } else {
+            buttons = 0;
+            if (*airborne == 0) {
+                input = D_8009D62C | D_8009D634;
+                count--;
+            } else {
+                input = D_8009D634;
+            }
+            buttons = input;
+        }
+        ((BpTransitionPlayer *)player)->buttons = buttons;
+        if (second) ((BpTransitionPlayer *)second)->buttons = input;
+        func_80064F38(player, 0, 0);
+        if (second) func_80064F38(second, 0, 0);
+        func_8005F024(2, 0);
+        func_8005E700(player, ((BpPlayerReset *)player)->distance);
+        func_8005D1AC(5, 5, -1);
+    } while (count != 0);
+    func_8007C358(0);
+    choice = 2;
+    limit = 96;
+    /* Keep the signed menu coordinate in the upper half until it is used. */
+    x = (unsigned int)(unsigned short)D_800958CC << 16;
+    D_8009FC90 = 0;
+    do {
+        previous = buttons;
+        func_8005B7E4();
+        buttons = func_80073EB8();
+        func_80073F6C(buttons);
+        if (D_8009FC90 == limit) {
+            choice = func_80072BA0(D_8009FC44, D_8009FEA0, 6, x >> 16, D_800958CE, buttons, previous);
+        }
+        i = 0;
+        func_8005BA14(D_8009FC44, D_8009FC90);
+        do {
+            func_80071D78(D_8009FA4C[i], 36, 2, 0);
+            i++;
+        } while (i < 1);
+        func_8005F024(2, 0);
+        func_8005D1AC(5, 5, -1);
+        i = D_8009FC90 + 5;
+        if (i < 96) D_8009FC90 = i;
+        else D_8009FC90 = limit;
+        switch (choice) {
+        case 3: result = 2; break;
+        case 5: result = 0; break;
+        case 4: result = 1; break;
+        default: choice = 2; break;
+        }
+    } while (choice == 2);
+    D_8009FCC8 = 0;
+    ot = &D_8009FC44;
+    do {
+        i = 0;
+        func_8005B7E4();
+        buttons = func_80073EB8();
+        func_80073F6C(buttons);
+        func_8005BA14(*ot, D_8009FC90);
+        func_8005B93C(*ot, D_8009FCC8);
+        do {
+            func_80071D78(D_8009FA4C[i], 36, 2, 0);
+            i++;
+        } while (i < 1);
+        func_8005F024(2, 0);
+        func_8005D1AC(5, 5, -1);
+        i = D_8009FC90 - 5;
+        if (D_8009FC90) {
+            if (i > 0) D_8009FC90 = i;
+            else D_8009FC90 = 0;
+        } else {
+            i = D_8009FCC8 + 5;
+            if (i < 256) D_8009FCC8 = i;
+            else D_8009FCC8 = 255;
+        }
+        if (D_8009FCC8 == 255) break;
+    } while (1);
+    SpuSetKey(0, 0x100000);
+    return result;
 }
