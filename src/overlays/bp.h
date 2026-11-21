@@ -546,4 +546,6 @@ int func_8006978C(GsOT *ot, BpDistancePlayer *player, int draw, int x, int y);
 
 int func_800699B4(GsOT *ot, int move_left, int position, int x, int y);
 
+void func_8006ACC0(GsOT *ot, int *counter, int different, int value, int direction);
+
 #endif

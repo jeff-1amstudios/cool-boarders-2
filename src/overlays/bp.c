@@ -259,6 +259,12 @@ extern void func_800749E0(GsOT *ot, int x, int y);
 
 extern PACKET *func_80078E54(GsOT_TAG *tag, PACKET *packets, int *data, int different);
 
+extern char D_800962BC[6];
+extern int D_8009FC6C;
+extern void func_80093A40(int font, int translucent, unsigned char red,
+                          unsigned char green, unsigned char blue);
+extern void func_80093684(GsOT_TAG *tag, int font, char *text, int x, int y, int mode);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3022,4 +3028,39 @@ int func_800699B4(GsOT *ot, int move_left, int position, int x, int y)
 void func_8006A668(GsOT *ot, void *data, int different)
 {
     D_80058ACC = func_80078E54(&ot->org[3], D_80058ACC, data, different);
+}
+
+// FUNCTION: BP.BIN:0x8006ACC0
+void func_8006ACC0(GsOT *ot, int *counter, int different, int value, int direction)
+{
+    char text[16];
+    int clamped = 0;
+    int x;
+    int y = -32;
+
+    if (*counter > 0) {
+        x = *counter * -8 + 176;
+        if (x < 96) {
+            x = 96;
+            clamped = -1;
+        }
+        sprintf(text, D_800962BC, value);
+        func_80093A40(D_8009FC6C, 0, 96, 96, 0);
+        func_80093684(&ot->org[3], D_8009FC6C, text, x, y, 0);
+        func_80093A40(D_8009FC6C, 0, 128, 128, 128);
+    } else {
+        *counter = 0;
+    }
+
+    if (different == 0) {
+        if (direction == -1) {
+            if (clamped == -1) {
+                *counter = 60;
+            } else if (*counter < 60) {
+                ++*counter;
+            }
+        } else {
+            --*counter;
+        }
+    }
 }
