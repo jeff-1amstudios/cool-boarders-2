@@ -4591,3 +4591,11 @@ int func_8007516C(void)
     D_8009EC38 = func_8001F1A0(0x24);
     return -(D_8009EC38 != 0);
 }
+
+// FUNCTION: BP.BIN:0x800751CC
+void func_800751CC(void)
+{
+    func_8001F378(D_8009EC30);
+    func_8001F378(D_8009EC34);
+    func_8001F378(D_8009EC38);
+}
