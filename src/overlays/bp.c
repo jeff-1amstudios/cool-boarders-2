@@ -3411,3 +3411,71 @@ int func_8006E328(VECTOR *position, int start, BpSurfaceState *surface, int mode
     }
     return result;
 }
+// FUNCTION: BP.BIN:0x8006ECA4
+int func_8006ECA4(BpPlayer *player, BpSurfaceState *start, BpSurfaceState *end)
+{
+    BpRenderEntry *entry;
+    BpSurfaceState *surface = (BpSurfaceState *)(player->unknown_0000 + 0x130);
+    int result = 0;
+    VECTOR *end_position = (VECTOR *)&end->x;
+    VECTOR *start_position = (VECTOR *)&start->x;
+    int entry_index = start->surface;
+    int previous = start->word_50;
+    int margin = *(int *)(player->unknown_0200 + 0x46F8);
+    int tolerance = D_8009EA88;
+    int height;
+    int i;
+    int limit;
+
+    entry = &D_8009FA28[entry_index];
+    end->word_50 = 0;
+    surface->y = 0x800;
+    surface->surface = -1;
+    surface->mode = 2;
+    surface->kind = 0;
+    surface->x = 0;
+    surface->z = 0;
+    surface->height = 0;
+    surface->word_18 = 0;
+    surface->word_54 = 0;
+    surface->word_50 = 0;
+    height = func_8006C9C0(end_position, entry_index, surface, 1);
+    if (surface->surface < 0) {
+        for (i = 0; i < 3; i++) {
+            if (entry->related[i] >= 0) {
+                height = func_8006C9C0(end_position, entry->related[i], surface, 1);
+                if (surface->surface >= 0) {
+                    break;
+                }
+            }
+        }
+        if (surface->surface < 0) {
+            return result;
+        }
+    }
+    if (surface->height < end->height) {
+        limit = end_position->vy;
+        if (end->height < limit) {
+            limit = end->height;
+        }
+        if (previous == -2 || start_position->vy < height) {
+            surface->word_18 = -1;
+            end->word_50 = -2;
+        } else if (limit - margin > height + tolerance) {
+            end->word_50 = -1;
+        } else if (start->word_50 == 0) {
+            result = func_8006D8CC(player, start_position, end_position, entry_index, 1);
+        } else {
+            if (height + tolerance < start_position->vy - margin) {
+                result = -1;
+                *(int *)(player->unknown_0200 + 0x46E0) = 0;
+                *(int *)(player->unknown_0200 + 0x46E4) = 0;
+                *(int *)(player->unknown_0200 + 0x46E8) = 0;
+            }
+            end->word_50 = -1;
+        }
+    } else {
+        end->word_50 = -2;
+    }
+    return result;
+}
