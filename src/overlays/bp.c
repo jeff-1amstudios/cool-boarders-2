@@ -345,6 +345,9 @@ extern int *D_8009FA20;
 
 extern void func_800733BC(BpRunScore *score);
 
+extern void func_80073CE4(BpPlayer *player, int side);
+extern void func_800783FC(void *effects, int first, int second, int third, int enabled);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4176,5 +4179,48 @@ void func_800734C0(BpPlayer *player, int timer, VECTOR *position)
         if (mode == 0 && sound_enabled != 0) {
             func_80068B24(28, sound_mode);
         }
+    }
+}
+
+// FUNCTION: BP.BIN:0x80073B2C
+void func_80073B2C(BpPlayer *player, int side, int entry)
+{
+    short mode = (signed char)player->unknown_4910[6];
+    unsigned char sound_enabled = player->unknown_4910[7];
+    int count;
+    int i;
+    BpStartPlayer *history;
+
+    if (entry >= 0 && D_8009EBD0.entries[entry * 6] >= 0) {
+        func_8005F964(player, 0);
+        ((BpPlayerReset *)player)->rotation.vx = 0;
+        ((BpPlayerReset *)player)->rotation.vz = 0;
+        func_80093E9C(&((BpPlayerReset *)player)->rotation);
+        if (*((signed char *)D_8009EBD0.entries + entry * 12 + 5) != 0) {
+            func_80061E1C((BpMotionPlayer *)player, 0);
+            func_80061E1C((BpMotionPlayer *)player, 0);
+            func_80061E1C((BpMotionPlayer *)player, 0);
+            func_80061E1C((BpMotionPlayer *)player, 0);
+        }
+        if (mode == 0 && sound_enabled != 0) {
+            func_80068B10(15);
+        }
+    } else {
+        func_80073CE4(player, side);
+    }
+    *(int *)((unsigned char *)player + 0x48B0) = 0;
+    if (mode <= 0) {
+        player->unknown_0200[0x5AC] = 0;
+    }
+    func_800783FC(player->effects, 0, 0, 0, 1);
+    count = ((BpRunPlayer *)player)->word_0cb4;
+    if (count < 7500) {
+        ((BpRunPlayer *)player)->word_0cb4 = count + 1;
+        *(short *)((unsigned char *)player + 0xE18 + count * 2) =
+            *(int *)((unsigned char *)player + 0x28);
+    }
+    for (i = 2; i != 0; i--) {
+        history = (BpStartPlayer *)((unsigned char *)player + i * sizeof(BpSurfaceState));
+        history->surface = *(BpSurfaceState *)((unsigned char *)history - 0x30);
     }
 }
