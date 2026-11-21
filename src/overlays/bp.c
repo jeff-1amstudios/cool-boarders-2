@@ -4046,3 +4046,26 @@ void func_8007315C(int course)
     D_8009EBD0.entries = D_80097FC0[course];
     D_8009FA20 = D_80099AF0[course];
 }
+
+// FUNCTION: BP.BIN:0x800731A8
+void func_800731A8(void)
+{
+    int course = 0;
+    short *base = D_80097FC0[0];
+    int offset = 0;
+    short *entry;
+    short *current;
+
+    do {
+        entry = base;
+        while (1) {
+            current = (short *)(offset + (int)entry);
+            entry += 6;
+            if (current[0] < 0) break;
+            current[3] = -current[3];
+            current[4] = -current[4];
+        }
+        course++;
+        offset += 0x2B8;
+    } while (course < 10);
+}

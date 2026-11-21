@@ -644,4 +644,6 @@ typedef struct BpCourseStartSelection {
 
 void func_8007315C(int course);
 
+void func_800731A8(void);
+
 #endif
