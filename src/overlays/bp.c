@@ -413,6 +413,9 @@ extern int D_80099C04[4];
 extern int D_80099C14[2];
 extern int D_80099C1C;
 
+extern BpPathRow *D_8009ECA0;
+extern int func_8007D464(int x1, int z1, int x2, int z2);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4977,4 +4980,29 @@ int func_8007C07C(int value, int divisor)
 void func_8007C358(int value)
 {
     SpuSetKey(0, 0x600000);
+}
+
+// FUNCTION: BP.BIN:0x8007D318
+int func_8007D318(short side, short first, short second, VECTOR *position, short reverse)
+{
+    int result;
+
+    if (reverse) {
+        position->vx = -D_8009ECA0[first].x[side];
+    } else {
+        position->vx = D_8009ECA0[first].x[side];
+    }
+    position->vz = D_8009ECA0[first].z[side];
+    if (reverse) {
+        result = func_8007D464(-D_8009ECA0[first].x[side],
+                                  D_8009ECA0[first].z[side],
+                                  -D_8009ECA0[second].x[side],
+                                  D_8009ECA0[second].z[side]);
+    } else {
+        result = func_8007D464(D_8009ECA0[first].x[side],
+                                  D_8009ECA0[first].z[side],
+                                  D_8009ECA0[second].x[side],
+                                  D_8009ECA0[second].z[side]);
+    }
+    return (short)result;
 }

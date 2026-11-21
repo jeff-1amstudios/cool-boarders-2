@@ -457,3 +457,7 @@ D_80099BFC = 0x80099BFC; // size:0x8
 D_80099C04 = 0x80099C04; // size:0x10
 D_80099C14 = 0x80099C14; // size:0x8
 D_80099C1C = 0x80099C1C; // size:0x4
+
+func_8007D318 = 0x8007D318; // type:func
+func_8007D464 = 0x8007D464; // type:func
+D_8009ECA0 = 0x8009ECA0; // size:0x4

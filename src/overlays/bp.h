@@ -720,4 +720,12 @@ POLY_FT4 *func_8007A108(unsigned long *ordering_table, POLY_FT4 *packet,
 
 int func_8007BD9C(int course, int value);
 
+typedef struct BpPathRow {
+    int x[8];
+    int z[8];
+    unsigned char unknown_40[0x50];
+} BpPathRow;
+
+int func_8007D318(short side, short first, short second, VECTOR *position, short reverse);
+
 #endif
