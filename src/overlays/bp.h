@@ -646,4 +646,36 @@ void func_8007315C(int course);
 
 void func_800731A8(void);
 
+typedef struct BpRunScore {
+    BpScore score;
+    short value_30;
+    short unknown_32;
+} BpRunScore;
+
+typedef struct BpRunRecord {
+    int signature;
+    int word_04;
+    signed char mode;
+    unsigned char course;
+    short values[2];
+    short value_0e;
+    short value_10;
+    short value_12;
+    BpRunScore scores[6];
+    int offsets[4];
+    unsigned char unknown_015c[0x3A98];
+} BpRunRecord;
+
+typedef struct BpRunPlayer {
+    unsigned char unknown_0000[0x848];
+    BpRunScore *current_score;
+    BpRunScore score;
+    unsigned char unknown_0880[0x434];
+    int word_0cb4;
+    int word_0cb8;
+    BpRunRecord record;
+} BpRunPlayer;
+
+void func_80073204(BpRunPlayer *player, short *values, BpRunRecord *saved);
+
 #endif

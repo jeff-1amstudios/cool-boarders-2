@@ -343,6 +343,8 @@ extern int D_80099AF0[16][3];
 extern BpCourseStartSelection D_8009EBD0;
 extern int *D_8009FA20;
 
+extern void func_800733BC(BpRunScore *score);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -4068,4 +4070,49 @@ void func_800731A8(void)
         course++;
         offset += 0x2B8;
     } while (course < 10);
+}
+
+// FUNCTION: BP.BIN:0x80073204
+void func_80073204(BpRunPlayer *player, short *values, BpRunRecord *saved)
+{
+    BpRunRecord *record = &player->record;
+    int course = D_8009FC94[10];
+    int i, j;
+    int offset;
+    int *counts;
+
+    player->word_0cb8 = 0;
+    player->word_0cb4 = 0;
+    bzero((unsigned char *)record, sizeof(*record));
+    *(int *)&player->record = 0;
+    player->record.mode = D_80097BA4;
+    player->record.course = course;
+    player->record.values[0] = values[0];
+    player->record.values[1] = values[1];
+    player->record.value_0e = 0;
+    player->record.value_10 = 0;
+    player->record.value_12 = 0;
+    player->record.word_04 = 0;
+    i = 0;
+    offset = 0x14;
+    do {
+        func_800733BC((BpRunScore *)((char *)record + offset));
+        i++;
+        offset += sizeof(BpRunScore);
+    } while (i < 6);
+    func_800733BC(&player->score);
+    counts = D_8009FA20;
+    i = 0;
+    player->current_score = &record->scores[0];
+    do {
+        record->offsets[i] = 0;
+        for (j = 0; j < i; j++) {
+            record->offsets[i] += counts[j];
+        }
+        i++;
+    } while (i < 4);
+    if (saved != 0 && saved->signature != 0 &&
+        saved->course == D_8009FC94[10] && saved->mode == D_80097BA4) {
+        *record = *saved;
+    }
 }
