@@ -3724,3 +3724,54 @@ int func_80070AE8(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
     }
     return result;
 }
+
+// FUNCTION: BP.BIN:0x80071744
+void func_80071744(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface)
+{
+    short flag;
+    int edge_angle;
+    int movement_angle;
+    int angle;
+    int component;
+    int projected;
+    int difference;
+    int speed;
+    int z_squared;
+
+    flag = (signed char)player->unknown_4910[6];
+    edge_angle = ratan2(edge->vx, edge->vz);
+    movement_angle = ratan2(movement->vx, movement->vz);
+    difference = (movement_angle - edge_angle) << 20 >> 20;
+    angle = edge_angle;
+    if ((unsigned int)(difference + 0x400) > 0x800) {
+        component = edge_angle - 0x800;
+        if (edge_angle <= 0) {
+            component = edge_angle + 0x800;
+        }
+        angle = component;
+        difference = (movement_angle - angle) << 20 >> 20;
+    }
+    speed = ((BpPlayerReset *)player)->word_48f0;
+    projected = rcos(difference);
+    speed = (speed >> 6) * (projected >> 6);
+    component = rsin(angle);
+    projected = speed >> 6;
+    ((BpPlayerReset *)player)->vector_48e0.vx = projected * (component >> 6);
+    component = rcos(angle);
+    projected = projected * (component >> 6);
+    difference = ((BpPlayerReset *)player)->vector_48e0.vx >> 6;
+    speed = difference * difference;
+    difference = projected >> 6;
+    z_squared = difference * difference;
+    ((BpPlayerReset *)player)->vector_48e0.vz = projected;
+    ((BpPlayerReset *)player)->word_48f0 = SquareRoot12(speed + z_squared);
+    if (((BpPlayerReset *)player)->value_48fc == -1) {
+        ((BpPlayerReset *)player)->word_48f0 = 0;
+        ((BpPlayerReset *)player)->vector_48e0.vx = 0;
+        ((BpPlayerReset *)player)->vector_48e0.vz = 0;
+    }
+    ((BpPlayerReset *)player)->value_48fc = -1;
+    if (flag << 16 <= 0) {
+        D_8009EAB8 = 0;
+    }
+}
