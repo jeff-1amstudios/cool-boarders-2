@@ -746,4 +746,13 @@ typedef struct BpQuadTemplate {
 
 void func_8007DC9C(short reverse);
 
+typedef struct BpModelResources {
+    unsigned int unknown_00;
+    BpModelHeader *model;
+    BpCoordinateHeader *coordinates;
+    void *data;
+} BpModelResources;
+
+void func_8007E24C(BpModelResources *resources);
+
 #endif

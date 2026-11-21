@@ -423,6 +423,10 @@ extern DR_TWIN D_8009EE48[2];
 extern BpQuadTemplate D_80096AEC;
 extern BpQuadTemplate D_80096B1C;
 
+extern void func_8007E29C(BpModelHeader *model);
+extern void func_8007E954(BpCoordinateHeader *coordinates);
+extern void func_8007E998(void *data);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5186,4 +5190,15 @@ void func_8007DC9C(short reverse)
             D_8009ED10[i].normals[3].vz = saved.vz;
         }
     }
+}
+
+// FUNCTION: BP.BIN:0x8007E24C
+void func_8007E24C(BpModelResources *resources)
+{
+    BpCoordinateHeader *coordinates = resources->coordinates;
+    void *data = resources->data;
+
+    func_8007E29C(resources->model);
+    func_8007E954(coordinates);
+    func_8007E998(data);
 }
