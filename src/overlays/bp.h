@@ -685,4 +685,6 @@ typedef union BpControllerResult {
     unsigned short buttons;
 } BpControllerResult;
 
+void func_80073F74(void);
+
 #endif
