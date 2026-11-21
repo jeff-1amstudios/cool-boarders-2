@@ -295,6 +295,8 @@ extern int func_8006DC24(BpCollisionGeometry *geometry, SVECTOR *start, SVECTOR 
 extern void func_80071744(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
 extern void func_80070DE8(BpPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
 
+extern int func_8006C9C0(VECTOR *position, int entry, BpSurfaceState *surface, int mode);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3382,6 +3384,30 @@ int func_8006E23C(BpSurfacePlayer *player)
         player->location.z = ((int *)player->location.entry->unknown_00)[2];
     } else {
         result = 0;
+    }
+    return result;
+}
+
+// FUNCTION: BP.BIN:0x8006E328
+int func_8006E328(VECTOR *position, int start, BpSurfaceState *surface, int mode)
+{
+    VECTOR local_position;
+    BpRenderEntry *entry;
+    int result;
+    int i;
+
+    entry = &D_8009FA28[start];
+    local_position = *position;
+    result = func_8006C9C0(&local_position, start, surface, mode);
+    if (surface->surface < 0) {
+        for (i = 0; i < 3; i++) {
+            if (entry->related[2 - i] >= 0) {
+                result = func_8006C9C0(&local_position, entry->related[2 - i], surface, mode);
+                if (surface->surface >= 0) {
+                    break;
+                }
+            }
+        }
     }
     return result;
 }
