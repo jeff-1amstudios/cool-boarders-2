@@ -4972,3 +4972,9 @@ int func_8007C07C(int value, int divisor)
     }
     return result * 255 / divisor;
 }
+
+// FUNCTION: BP.BIN:0x8007C358
+void func_8007C358(int value)
+{
+    SpuSetKey(0, 0x600000);
+}

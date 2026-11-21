@@ -221,6 +221,8 @@ segments:
   - [0x21480, c, func_8007BFE8]
   - [0x21514, c, func_8007C07C]
   - [0x216c4, asm, body_216c4]
+  - [0x217f0, c, func_8007C358]
+  - [0x21814, asm, body_21814]
   # Original switch-table span owned by func_8005AB6C.
   - start: 0x3ad14
     type: .rodata
