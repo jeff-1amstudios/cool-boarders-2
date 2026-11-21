@@ -728,4 +728,12 @@ typedef struct BpPathRow {
 
 int func_8007D318(short side, short first, short second, VECTOR *position, short reverse);
 
+typedef struct BpScrollingQuad {
+    POLY_GT4 *packet;
+    SVECTOR vertices[4];
+    SVECTOR normals[4];
+    short texture_v;
+    short scroll_step;
+} BpScrollingQuad;
+
 #endif

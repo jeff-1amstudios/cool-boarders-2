@@ -416,6 +416,10 @@ extern int D_80099C1C;
 extern BpPathRow *D_8009ECA0;
 extern int func_8007D464(int x1, int z1, int x2, int z2);
 
+extern BpScrollingQuad D_8009ED10[4];
+extern DR_TWIN D_8009EE30[2];
+extern DR_TWIN D_8009EE48[2];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5024,4 +5028,91 @@ int func_8007D464(int x1, int z1, int x2, int z2)
         angle = -ratan2(x1, z1);
     }
     return angle;
+}
+
+// FUNCTION: BP.BIN:0x8007D4B8
+PACKET *func_8007D4B8(GsOT *ot, int index, PACKET *packets, int shift)
+{
+    RECT window;
+    CVECTOR colors[4];
+    long p, flag;
+    short i, j;
+    int depth = 0;
+    int buffer;
+    DR_TWIN *twin;
+    DR_TWIN *twin2;
+
+    buffer = GsGetActiveBuff();
+    for (i = 0; i < 4; i++) {
+        D_8009ED10[i].texture_v -= D_8009ED10[i].scroll_step;
+        if (D_8009ED10[i].texture_v == 0) {
+            D_8009ED10[i].texture_v = 128;
+        }
+    }
+    for (i = 0; i < 4; i++) {
+        D_8009ED10[i].packet = (POLY_GT4 *)packets;
+        packets += sizeof(POLY_GT4);
+        ((PrimitiveTag *)D_8009ED10[i].packet)->length = 12;
+        D_8009ED10[i].packet->code = 0x3C;
+        D_8009ED10[i].packet->code |= 2;
+        D_8009ED10[i].packet->tpage = GetTPage(0, 1, 0x2C0, 0x100);
+        D_8009ED10[i].packet->clut = GetClut(0x330, 0x1C2);
+    }
+    for (i = 0; i < 4; i++) {
+        D_8009ED10[i].packet->u0 = 0;
+        D_8009ED10[i].packet->sdk_unnamed_2 = D_8009ED10[i].texture_v;
+        D_8009ED10[i].packet->u1 = 95;
+        D_8009ED10[i].packet->sdk_unnamed_3 = D_8009ED10[i].texture_v;
+        D_8009ED10[i].packet->u2 = 0;
+        D_8009ED10[i].packet->v2 = (unsigned char)D_8009ED10[i].texture_v + 127;
+        D_8009ED10[i].packet->u3 = 95;
+        D_8009ED10[i].packet->v3 = (unsigned char)D_8009ED10[i].texture_v + 127;
+        depth += RotAverage4(&D_8009ED10[i].vertices[0], &D_8009ED10[i].vertices[1],
+                             &D_8009ED10[i].vertices[2], &D_8009ED10[i].vertices[3],
+                             (long *)&D_8009ED10[i].packet->x0,
+                             (long *)&D_8009ED10[i].packet->x1,
+                             (long *)&D_8009ED10[i].packet->x2,
+                             (long *)&D_8009ED10[i].packet->x3, &p, &flag);
+    }
+    depth /= 4;
+    if (depth > 0) {
+        for (i = 0; i < 4; i++) {
+            for (j = 0; j < 4; j++) {
+                NormalColor(&D_8009ED10[i].normals[j], &colors[j]);
+            }
+            D_8009ED10[i].packet->r0 = colors[0].r * 80 / 100;
+            D_8009ED10[i].packet->g0 = colors[0].g * 80 / 100;
+            D_8009ED10[i].packet->b0 = colors[0].b * 80 / 100;
+            D_8009ED10[i].packet->r1 = colors[1].r * 80 / 100;
+            D_8009ED10[i].packet->g1 = colors[1].g * 80 / 100;
+            D_8009ED10[i].packet->b1 = colors[1].b * 80 / 100;
+            D_8009ED10[i].packet->r2 = colors[2].r * 80 / 100;
+            D_8009ED10[i].packet->g2 = colors[2].g * 80 / 100;
+            D_8009ED10[i].packet->b2 = colors[2].b * 80 / 100;
+            D_8009ED10[i].packet->r3 = colors[3].r * 80 / 100;
+            D_8009ED10[i].packet->g3 = colors[3].g * 80 / 100;
+            D_8009ED10[i].packet->b3 = colors[3].b * 80 / 100;
+        }
+        twin = &D_8009EE48[(short)buffer];
+        window.w = 256;
+        window.x = 0;
+        window.h = 256;
+        window.y = 0;
+        SetTexWindow(twin, &window);
+        ((PrimitiveTag *)twin)->address = ((PrimitiveTag *)&ot->org[depth >> shift])->address;
+        ((PrimitiveTag *)&ot->org[depth >> shift])->address = (unsigned long)twin;
+        for (i = 0; i < 4; i++) {
+            ((PrimitiveTag *)D_8009ED10[i].packet)->address = ((PrimitiveTag *)&ot->org[depth >> shift])->address;
+            ((PrimitiveTag *)&ot->org[depth >> shift])->address = (unsigned long)D_8009ED10[i].packet;
+        }
+        twin2 = &D_8009EE30[(short)buffer];
+        window.w = 32;
+        window.x = 0;
+        window.h = 128;
+        window.y = 128;
+        SetTexWindow(twin2, &window);
+        ((PrimitiveTag *)twin2)->address = ((PrimitiveTag *)&ot->org[depth >> shift])->address;
+        ((PrimitiveTag *)&ot->org[depth >> shift])->address = (unsigned long)twin2;
+    }
+    return packets;
 }
