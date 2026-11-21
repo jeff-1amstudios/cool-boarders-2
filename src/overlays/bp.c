@@ -308,6 +308,9 @@ extern int D_8009FC58;
 extern int D_8009FC68;
 extern void func_80070660(void);
 
+extern int D_8009EAC4;
+extern int D_8009EAC8[64];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -3534,4 +3537,22 @@ void func_8006F454(void)
     }
     D_8009FE70 = 0;
     func_80070660();
+}
+
+// FUNCTION: BP.BIN:0x80070660
+void func_80070660(void)
+{
+    int *entry;
+    int i;
+    int empty;
+
+    D_8009EAC4 = 0;
+    empty = -1;
+    i = 63;
+    entry = &D_8009EAC8[63];
+    do {
+        *entry = empty;
+        i--;
+        entry--;
+    } while (i >= 0);
 }
