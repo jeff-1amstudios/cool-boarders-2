@@ -1,5 +1,11 @@
 #include "bp.h"
 
+extern unsigned int D_8009F70C;
+extern unsigned int D_8009F710;
+extern unsigned int D_8009F714;
+extern unsigned int D_8009F718;
+extern unsigned int D_8009F71C;
+
 extern void *func_8001F1A0(unsigned int size);
 extern void *func_800782E8(int count, CVECTOR *color);
 extern void func_80078DAC(void *effects);
@@ -5567,4 +5573,14 @@ void func_8007F2A8(void)
         LoadImage(&rect, D_8009F3D0);
         D_80099C6C = 0;
     }
+}
+
+// FUNCTION: BP.BIN:0x800850DC
+void func_800850DC(void)
+{
+    D_8009F70C = 0;
+    D_8009F710 = 0;
+    D_8009F714 = 0;
+    D_8009F718 = 0;
+    D_8009F71C = 0;
 }
