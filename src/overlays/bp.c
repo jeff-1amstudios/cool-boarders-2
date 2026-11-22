@@ -99,6 +99,8 @@ extern PACKET *func_8007D4B8(GsOT *ot, int index, PACKET *packets, int shift);
 extern void func_8007F1BC(void);
 extern void func_8007F2A8(void);
 extern void func_8007F368(void *data);
+extern short D_80099C6C;
+extern u_long D_8009F3D0[];
 
 extern void func_8007EF5C(GsOT *ot, int kind, int flags, int index,
                           int *position, int shift, void *scratch);
@@ -5543,4 +5545,26 @@ void func_8007EB1C(short mode)
     LoadImage(&rect, pixels);
     rect.x = 0x310;
     LoadImage(&rect, D_8009EFA8);
+}
+
+// FUNCTION: BP.BIN:0x8007F2A8
+void func_8007F2A8(void)
+{
+    RECT rect;
+
+    D_80099C6C++;
+    if (D_80099C6C > 1) {
+        rect.x = 0x360;
+        rect.y = 0x100;
+        rect.w = 2;
+        rect.h = 0x60;
+        StoreImage(&rect, D_8009F3D0);
+        rect.x = 0x362;
+        rect.w = 0x1E;
+        MoveImage(&rect, 0x360, 0x100);
+        rect.x = 0x37E;
+        rect.w = 2;
+        LoadImage(&rect, D_8009F3D0);
+        D_80099C6C = 0;
+    }
 }
