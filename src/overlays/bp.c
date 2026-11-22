@@ -5,6 +5,10 @@ extern unsigned int D_8009F710;
 extern unsigned int D_8009F714;
 extern unsigned int D_8009F718;
 extern unsigned int D_8009F71C;
+extern int D_8009FA58;
+extern int D_8009FA5C;
+extern int D_8009FA60;
+extern int D_8009FA64;
 
 extern void *func_8001F1A0(unsigned int size);
 extern void *func_800782E8(int count, CVECTOR *color);
@@ -5605,4 +5609,21 @@ SPRT *func_80086108(unsigned long *ordering_table, SPRT *sprite, short x, short 
     ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
     ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
     return sprite;
+}
+
+// FUNCTION: BP.BIN:0x8008F878
+short func_8008F878(short x, short y)
+{
+    short result = x < D_8009FA58;
+
+    if (D_8009FA60 < x) {
+        result |= 2;
+    }
+    if (y < D_8009FA5C) {
+        result |= 4;
+    }
+    if (D_8009FA64 < y) {
+        result |= 8;
+    }
+    return result;
 }
