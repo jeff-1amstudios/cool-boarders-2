@@ -103,6 +103,18 @@ global replacement that would shrink it. Never invent bounds or weaken guards.
 
 ## Iterate and finish
 
+- Before compiling, read `docs/decomp-knowledge/README.md` and search the relevant
+  topic files for the selected image-qualified ID and assembly symptoms. Read
+  only applicable entries. Consult prior attempt `knowledge.md` notes for this
+  identity as described in the index. Treat hypotheses as experiments, not rules;
+  repeat a failed approach only with a stated change in assumptions.
+- Maintain `knowledge.md` in the supplied attempt directory as you learn, before
+  the time/token limit. Use the index's proposal format: consulted entry IDs,
+  genuinely new findings, compact before/after C and MIPS evidence, exact recipe,
+  useful failed approaches, remaining uncertainty and next experiment. If nothing
+  new was learned, say so. An object match is pending supervisor verification.
+  This ignored evidence sidecar is allowed alongside `ghidra-update.json`; do
+  not edit curated documentation or label your own findings full-file verified.
 - Use `tools/.venv/bin/python tools/decomp_step.py --context <context>`
   for each compile/edit iteration. Inspect its compact diagnostics and the
   selected `object-diff.json` when necessary.

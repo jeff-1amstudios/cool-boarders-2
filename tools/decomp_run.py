@@ -324,6 +324,9 @@ class Runner:
             f"{active.get('symbol_file', 'symbol_addrs.txt')}, preserving existing definitions.\n"
             f"Use tools/.venv/bin/python tools/decomp_step.py --context {directory / 'context.json'}.\n"
             f"Write evidence to {directory / 'ghidra-update.json'}.\n"
+            "Before compiling, consult docs/decomp-knowledge/README.md and relevant topic entries.\n"
+            f"Record reusable findings or useful failed experiments in {directory / 'knowledge.md'} "
+            "using the index's proposal format; write 'No new reusable insight' when appropriate.\n"
             f"{budget_note}"
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
             "the selected object matches and evidence is written.\n")
@@ -609,10 +612,37 @@ class Runner:
         apply(self.w, active, payload)
         from decomp_runtime import record_attempt
         record_attempt(self.w.ROOT, active, "matched")
+        if key(active) in self.w.deferred_targets():
+            self.w.retry_deferred(key(active))
         session["completed"].append({**active, "phase": "integrated"})
         session["active"] = None
         self.w.save_state(session)
         print(f"Integrated {active['branch']} into main at {commit[:12]}", flush=True)
+
+    def resolve_functions(self):
+        requested = getattr(self.args, "functions", None)
+        if requested is None:
+            return None
+        targets = self.w.inventory()["targets"]
+        selected = []
+        for value in self.w.function_requests(requested):
+            value = value.strip()
+            if not value:
+                raise RuntimeError("--functions contains an empty entry")
+            generated = re.fullmatch(r"func_([0-9a-fA-F]{8})", value)
+            address = "0x" + generated[1] if generated else value
+            matches = [row for row in targets
+                       if value.casefold() == key(row).casefold()
+                       or value == row.get("name")
+                       or address.casefold() == row["address"].casefold()]
+            if len(matches) != 1:
+                raise RuntimeError(f"Function {value!r} is unknown or ambiguous; use IMAGE:0xADDRESS")
+            row = matches[0]
+            if row["status"] not in ("needs_review", "c"):
+                raise RuntimeError(f"Function {key(row)} is excluded from the C queue ({row['status']})")
+            if key(row) not in selected:
+                selected.append(key(row))
+        return selected
 
     def run(self):
         started = datetime.now(timezone.utc).isoformat()
@@ -628,7 +658,18 @@ class Runner:
             self.w.write(self.w.ROOT / previous["directory"] / "state.json", previous)
         if self.w.git("branch", "--show-current") != "main":
             raise RuntimeError("Automatic batches must start on the main integration branch")
+        selected = self.resolve_functions()
         session = self.w.begin_batch(self.args.limit)
+        if selected:
+            pending = selected
+            if previous and previous.get("selected_functions") == selected:
+                attempted = {key(row) for row in previous["completed"] + previous["deferred"]}
+                remaining = [identity for identity in previous["pending_functions"] if identity not in attempted]
+                if remaining or previous.get("phase") != "finished":
+                    pending = remaining
+            session.update(selected_functions=selected, pending_functions=pending)
+            if retry_target not in pending:
+                retry_target = None
         if retry_target:
             session["retry_target"] = retry_target
             session["interrupted"] = previous.get("interrupted", [])
@@ -638,7 +679,7 @@ class Runner:
         run = dict(argv=argv, command=shlex.join(argv) if argv else None, started_at=started,
                    ended_at=None, outcome="running", target_limit=self.args.limit,
                    agent_seconds=self.args.agent_seconds, agent_tokens=self.agent_tokens,
-                   model=self.model, effort=self.effort, functions=[])
+                   model=self.model, effort=self.effort, selected_functions=selected, functions=[])
         batch["runs"].append(run)
         self.w.write(batch_path, batch)
         try:
@@ -669,7 +710,7 @@ class Runner:
                 session.pop('retry_target', None)
                 self.w.save_state(session)
             except self.w.NoTarget:
-                reason = "eligible queue exhausted"
+                reason = "requested function list exhausted" if session.get("selected_functions") else "eligible queue exhausted"
                 break
             active = session["active"]
             active["agent_tokens"] = self.agent_tokens
@@ -755,6 +796,8 @@ class Runner:
         update()
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
               f"{len(session['deferred'])} deferred. Result: {session['result']}", flush=True)
+        print(f"Knowledge review: inspect attempt knowledge.md notes under {session['directory']} "
+              "and curate reusable findings via docs/decomp-knowledge/README.md.", flush=True)
         if reason == "interrupted":
             raise KeyboardInterrupt
         if reason.startswith("agent launcher failed"):

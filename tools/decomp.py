@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Bounded, headless decomp work queue; an agent supplies the C edits."""
 import argparse
+import csv
+import io
 import hashlib
 import json
 import os
@@ -205,12 +207,39 @@ def check_session(session):
         raise RuntimeError("Current branch changed outside the worker")
 
 
+def function_requests(text):
+    """Accept comma lists or pasted CSV identity,name rows."""
+    requested = []
+    for fields in csv.reader(io.StringIO(text)):
+        if not fields:
+            continue
+        fields = [field.strip() for field in fields]
+        if len(fields) == 2 and ":" in fields[0] and ":" not in fields[1]:
+            fields = fields[:1]
+        if any(not field for field in fields):
+            raise RuntimeError("--functions contains an empty entry")
+        requested.extend(fields)
+    if not requested:
+        raise RuntimeError("--functions requires at least one function")
+    return list(dict.fromkeys(requested))
+
+
 def choose(report, session, identity=None):
     if read(REVIEW).get("matching_paused", False):
         raise NoTarget("C matching is paused by config/decomp.json")
     from decomp_backlog import key
     attempted = {key(r) for r in session["completed"] + session["deferred"]}
-    attempted.update(deferred_targets())
+    if not session.get("selected_functions"):
+        attempted.update(deferred_targets())
+    else:
+        by_identity = {key(row): row for row in report["targets"]}
+        if identity is not None and by_identity.get(identity, {}).get("status") == "c":
+            identity = None
+        if identity is None:
+            for selected in session["pending_functions"]:
+                if selected not in attempted and by_identity.get(selected, {}).get("status") == "needs_review":
+                    return by_identity[selected]
+            raise NoTarget("Requested function list exhausted")
     for row in report["targets"]:
         if row["status"] == "needs_review" and key(row) not in attempted and (identity is None or key(row) == identity):
             return row
@@ -397,7 +426,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     batch = sub.add_parser("start", aliases=["run"], help="Match targets serially, streaming stdout")
-    batch.add_argument("--limit", type=int, default=10)
+    batch.add_argument("--limit", type=int, help="Maximum functions this invocation (default: 10, or the supplied list length)")
+    batch.add_argument("--functions", help="Comma-separated identities/names/addresses, or quoted multiline identity,name CSV rows")
     batch.add_argument("--effort", help="Codex reasoning effort, for example medium or high (default: Codex configuration)")
     batch.add_argument("--model", help="Codex model for this invocation, for example gpt-6.1-luna (default: Codex configuration)")
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout for the worker subprocess only; excludes supervisor Ghidra and validation")
@@ -417,6 +447,8 @@ def main():
     selection.add_argument("--target", help="Image-qualified identity, e.g. INIT.BIN:0x8005AB6C")
     selection.add_argument("--all", action="store_true", help="Requeue every deferred target")
     args = parser.parse_args()
+    if args.command in ("start", "run") and args.limit is None:
+        args.limit = len(function_requests(args.functions)) if args.functions is not None else 10
     if getattr(args, 'ghidra_info', False):
         os.environ['CB2_GHIDRA_INFO'] = '1'
     if args.command in ('recover-ghidra', 'replay-ghidra'):

@@ -96,6 +96,58 @@ The default launcher sends only the selected task on stdin: the brief is already
 in developer instructions. The archived prompt retains both for review. Custom
 launchers continue to receive the complete brief and task on stdin.
 
+## Persistent matching knowledge
+
+Before an attempt, consult the [knowledge index](decomp-knowledge/README.md)
+and only the relevant topic entries and prior notes. The worker brief and launch
+prompt require this lookup and an incremental `<attempt>/knowledge.md` proposal,
+including a no-new-insight outcome when appropriate. These ignored sidecars
+survive rejection, branch restoration and timeout alongside the attempt evidence.
+They do not enter matching commits or saved Ghidra analysis.
+
+After a batch, the supervising Codex session reviews the new sidecars against
+recorded outcomes and full-file comparisons, consolidates reusable findings in
+the tracked topic files, and labels unresolved observations as hypotheses.
+Record the review disposition in each sidecar; resume pending reviews after an
+interruption. The Python runner archives evidence but does not perform semantic
+curation. This documentation review is separate maintenance and leaves the
+existing source checks, exact acceptance gate and transactional feedback intact.
+
+## Run a selected list
+
+Use `--functions` to retry functions directly, including persistent deferrals,
+in the supplied order. Prefer image-qualified identities because overlays can
+share addresses. Function names and addresses are accepted when unambiguous.
+Pasted multiline CSV rows in `IMAGE:0xADDRESS,function_name` format are also
+accepted. Quote the complete multiline value. The identity column selects the
+function and the name column serves as a label. Duplicates run once.
+
+```sh
+tools/.venv/bin/python tools/decomp.py start --model gpt-6.1-sol --effort medium \
+  --functions 'BP.BIN:0x8007F1BC,func_8007F1BC
+BP.BIN:0x8007F1BC,func_8007F1BC
+BP.BIN:0x8007F2A8,func_8007F2A8'
+```
+
+```sh
+tools/.venv/bin/python tools/decomp.py start \
+  --functions BP.BIN:0x800864A4,BP.BIN:0x80086634,BP.BIN:0x80086B3C \
+  --model gpt-6.1-sol --effort medium
+```
+
+The default limit covers the full supplied list. An explicit `--limit` caps the
+number of attempts in this invocation. Repeating the same list continues its
+remaining functions after an interruption or a partial run. The interrupted
+function is retried first and counters start at 1 for the new invocation.
+After the entire list finishes, submitting it again retries its deferred entries.
+Already matched C is skipped. SDK entries, held functions, unknown entries and
+ambiguous names/addresses are rejected before starting the new batch.
+
+List runs preserve the ordinary backlog and other deferrals. A later invocation
+without `--functions` continues the ordinary eligible queue. Successful retries
+clear their persistent deferral only after full-file acceptance and Ghidra
+feedback. Every invocation retains its own command, model, effort and usage rows.
+
 ## Targets and review
 
 Shared C declarations may gain standalone extern declarations and local includes

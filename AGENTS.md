@@ -27,3 +27,27 @@ Use a headless edit → validate → inspect → iterate workflow. Add/edit C an
 For automatic batches, start each worker from a fresh headless Ghidra decompilation with SDK names/types and current accepted analysis. The worker iterates only on its selected function with `decomp_step.py`; the supervisor owns containing-file validation, commits and transactional Ghidra feedback. Persist accepted types, global typings and prototypes for subsequent decompilations. Failed candidates must not update the saved analysis.
 
 Do not add or run unit tests unless the user explicitly requests them. Verify changes with focused headless Ghidra runs and the required exact binary comparisons.
+
+# Persistent decompilation knowledge
+
+Before attempting a function, read `docs/decomp-knowledge/README.md`, search the
+relevant topics and image-qualified function ID, and consult applicable entries
+and prior attempt notes. Do not load the whole knowledge base or repeat recorded
+failed experiments unless new evidence changes their assumptions.
+
+After each accepted match, extract genuinely new reusable findings; after each
+deferral, preserve useful failed approaches, hypotheses and the next discriminating
+experiment. Follow the entry format and evidence rules in that index. Keep topic
+files concise and searchable, merge duplicates, and separate verified findings
+from hypotheses. Record exact compiler/assembler settings and function references;
+object scores alone never establish a verified finding.
+
+Function workers write proposals to their supplied attempt's `knowledge.md`,
+including an explicit no-new-insight outcome when appropriate. They do not edit
+the curated knowledge base. The supervising Codex session reviews these notes
+against attempt results and exact containing-file validation, then updates the
+tracked topic files as separate documentation maintenance. Review pending notes
+after an automatic batch and before starting another; after interruption, resume
+this review next session. Preserve useful deferred notes even when C is rejected;
+never import speculative types into saved Ghidra analysis. Knowledge maintenance
+does not alter compiler recipes, source-scope audits or binary acceptance gates.

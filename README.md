@@ -11,7 +11,7 @@ Snapshot: **22 November 2026**. Counts cover non-SDK function instances across a
 | --- | ---: | ---: | ---: |
 | `SCUS_943.58` | 164 / 187 | 87.70% | 22 |
 | `BDEDIT.BIN` | 77 / 81 | 95.06% | 4 |
-| `BP.BIN` | 143 / 246 | 58.13% | 65 |
+| `BP.BIN` | 151 / 246 | 61.38% | 67 |
 | `COMB.BIN` | 0 / 273 | 0.00% | 0 |
 | `ENDING.BIN` | 0 / 41 | 0.00% | 0 |
 | `FREE.BIN` | 0 / 291 | 0.00% | 0 |
@@ -24,7 +24,7 @@ Snapshot: **22 November 2026**. Counts cover non-SDK function instances across a
 | `SBC2.BIN` | 0 / 278 | 0.00% | 0 |
 | `TM.BIN` | 0 / 278 | 0.00% | 0 |
 | `VS.BIN` | 0 / 257 | 0.00% | 0 |
-| **Total** | **384 / 2,920** | **13.15%** | **91** |
+| **Total** | **392 / 2,920** | **13.42%** | **93** |
 
 Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; 1 curated hold remains outside the deferred count.
 
@@ -61,6 +61,7 @@ Use the [headless decomp workflow](docs/decomp-worker.md) for selected-object di
 
 - [Setup and reproduction](docs/setup.md)
 - [Decomp workflow](docs/decomp-worker.md)
+- [Decompilation knowledge base](docs/decomp-knowledge/README.md)
 - [Function boundaries](docs/function-boundaries.md) and [deferred reviews](docs/deferred-function-review.md)
 - [Overlays and matching](docs/overlays.md)
 - [Ghidra in Docker](docs/ghidra-docker.md) and [SDK types](docs/sdk-types.md)
