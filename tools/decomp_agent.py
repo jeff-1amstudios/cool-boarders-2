@@ -36,6 +36,8 @@ def run(budget, server_command):
                 "cwd": str(Path.cwd()), "approvalPolicy": "never",
                 "sandbox": "workspace-write", "ephemeral": True})
         if request_id == 2:
+            emit("worker.started", model=message["result"].get("model"),
+                 effort=message["result"].get("reasoningEffort"))
             thread = message["result"]["thread"]["id"]
             send(id=3, method="turn/start", params={
                 "threadId": thread, "input": [{"type": "text", "text": prompt, "text_elements": []}]})
@@ -48,7 +50,7 @@ def run(budget, server_command):
                          output_tokens=total["outputTokens"], reasoning_output_tokens=total["reasoningOutputTokens"])
             emit("usage.updated", usage=usage)
             spent = usage["input_tokens"] - usage["cached_input_tokens"] + usage["output_tokens"]
-            if spent >= budget:
+            if budget and spent >= budget:
                 # Exit immediately. The supervisor kills our process group before
                 # inspecting candidate edits, so no tool can continue writing.
                 emit("budget.reached", budget=budget, spent=spent)

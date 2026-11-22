@@ -17,7 +17,7 @@ import decomp as worker
 import decomp_ghidra as ghidra
 from c_sources import sections
 from decomp_backlog import prepare, slug, source_file
-from decomp_run import review_header_extension, review_shared_extension, review_source, review_split
+from decomp_run import review_header_extension, review_shared_extension, review_source, review_split, review_symbol_additions
 from target_queue import c_spans
 import yaml
 
@@ -50,12 +50,12 @@ def additions(before, after):
 
 
 def merge_symbols(before, after, current):
-    require(after.startswith(before), 'Archived candidate changes existing symbols')
+    added = review_symbol_additions(before, after)
     pattern = r'(?m)^([A-Za-z_]\w*)\s*=\s*(0x[0-9a-fA-F]+);[^\n]*'
     existing = {name: (int(address, 16), line) for line in current.splitlines()
                 for name, address in re.findall(pattern, line)}
     renames = {}
-    for line in after[len(before):].splitlines():
+    for line in added:
         match = re.match(pattern, line)
         if not match:
             require(not line.strip() or line.lstrip().startswith('//'), 'Unsupported symbol addition')

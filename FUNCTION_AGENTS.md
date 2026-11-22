@@ -50,9 +50,11 @@ do not install dependencies, change tools or perform repository maintenance.
   Preserve the complete existing header prefix, including blank lines: insert
   additions immediately before the final `#endif`, after any existing blank line.
 - Give only the selected function a C subsegment. Change only its supplied
-  split configuration, append symbols to its supplied symbol file, and add
+  split configuration, add new symbols to its supplied symbol file, and add
   headers only under its source directory. Do not change other source files,
   tools, reference bytes, compiler recipe, documentation or queue metadata.
+- New symbols may be inserted anywhere in the supplied symbol file. Preserve
+  existing definitions and their order; do not add duplicate symbol names.
 - Splat symbol metadata does not support `type:data`. For data symbols, omit
   `type` when unknown, or use a supported type such as `u32`, `u8` or `char`
   when evidenced. Keep the C extern's type in the image source.

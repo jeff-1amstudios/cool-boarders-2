@@ -64,6 +64,32 @@ def agent_failure(path):
     return None
 
 
+def review_symbol_additions(before, after):
+    """Allow inserted definitions while preserving existing lines and names."""
+    original, proposed = before.splitlines(), after.splitlines()
+    added = []
+    for operation, low, high, start, end in difflib.SequenceMatcher(
+            None, original, proposed, autojunk=False).get_opcodes():
+        if operation == 'equal':
+            continue
+        if operation != 'insert':
+            raise Rejected("Existing symbol definitions were changed or removed")
+        added.extend(proposed[start:end])
+    name_pattern = re.compile(r'^\s*([A-Za-z_]\w*)\s*=')
+    names = {match[1] for line in original if (match := name_pattern.match(line))}
+    for line in added:
+        if not line.strip() or line.lstrip().startswith('//'):
+            continue
+        match = re.fullmatch(r'\s*([A-Za-z_]\w*)\s*=\s*0x[0-9a-fA-F]+;\s*(?://.*)?', line)
+        if not match:
+            raise Rejected("Unsupported symbol addition")
+        name = match[1]
+        if name in names:
+            raise Rejected(f"Duplicate symbol definition: {name}")
+        names.add(name)
+    return added
+
+
 def review_split(before, after, target):
     """Permit only splitting the containing assembly span around the selected C unit."""
     expected = copy.deepcopy(before)
@@ -181,6 +207,12 @@ class Runner:
     def __init__(self, worker, args):
         self.w = worker
         self.args = args
+        self.model = getattr(args, "model", None)
+        self.effort = getattr(args, "effort", None)
+        if self.effort and args.agent_command is not None:
+            raise RuntimeError("--effort requires the default Codex launcher")
+        if self.model and args.agent_command is not None:
+            raise RuntimeError("--model requires the default Codex launcher")
         if min(args.limit, args.agent_seconds) < 1:
             raise RuntimeError("Target limit and worker timeout must be positive")
         self.agent_tokens = getattr(args, "agent_tokens", None)
@@ -288,8 +320,8 @@ class Runner:
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
             f"Append only this function to {source_file(active)}, with // FUNCTION: {key(active)}.\n"
             f"New headers belong under {source_dir(active)}. Split only this function in "
-            f"{active.get('build_config', 'scus_943.58.yaml')}; append symbols only to "
-            f"{active.get('symbol_file', 'symbol_addrs.txt')}.\n"
+            f"{active.get('build_config', 'scus_943.58.yaml')}; add new symbols only to "
+            f"{active.get('symbol_file', 'symbol_addrs.txt')}, preserving existing definitions.\n"
             f"Use tools/.venv/bin/python tools/decomp_step.py --context {directory / 'context.json'}.\n"
             f"Write evidence to {directory / 'ghidra-update.json'}.\n"
             f"{budget_note}"
@@ -313,13 +345,12 @@ class Runner:
                      "--config", f"developer_instructions={json.dumps(instructions)}",
                      "--config", f"log_dir={json.dumps(str(cache / 'logs'))}",
                      "--config", f"sqlite_home={json.dumps(str(cache / 'state'))}"]
-            if self.agent_tokens:
-                argv = [sys.executable, str(self.w.ROOT / "tools/decomp_agent.py"),
-                        str(self.agent_tokens), *argv, "app-server", *config]
-            else:
-                argv += ["--no-daemon", "--cd", str(self.w.ROOT.resolve()), *config,
-                         "--ask-for-approval", "never", "exec", "--ephemeral",
-                         "--sandbox", "workspace-write", "--json", "-"]
+            if self.model:
+                config += ["--config", f"model={json.dumps(self.model)}"]
+            if self.effort:
+                config += ["--config", f"model_reasoning_effort={json.dumps(self.effort)}"]
+            argv = [sys.executable, str(self.w.ROOT / "tools/decomp_agent.py"),
+                    str(self.agent_tokens), *argv, "app-server", *config]
         try:
             # Default launcher already receives the brief as developer instructions.
             # Custom launchers still need the complete brief on stdin.
@@ -349,8 +380,7 @@ class Runner:
         except (yaml.YAMLError, KeyError, TypeError, IndexError) as error:
             raise Rejected("Invalid candidate split configuration") from error
         symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
-        if not symbols.startswith(old_symbols):
-            raise Rejected("Existing symbol definitions were changed")
+        review_symbol_additions(old_symbols, symbols)
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
         for name in paths:
             if name in tracked and Path(name).suffix == '.h':
@@ -590,20 +620,29 @@ class Runner:
             raise RuntimeError("C matching is paused by the boundary-audit policy; no batch started")
         previous = self.w.state() if self.w.STATE.exists() else None
         resuming = bool(previous and (previous.get('active') or previous.get('retry_target')))
-        if not resuming:
-            if self.w.git("branch", "--show-current") != "main":
-                raise RuntimeError("Automatic batches must start on the main integration branch")
-        session = previous if resuming else self.w.begin_batch(self.args.limit)
+        retry_target = None
+        if resuming:
+            self.resume(previous)
+            retry_target = previous["retry_target"]
+            # Keep the old run's recovery record before replacing current state.
+            self.w.write(self.w.ROOT / previous["directory"] / "state.json", previous)
+        if self.w.git("branch", "--show-current") != "main":
+            raise RuntimeError("Automatic batches must start on the main integration branch")
+        session = self.w.begin_batch(self.args.limit)
+        if retry_target:
+            session["retry_target"] = retry_target
+            session["interrupted"] = previous.get("interrupted", [])
         batch_path = self.w.ROOT / session["directory"] / "batch.json"
         batch = self.w.read(batch_path) if batch_path.exists() else {"session": session["directory"], "runs": []}
         argv = list(getattr(self.args, "invocation", []))
         run = dict(argv=argv, command=shlex.join(argv) if argv else None, started_at=started,
                    ended_at=None, outcome="running", target_limit=self.args.limit,
-                   agent_seconds=self.args.agent_seconds, agent_tokens=self.agent_tokens, functions=[])
+                   agent_seconds=self.args.agent_seconds, agent_tokens=self.agent_tokens,
+                   model=self.model, effort=self.effort, functions=[])
         batch["runs"].append(run)
         self.w.write(batch_path, batch)
         try:
-            self.run_session(session, resuming, batch_path, batch, run)
+            self.run_session(session, batch_path, batch, run)
             run["outcome"] = "finished"
             run["reason"] = session.get("stop_reason")
         except KeyboardInterrupt:
@@ -618,12 +657,8 @@ class Runner:
             from decomp_metrics import refresh_batches
             refresh_batches(self.w.ROOT)
 
-    def run_session(self, session, resuming, batch_path, batch, run):
-        if resuming:
-            self.resume(session)
-        else:
-            session.update(branch="main", integration_head=session["head"],
-                           phase="running")
+    def run_session(self, session, batch_path, batch, run):
+        session.update(branch="main", integration_head=session["head"], phase="running")
         session["sync_types"] = getattr(self.args, "sync_types", False)
         sync_types_pending = session['sync_types']
         self.w.save_state(session)
@@ -638,6 +673,8 @@ class Runner:
                 break
             active = session["active"]
             active["agent_tokens"] = self.agent_tokens
+            active["requested_model"] = self.model
+            active["requested_effort"] = self.effort
             run["functions"].append(dict(identity=key(active), name=active["name"], context=active["context"]))
             self.w.write(batch_path, batch)
             self.w.save_state(session)
@@ -651,7 +688,7 @@ class Runner:
                 except BaseException:
                     # An unavailable/locked Ghidra project is infrastructure
                     # failure, not evidence against reconstructing this target.
-                    session.update(active=None, stop_reason='Fresh Ghidra export failed before agent launch')
+                    session.update(stop_reason='Fresh Ghidra export failed before agent launch')
                     self.w.save_state(session)
                     raise
             self.start_branch(session)

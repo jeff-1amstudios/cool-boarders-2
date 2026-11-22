@@ -123,6 +123,7 @@ DEFAULT_AGENT_TOKENS = 100_000
 
 def usage(path):
     totals, latest, complete, error, message, budget_stop = {}, {}, False, None, None, None
+    model, effort = None, None
     if path.exists():
         for line in path.read_text(errors='replace').splitlines():
             try:
@@ -137,6 +138,9 @@ def usage(path):
                 error = str(event.get('message', 'Agent error'))[:600]
             if event.get('type') == 'turn.failed':
                 error = str(event.get('error', {}).get('message', error or 'Agent failed'))[:600]
+            if event.get('type') == 'worker.started':
+                model = event.get('model')
+                effort = event.get('effort')
             if event.get('type') == 'usage.updated':
                 latest = event['usage']
             if event.get('type') == 'budget.reached':
@@ -146,6 +150,10 @@ def usage(path):
                 for key, count in event['usage'].items():
                     totals[key] = totals.get(key, 0) + count
     result = {'complete': complete, 'tokens': totals if complete else latest, 'error': error, 'message': message}
+    if model:
+        result['model'] = model
+    if effort is not None:
+        result['effort'] = effort
     if budget_stop:
         result['budget_stop'] = budget_stop
     return result
@@ -155,8 +163,9 @@ def attempt_result(root, row, status, reason=None):
     result = {k:row[k] for k in ('identity','image','address','name','size','context','branch','base_commit','commit','checkpoint') if k in row}
     directory = root / row['context']
     result.update(status=status, reason=reason, agent=usage(directory / 'agent.log'))
-    if 'agent_tokens' in row:
-        result['agent_tokens'] = row['agent_tokens']
+    for field in ('agent_tokens', 'requested_model', 'requested_effort'):
+        if field in row:
+            result[field] = row[field]
     custom_report = directory / 'agent-last-message.txt'
     if custom_report.exists():
         result['agent']['message'] = custom_report.read_text()

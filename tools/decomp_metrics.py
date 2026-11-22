@@ -58,6 +58,8 @@ def attempt_rows(root):
         clock = timing(directory)
         attempt_timing = result.get('timing', {})
         yield dict(identity=identity, name=result.get('name', context.get('name')),
+                   model=agent.get('model'), requested_model=result.get('requested_model'),
+                   effort=agent.get('effort'), requested_effort=result.get('requested_effort'),
                    size_bytes=result.get('size', context.get('size')),
                    status=result.get('status', 'unrecorded'),
                    input_tokens=inp, cached_input_tokens=cached,
@@ -80,6 +82,7 @@ def refresh_batches(root, rows=None):
     for row in attempt_rows(root) if rows is None else rows:
         history[row['session']].append(row)
     batches = []
+    invocations = []
     for session in sorted((directory / 'sessions').glob('*'), reverse=True):
         if not session.is_dir():
             continue
@@ -91,6 +94,28 @@ def refresh_batches(root, rows=None):
                         key=lambda context: (functions[context]['attempt_started_at']
                                              or (root / context).stat().st_mtime, context))
         ordered = [*legacy, *selected]
+        groups = [(None, legacy), *[(run, [row['context'] for row in run['functions']]) for run in runs]]
+        for number, (run, contexts) in enumerate(groups):
+            if not contexts and run is None:
+                continue
+            # Selected attempts are unique even if recovery revisits an identity.
+            attempts = [functions[context] for context in dict.fromkeys(contexts) if context in functions]
+            models = sorted({row['model'] for row in attempts if row['model']})
+            efforts = sorted({row['effort'] for row in attempts if row['effort']})
+            inp = sum(row['input_tokens'] or 0 for row in attempts)
+            cached = sum(row['cached_input_tokens'] or 0 for row in attempts)
+            out = sum(row['output_tokens'] or 0 for row in attempts)
+            invocations.append(dict(
+                session=path, invocation=number, command=(run or {}).get('command'),
+                started_at=(run or {}).get('started_at'), ended_at=(run or {}).get('ended_at'),
+                outcome=(run or {}).get('outcome', 'historical'),
+                requested_model=(run or {}).get('model'), models=', '.join(models),
+                requested_effort=(run or {}).get('effort'), efforts=', '.join(efforts),
+                attempts=len(attempts), matched=sum(row['status'] == 'matched' for row in attempts),
+                deferred=sum(row['status'] == 'deferred' for row in attempts),
+                incomplete_usage=sum(not row['usage_complete'] for row in attempts),
+                input_tokens=inp, cached_input_tokens=cached, output_tokens=out,
+                total_tokens=inp + out, uncached_input_plus_output_tokens=inp - cached + out))
         final = session / 'result.json'
         started_at, ended_at = None, None
         started_source, ended_source = None, None
@@ -111,6 +136,11 @@ def refresh_batches(root, rows=None):
                             ended_at=ended_at, ended_source=ended_source, runs=runs, functions=targets))
     directory.mkdir(parents=True, exist_ok=True)
     atomic_text(directory / 'batches.json', json.dumps(batches, indent=2) + '\n')
+    stream = io.StringIO()
+    writer = csv.DictWriter(stream, fieldnames=list(invocations[0]) if invocations else ['session', 'invocation'])
+    writer.writeheader()
+    writer.writerows(invocations)
+    atomic_text(directory / 'batch-metrics.csv', stream.getvalue())
 
 
 def refresh(root=ROOT):

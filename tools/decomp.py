@@ -398,6 +398,8 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
     batch = sub.add_parser("start", aliases=["run"], help="Match targets serially, streaming stdout")
     batch.add_argument("--limit", type=int, default=10)
+    batch.add_argument("--effort", help="Codex reasoning effort, for example medium or high (default: Codex configuration)")
+    batch.add_argument("--model", help="Codex model for this invocation, for example gpt-6.1-luna (default: Codex configuration)")
     batch.add_argument("--agent-seconds", type=int, default=900, help="Hard timeout for the worker subprocess only; excludes supervisor Ghidra and validation")
     batch.add_argument("--agent-tokens", type=int, help=f"Stop Codex at {DEFAULT_AGENT_TOKENS:,} uncached input plus output tokens by default; 0 disables the budget")
     batch.add_argument("--sync-types", action="store_true",

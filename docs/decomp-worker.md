@@ -38,12 +38,12 @@ their supplied brief. Source/config scope checks, Git ref/index checks, pinned
 reference verification and exact full-file comparisons remain enforced. Git can
 still refuse a branch switch that would overwrite pending maintenance.
 
-`start` also resumes a recorded interrupted batch. It preserves completed and
-deferred counts and uses `--limit` as the total batch
-target count (with room for at least the interrupted target). The interrupted
-function is retried first from a fresh Ghidra export; its previous logs, candidate
-archive and result remain in their original attempt directory. A retry uses a
-new directory. Recovery accepts known worker/checkpoint/restore phases on the
+Each `start` invocation creates a new batch with fresh counters and its own
+`--limit`. An interrupted function is retried first from a fresh Ghidra export.
+For example, stopping at target 2/50 and starting with `--limit 10` makes that
+function target 1/10. Earlier attempts retain their original logs, candidate
+archives and results. Recovery archives the preceding state before creating
+the new batch. Recovery accepts known worker/checkpoint/restore phases on the
 recorded branch and commit, with an empty index. Unexpected edits, commits or
 integration phases stop for inspection. Clean, linear commits changing only the
 supervisor scripts, this guide or README may be made before recovery; game,
@@ -210,7 +210,7 @@ If a saved update fails after the C commit was accepted, the batch stops with ph
 
 The agent uses `tools/.venv/bin/python tools/decomp_step.py` for compact selected-object diagnostics. It recompiles the selected C unit, reuses a hash-checked assembly reference when possible, and prints a short diff. Its task ends when that function matches and its feedback proposal is written; it does not run containing-file validation. A score is diagnostic only. The compiler recipe remains provisional and fixed during each attempt. The agent should restore its best candidate before finishing; the hard timeout preserves whatever is actually in the checkout.
 
-Python accepts only a new annotated function block in the image's shared C file (`src/main.c` or `src/overlays/<overlay>.c`), additions to the image header or new local headers, the exact selected asm/c/asm split, and appended symbols in the selected image. Use `// FUNCTION: <image>:0x<ADDRESS>` to begin the function block. Keep all extern declarations together at the top of the C file, before the first annotation, and reuse existing declarations. New externs and local includes may be appended to that shared top block; existing declarations must stay unchanged. Define structs once in guarded headers and reuse existing layouts. New definitions may be appended before the image header’s final `#endif`; existing definitions must stay unchanged. The build extracts that block into generated C and compiles its independent Splat object. Existing blocks and shared declarations, unrelated boundaries, game configuration, SDK policy and previous symbols stay protected by the candidate scope audit. Source checks reject assembly/byte embedding and unsupported source forms. Python runs fresh `make validate IMAGE=<EXE-or-BIN> UNIT=<unit>` and independently compares the **entire containing file** to its pinned unchanged reference. Candidate/staged/committed hashes and prior C coverage are checked. Only then is a matching commit fast-forwarded into `main`.
+Python accepts only a new annotated function block in the image's shared C file (`src/main.c` or `src/overlays/<overlay>.c`), additions to the image header or new local headers, the exact selected asm/c/asm split, and new symbols in the selected image. New symbol definitions may be inserted anywhere in that image's symbol file; existing lines and their order must remain unchanged, and duplicate symbol names are rejected. Use `// FUNCTION: <image>:0x<ADDRESS>` to begin the function block. Keep all extern declarations together at the top of the C file, before the first annotation, and reuse existing declarations. New externs and local includes may be appended to that shared top block; existing declarations must stay unchanged. Define structs once in guarded headers and reuse existing layouts. New definitions may be appended before the image header’s final `#endif`; existing definitions must stay unchanged. The build extracts that block into generated C and compiles its independent Splat object. Existing blocks and shared declarations, unrelated boundaries, game configuration, SDK policy and previous symbols stay protected by the candidate scope audit. Source checks reject assembly/byte embedding and unsupported source forms. Python runs fresh `make validate IMAGE=<EXE-or-BIN> UNIT=<unit>` and independently compares the **entire containing file** to its pinned unchanged reference. Candidate/staged/committed hashes and prior C coverage are checked. Only then is a matching commit fast-forwarded into `main`.
 
 Startup checks the branch, clean checkout, saved attempt state and reference fingerprints, refreshes the target inventory, and prepares the selected function's context. It does not rebuild or check matching before the first attempt. Plain `make validate` checks the boot EXE and all 14 overlays at batch end. A nonmatching candidate cannot enter `main`. Object diagnostics and full-file failure reports remain available for the next edit. No interactive diff viewer is used.
 
@@ -222,8 +222,8 @@ One batch `result.json` records totals, recorded worker tokens, missing usage re
 
 Each new batch writes `reports/decomp/sessions/<id>/batch.json` as it runs.
 It records the command line, UTC start and end times, exit outcome, budget
-settings and functions in selection order. Resuming adds a command invocation
-to the same batch. Each selection includes the image-qualified function ID
+settings, requested model/effort and functions in selection order. Each new command
+invocation gets its own batch directory. Each selection includes the image-qualified function ID
 and the attempt directory. Join `context` to `function-metrics.csv` for an
 individual attempt or use `session` to group the whole batch. A forced process
 kill can leave the invocation without an end time.
@@ -244,7 +244,27 @@ without rewriting them. Manual chat work without an attempt record is excluded.
 
 Rows identify image/function, outcome, size, input/cached/uncached/output/reasoning
 tokens, total tokens, token budget and whether it was reached, worker seconds,
-timing source, session and attempt directory.
+timing source, session and attempt directory. The `model` column records the
+resolved model reported by Codex. `requested_model` records the explicit
+override, when supplied. Historical attempts without model metadata stay blank.
+
+Use `--model gpt-6.1-luna` to select a model for a batch. Omit the argument to
+use the Codex configuration. The model ID must be available to the account.
+The default launcher records the resolved model even with `--agent-tokens 0`.
+Use `--effort medium` (or another effort supported by the chosen model) to
+override reasoning effort for the invocation. Omit it to use Codex configuration.
+The function CSV records `requested_effort` and the resolved `effort` reported
+by Codex. The batch summary includes requested and observed efforts.
+
+Custom launchers manage their own model and effort selection.
+
+`reports/decomp/batch-metrics.csv` aggregates the function metric rows by
+command invocation, including matched/deferred counts, requested and observed
+models, input/cached/output totals and uncached input plus output. It refreshes
+with the function report. Incomplete usage counts identify partial totals.
+Historical attempts without a command record appear together within their
+original session.
+
 Input already includes cached input; output already includes reasoning output.
 Total means input plus output, not a billing estimate. Counts cover workers only,
 not the supervising chat. Incomplete turns include the last observed usage when
