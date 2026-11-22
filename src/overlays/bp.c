@@ -445,6 +445,8 @@ extern u_long D_8009EFE8[16];
 extern unsigned int D_8009ED08;
 extern short D_8009ED0C;
 
+extern short D_8009F708;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5654,4 +5656,69 @@ void func_8007F368(void *data)
         LoadImage(&rect, frame + 16);
         D_8009ED0C = (D_8009ED0C + 1) % 2;
     }
+}
+
+// FUNCTION: BP.BIN:0x80085D60
+PACKET *func_80085D60(GsOT_TAG *ordering_table, PACKET *packets,
+                      short x, short y, short amount)
+{
+    SPRT *sprite = (SPRT *)packets;
+    POLY_G4 *bar;
+
+    packets += sizeof(SPRT);
+
+    ((PrimitiveTag *)sprite)->length = 4;
+    sprite->code = 100;
+    sprite->r0 = 0x80;
+    sprite->g0 = 0x80;
+    sprite->b0 = 0x80;
+    sprite->clut = GetClut(0x390, 0x1D4);
+    sprite->x0 = x - 0xA0;
+    sprite->y0 = y - 0x18;
+    sprite->w = 0x80;
+    sprite->u0 = 0x80;
+    sprite->v0 = 0x80;
+    sprite->h = 0x10;
+    ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)sprite;
+    if (amount != 0) {
+        if (amount == 100) {
+            D_8009F708++;
+        } else {
+            D_8009F708 = 0;
+        }
+        bar = (POLY_G4 *)packets;
+        packets += sizeof(POLY_G4);
+        ((PrimitiveTag *)bar)->length = 8;
+        bar->code = 0x38;
+        if (D_8009F708 != 0) {
+            if (D_8009F708 & 1) {
+                bar->r0 = 0x80; bar->g0 = 0x80; bar->b0 = 0xC0;
+                bar->r1 = 0x80; bar->g1 = 0x80; bar->b1 = 0xC0;
+                bar->r2 = 0x80; bar->g2 = 0x80; bar->b2 = 0xC0;
+                bar->r3 = 0x80; bar->g3 = 0x80; bar->b3 = 0xC0;
+            } else {
+                bar->r0 = 0xC0; bar->g0 = 0xC0; bar->b0 = 0xC0;
+                bar->r1 = 0xC0; bar->g1 = 0xC0; bar->b1 = 0xC0;
+                bar->r2 = 0xC0; bar->g2 = 0xC0; bar->b2 = 0xC0;
+                bar->r3 = 0xC0; bar->g3 = 0xC0; bar->b3 = 0xC0;
+            }
+        } else {
+            bar->r0 = 0; bar->g0 = 0; bar->b0 = 0x80;
+            bar->r2 = 0; bar->g2 = 0; bar->b2 = 0x80;
+            bar->b3 = 0x80; bar->b1 = 0x80;
+            bar->r1 = bar->g1 = bar->r3 = bar->g3 = amount * 128 / 100;
+        }
+        bar->x0 = x - 0x8A;
+        bar->y0 = y - 0x13;
+        bar->x1 = x + (short)(amount - 0x8A);
+        bar->y1 = y - 0x13;
+        bar->x2 = x - 0x8A;
+        bar->y2 = y - 0xB;
+        bar->x3 = x + (short)(amount - 0x8A);
+        bar->y3 = y - 0xB;
+        ((PrimitiveTag *)bar)->address = ((PrimitiveTag *)ordering_table)->address;
+        ((PrimitiveTag *)ordering_table)->address = (unsigned long)bar;
+    }
+    return packets;
 }
