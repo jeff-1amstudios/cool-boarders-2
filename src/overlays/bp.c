@@ -442,6 +442,9 @@ extern void func_8007E998(void *data);
 extern u_long D_8009EFA8[16];
 extern u_long D_8009EFE8[16];
 
+extern unsigned int D_8009ED08;
+extern short D_8009ED0C;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5626,4 +5629,29 @@ short func_8008F878(short x, short y)
         result |= 8;
     }
     return result;
+}
+
+// FUNCTION: BP.BIN:0x8007F368
+void func_8007F368(void *data)
+{
+    RECT rect;
+    u_long *frame;
+    u_long *words = data;
+
+    D_8009ED08++;
+    if (D_8009ED08 > 3) {
+        D_8009ED08 = 0;
+        frame = words + words[D_8009ED0C + 1];
+        rect.x = 800;
+        rect.y = 0x1C3;
+        rect.w = 0x10;
+        rect.h = 1;
+        LoadImage(&rect, frame + 5);
+        rect.x = 0x2F0;
+        rect.y = 0x100;
+        rect.w = 0x10;
+        rect.h = 0x40;
+        LoadImage(&rect, frame + 16);
+        D_8009ED0C = (D_8009ED0C + 1) % 2;
+    }
 }

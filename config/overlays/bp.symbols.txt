@@ -491,3 +491,6 @@ D_8009F714 = 0x8009F714; // type:u32 size:0x4
 D_8009F718 = 0x8009F718; // type:u32 size:0x4
 D_8009F71C = 0x8009F71C; // type:u32 size:0x4
 func_80086108 = 0x80086108; // type:func
+
+D_8009ED08 = 0x8009ED08; // type:u32 size:0x4
+D_8009ED0C = 0x8009ED0C; // size:0x2
