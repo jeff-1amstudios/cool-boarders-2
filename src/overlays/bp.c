@@ -452,6 +452,7 @@ extern SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
                             char *text, short x, short y);
 
 extern short D_8009D5E8[10][3];
+extern int func_800449B8(const char *text);
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -5997,6 +5998,39 @@ SPRT *func_80086634(unsigned long *ordering_table, SPRT *sprite,
                     offset += width[D_8009D5E8[index][i]] + 4;
                 }
             }
+        }
+    }
+    return sprite;
+}
+
+// FUNCTION: BP.BIN:0x80086B3C
+SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
+                     char *text, short x, short y)
+{
+    short length;
+    short i;
+    short glyph;
+    SPRT *primitive;
+
+    length = func_800449B8(text);
+    for (i = 0; i < length; i++) {
+        glyph = (unsigned char)text[i] - 0x20;
+        primitive = sprite++;
+        if (glyph != 0) {
+            ((PrimitiveTag *)primitive)->length = 4;
+            primitive->code = 100;
+            primitive->r0 = 0x80;
+            primitive->g0 = 0x80;
+            primitive->b0 = 0x80;
+            primitive->clut = GetClut(0x3E0, 0x1CC);
+            primitive->u0 = (glyph % 16) * 8;
+            primitive->v0 = (glyph / 16) * 12;
+            primitive->x0 = i * 8 + (short)(x - 0xA0);
+            primitive->y0 = y - 0x78;
+            primitive->w = 8;
+            primitive->h = 12;
+            ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+            ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
         }
     }
     return sprite;
