@@ -198,5 +198,6 @@ def summary(root, session):
             'completed': len(session['completed']), 'deferred': len(session['deferred']),
             'matching_c_bytes_added': sum(r['size'] for r in session['completed']),
             'full_validation_passed': session.get('full_validation_passed', False),
+            'full_validation_skipped': session.get('full_validation_skipped', False),
             'worker_tokens': totals, 'missing_worker_usage': missing,
             'attempts': [r['context'] + '/result.json' for r in session['completed'] + session['deferred']]}

@@ -22,7 +22,7 @@ def main():
         path.unlink(missing_ok=True)
     clear_reports()
     run([sys.executable, "tools/objdiff.py", *image_args, *(["--unit", args.unit] if args.unit else [])])
-    run([ROOT / "tools/objdiff/bin/objdiff-cli", "report", "generate",
+    run([ROOT / "tools/objdiff/bin/objdiff-cli", "-L", "warn", "report", "generate",
          "-o", "reports/objdiff.json"])
     run([sys.executable, "tools/objdiff.py", "--summary"])
     # Diagnostics are already saved if linking or the exact-byte gate fails.

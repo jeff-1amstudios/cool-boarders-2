@@ -45,7 +45,7 @@ objdiff-prepare:
 objdiff: objdiff-report
 
 objdiff-report: objdiff-install objdiff-prepare
-	tools/objdiff/bin/objdiff-cli report generate -o reports/objdiff.json
+	tools/objdiff/bin/objdiff-cli -L warn report generate -o reports/objdiff.json
 	$(PYTHON) tools/objdiff.py --summary
 
 # Allow batch work on a single object without linking the executable.

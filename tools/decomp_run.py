@@ -132,6 +132,67 @@ def review_split(before, after, target):
     raise Rejected("Target is outside a reviewed assembly span")
 
 
+def without_gte_asm(source):
+    """Remove reviewed literal GTE asm statements before the general asm ban."""
+    commands = {
+        'rtps', 'nclip', 'op', 'dpcs', 'intpl', 'mvmva', 'ncds', 'cdp',
+        'ncdt', 'nccs', 'cc', 'ncs', 'nct', 'sqr', 'dcpl', 'dpct',
+        'avsz3', 'avsz4', 'rtpt', 'gpf', 'gpl', 'ncct',
+    }
+    # Tokenize strings first so parentheses inside templates/constraints do not
+    # affect the statement boundary. Nonliteral templates remain prohibited.
+    token = re.compile(r'"(?:\\.|[^"\\])*"|[()]|[^"()]+', re.S)
+    start = re.compile(r'\b(?:asm|__asm|__asm__)\s*(?:(?:volatile|__volatile|__volatile__)\s*)?\(')
+    while match := start.search(source):
+        depth, end = 1, match.end()
+        for part in token.finditer(source, end):
+            if part.start() != end:
+                raise Rejected('Malformed GTE inline assembly')
+            end = part.end()
+            if part[0] == '(':
+                depth += 1
+            elif part[0] == ')':
+                depth -= 1
+                if depth == 0:
+                    break
+        if depth:
+            raise Rejected('Unterminated GTE inline assembly')
+        contents = source[match.end():end - 1]
+        template = re.match(r'\s*((?:"(?:\\.|[^"\\])*"\s*)+)(?=:|$)', contents, re.S)
+        if template is None:
+            raise Rejected('GTE inline assembly requires a literal template')
+        instructions = ''
+        for literal in re.findall(r'"((?:\\.|[^"\\])*)"', template[1]):
+            if re.search(r'\\(?![ntr])', literal):
+                raise Rejected('Unsupported escape in GTE instruction template')
+            instructions += literal.replace(r'\n', '\n').replace(r'\t', '\t').replace(r'\r', '\r')
+        count = 0
+        for instruction in re.split(r'[;\n\r]', instructions):
+            if not instruction.strip():
+                continue
+            count += 1
+            fields = instruction.strip().split(None, 1)
+            mnemonic, operands = fields[0].lower(), fields[1] if len(fields) > 1 else ''
+            allowed = mnemonic in commands | {'mfc2', 'mtc2', 'cfc2', 'ctc2', 'lwc2', 'swc2'}
+            if mnemonic == 'nop':
+                allowed = not operands
+            elif mnemonic == 'cop2':
+                allowed = bool(re.fullmatch(r'(?:0[xX][0-9a-fA-F]+|[0-9]+)', operands))
+                if allowed:
+                    value = int(operands, 16 if operands.lower().startswith('0x') else 10)
+                    allowed = 0 <= value <= 0x1ffffff and (value & 63) in {
+                        1, 6, 12, 16, 17, 18, 19, 20, 22, 27, 28, 30, 32,
+                        40, 41, 42, 45, 46, 48, 61, 62, 63,
+                    }
+            if not allowed or not re.fullmatch(r'[\w$%,()\[\] +\-]*', operands):
+                raise Rejected('Only PSX GTE instructions and pipeline nops are allowed in inline assembly')
+        if not count:
+            raise Rejected('Empty GTE instruction template')
+        # Keep constraints and C operand expressions visible to other guards.
+        source = source[:match.start()] + ' ' + contents[template.end():] + source[end:]
+    return source
+
+
 def review_source(root, paths, entry, symbol, *, checkpoint=False):
     """Conservative syntax checks, not a proof of readability or semantic C."""
     if not checkpoint and entry not in paths:
@@ -158,6 +219,7 @@ def review_source(root, paths, entry, symbol, *, checkpoint=False):
             body = re.sub(r'/\*.*?\*/|//[^\n]*', ' ', ''.join(blocks.values()), flags=re.S)
             if re.search(r'\bextern\b', body):
                 raise Rejected(f"Extern declarations belong at the top before FUNCTION annotations: {path.name}")
+        clean = without_gte_asm(clean)
         if re.search(r"\b(?:asm|__asm|__asm__|INCLUDE_ASM|GLOBAL_ASM|__attribute__)\b|\.(?:incbin|word|byte)\b|##", clean):
             raise Rejected(f"Assembly/byte embedding or section attributes in {path.name}")
         if re.search(r'\[[^\]]*\]\s*=\s*(?:\{|")', clean):
@@ -500,7 +562,8 @@ class Runner:
             record_attempt(self.w.ROOT, active, 'interrupted', reason)
             self.w.save_state(session)
             return
-        self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
+        if session["completed"]:
+            self.w.command(self.w.validation_command({k:v for k,v in active.items() if k != "unit"}), "restored-baseline", directory=archive)
         active["phase"] = "deferred"
         from decomp_runtime import record_attempt
         record_attempt(self.w.ROOT, active, "deferred", reason)
@@ -775,11 +838,17 @@ class Runner:
             # They must never trigger rollback after Git may have committed.
             self.accept(session, paths, expected_hashes)
         self.invariant(session)
-        session.update(phase="batch_final_validation", stop_reason=reason, full_validation_passed=False)
+        validation_skipped = not session["completed"]
+        session.update(phase="batch_final_validation", stop_reason=reason,
+                       full_validation_passed=False, full_validation_skipped=validation_skipped)
         self.w.save_state(session)
         try:
-            self.w.command(["make", "validate"], "batch-final", directory=self.w.ROOT / session["directory"])
-            session.update(full_validation_passed=True, phase="finished")
+            if validation_skipped:
+                print("No functions matched; skipping final all-image validation and README progress refresh.", flush=True)
+                session.update(phase="finished")
+            else:
+                self.w.command(["make", "validate"], "batch-final", directory=self.w.ROOT / session["directory"])
+                session.update(full_validation_passed=True, phase="finished")
         except (RuntimeError, subprocess.CalledProcessError, OSError) as error:
             session.update(stop_reason="Final all-image validation failed: " + str(error), phase="validation_failed")
             raise
@@ -792,8 +861,9 @@ class Runner:
             self.w.save_state(session)
         # Update tracked documentation only after all candidate/checkout invariants
         # and the final all-image gate, never during acceptance of a worker edit.
-        from readme_progress import update
-        update()
+        if not validation_skipped:
+            from readme_progress import update
+            update()
         print(f"Batch stopped: {reason}; {len(session['completed'])} committed, "
               f"{len(session['deferred'])} deferred. Result: {session['result']}", flush=True)
         print(f"Knowledge review: inspect attempt knowledge.md notes under {session['directory']} "

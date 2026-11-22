@@ -58,8 +58,11 @@ do not install dependencies, change tools or perform repository maintenance.
 - Splat symbol metadata does not support `type:data`. For data symbols, omit
   `type` when unknown, or use a supported type such as `u32`, `u8` or `char`
   when evidenced. Keep the C extern's type in the image source.
-- No inline assembly, embedded instruction bytes, section attributes or
-  preprocessor tricks. Only quoted local headers and simple header guards are
+- Inline assembly is allowed only for PSX GTE operations: GTE commands, COP2
+  register/memory transfers and pipeline `nop`s. Use literal instruction
+  templates with explicit operands/clobbers; keep surrounding logic in C.
+  Other inline assembly, embedded instruction bytes, section attributes and
+  preprocessor tricks remain prohibited. Only quoted local headers and simple header guards are
   accepted. Initialized arrays require manual review; use uninitialized local
   arrays and explicit element assignments instead.
 

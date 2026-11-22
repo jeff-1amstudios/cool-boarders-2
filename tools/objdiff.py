@@ -32,7 +32,7 @@ def main():
                   f"({measures.get('matched_functions', 0)}/{measures.get('total_functions', 0)} functions)")
             output = details / f"{unit['name']}.json"
             output.parent.mkdir(parents=True, exist_ok=True)
-            run([ROOT / "tools/objdiff/bin/objdiff-cli", "diff", "-p", ".",
+            run([ROOT / "tools/objdiff/bin/objdiff-cli", "-L", "warn", "diff", "-p", ".",
                  "-u", unit["name"], "-o", output, "--format", "json-pretty"])
             diff = json.loads(output.read_text())
             right = {s["name"]: s for s in diff.get("right", {}).get("symbols", [])}

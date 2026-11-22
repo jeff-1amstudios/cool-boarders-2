@@ -73,9 +73,9 @@ def check(context_path, full=False):
         report_path, diff_path = directory / 'object-report.json', directory / 'object-diff.json'
         for path in (report_path, diff_path):
             path.unlink(missing_ok=True)
-        subprocess.run([cli, 'report', 'generate', '-p', str(directory), '-o', str(report_path)],
+        subprocess.run([cli, '-L', 'warn', 'report', 'generate', '-p', str(directory), '-o', str(report_path)],
                        cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
-        subprocess.run([cli, 'diff', '-p', str(directory), '-u', unit, '-o', str(diff_path), '--format', 'json-pretty'],
+        subprocess.run([cli, '-L', 'warn', 'diff', '-p', str(directory), '-u', unit, '-o', str(diff_path), '--format', 'json-pretty'],
                        cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=True)
     report = json.loads(report_path.read_text())
     score = report['units'][0]['measures'].get('fuzzy_match_percent', 0)
