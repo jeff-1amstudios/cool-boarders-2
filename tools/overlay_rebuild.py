@@ -251,7 +251,14 @@ def main():
             raise ValueError("Unknown overlay object")
         _, config = image_config(name, catalog[name])
         if path.relative_to("build/src").with_suffix("") not in c_units(config):
-            raise ValueError("Object is not a configured overlay C unit")
+            parser.error(
+                f"{path} is not a configured C unit in {catalog[name]['build_config']}. "
+                "Only C units present in the current checkout can be compiled. "
+                "If objdiff requested this target after a deferred attempt or branch switch, "
+                "its generated objdiff.json may be stale; run make objdiff-prepare "
+                "to refresh the configured units. Deferred candidates remain in their "
+                "attempt archives and WIP branches."
+            )
         compile_c(path, json.loads((ROOT / catalog[name].get("compiler_config", "config/compiler.json")).read_text()), config)
         return 0
     report = rebuild_all(args.overlay)

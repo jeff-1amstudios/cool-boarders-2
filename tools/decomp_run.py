@@ -36,6 +36,53 @@ USAGE_LIMIT = re.compile(
 USAGE_RETRY_SECONDS = 30 * 60
 
 
+def resume_candidate(root, active):
+    """Find the latest saved function, including deferrals from earlier batches.
+
+    Export only the selected block: the worker must reconcile shared declarations
+    and splits with current main rather than overwrite whole archived files.
+    """
+    attempts = root / 'reports/decomp'
+    archives = sorted(attempts.rglob('candidate/sources.json'),
+                      key=lambda path: path.stat().st_mtime_ns, reverse=True)
+    for snapshot in archives:
+        directory = snapshot.parent.parent
+        if directory == root / active['context']:
+            continue
+        sources = json.loads(snapshot.read_text())
+        source = sources.get(source_file(active))
+        if not isinstance(source, str):
+            continue
+        try:
+            _, blocks = sections(source)
+        except ValueError:
+            continue
+        if key(active) not in blocks:
+            continue
+        context_path = directory / 'context.json'
+        context = json.loads(context_path.read_text()) if context_path.exists() else {}
+        # A source snapshot can contain many accepted blocks. Only resume the
+        # function this attempt was actually working on.
+        if context.get('identity') != key(active):
+            continue
+        destination = root / active['context']
+        (destination / 'resume-candidate.c').write_text(blocks[key(active)])
+        details = {
+            'identity': key(active), 'previous_context': str(directory.relative_to(root)),
+            'sources': str(snapshot.relative_to(root)),
+            'function': str((destination / 'resume-candidate.c').relative_to(root)),
+            'previous_body_sha256': context.get('body_sha256'),
+            'current_body_sha256': active.get('body_sha256'),
+            'evidence': [str(path.relative_to(root)) for name in
+                         ('knowledge.md', 'result.json', 'object-diff.json',
+                          'agent-last-message.txt', 'candidate/attempt.patch', 'ghidra-update.json')
+                         if (path := directory / name).is_file()],
+        }
+        (destination / 'resume.json').write_text(json.dumps(details, indent=2) + '\n')
+        return details
+    return None
+
+
 def agent_failure(path):
     """Read error events only; quoted source/tool output is not a launcher error."""
     if not path.exists():
@@ -320,7 +367,8 @@ class Runner:
         existing = set(self.w.git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines())
         if "codex" in existing:
             raise RuntimeError("Branch codex blocks the codex/ function branch namespace")
-        # Failed attempts are disposable: reuse the name, starting from main.
+        # Reuse the branch name from main; launch supplies the archived candidate
+        # separately so old whole-image files cannot overwrite accepted work.
         for old in sorted(existing):
             if old == base or re.fullmatch(re.escape(base) + r"-\d+", old):
                 self.w.git("branch", "-D", old)
@@ -356,28 +404,33 @@ class Runner:
         seconds = self.args.agent_seconds
         budget_note = (f"The supervisor also stops you at {self.agent_tokens:,} uncached input plus output "
                        "tokens. Save useful edits and evidence as you go.\n" if self.agent_tokens else "")
-        resume_notes = ""
-        for previous in reversed(session.get("interrupted", [])):
-            if (key(previous) == key(active) and previous.get("candidate_archived")
-                    and USAGE_LIMIT.search(previous.get("failure", ""))):
-                archive = self.w.ROOT / previous["context"] / "candidate"
-                resume_notes = (
-                    f"\n\nFor this usage-limit retry, you may reuse candidate edits from {archive}. "
-                    "After reading the fresh function context, review attempt.patch and sources.json "
-                    "and carry forward relevant edits from the interrupted attempt."
-                )
-                break
+        saved = resume_candidate(self.w.ROOT, active)
+        if saved:
+            starting_point = (
+                f"Resume the saved candidate in {directory / 'resume-candidate.c'}; "
+                f"read {directory / 'resume.json'} for its prior sources and evidence.\n"
+                "Carry forward this function and its useful declarations/header additions, "
+                "reconciling them with current main, current types, symbols and split boundaries. "
+                "Read the previous diagnostics and notes before changing the candidate. "
+                "Do not overwrite current image sources, headers or configs with archived files. "
+                "Use fresh Ghidra output as reference; do not replace the saved candidate with it. "
+                "If changed reference bytes/boundaries or prohibited source forms require discarding "
+                "any prior work, record the concrete reason in knowledge.md.\n"
+            )
+            print(f"Resuming saved candidate from {saved['previous_context']}", flush=True)
+        else:
+            starting_point = f"No saved candidate found; start from {directory / 'ghidra/target.ghidra.c'}.\n"
         instructions = (
             f"Your only repository/workspace root is {self.w.ROOT.resolve()}.\n\n"
             + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
-            + resume_notes
         )
         prompt = (
             "# Selected function\n"
             f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes).\n"
             f"Work on existing branch {active['branch']}; Python owns branch switches and commits.\n"
             f"Read {directory / 'context.json'} and {directory / 'target.s'}.\n"
-            f"Start from current pseudocode in {directory / 'ghidra/target.ghidra.c'}.\n"
+            + starting_point
+            + f"Fresh reference pseudocode: {directory / 'ghidra/target.ghidra.c'}.\n"
             f"Consult relevant cached types in {directory / 'ghidra/ghidra-types.h'} and read current image header "
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
             f"Append only this function to {source_file(active)}, with // FUNCTION: {key(active)}.\n"
@@ -590,7 +643,9 @@ class Runner:
         # Supervisor fixes may be committed while a batch is stopped. Accept only
         # fast-forward maintenance changes on clean main, never changed game or
         # compiler inputs, merges, or history rewrites.
-        maintenance = {'.gitignore', 'tools/decomp.py', 'tools/decomp_run.py', 'tools/decomp_agent.py',
+        maintenance = {'.gitignore', 'AGENTS.md', 'FUNCTION_AGENTS.md',
+                       'docs/decomp-knowledge/README.md',
+                       'tools/decomp.py', 'tools/decomp_run.py', 'tools/decomp_agent.py',
                        'tools/decomp_runtime.py', 'tools/decomp_metrics.py',
                        'docs/decomp-worker.md', 'docs/token-efficiency.md', 'README.md'}
         if main_head != session['integration_head']:

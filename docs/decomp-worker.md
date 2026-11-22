@@ -39,7 +39,7 @@ reference verification and exact full-file comparisons remain enforced. Git can
 still refuse a branch switch that would overwrite pending maintenance.
 
 Each `start` invocation creates a new batch with fresh counters and its own
-`--limit`. An interrupted function is retried first from a fresh Ghidra export.
+`--limit`. An interrupted function is retried first, resuming its saved candidate with a fresh Ghidra export as reference.
 For example, stopping at target 2/50 and starting with `--limit 10` makes that
 function target 1/10. Earlier attempts retain their original logs, candidate
 archives and results. Recovery archives the preceding state before creating
@@ -52,7 +52,7 @@ compiler and validation inputs must remain unchanged.
 When Codex reports a usage limit, the supervisor archives the attempt and
 restores main. Every 30 minutes it retries the same function with a fresh
 Ghidra export. The retry doubles as the availability check. The new worker
-can pick up archived candidate edits, and the batch keeps its completed and
+must resume archived candidate edits when available, and the batch keeps its completed and
 deferred counts. Ctrl-C during the wait leaves the batch available for `start`
 to resume.
 
@@ -163,7 +163,7 @@ Deferrals persist across batches in ignored `reports/decomp/deferred.json`, keye
 
 To make deferred work eligible again, run `tools/.venv/bin/python tools/decomp.py retry-deferred --target INIT.BIN:0x8005AB6C`, or use `retry-deferred --all`. These commands requeue targets without launching a batch or removing preserved attempts. A later `start` selects eligible targets in the usual recorded order.
 
-The selected target gets `context.json`, `target.s`, `ghidra/target.ghidra.c`, `ghidra/ghidra-types.h` and `agent-prompt.md` in its attempt directory. The fresh decompilation uses existing SDK names, prototypes and structs, plus accepted prior discoveries. Context includes byte fingerprints, stored/inferred prototypes, parameter storage, referenced typed globals, named callees, the containing span, neighbours and bounded caller/callee evidence. The worker starts from that pseudocode and consults assembly to resolve uncertainties and improve the match. Cached type declarations are reference material (and may predate later accepted game types; source headers remain current); authored types belong in guarded source headers.
+The selected target gets `context.json`, `target.s`, `ghidra/target.ghidra.c`, `ghidra/ghidra-types.h` and `agent-prompt.md` in its attempt directory. The fresh decompilation uses existing SDK names, prototypes and structs, plus accepted prior discoveries. Context includes byte fingerprints, stored/inferred prototypes, parameter storage, referenced typed globals, named callees, the containing span, neighbours and bounded caller/callee evidence. On a retry, the launcher finds the latest archived candidate for the exact image-qualified identity across batches, skipping attempts with no saved function. It supplies the selected annotated block as `resume-candidate.c` and a `resume.json` linking prior source snapshots, diagnostics, notes and body fingerprints. The worker must resume this candidate, reconcile its declarations, headers, symbols and splits with current main, and use fresh pseudocode as updated reference. Whole archived image files are never restored over current sources. Discarding prior work requires a concrete reason in `knowledge.md`. With no saved candidate, the worker starts from fresh pseudocode. Assembly resolves uncertainties and guides matching. Cached type declarations are reference material (and may predate later accepted game types; source headers remain current); authored types belong in guarded source headers.
 
 CFG warnings such as analysis-state limits or exceptional paths are advisory. They do not prove that C decomp is impossible and do not automatically skip the target. Factual split problems—noncontiguous bodies, embedded accepted SDK entries, shared interior entries or no containing assembly span—are recorded as blockers. Curated shared/nonstandard regions remain held. The former structural cache and score-plateau watchdog are no longer used.
 
@@ -268,7 +268,7 @@ Startup checks the branch, clean checkout, saved attempt state and reference fin
 
 After successful final all-image validation, the supervisor runs `tools/readme_progress.py`'s updater to refresh the marked progress block in `README.md`. Counts use a fresh target inventory and persistent deferrals, excluding SDK entries and already reconstructed targets. This happens after the worker acceptance checks, so documentation changes cannot interfere with candidate review. Review and commit the README snapshot before starting another batch, which requires a clean checkout. For a manual refresh (including after requeueing deferrals), run `make progress`; it validates all images before updating the snapshot and leaves the README untouched if validation fails.
 
-Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores the clean `main` checkout before continuing; it skips the restored-baseline full-file check while the batch has no accepted functions. Retries discard the selected function's old failed branches and recreate its original branch name from current `main`, starting from scratch. WIP commits never enter `main`.
+Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores the clean `main` checkout before continuing; it skips the restored-baseline full-file check while the batch has no accepted functions. Retries recreate the function branch from current `main`, then require the worker to carry forward the latest saved function candidate and useful declarations from its ignored archive. Recreating the branch does not reset matching progress. WIP commits never enter `main`.
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/decomp/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 

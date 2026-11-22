@@ -15,12 +15,19 @@ do not install dependencies, change tools or perform repository maintenance.
 - This supplied brief is complete. Do not discover, search for or read
   `AGENTS.md`, `AGENTS.override.md`, `SUPERVISOR.md` or other instruction files,
   including this brief's source file. Do not perform repository onboarding or
-  instruction discovery. Begin with the selected context and Ghidra export.
+  instruction discovery. Begin with the selected context and supplied resume
+  manifest, when present, then consult the fresh Ghidra export.
 - Work on the existing branch and candidate checkout. Do not switch branches,
   stage, commit, reset, clean, invoke `decomp.py` or spawn agents.
-- Start from the supplied current Ghidra pseudocode, with SDK names and accepted
-  analysis. Use assembly to resolve uncertainty and refine compiler output.
-  Do not restore earlier failed candidates or decompile from assembly alone.
+- When supplied a resume manifest, start from its saved function candidate and
+  read the prior diagnostics and notes. Carry forward useful shared declarations
+  and header additions, reconciling them with current accepted sources, types,
+  symbols and boundaries. Never replace whole current files with archived files.
+  Fresh Ghidra pseudocode supplies updated SDK names and accepted analysis as
+  reference; it must not reset candidate progress. Record a concrete reason for
+  discarding prior work (such as changed boundaries or prohibited source forms).
+  With no saved candidate, start from the supplied current Ghidra pseudocode.
+  Use assembly to resolve uncertainty and refine compiler output.
 - Read the selected context, current image header, cached type reference and
   relevant callers, callees and data. Keep reads focused; do not dump whole
   configurations, unrelated sources or full logs.

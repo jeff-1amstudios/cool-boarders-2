@@ -24,7 +24,9 @@ rg -l -F 'SCUS_943.58:0x80017470' reports/decomp/sessions -g knowledge.md
 Read only selected prior notes; check their sibling `result.json` for outcome.
 Older attempts may have no sidecar: use the deferred queue's attempt links and
 [curated historical reviews](../deferred-function-review.md). Do not recursively
-dump logs or restore stale candidates in place of a fresh typed Ghidra export.
+dump logs. On retries, resume the supplied saved candidate and its diagnostics;
+consult the fresh typed Ghidra export as updated reference. Reconcile prior
+declarations and boundaries with current main instead of overwriting whole files.
 Record consulted IDs and avoid already failed trials unless assumptions changed.
 
 ## Evidence and maintenance
