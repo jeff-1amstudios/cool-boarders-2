@@ -5584,3 +5584,25 @@ void func_800850DC(void)
     D_8009F718 = 0;
     D_8009F71C = 0;
 }
+
+// FUNCTION: BP.BIN:0x80086108
+SPRT *func_80086108(unsigned long *ordering_table, SPRT *sprite, short x, short y)
+{
+    SPRT *primitive = sprite++;
+
+    ((PrimitiveTag *)primitive)->length = 4;
+    primitive->code = 100;
+    primitive->r0 = 0x80;
+    primitive->g0 = 0x80;
+    primitive->b0 = 0x80;
+    primitive->clut = GetClut(0x300, 0x1D2);
+    primitive->u0 = 0;
+    primitive->v0 = 0;
+    primitive->x0 = x - 0xA0;
+    primitive->y0 = y - 0x78;
+    primitive->w = 0x80;
+    primitive->h = 0x60;
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return sprite;
+}
