@@ -5722,3 +5722,26 @@ PACKET *func_80085D60(GsOT_TAG *ordering_table, PACKET *packets,
     }
     return packets;
 }
+
+// FUNCTION: BP.BIN:0x80086008
+SPRT *func_80086008(unsigned long *ordering_table, SPRT *sprite, short x, short y)
+{
+    SPRT *primitive = sprite++;
+
+    ((PrimitiveTag *)primitive)->length = 4;
+    primitive->code = 100;
+    primitive->r0 = 0x80;
+    primitive->g0 = 0x80;
+    primitive->b0 = 0x80;
+    primitive->code |= 2;
+    primitive->clut = GetClut(800, 0x1D4);
+    primitive->u0 = 0;
+    primitive->v0 = 0x80;
+    primitive->x0 = x - 0xA0;
+    primitive->y0 = y - 0x3A;
+    primitive->w = 0x80;
+    primitive->h = 0x20;
+    ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+    ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    return sprite;
+}
