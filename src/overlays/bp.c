@@ -451,6 +451,8 @@ extern BpMoveTextTable D_80096F88;
 extern SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
                             char *text, short x, short y);
 
+extern short D_8009D5E8[10][3];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5860,6 +5862,142 @@ SPRT *func_800864A4(GsOT_TAG *ordering_table, SPRT *sprite,
                               x, (short)(y + 0x40));
         sprite = func_80086B3C(ordering_table, sprite, lines[1],
                               x, (short)(y + 0x4C));
+    }
+    return sprite;
+}
+
+// FUNCTION: BP.BIN:0x80086634
+SPRT *func_80086634(unsigned long *ordering_table, SPRT *sprite,
+                     short x, short y, short index)
+{
+    short u[12];
+    short v[12];
+    short clut_x[12];
+    short clut_y[12];
+    short width[12];
+    short height[12];
+    short i;
+    short total = 0;
+    short offset;
+    SPRT *primitive;
+    clut_x[0] = 0x3C0;
+    clut_y[0] = 0x1D3;
+    u[0] = 0x40;
+    v[0] = 0x70;
+    width[0] = 0x10;
+    height[0] = 0x10;
+    clut_x[1] = 0x3D0;
+    clut_y[1] = 0x1D3;
+    u[1] = 0x50;
+    v[1] = 0x70;
+    width[1] = 0x10;
+    height[1] = 0x10;
+    clut_x[2] = 0x3E0;
+    clut_y[2] = 0x1D3;
+    u[2] = 0x60;
+    v[2] = 0x70;
+    width[2] = 0x10;
+    height[2] = 0x10;
+    clut_x[3] = 0x3F0;
+    clut_y[3] = 0x1D3;
+    u[3] = 0x70;
+    v[3] = 0x70;
+    width[3] = 0x10;
+    height[3] = 0x10;
+    clut_x[4] = 0x350;
+    clut_y[4] = 0x1D4;
+    u[4] = 0xC0;
+    v[4] = 0x60;
+    width[4] = 0x20;
+    height[4] = 0x10;
+    clut_x[5] = 0x370;
+    clut_y[5] = 0x1D4;
+    u[5] = 0x80;
+    v[5] = 0x70;
+    width[5] = 0x20;
+    height[5] = 0x10;
+    clut_x[6] = 0x360;
+    clut_y[6] = 0x1D4;
+    u[6] = 0xE0;
+    v[6] = 0x60;
+    width[6] = 0x20;
+    height[6] = 0x10;
+    clut_x[7] = 0x380;
+    clut_y[7] = 0x1D4;
+    u[7] = 0xA0;
+    v[7] = 0x70;
+    width[7] = 0x20;
+    height[7] = 0x10;
+    clut_x[8] = 0x3B0;
+    clut_y[8] = 0x1D3;
+    u[8] = 0x30;
+    v[8] = 0x70;
+    width[8] = 0x10;
+    height[8] = 0x10;
+    clut_x[9] = 0x3A0;
+    clut_y[9] = 0x1D3;
+    u[9] = 0x20;
+    v[9] = 0x70;
+    width[9] = 0x10;
+    height[9] = 0x10;
+    clut_x[10] = 0x300;
+    clut_y[10] = 0x1D4;
+    u[10] = 0x80;
+    v[10] = 0x60;
+    width[10] = 0x10;
+    height[10] = 0x10;
+
+    for (i = 0; i < 3; i++) {
+        if (D_8009D5E8[index][i] != -1) {
+            total += width[D_8009D5E8[index][i]];
+            if (i != 2) {
+                total += 4;
+            }
+        }
+    }
+    offset = 0;
+    if (index == 9) {
+        primitive = sprite++;
+        ((PrimitiveTag *)primitive)->length = 4;
+        primitive->code = 100;
+        primitive->r0 = 0x80;
+        primitive->g0 = 0x80;
+        primitive->b0 = 0x80;
+        primitive->clut = GetClut(clut_x[1], clut_y[1]);
+        primitive->u0 = u[1];
+        primitive->v0 = v[1];
+        primitive->x0 = x - 0x90;
+        primitive->y0 = y - 0x78;
+        primitive->w = width[1];
+        primitive->h = height[1];
+        ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+        ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+
+    } else {
+        for (i = 0; i < 3; i++) {
+            if (D_8009D5E8[index][i] != -1) {
+                primitive = sprite++;
+                ((PrimitiveTag *)primitive)->length = 4;
+                primitive->code = 100;
+                primitive->r0 = 0x80;
+                primitive->g0 = 0x80;
+                primitive->b0 = 0x80;
+                primitive->clut = GetClut(clut_x[D_8009D5E8[index][i]],
+                                          clut_y[D_8009D5E8[index][i]]);
+                primitive->u0 = u[D_8009D5E8[index][i]];
+                primitive->v0 = v[D_8009D5E8[index][i]];
+                primitive->x0 = offset + ((0x80 - total) / 2 + (short)(x - 0xA0));
+                primitive->y0 = y - 0x78;
+                primitive->w = width[D_8009D5E8[index][i]];
+                primitive->h = height[D_8009D5E8[index][i]];
+                ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
+                ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+
+                if (i != 2) {
+                    offset += width[D_8009D5E8[index][i]] + 4;
+                }
+            }
+        }
     }
     return sprite;
 }
