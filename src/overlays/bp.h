@@ -770,4 +770,8 @@ typedef struct BpCoordinateEntry {
     unsigned char unknown_04[0x34];
 } BpCoordinateEntry;
 
+typedef struct BpMoveTextTable {
+    char lines[10][2][16];
+} BpMoveTextTable;
+
 #endif

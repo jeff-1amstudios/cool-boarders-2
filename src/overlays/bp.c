@@ -447,6 +447,10 @@ extern short D_8009ED0C;
 
 extern short D_8009F708;
 
+extern BpMoveTextTable D_80096F88;
+extern SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
+                            char *text, short x, short y);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -5834,6 +5838,28 @@ SPRT *func_800861F4(unsigned long *ordering_table, SPRT *sprite, short x, short 
         primitive->h = 0x10;
         ((PrimitiveTag *)primitive)->address = ((PrimitiveTag *)ordering_table)->address;
         ((PrimitiveTag *)ordering_table)->address = (unsigned long)primitive;
+    }
+    return sprite;
+}
+
+// FUNCTION: BP.BIN:0x800864A4
+SPRT *func_800864A4(GsOT_TAG *ordering_table, SPRT *sprite,
+                     short x, short y, short index)
+{
+    BpMoveTextTable labels;
+    char (*lines)[16];
+
+    labels = D_80096F88;
+    lines = labels.lines[index];
+    if (lines[1][0] == 0) {
+        sprite = func_80086B3C(ordering_table, sprite, lines[0],
+                              (short)(x + 4), (short)(y + 0x40));
+    } else {
+        x += 4;
+        sprite = func_80086B3C(ordering_table, sprite, lines[0],
+                              x, (short)(y + 0x40));
+        sprite = func_80086B3C(ordering_table, sprite, lines[1],
+                              x, (short)(y + 0x4C));
     }
     return sprite;
 }
