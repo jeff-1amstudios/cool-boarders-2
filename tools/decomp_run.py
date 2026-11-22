@@ -367,24 +367,30 @@ class Runner:
         existing = set(self.w.git("for-each-ref", "--format=%(refname:short)", "refs/heads").splitlines())
         if "codex" in existing:
             raise RuntimeError("Branch codex blocks the codex/ function branch namespace")
-        # Reuse the branch name from main; launch supplies the archived candidate
-        # separately so old whole-image files cannot overwrite accepted work.
-        for old in sorted(existing):
-            if old == base or re.fullmatch(re.escape(base) + r"-\d+", old):
-                self.w.git("branch", "-D", old)
         branch = base
         session["active"].update(branch=branch, base_commit=session["integration_head"], phase="creating_branch")
         self.w.save_state(session)
-        self.w.git("switch", "-c", branch, "main")
+        if branch in existing:
+            self.w.git("switch", branch)
+            session.update(branch=branch, head=self.w.git("rev-parse", "HEAD"))
+            session["active"]["phase"] = "updating_branch"
+            self.w.save_state(session)
+            # Preserve the candidate and its history. Conflicts stop here with
+            # the branch/index intact rather than silently replacing old work.
+            self.w.git("merge", "--no-edit", session["integration_head"])
+        else:
+            self.w.git("switch", "-c", branch, "main")
         session["branch"] = branch
+        session["head"] = self.w.git("rev-parse", "HEAD")
+        session["active"]["working_head"] = session["head"]
         session["active"]["phase"] = "working"
         self.w.save_state(session)
         self.invariant(session)
         print(f"Function branch: {branch} (base {session['integration_head'][:12]})", flush=True)
 
-    def paths(self, tracked, active):
+    def paths(self, tracked, active, base="HEAD"):
         directory = Path(source_dir(active))
-        changed = self.w.changes()
+        changed = self.w.changes(base)
         for name in changed:
             path = Path(name)
             allowed = (name in (source_file(active), str(Path(source_file(active)).with_suffix('.h')),
@@ -405,7 +411,17 @@ class Runner:
         budget_note = (f"The supervisor also stops you at {self.agent_tokens:,} uncached input plus output "
                        "tokens. Save useful edits and evidence as you go.\n" if self.agent_tokens else "")
         saved = resume_candidate(self.w.ROOT, active)
-        if saved:
+        current_source = self.w.ROOT / source_file(active)
+        _, current_blocks = sections(current_source.read_text() if current_source.exists() else '')
+        if key(active) in current_blocks:
+            starting_point = (
+                f"Resume the existing function directly in {source_file(active)} on this branch.\n"
+                "Its source, header, symbols and split configuration are the working candidate; "
+                "edit them in place. Use fresh Ghidra output as reference.\n"
+            )
+            if saved:
+                starting_point += f"Read {directory / 'resume.json'} for prior diagnostics and notes; the branch source takes precedence over archived C.\n"
+        elif saved:
             starting_point = (
                 f"Resume the saved candidate in {directory / 'resume-candidate.c'}; "
                 f"read {directory / 'resume.json'} for its prior sources and evidence.\n"
@@ -489,7 +505,8 @@ class Runner:
 
     def candidate(self, session, tracked, before, old_symbols, prior_c):
         active = session["active"]
-        paths = self.paths(tracked, session["active"])
+        baseline = session["integration_head"]
+        paths = self.paths(tracked, session["active"], baseline)
         if not paths:
             raise Rejected("Agent left no candidate edits")
         try:
@@ -502,14 +519,14 @@ class Runner:
         review_source(self.w.ROOT, paths, entry, session["active"]["name"])
         for name in paths:
             if name in tracked and Path(name).suffix == '.h':
-                previous_header = subprocess.check_output(['git', 'show', f'HEAD:{name}'], cwd=self.w.ROOT).decode()
+                previous_header = subprocess.check_output(['git', 'show', f'{baseline}:{name}'], cwd=self.w.ROOT).decode()
                 review_header_extension(previous_header, (self.w.ROOT / name).read_text())
         text = (self.w.ROOT / entry).read_text()
         try:
             previous = ''
             # Read bytes directly: git() strips whitespace, which is significant here.
             if entry in tracked:
-                previous = subprocess.check_output(['git', 'show', f'HEAD:{entry}'], cwd=self.w.ROOT).decode()
+                previous = subprocess.check_output(['git', 'show', f'{baseline}:{entry}'], cwd=self.w.ROOT).decode()
             shared, blocks = sections(previous)
             new_shared, new_blocks = sections(text)
             review_shared_extension(shared, new_shared)
@@ -550,7 +567,7 @@ class Runner:
         if now_c != {**prior_c, key(session["active"]): session["active"]["size"]}:
             raise Rejected("C coverage changed outside the selected function")
         self.invariant(session)
-        if paths != self.paths(tracked, session["active"]):
+        if paths != self.paths(tracked, session["active"], baseline):
             raise RuntimeError("Checkout changed during acceptance validation")
         if self.w.content_hashes(paths) != expected_hashes:
             raise Rejected("Candidate contents changed during acceptance validation")
@@ -566,7 +583,7 @@ class Runner:
         active = session["active"]
         archive = self.w.ROOT / active["context"] / "candidate"
         archive.mkdir(parents=True, exist_ok=True)
-        self.w.archive_edits(archive)
+        self.w.archive_edits(archive, session["integration_head"])
         active["failure"] = reason
         active["retryable"] = retryable
         self.w.save_state(session)
@@ -664,7 +681,7 @@ class Runner:
                 raise RuntimeError('Recovery requires unchanged clean main')
             session.update(integration_head=main_head, protected=self.w.fingerprints())
         elif (branch == active.get('branch') and phase in ('working', 'creating_branch', 'checkpointed')
-              and head == (active.get('checkpoint') or active.get('base_commit'))):
+              and head == (active.get('checkpoint') or active.get('working_head') or active.get('base_commit'))):
             session.update(branch=branch, head=head)
             self.w.save_state(session)
             if phase == 'checkpointed':
@@ -707,7 +724,17 @@ class Runner:
         active['ghidra_record'] = feedback_path
         active["phase"] = "committing_match"
         self.w.save_state(session)
-        commit = self.w.commit_files(paths, f"Match {active['name']} from bounded agent run", expected_hashes)
+        # Earlier WIP commits already contain part (or all) of the candidate.
+        # Commit only this turn's delta on the persistent function branch.
+        delta = sorted(self.w.changes())
+        self.w.audit_paths(delta, delta)
+        if self.w.content_hashes(paths) != expected_hashes:
+            raise RuntimeError("Candidate contents changed after validation")
+        # A retry may also undo an old WIP edit back to main. Such a path is
+        # absent from the accepted main delta but must be committed here.
+        delta_hashes = self.w.content_hashes(delta)
+        commit = self.w.commit_files(delta, f"Match {active['name']} from bounded agent run",
+                                     delta_hashes) if delta else session["head"]
         session["head"] = commit
         active.update(commit=commit, phase="validated_commit")
         self.w.save_state(session)
@@ -716,7 +743,10 @@ class Runner:
         active["phase"] = "integrating"
         self.w.save_state(session)
         self.invariant(session)
-        self.w.git("merge", "--ff-only", commit)
+        # Copy the audited, validated result instead of merging WIP history.
+        self.w.git("restore", "--source", commit, "--worktree", "--", *paths)
+        commit = self.w.commit_files(paths, f"Match {active['name']} from bounded agent run", expected_hashes)
+        active["integration_commit"] = commit
         if self.w.git("rev-parse", "HEAD") != commit or self.w.git("branch", "--show-current") != "main":
             raise RuntimeError("Unexpected integration result; inspect main and the validated function branch")
         session.update(head=commit, integration_head=commit, protected=self.w.fingerprints())
@@ -851,9 +881,10 @@ class Runner:
                     self.w.save_state(session)
                     raise
             self.start_branch(session)
-            before = yaml.safe_load((self.w.ROOT / session["active"].get("build_config", "scus_943.58.yaml")).read_text())
-            old_symbols = (self.w.ROOT / session["active"].get("symbol_file", "symbol_addrs.txt")).read_text()
-            tracked = set(self.w.git("ls-files").splitlines())
+            baseline = session["integration_head"]
+            before = yaml.safe_load(self.w.git("show", f"{baseline}:{active.get('build_config', 'scus_943.58.yaml')}"))
+            old_symbols = self.w.git("show", f"{baseline}:{active.get('symbol_file', 'symbol_addrs.txt')}")
+            tracked = set(self.w.git("ls-tree", "-r", "--name-only", baseline).splitlines())
             prior_c = coverage(current_inventory)
             launched = False
             budget_stop = None

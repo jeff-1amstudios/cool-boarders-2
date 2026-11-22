@@ -109,10 +109,10 @@ def git(*args):
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
 
-def changes():
+def changes(base="HEAD"):
     # Include untracked, nonignored files; never stage ignored artifacts.
     paths = set()
-    for args in (("diff", "--name-only", "-z", "HEAD"),
+    for args in (("diff", "--name-only", "-z", base),
                  ("ls-files", "--others", "--exclude-standard", "-z")):
         output = subprocess.check_output(["git", *args], cwd=ROOT)
         paths.update(p.decode() for p in output.split(b"\0") if p)
@@ -292,7 +292,7 @@ def validate(session):
     directory = ROOT / active["context"]
     attempt = directory / "candidate"
     attempt.mkdir(parents=True, exist_ok=True)
-    archive_edits(attempt)
+    archive_edits(attempt, session.get("integration_head", "HEAD"))
     try:
         # Validation has its own timeout, independent of the worker allowance.
         command(validation_command(active), "validate", directory=attempt, timeout=300)
@@ -328,10 +328,10 @@ def validate(session):
     return current
 
 
-def archive_edits(directory):
-    (directory / "attempt.patch").write_bytes(subprocess.check_output(["git", "diff", "HEAD"], cwd=ROOT))
+def archive_edits(directory, base="HEAD"):
+    (directory / "attempt.patch").write_bytes(subprocess.check_output(["git", "diff", base], cwd=ROOT))
     sources = {}
-    for name in changes():
+    for name in changes(base):
         path = ROOT / name
         if name.startswith("src/"):
             if path.is_symlink():

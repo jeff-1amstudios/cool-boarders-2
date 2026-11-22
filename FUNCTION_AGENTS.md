@@ -19,7 +19,9 @@ do not install dependencies, change tools or perform repository maintenance.
   manifest, when present, then consult the fresh Ghidra export.
 - Work on the existing branch and candidate checkout. Do not switch branches,
   stage, commit, reset, clean, invoke `decomp.py` or spawn agents.
-- When supplied a resume manifest, start from its saved function candidate and
+- If the selected function already exists in the branch's image source, edit it
+  directly; that working candidate takes precedence over archived snapshots.
+  When it is absent and a resume manifest is supplied, start from its saved function candidate and
   read the prior diagnostics and notes. Carry forward useful shared declarations
   and header additions, reconciling them with current accepted sources, types,
   symbols and boundaries. Never replace whole current files with archived files.
