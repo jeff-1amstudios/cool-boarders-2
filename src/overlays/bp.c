@@ -454,6 +454,11 @@ extern SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
 extern short D_8009D5E8[10][3];
 extern int func_800449B8(const char *text);
 
+extern int D_8009FA2C;
+extern int D_8009FE98;
+extern EVECTOR D_8009F730[];
+extern long func_8002014C(void);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6034,4 +6039,22 @@ SPRT *func_80086B3C(GsOT_TAG *ordering_table, SPRT *sprite,
         }
     }
     return sprite;
+}
+
+// FUNCTION: BP.BIN:0x80092C3C
+void func_80092C3C(int near_limit, int distance)
+{
+    long offset_x;
+    long offset_y;
+    long projection;
+
+    D_8009FA2C = near_limit;
+    D_8009FE98 = distance;
+    ReadGeomOffset(&offset_x, &offset_y);
+    D_8009FA58 = offset_x - D_80058E10 / 2;
+    D_8009FA60 = offset_x + D_80058E10 / 2;
+    D_8009FA5C = offset_y - D_80058E18 / 2;
+    D_8009FA64 = offset_y + D_80058E18 / 2;
+    projection = func_8002014C();
+    InitClip(D_8009F730, D_80058E10, D_80058E18, projection, 0, 0x7FFF);
 }

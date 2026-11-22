@@ -508,3 +508,9 @@ func_80086634 = 0x80086634; // type:func
 D_8009D5E8 = 0x8009D5E8; // size:0x3C
 
 func_800449B8 = 0x800449B8; // type:func
+
+D_8009FA2C = 0x8009FA2C; // size:0x4
+D_8009FE98 = 0x8009FE98; // size:0x4
+D_8009F730 = 0x8009F730;
+func_8002014C = 0x8002014C; // type:func
+InitClip = 0x80020E1C; // type:func
