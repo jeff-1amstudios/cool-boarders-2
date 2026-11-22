@@ -242,7 +242,8 @@ segments:
   - [0x2b1f8, c, func_80085D60]
   - [0x2b4a0, c, func_80086008]
   - [0x2b5a0, c, func_80086108]
-  - [0x2b68c, asm, body_2B68C]
+  - [0x2b68c, c, func_800861F4]
+  - [0x2b93c, asm, body_2B93C]
   - [0x34d10, c, func_8008F878]
   - [0x34d88, asm, body_34D88]
   # Original switch-table span owned by func_8005AB6C.
