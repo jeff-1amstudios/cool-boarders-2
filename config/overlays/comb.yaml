@@ -42,5 +42,7 @@ segments:
   subsegments:
   - [0x0, rodata, header]
   - [0x4, asm, body]
+  - [0x33c, c, func_8005AEA4]
+  - [0x3c8, asm, body_3c8]
   - [0x3d520, data, data]
 - [0x4b3a0]
