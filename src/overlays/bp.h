@@ -802,4 +802,13 @@ GsDOBJ3 *func_80095170(BpAnimationState *state, unsigned long id);
 void func_8009520C(BpAnimationState *state, const int *indices,
                    unsigned long source_id, int target_index);
 
+typedef struct BpRelocationHeader {
+    unsigned char unknown_00;
+    unsigned char type;
+    unsigned char unknown_02[2];
+    int count;
+} BpRelocationHeader;
+
+int func_80095338(unsigned int *entry);
+
 #endif

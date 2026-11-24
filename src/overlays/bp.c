@@ -6527,3 +6527,22 @@ void func_8009520C(BpAnimationState *state, const int *indices,
         source->id = saved.id;
     }
 }
+
+// FUNCTION: BP.BIN:0x80095338
+int func_80095338(unsigned int *entry)
+{
+    int result = 0;
+    unsigned int base = (unsigned int)entry;
+    BpRelocationHeader *header = (BpRelocationHeader *)entry;
+    int count = header->count;
+
+    if (header->type == 2) {
+        entry += 2;
+        for (; count != 0; count--, entry++) {
+            *entry = base + *entry;
+        }
+        result = -1;
+        header->type = -header->type;
+    }
+    return result;
+}
