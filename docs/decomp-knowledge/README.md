@@ -97,5 +97,6 @@ findings. No new match or savings percentage is implied by documentation updates
 See the [session review inventory](reviews/README.md) for completed note reviews.
 Each session record preserves reviewed attempt outcomes, decisions, evidence
 references and useful function-specific failed approaches. The 2026-11-25 review
-covered all 27 available notes. Attempts without notes are valid and are silently
+covered 27 notes, followed by four notes from the interrupted batch
+`1795560864174034000`. Attempts without notes are valid and are silently
 skipped; they do not create pending review work.
