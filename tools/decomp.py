@@ -349,7 +349,7 @@ def archive_edits(directory, base="HEAD"):
 
 def audit_paths(requested, changed):
     paths = set(requested)
-    if not paths or paths != changed:
+    if not paths or paths != set(changed):
         raise RuntimeError(f"Explicit paths must equal all checkout changes: {sorted(changed)}")
     for name in paths:
         path = Path(name)
