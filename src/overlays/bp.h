@@ -783,4 +783,12 @@ typedef union BpTagScratch {
     PrimitiveTag tag;
 } BpTagScratch;
 
+typedef struct BpFont {
+    SPRT sprite;
+    DR_MODE draw_mode;
+    short advance_x;
+    short advance_y;
+    unsigned char unknown_24[0x10];
+} BpFont;
+
 #endif

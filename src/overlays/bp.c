@@ -470,6 +470,8 @@ extern SPRT *func_80086008(unsigned long *ordering_table, SPRT *sprite, short x,
 extern SPRT *func_800861F4(unsigned long *ordering_table, SPRT *sprite, short x, short y, short index);
 extern SPRT *func_80086108(unsigned long *ordering_table, SPRT *sprite, short x, short y);
 
+extern BpFont D_8009FA70[];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6241,4 +6243,17 @@ int func_80093514(GsOT_TAG *tag, SPRT *sprite, unsigned char *text,
         } while (*cursor != 0);
     }
     return count;
+}
+
+// FUNCTION: BP.BIN:0x80093684
+void func_80093684(GsOT_TAG *tag, int font, char *text, int x, int y, int wrap)
+{
+    SPRT *sprite = &D_8009FA70[font].sprite;
+    DR_MODE *draw_mode = &D_8009FA70[font].draw_mode;
+    int advance_x = D_8009FA70[font].advance_x;
+    int advance_y = D_8009FA70[font].advance_y;
+
+    func_80093514(tag, sprite, (unsigned char *)text,
+                  x, y, advance_x, advance_y, wrap);
+    func_8009456C(tag, draw_mode);
 }
