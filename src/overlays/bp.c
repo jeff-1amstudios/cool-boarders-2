@@ -6163,3 +6163,19 @@ PACKET *func_8008510C(GsOT_TAG *ordering_table, PACKET *packets,
     D_8009F704 = mode;
     return (PACKET *)packets;
 }
+
+// FUNCTION: BP.BIN:0x80092D24
+long func_80092D24(short x, short z)
+{
+    int absolute_x = x;
+    int absolute_z;
+
+    if (absolute_x < 0) {
+        absolute_x = -absolute_x;
+    }
+    absolute_z = z;
+    if (absolute_z < 0) {
+        absolute_z = -absolute_z;
+    }
+    return SquareRoot0(absolute_x * absolute_x + absolute_z * absolute_z);
+}
