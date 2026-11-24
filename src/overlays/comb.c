@@ -305,3 +305,35 @@ void func_8005D774(int first, int second, int mode)
     func_80016748();
     func_80016AEC();
 }
+
+// FUNCTION: COMB.BIN:0x8005DEE4
+int func_8005DEE4(int mode, int value)
+{
+    int result = -1;
+
+    switch (mode) {
+    case 0:
+        if ((unsigned int)value - 0x71 < 0x11) {
+            result = 0;
+        }
+        break;
+    case 7:
+        if ((unsigned int)value - 0x30 < 5) {
+            result = 0;
+        }
+        break;
+    case 8:
+        if ((unsigned int)value - 100 < 6) {
+            result = 0;
+        }
+        break;
+    case 9:
+        if ((unsigned int)value - 4 < 0x30 ||
+            (unsigned int)value - 0x39 < 0x10 ||
+            (unsigned int)value - 0x50 < 0x73) {
+            result = 0;
+        }
+        break;
+    }
+    return result;
+}
