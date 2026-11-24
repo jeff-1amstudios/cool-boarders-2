@@ -8,7 +8,7 @@ viable matching C, not proof of the original source or a universal compiler reci
 | --- | --- |
 | [Scheduling and C constructs](scheduling.md) | inline, return cursor, delay slot, constant load; SCHED-001 |
 | [Types and pointer arithmetic](types-and-pointers.md) | CdlLOC, alignment, struct copy, lw/sw, stride; TYPE-001 |
-| [Registers and stack layout](registers-and-stack.md) | lifetime, buffer scopes, frame size, saved registers; STACK-H001, REG-H001 |
+| [Registers and stack layout](registers-and-stack.md) | lifetime, buffer scopes, frame size, saved registers, allocation priority, scratch reuse, RTL/LLDB workflow; STACK-H001, REG-H001, REG-H002, REG-002, REG-W001 |
 | [Optimization and toolchain](optimization.md) | division, traps, maspsx, provisional flags; OPT-001 |
 
 ## Before an attempt

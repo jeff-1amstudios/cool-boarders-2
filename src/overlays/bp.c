@@ -459,6 +459,17 @@ extern int D_8009FE98;
 extern EVECTOR D_8009F730[];
 extern long func_8002014C(void);
 
+extern BpMoveRanges D_80096F4C;
+extern short D_8009F700;
+extern short D_8009F704;
+
+extern SPRT *func_800864A4(GsOT_TAG *ordering_table, SPRT *sprite, short x, short y, short index);
+extern PACKET *func_80085D60(GsOT_TAG *ordering_table, PACKET *packets, short x, short y, short amount);
+extern SPRT *func_80086634(unsigned long *ordering_table, SPRT *sprite, short x, short y, short index);
+extern SPRT *func_80086008(unsigned long *ordering_table, SPRT *sprite, short x, short y);
+extern SPRT *func_800861F4(unsigned long *ordering_table, SPRT *sprite, short x, short y, short index);
+extern SPRT *func_80086108(unsigned long *ordering_table, SPRT *sprite, short x, short y);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6057,4 +6068,98 @@ void func_80092C3C(int near_limit, int distance)
     D_8009FA64 = offset_y + D_80058E18 / 2;
     projection = func_8002014C();
     InitClip(D_8009F730, D_80058E10, D_80058E18, projection, 0, 0x7FFF);
+}
+
+// FUNCTION: BP.BIN:0x8008510C
+PACKET *func_8008510C(GsOT_TAG *ordering_table, PACKET *packets,
+                      short x, short y, short bar_x, short bar_y,
+                      short mode, short amount)
+{
+    BpMoveRanges ranges;
+    short i;
+    short j;
+    SPRT *tag_sprite;
+    SPRT *tag_packet;
+    DR_TPAGE *page;
+
+    ranges = D_80096F4C;
+    for (i = 0; i < 10; i++) {
+        if (mode == ranges.entries[i][0] && D_8009F704 == mode - 1) {
+            func_80015B70(20, 127);
+            break;
+        }
+    }
+    for (i = 0; i < 10; i++) {
+        if (ranges.entries[i][0] <= mode && mode <= ranges.entries[i][1]) {
+            tag_sprite = func_800864A4(ordering_table, (SPRT *)packets, x, y, ranges.entries[i][2]);
+            packets = (PACKET *)tag_sprite;
+            page = (DR_TPAGE *)packets;
+            packets += sizeof(DR_TPAGE);
+            /* Keep packet construction as one statement for GCC allocation. */
+            do {
+                BpTagScratch scratch;
+                unsigned long page_code;
+                unsigned short tpage;
+                ((PrimitiveTag *)tag_sprite)->length = 1;
+                if (GetGraphType() == 1 || GetGraphType() == 2) {
+                    tpage = GetTPage(0, 0, 0x140, 0x100);
+                    scratch.value = 0xe1001000;
+                    page_code = scratch.value | (tpage & 0x27ff);
+                } else {
+                    tpage = GetTPage(0, 0, 0x140, 0x100);
+                    scratch.value = 0xe1000400;
+                    page_code = scratch.value | (tpage & 0x9ff);
+                }
+                page->code[0] = page_code;
+                scratch.value = page->tag;
+                scratch.tag.address = ordering_table->p;
+                page->tag = scratch.value;
+                ordering_table->p = (unsigned long)page;
+            } while (0);
+            break;
+        }
+    }
+    packets = func_80085D60(ordering_table, (PACKET *)packets, bar_x, bar_y, amount);
+    for (i = 0; i < 10; i++) {
+        if (ranges.entries[i][0] <= mode && mode <= ranges.entries[i][1]) {
+            packets = (PACKET *)func_80086634((unsigned long *)ordering_table,
+                (SPRT *)packets, (short)(x + 4), (short)(y + 0x4e), ranges.entries[i][2]);
+        }
+    }
+    packets = (PACKET *)func_80086008((unsigned long *)ordering_table, (SPRT *)packets, x, y);
+    for (i = 0; i < 10; i++) {
+        if (ranges.entries[i][0] <= mode && mode <= ranges.entries[i][1]) {
+            for (j = 0; j < 3; j++) {
+                if ((unsigned short)(i - 2) < 2 || (unsigned short)(i - 4) < 2 ||
+                    i == 6 || i == 9 || D_8009F700 < 5) {
+                    packets = (PACKET *)func_800861F4((unsigned long *)ordering_table,
+                        (SPRT *)packets, x, y, D_8009D5E8[i][j]);
+                }
+            }
+        }
+    }
+    page = (DR_TPAGE *)packets;
+    packets += sizeof(DR_TPAGE);
+    ((PrimitiveTag *)page)->length = 1;
+    page->code[0] = (GetGraphType() == 1 || GetGraphType() == 2) ?
+        (0xe1001000 | (GetTPage(0, 0, 0x140, 0) & 0x27ff)) :
+        (0xe1000400 | (GetTPage(0, 0, 0x140, 0) & 0x9ff));
+    ((PrimitiveTag *)page)->address = ordering_table->p;
+    ordering_table->p = (unsigned long)page;
+    packets = (PACKET *)func_80086108((unsigned long *)ordering_table, (SPRT *)packets, x, y);
+    tag_packet = (SPRT *)packets;
+    page = (DR_TPAGE *)packets;
+    packets += sizeof(DR_TPAGE);
+    ((PrimitiveTag *)tag_packet)->length = 1;
+    page->code[0] = (GetGraphType() == 1 || GetGraphType() == 2) ?
+        (0xe1001000 | (GetTPage(1, 0, 0x140, 0) & 0x27ff)) :
+        (0xe1000400 | (GetTPage(1, 0, 0x140, 0) & 0x9ff));
+    ((PrimitiveTag *)page)->address = ordering_table->p;
+    ordering_table->p = (unsigned long)page;
+    D_8009F700++;
+    if (D_8009F700 > 9) {
+        D_8009F700 = 0;
+    }
+    D_8009F704 = mode;
+    return (PACKET *)packets;
 }

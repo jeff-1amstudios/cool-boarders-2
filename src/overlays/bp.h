@@ -774,4 +774,13 @@ typedef struct BpMoveTextTable {
     char lines[10][2][16];
 } BpMoveTextTable;
 
+typedef struct BpMoveRanges {
+    short entries[10][3];
+} BpMoveRanges;
+
+typedef union BpTagScratch {
+    unsigned long value;
+    PrimitiveTag tag;
+} BpTagScratch;
+
 #endif

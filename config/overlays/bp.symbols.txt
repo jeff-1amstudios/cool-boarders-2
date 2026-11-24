@@ -514,3 +514,7 @@ D_8009FE98 = 0x8009FE98; // size:0x4
 D_8009F730 = 0x8009F730;
 func_8002014C = 0x8002014C; // type:func
 InitClip = 0x80020E1C; // type:func
+
+D_80096F4C = 0x80096F4C; // size:0x3C
+D_8009F700 = 0x8009F700; // type:s16 size:0x2
+D_8009F704 = 0x8009F704; // type:s16 size:0x2
