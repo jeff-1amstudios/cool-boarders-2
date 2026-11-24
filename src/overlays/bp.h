@@ -791,4 +791,6 @@ typedef struct BpFont {
     unsigned char unknown_24[0x10];
 } BpFont;
 
+void func_80094868(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third);
+
 #endif

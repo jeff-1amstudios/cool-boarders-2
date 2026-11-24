@@ -479,6 +479,8 @@ extern MATRIX D_8009FCA8;
 
 extern void func_800940A8(GsDOBJ3 *object);
 
+extern GsF_LIGHT D_8009F9F0[3];
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6381,5 +6383,19 @@ void func_8009479C(BpAnimationState *state, GsDOBJ3 *objects,
         if (objects[i].pmd != 0) {
             func_800940A8(&objects[i]);
         }
+    }
+}
+
+// FUNCTION: BP.BIN:0x80094868
+void func_80094868(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third)
+{
+    if (first != 0) {
+        D_8009F9F0[0] = *first;
+    }
+    if (second != 0) {
+        D_8009F9F0[1] = *second;
+    }
+    if (third != 0) {
+        D_8009F9F0[2] = *third;
     }
 }
