@@ -6418,3 +6418,20 @@ BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFrame *fram
     }
     return frame;
 }
+
+// FUNCTION: BP.BIN:0x80094F9C
+GsDOBJ3 *func_80094F9C(BpAnimationState *state, unsigned long id)
+{
+    GsDOBJ3 *object = state->objects;
+    int index;
+
+    for (index = 0; index < state->active_count; index++, object++) {
+        if (id == object->id) {
+            break;
+        }
+    }
+    if (index == state->active_count) {
+        object = 0;
+    }
+    return object;
+}
