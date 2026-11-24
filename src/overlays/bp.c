@@ -6257,3 +6257,23 @@ void func_80093684(GsOT_TAG *tag, int font, char *text, int x, int y, int wrap)
                   x, y, advance_x, advance_y, wrap);
     func_8009456C(tag, draw_mode);
 }
+
+// FUNCTION: BP.BIN:0x80093A40
+void func_80093A40(int font, int translucent, unsigned char red,
+                   unsigned char green, unsigned char blue)
+{
+    BpFont *fonts = D_8009FA70;
+    SPRT *sprite;
+    unsigned char code;
+
+    sprite = &fonts[font].sprite;
+    sprite->r0 = red;
+    sprite->g0 = green;
+    sprite->b0 = blue;
+    if (translucent) {
+        code = sprite->code | 2;
+    } else {
+        code = sprite->code & 0xFD;
+    }
+    sprite->code = code;
+}
