@@ -35,6 +35,11 @@ extern GsOT *D_800A5D0C[1];
 extern unsigned int D_8009A398;
 extern int D_8009FFB4;
 
+extern PACKET *D_80058ACC;
+extern TILE D_800A4A50;
+extern DR_MODE D_800A4A6C;
+extern void func_80096D78(GsOT_TAG *ot, DR_MODE *mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -177,5 +182,20 @@ void func_8005BA08(int value)
 {
     if (value >= 0 && value != 1) {
         D_8009FFB4 = value;
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8005BB00
+void func_8005BB00(GsOT *ot, unsigned char shade)
+{
+    if (shade != 0) {
+        D_800A4A50.r0 = shade;
+        D_800A4A50.g0 = shade;
+        D_800A4A50.b0 = shade;
+        *(TILE *)D_80058ACC = D_800A4A50;
+        ((GsOT_TAG *)D_80058ACC)->p = ot->org[3].p;
+        ot->org[3].p = (unsigned long)D_80058ACC;
+        D_80058ACC += sizeof(TILE);
+        func_80096D78(&ot->org[3], &D_800A4A6C);
     }
 }

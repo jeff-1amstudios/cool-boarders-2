@@ -29,4 +29,6 @@ int func_8005B568(void);
 
 void func_8005B8D0(void);
 
+void func_8005BB00(GsOT *ot, unsigned char shade);
+
 #endif
