@@ -6489,3 +6489,41 @@ GsDOBJ3 *func_80095170(BpAnimationState *state, unsigned long id)
     }
     return 0;
 }
+
+// FUNCTION: BP.BIN:0x8009520C
+void func_8009520C(BpAnimationState *state, const int *indices,
+                   unsigned long source_id, int target_index)
+{
+    int count = (int)state->objects->pmd[3];
+    int index;
+    int source_index;
+    GsDOBJ3 *source;
+    GsDOBJ3 *target;
+    GsDOBJ3 saved;
+
+    for (index = 0; index < count; index++, indices++) {
+        if (target_index == *indices) {
+            break;
+        }
+    }
+    if (index < count) {
+        target = &state->objects[index];
+        source = state->objects;
+        for (source_index = 0; source_index < state->active_count;
+             source_index++, source++) {
+            if (source_id == source->id) {
+                break;
+            }
+        }
+        if (source_index == state->active_count) {
+            source = 0;
+        }
+        saved = *target;
+        target->attribute = source->attribute;
+        target->coord2 = source->coord2;
+        target->id = source->id;
+        source->attribute = saved.attribute;
+        source->coord2 = saved.coord2;
+        source->id = saved.id;
+    }
+}
