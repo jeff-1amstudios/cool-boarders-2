@@ -38,3 +38,5 @@ D_800A49E4 = 0x800A49E4; // size:0x28
 D_800A5D0C = 0x800A5D0C; // size:0x4
 func_8005B968 = 0x8005B968; // type:func
 D_8009A398 = 0x8009A398; // type:u32 size:0x4
+func_8005BA08 = 0x8005BA08; // type:func
+D_8009FFB4 = 0x8009FFB4; // type:s32 size:0x4

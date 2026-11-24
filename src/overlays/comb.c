@@ -33,6 +33,7 @@ extern GsOT D_800A49E4[1][2];
 extern GsOT *D_800A5D0C[1];
 
 extern unsigned int D_8009A398;
+extern int D_8009FFB4;
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -169,4 +170,12 @@ unsigned int func_8005B968(unsigned int value, int mode)
         break;
     }
     return D_8009A398;
+}
+
+// FUNCTION: COMB.BIN:0x8005BA08
+void func_8005BA08(int value)
+{
+    if (value >= 0 && value != 1) {
+        D_8009FFB4 = value;
+    }
 }
