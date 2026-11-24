@@ -6339,3 +6339,12 @@ void func_800944E8(GsOT_TAG *tag, SPRT *sprite)
     tag->p = (unsigned long)D_80058ACC;
     D_80058ACC += sizeof(SPRT);
 }
+
+// FUNCTION: BP.BIN:0x8009456C
+void func_8009456C(GsOT_TAG *tag, DR_MODE *mode)
+{
+    *(DR_MODE *)D_80058ACC = *mode;
+    ((GsOT_TAG *)D_80058ACC)->p = tag->p;
+    tag->p = (unsigned long)D_80058ACC;
+    D_80058ACC += sizeof(DR_MODE);
+}
