@@ -57,4 +57,12 @@ void func_8005E7A4(GsOT *ot, CombPlayer *player, int index);
 
 void func_8005E9E0(GsOT *ot, int shift, int kind, int entry);
 
+typedef struct CombPlayerEffectView {
+    unsigned char unknown_00[0x2C];
+    VECTOR position;
+    short entry;
+} CombPlayerEffectView;
+
+void func_8005EB18(GsOT *ot, CombPlayer *player);
+
 #endif

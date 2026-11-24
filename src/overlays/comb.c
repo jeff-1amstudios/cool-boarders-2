@@ -80,6 +80,10 @@ extern void func_80080FD8(void);
 extern void func_800810C4(void);
 extern void func_80081184(void *texture);
 
+extern int D_80099ED4;
+extern void func_80080D78(GsOT *ot, int effect, int update, int mode,
+                          VECTOR *position, int shift, void *scratch);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -469,5 +473,48 @@ void func_8005E9E0(GsOT *ot, int shift, int kind, int entry)
     if (kind == 9 && ((unsigned int)(entry - 142) < 3 ||
                       (unsigned int)(entry - 180) < 5)) {
         func_80081184(D_800A5D2C);
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8005EB18
+void func_8005EB18(GsOT *ot, CombPlayer *player)
+{
+    int offset = 0;
+    int effect = -1;
+    int update = 0;
+    int shift = D_80099ED0 + 3;
+    int course = D_800A5D5C->course;
+    int entry = ((CombPlayerEffectView *)player)->entry;
+    VECTOR *position = &((CombPlayerEffectView *)player)->position;
+
+    switch (course) {
+    case 3:
+        if ((unsigned int)(entry - 99) < 12) {
+            effect = 0;
+        } else {
+            offset = 8;
+            if (entry < 148) goto render;
+            effect = 1;
+        }
+        update = -1;
+        offset = 8;
+        break;
+    case 4:
+        if (entry == 83) {
+            effect = 0;
+            update = -1;
+            offset = 48;
+        }
+        break;
+    }
+render:
+    if ((unsigned int)(*(int *)(D_800A5D5C->unknown_16 + 2) - 1) < 2 && effect >= 0) {
+        GsOT_TAG *org = ot->org;
+        int scratch_offset = D_80099ED4 * 4;
+        int mode = D_8009A4FC[0];
+        ot->org = org + offset;
+        func_80080D78(ot, effect, (update << 16) >> 31, mode,
+                      position, shift, (void *)(0x1F800000 + scratch_offset));
+        ot->org -= offset;
     }
 }

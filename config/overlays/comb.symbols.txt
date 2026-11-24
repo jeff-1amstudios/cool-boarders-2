@@ -86,3 +86,6 @@ D_800980DC = 0x800980DC; // size:0x2
 D_800980DE = 0x800980DE; // size:0xE
 D_8009A4FC = 0x8009A4FC; // size:0x4
 D_800A5D2C = 0x800A5D2C; // size:0x4
+func_8005EB18 = 0x8005EB18; // type:func
+func_80080D78 = 0x80080D78; // type:func
+D_80099ED4 = 0x80099ED4; // size:0x4
