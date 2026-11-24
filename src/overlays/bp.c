@@ -477,6 +477,8 @@ extern SVECTOR D_8009FCD0;
 extern MATRIX D_8009FE78;
 extern MATRIX D_8009FCA8;
 
+extern void func_800940A8(GsDOBJ3 *object);
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6347,4 +6349,37 @@ void func_8009456C(GsOT_TAG *tag, DR_MODE *mode)
     ((GsOT_TAG *)D_80058ACC)->p = tag->p;
     tag->p = (unsigned long)D_80058ACC;
     D_80058ACC += sizeof(DR_MODE);
+}
+
+// FUNCTION: BP.BIN:0x8009479C
+void func_8009479C(BpAnimationState *state, GsDOBJ3 *objects,
+                   GsCOORDINATE2 *coordinates, GsCOORD2PARAM *parameters,
+                   int object_count, unsigned long *pmd)
+{
+    GsDOBJ3 *object;
+    int i;
+
+    i = 0;
+    state->active_count = 0;
+    state->objects = objects;
+    state->object_count = object_count;
+    object = objects;
+    for (; i < object_count; i++) {
+        object->attribute = 0x80000000;
+        object->coord2 = coordinates;
+        coordinates->param = parameters;
+        object->pmd = 0;
+        object->base = 0;
+        object->sv = 0;
+        object->id = -1;
+        object++;
+        coordinates++;
+        parameters++;
+    }
+    GsLinkObject3((unsigned long)pmd, objects);
+    for (i = 0; i < object_count; i++) {
+        if (objects[i].pmd != 0) {
+            func_800940A8(&objects[i]);
+        }
+    }
 }
