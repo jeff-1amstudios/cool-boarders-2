@@ -6330,3 +6330,12 @@ void func_80093E9C(SVECTOR *rotation)
     D_8009FCD0.vy = (D_8009FCD0.vy << 20) >> 20;
     D_8009FCD0.vz = (D_8009FCD0.vz << 20) >> 20;
 }
+
+// FUNCTION: BP.BIN:0x800944E8
+void func_800944E8(GsOT_TAG *tag, SPRT *sprite)
+{
+    *(SPRT *)D_80058ACC = *sprite;
+    ((GsOT_TAG *)D_80058ACC)->p = tag->p;
+    tag->p = (unsigned long)D_80058ACC;
+    D_80058ACC += sizeof(SPRT);
+}
