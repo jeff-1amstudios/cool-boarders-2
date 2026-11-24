@@ -66,7 +66,18 @@ then compiles the minimally adapted implementation before algorithm changes.
 No whole-file source/header copying or automatic type import is performed.
 
 An accepted donor **supersedes a deferred candidate**, including C already on
-the persistent function branch. The launcher preserves that block as
+the persistent function branch. Before updating an old branch, the supervisor
+checks its changes against the common ancestor: only the selected function,
+its declarations/types/symbols and its split are eligible for replacement.
+Unrelated edits stop the restart. It archives the WIP files and patch under
+`superseded-branch/`, then fast-forwards the existing branch to a merge commit
+whose contents exactly equal current accepted main. The old branch tip and main
+are both parents, so no branch is deleted or rewritten and obsolete candidate
+appends cannot cause text conflicts. The saved phase/commit permits recovery if
+interrupted during this update. Ordinary retries without donors still merge
+normally and stop on unresolved conflicts.
+
+The launcher preserves the old selected block as
 `superseded-candidate.c`; archived C/notes remain available via `resume.json`.
 The worker replaces only the selected block, retains branch/history, and records
 the donor, replacement reason and first-check result in `knowledge.md`. Without

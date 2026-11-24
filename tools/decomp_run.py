@@ -1,6 +1,7 @@
 """Subprocess supervision for decomp.py run. Python alone accepts and commits."""
 import copy
 import difflib
+import hashlib
 import json
 import os
 import re
@@ -359,6 +360,113 @@ class Runner:
         session.update(branch=branch, head=head)
         self.w.save_state(session)
 
+    def supersede_branch(self, session):
+        """Archive an audited WIP and merge main's tree without textual conflicts.
+
+        The old branch tip remains a parent. Only an accepted donor authorizes
+        abandoning its candidate; ordinary retries still use a normal merge.
+        """
+        active = session['active']
+        directory = self.w.ROOT / active['context']
+        reuse = self.w.read(directory / 'reuse.json')
+        main = session['integration_head']
+        if (reuse['target'] != key(active)
+                or reuse['match'] not in ('exact', 'normalized')
+                or self.w.git('rev-parse', 'refs/heads/main') != main
+                or self.w.git('branch', '--show-current') != active['branch']
+                or self.w.changes() or self.w.git('diff', '--cached', '--name-only')):
+            raise RuntimeError('Cannot supersede an unexpected or dirty function branch')
+        donor = subprocess.check_output(['git', 'show', f"{main}:{reuse['source']}"], cwd=self.w.ROOT)
+        if hashlib.sha256(donor).hexdigest() != reuse['source_sha256']:
+            raise RuntimeError('Accepted donor source changed since selection')
+        head = self.w.git('rev-parse', 'HEAD')
+        sync = active.get('branch_sync')
+        if sync is None and head == main:
+            active.update(working_head=head, phase='working')
+            self.w.save_state(session)
+            return
+        if sync is None:
+            if head != active['branch_update_head']:
+                raise RuntimeError('Function branch moved during donor preparation')
+            base = self.w.git('merge-base', head, main)
+            raw_paths = subprocess.check_output(['git', 'diff', '--name-only', '-z', base, head], cwd=self.w.ROOT)
+            paths = [p.decode() for p in raw_paths.split(b'\0') if p]
+            source = source_file(active)
+            header = str(Path(source).with_suffix('.h'))
+            config = active['build_config']
+            symbols = active['symbol_file']
+
+            def contents(commit, name):
+                return subprocess.check_output(['git', 'show', f'{commit}:{name}'], cwd=self.w.ROOT)
+
+            tracked = set(self.w.git('ls-tree', '-r', '--name-only', base).splitlines())
+            for name in paths:
+                path = Path(name)
+                local_header = (name not in tracked and path.parent == Path(source).parent and path.suffix == '.h')
+                if (name not in (source, header, config, symbols) and not local_header
+                        or path.is_absolute() or '..' in path.parts
+                        or (self.w.ROOT / name).is_symlink() or not (self.w.ROOT / name).is_file()):
+                    raise RuntimeError('Unrelated branch changes prevent donor restart: ' + name)
+                mode = self.w.git('ls-tree', head, '--', name).split()[0]
+                if mode != '100644' and mode != '100755':
+                    raise RuntimeError('Non-file branch change prevents donor restart: ' + name)
+            if config in paths:
+                review_split(yaml.safe_load(contents(base, config)), yaml.safe_load(contents(head, config)), active)
+            if symbols in paths:
+                review_symbol_additions(contents(base, symbols).decode(), contents(head, symbols).decode())
+            for name in paths:
+                if name in tracked and Path(name).suffix == '.h':
+                    review_header_extension(contents(base, name).decode(), contents(head, name).decode())
+            if source in paths:
+                old_shared, old_blocks = sections(contents(base, source).decode() if source in tracked else '')
+                new_shared, new_blocks = sections(contents(head, source).decode())
+                # Older attempts sometimes moved the selected function's extern
+                # into its image header. That selected prototype may be replaced;
+                # all other established declarations must still be preserved.
+                prototype = re.compile(r'^extern\s+[^;{}]*\b' + re.escape(active['name'])
+                                       + r'\s*\([^;{}]*\)\s*;[^\S\n]*\n?', re.M)
+                review_shared_extension(prototype.sub('', old_shared), prototype.sub('', new_shared))
+                old_blocks = {k: v.rstrip() for k, v in old_blocks.items()}
+                new_blocks = {k: v.rstrip() for k, v in new_blocks.items()}
+                if key(active) in old_blocks or {k: v for k, v in new_blocks.items() if k != key(active)} != old_blocks:
+                    raise RuntimeError('Unrelated function changes prevent donor restart')
+            review_source(self.w.ROOT, paths, '', active['name'], checkpoint=True)
+            archive = directory / 'superseded-branch'
+            archive.mkdir(parents=True, exist_ok=True)
+            (archive / 'attempt.patch').write_bytes(subprocess.check_output(
+                ['git', 'diff', '--binary', base, head], cwd=self.w.ROOT))
+            for name in paths:
+                destination = archive / 'files' / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(contents(head, name))
+            if source in paths and key(active) in new_blocks:
+                (directory / 'superseded-candidate.c').write_text(new_blocks[key(active)] + '\n')
+            # A merge commit with main's exact tree avoids conflicts caused by
+            # adjacent appends to image-wide C/header/config files. No ref rewrite.
+            message = (f"Restart {key(active)} from accepted C donor\n\n"
+                       f"Donor: {reuse['donor']} ({reuse['match']})\n"
+                       f"Superseded WIP: {head}\nAccepted baseline: {main}\n"
+                       "Prior candidate retained in parent history and local attempt archive.\n")
+            commit = subprocess.check_output(
+                ['git', 'commit-tree', main + '^{tree}', '-p', head, '-p', main],
+                cwd=self.w.ROOT, input=message.encode()).decode().strip()
+            sync = dict(old_head=head, main=main, commit=commit, base=base, paths=paths,
+                        donor=reuse['donor'], reason='Accepted donor supersedes deferred candidate')
+            self.w.write(archive / 'resolution.json', sync)
+            active.update(branch_sync=sync, phase='superseding_branch')
+            self.w.save_state(session)
+        parents = self.w.git('rev-list', '--parents', '-n', '1', sync['commit']).split()
+        if (sync['main'] != main or parents != [sync['commit'], sync['old_head'], main]
+                or self.w.git('rev-parse', sync['commit'] + '^{tree}') != self.w.git('rev-parse', main + '^{tree}')
+                or head not in (sync['old_head'], sync['commit'])):
+            raise RuntimeError('Unexpected donor-restart commit; refusing recovery')
+        if head != sync['commit']:
+            self.w.git('merge', '--ff-only', sync['commit'])
+        session['head'] = sync['commit']
+        active.update(working_head=sync['commit'], phase='working')
+        self.w.save_state(session)
+        print(f"Archived deferred WIP; restarted branch from donor {reuse['donor']}", flush=True)
+
     def start_branch(self, session):
         self.invariant(session)
         if session["branch"] != "main" or self.w.changes():
@@ -374,10 +482,14 @@ class Runner:
             self.w.git("switch", branch)
             session.update(branch=branch, head=self.w.git("rev-parse", "HEAD"))
             session["active"]["phase"] = "updating_branch"
+            session["active"]["branch_update_head"] = session['head']
             self.w.save_state(session)
-            # Preserve the candidate and its history. Conflicts stop here with
-            # the branch/index intact rather than silently replacing old work.
-            self.w.git("merge", "--no-edit", session["integration_head"])
+            # Donor retries explicitly supersede the archived candidate while
+            # preserving history. Ordinary retries retain normal merge handling.
+            if (self.w.ROOT / session['active']['context'] / 'reuse.json').is_file():
+                self.supersede_branch(session)
+            else:
+                self.w.git("merge", "--no-edit", session["integration_head"])
         else:
             self.w.git("switch", "-c", branch, "main")
         session["branch"] = branch
@@ -668,13 +780,21 @@ class Runner:
             session['active'] = dict(session['interrupted'][-1])
         active = session['active']
         phase = active.get('phase')
-        if phase not in (None, 'creating_branch', 'working', 'checkpointed',
+        if phase not in (None, 'creating_branch', 'working', 'checkpointed', 'updating_branch', 'superseding_branch',
                          'restoring_main', 'interrupted'):
             raise RuntimeError(f"Cannot automatically recover phase {phase}; inspect Git/analysis state"
                                + (' or run recover-ghidra' if phase == 'syncing_ghidra' else ''))
         branch = self.w.git('branch', '--show-current')
         head = self.w.git('rev-parse', 'HEAD')
         main_head = self.w.git('rev-parse', 'refs/heads/main')
+        if phase in ('updating_branch', 'superseding_branch'):
+            if main_head != session['integration_head']:
+                raise RuntimeError('main moved during function-branch update; refusing recovery')
+            if not (self.w.ROOT / active['context'] / 'reuse.json').is_file():
+                raise RuntimeError('Interrupted ordinary branch merge requires inspection; no accepted donor authorizes replacement')
+            self.supersede_branch(session)
+            self.switch(session, 'main', main_head)
+            branch, head, phase = 'main', main_head, 'interrupted'
         # Supervisor fixes may be committed while a batch is stopped. Accept only
         # fast-forward maintenance changes on clean main, never changed game or
         # compiler inputs, merges, or history rewrites.
