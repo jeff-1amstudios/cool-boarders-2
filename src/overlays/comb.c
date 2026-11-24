@@ -71,6 +71,15 @@ extern long D_8009FF88;
 extern void func_8005ED84(CombPlayer *player);
 extern void func_8006AC7C(GsOT *ot, CombPlayer *player, int shift);
 
+extern short D_800980DC;
+extern short D_800980DE[7];
+extern short D_8009A4FC[2];
+extern void *D_800A5D2C;
+extern PACKET *func_8007F2D4(GsOT *ot, int mode, PACKET *packet, int shift);
+extern void func_80080FD8(void);
+extern void func_800810C4(void);
+extern void func_80081184(void *texture);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -433,4 +442,32 @@ void func_8005E7A4(GsOT *ot, CombPlayer *player, int index)
     func_8006AC7C(ot, player, shift);
     ot->org -= 4;
     ((CombRenderView *)player)->coordinate.coord = saved;
+}
+
+// FUNCTION: COMB.BIN:0x8005E9E0
+void func_8005E9E0(GsOT *ot, int shift, int kind, int entry)
+{
+    int offset = 0;
+
+    do {
+        if (kind == *(short *)((unsigned char *)&D_800980DC + offset) &&
+            entry == *(short *)((unsigned char *)D_800980DE + offset)) {
+            switch (kind) {
+            case 2:
+                D_80058ACC = func_8007F2D4(ot, D_8009A4FC[0], D_80058ACC, shift);
+                break;
+            case 7:
+                func_80080FD8();
+                break;
+            case 9:
+                func_800810C4();
+                break;
+            }
+        }
+        offset += 4;
+    } while (offset < 16);
+    if (kind == 9 && ((unsigned int)(entry - 142) < 3 ||
+                      (unsigned int)(entry - 180) < 5)) {
+        func_80081184(D_800A5D2C);
+    }
 }

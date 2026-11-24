@@ -55,4 +55,6 @@ typedef struct CombRenderView {
 
 void func_8005E7A4(GsOT *ot, CombPlayer *player, int index);
 
+void func_8005E9E0(GsOT *ot, int shift, int kind, int entry);
+
 #endif
