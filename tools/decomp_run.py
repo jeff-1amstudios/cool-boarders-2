@@ -413,7 +413,24 @@ class Runner:
         saved = resume_candidate(self.w.ROOT, active)
         current_source = self.w.ROOT / source_file(active)
         _, current_blocks = sections(current_source.read_text() if current_source.exists() else '')
-        if key(active) in current_blocks:
+        if (directory / 'reuse.json').is_file():
+            reuse = json.loads((directory / 'reuse.json').read_text())
+            if key(active) in current_blocks:
+                (directory / 'superseded-candidate.c').write_text(current_blocks[key(active)])
+            starting_point = (
+                f"Accepted C donor {reuse['donor']} ({reuse['match']}) supersedes any deferred candidate.\n"
+                f"Start over from {directory / 'reuse-candidate.c'}; read {directory / 'reuse.json'}.\n"
+                "Replace the selected function body if already present; retain this branch and its history. "
+                "Prior C is preserved as superseded-candidate.c (when present) and resume-candidate.c "
+                "(when archived); prior notes remain reference material, not the starting implementation. "
+                f"Consult {directory / 'reuse-donor.c'} for declarations and "
+                f"{directory / 'reuse-headers.json'} for types. Adapt entry and referenced symbols "
+                "using address hints, target assembly and fresh Ghidra evidence. Reconcile only needed "
+                "declarations/types with current headers; preserve donor C structure. "
+                "Compile the minimally adapted donor with decomp_step.py before algorithm changes. "
+                "Record donor identity, replacement reason and first-check outcome in knowledge.md.\n"
+            )
+        elif key(active) in current_blocks:
             starting_point = (
                 f"Resume the existing function directly in {source_file(active)} on this branch.\n"
                 "Its source, header, symbols and split configuration are the working candidate; "
@@ -449,7 +466,8 @@ class Runner:
             + f"Fresh reference pseudocode: {directory / 'ghidra/target.ghidra.c'}.\n"
             f"Consult relevant cached types in {directory / 'ghidra/ghidra-types.h'} and read current image header "
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
-            f"Append only this function to {source_file(active)}, with // FUNCTION: {key(active)}.\n"
+            f"Implement only this function in {source_file(active)}, with // FUNCTION: {key(active)}; "
+            "replace its existing block when restarting from an accepted donor, preserving all other blocks.\n"
             f"New headers belong under {source_dir(active)}. Split only this function in "
             f"{active.get('build_config', 'scus_943.58.yaml')}; add new symbols only to "
             f"{active.get('symbol_file', 'symbol_addrs.txt')}, preserving existing definitions.\n"

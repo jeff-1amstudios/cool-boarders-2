@@ -21,6 +21,8 @@
 !/tools/objdiff.py
 !/tools/overlay_rebuild.py
 !/tools/overlays.py
+!/tools/overlay_duplicates.py
+!/tools/decomp_reuse.py
 !/tools/readme_progress.py
 !/tools/rebuild.py
 !/tools/decomp.py

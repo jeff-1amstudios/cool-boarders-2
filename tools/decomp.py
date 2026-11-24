@@ -20,7 +20,7 @@ STATE = ROOT / "reports/decomp/state.json"
 REVIEW = ROOT / "config/decomp.json"
 # Historical session-input snapshots are diagnostic only, never an acceptance gate.
 PROTECTED = ("FUNCTION_AGENTS.md", "config/usa-disc.json", "config/compiler.json", "tools/rebuild.py", "tools/c_sources.py",
-             "tools/validate.py", "tools/objdiff.py", "tools/decomp.py",
+             "tools/validate.py", "tools/objdiff.py", "tools/decomp.py", "tools/decomp_reuse.py", "tools/overlay_duplicates.py",
              "tools/decomp_run.py", "tools/decomp_agent.py", "tools/readme_progress.py", "tools/decomp_ghidra.py", "tools/ghidra_scripts/DecompGhidra.java", "tools/boundary_audit.py",
              "tools/ghidra_scripts/ExportBoundaryEvidence.java", "tools/ghidra_scripts/ReviewBoundaries.java",
              "tools/ghidra-docker.sh", "tools/ghidra.sh",
@@ -266,6 +266,12 @@ def next_target(session, address=None):
         directory = directory.with_name(directory.name + "-retry-" + str(time.time_ns()))
     directory.mkdir(parents=True, exist_ok=True)
     (directory / "target.s").write_text(row["body"] + "\n")
+    if 'targets' in report:
+        from decomp_reuse import prepare as prepare_reuse
+        reuse = prepare_reuse(ROOT, row, report, directory)
+        if reuse:
+            row['reuse'] = reuse
+            print(f"Accepted C donor: {reuse['donor']} ({reuse['match']})", flush=True)
     recipe = "config/compiler.json"
     if row.get("image", "SCUS_943.58") != "SCUS_943.58":
         recipe = read(ROOT / "config/overlays.json")["overlays"][row["image"]].get("compiler_config", recipe)

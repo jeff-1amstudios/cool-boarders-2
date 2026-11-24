@@ -19,7 +19,14 @@ do not install dependencies, change tools or perform repository maintenance.
   manifest, when present, then consult the fresh Ghidra export.
 - Work on the existing branch and candidate checkout. Do not switch branches,
   stage, commit, reset, clean, invoke `decomp.py` or spawn agents.
-- If the selected function already exists in the branch's image source, edit it
+- If `reuse.json` is supplied, its accepted exact/normalized C donor takes
+  precedence over an existing deferred candidate or archived snapshot. Start
+  over from `reuse-candidate.c`, replacing only the selected function block.
+  Keep the persistent branch/history and reconcile declarations, types and
+  symbols with current main. Prior source and notes remain reference material.
+  Compile the minimally adapted donor before algorithm changes; record the
+  donor, replacement reason and first-check outcome in `knowledge.md`.
+- Otherwise, if the selected function already exists in the branch's image source, edit it
   directly; that working candidate takes precedence over archived snapshots.
   When it is absent and a resume manifest is supplied, start from its saved function candidate and
   read the prior diagnostics and notes. Carry forward useful shared declarations
@@ -47,8 +54,9 @@ do not install dependencies, change tools or perform repository maintenance.
 
 ## Authored source
 
-- Keep one authored C file per image. Append only the selected annotated block
+- Keep one authored C file per image. Add only the selected annotated block
   to the supplied image source, starting with `// FUNCTION: <image>:0x<ADDRESS>`.
+  If restarting from an accepted donor, replace the existing selected block.
   Use the context's build symbol; the Ghidra analysis name can differ.
 - Preserve existing function blocks, shared declarations, layouts and boundaries.
   Append new externs and quoted local includes to the shared top block before

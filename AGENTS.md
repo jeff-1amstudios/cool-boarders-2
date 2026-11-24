@@ -30,6 +30,8 @@ For automatic batches, supply each worker a fresh headless Ghidra decompilation 
 
 Do not add or run unit tests unless the user explicitly requests them. Verify changes with focused headless Ghidra runs and the required exact binary comparisons.
 
+User-authorized donor-reuse exception: when an accepted C function has the same exact or normalized assembly fingerprint, use that donor as the starting point even on a deferred-function retry. It takes precedence over the existing branch/archived candidate. Keep the persistent branch and its history; preserve prior source and notes for reference, replace only the selected function block, and record the donor and replacement reason. Compile the minimally adapted donor before changing its algorithm. All source-scope, fresh Ghidra and exact containing-file acceptance requirements still apply.
+
 # Persistent decompilation knowledge
 
 Before attempting a function, read `docs/decomp-knowledge/README.md`, search the
