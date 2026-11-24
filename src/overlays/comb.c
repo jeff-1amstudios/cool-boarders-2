@@ -32,6 +32,8 @@ extern PACKET *D_800A4A20[2];
 extern GsOT D_800A49E4[1][2];
 extern GsOT *D_800A5D0C[1];
 
+extern unsigned int D_8009A398;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -151,4 +153,20 @@ void func_8005B8D0(void)
         ot += 2;
         i++;
     } while (i < 1);
+}
+
+// FUNCTION: COMB.BIN:0x8005B968
+unsigned int func_8005B968(unsigned int value, int mode)
+{
+    switch (mode) {
+    case 0:
+        D_8009A398 = value;
+        break;
+    case 1:
+        if (D_8009A398 < ~value) {
+            D_8009A398 += value;
+        }
+        break;
+    }
+    return D_8009A398;
 }
