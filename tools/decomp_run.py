@@ -787,6 +787,9 @@ class Runner:
         branch = self.w.git('branch', '--show-current')
         head = self.w.git('rev-parse', 'HEAD')
         main_head = self.w.git('rev-parse', 'refs/heads/main')
+        if subprocess.run(['git', 'rev-parse', '--verify', '-q', 'MERGE_HEAD'], cwd=self.w.ROOT,
+                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            raise RuntimeError('Recovery requires resolving the existing Git merge first')
         if phase in ('updating_branch', 'superseding_branch'):
             if main_head != session['integration_head']:
                 raise RuntimeError('main moved during function-branch update; refusing recovery')
@@ -795,23 +798,14 @@ class Runner:
             self.supersede_branch(session)
             self.switch(session, 'main', main_head)
             branch, head, phase = 'main', main_head, 'interrupted'
-        # Supervisor fixes may be committed while a batch is stopped. Accept only
-        # fast-forward maintenance changes on clean main, never changed game or
-        # compiler inputs, merges, or history rewrites.
-        maintenance = {'.gitignore', 'AGENTS.md', 'FUNCTION_AGENTS.md',
-                       'docs/decomp-knowledge/README.md',
-                       'tools/decomp.py', 'tools/decomp_run.py', 'tools/decomp_agent.py',
-                       'tools/decomp_runtime.py', 'tools/decomp_metrics.py',
-                       'docs/decomp-worker.md', 'docs/token-efficiency.md', 'README.md'}
+        # Recovery archives this attempt and reselects the target from fresh
+        # inventory before doing more work. Committed main updates need not be
+        # classified by filename; retain ancestry/checkout/index and byte guards.
         if main_head != session['integration_head']:
-            ancestry = self.w.git('rev-list', '--parents',
-                                  session['integration_head'] + '..' + main_head).splitlines()
             ancestor = subprocess.run(['git', 'merge-base', '--is-ancestor', session['integration_head'], main_head],
                                       cwd=self.w.ROOT).returncode == 0
-            edited = set(self.w.git('diff', '--name-only', session['integration_head'], main_head).splitlines())
-            if (branch != 'main' or self.w.changes() or not ancestor
-                    or any(len(line.split()) != 2 for line in ancestry) or not edited <= maintenance):
-                raise RuntimeError('main moved outside supervisor maintenance; refusing automatic recovery')
+            if branch != 'main' or self.w.changes() or not ancestor:
+                raise RuntimeError('Updated main recovery requires a safe checkout on main descended from the recorded baseline')
         if self.w.git('diff', '--cached', '--name-only'):
             raise RuntimeError('Recovery requires an unchanged empty index')
         if branch == 'main':

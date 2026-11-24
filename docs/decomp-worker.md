@@ -45,9 +45,13 @@ function target 1/10. Earlier attempts retain their original logs, candidate
 archives and results. Recovery archives the preceding state before creating
 the new batch. Recovery accepts known worker/checkpoint/restore phases on the
 recorded branch and commit, with an empty index. Unexpected edits, commits or
-integration phases stop for inspection. Clean, linear commits changing only the
-supervisor scripts, this guide or README may be made before recovery; game,
-compiler and validation inputs must remain unchanged.
+integration phases stop for inspection. Committed updates to main may be made
+before recovery, including accepted source and tooling changes. Recovery accepts
+them on main when it descends from the recorded baseline, with no pending game
+edits, staged changes or unresolved merge. It archives the interrupted attempt,
+then reselects from fresh inventory and refreshes donor/Ghidra inputs. Rewritten
+history and updates to main while still on a function branch require inspection.
+Pinned-reference checks and the full-file acceptance gate remain enforced.
 
 When Codex reports a usage limit, the supervisor archives the attempt and
 restores main. Every 30 minutes it retries the same function with a fresh
