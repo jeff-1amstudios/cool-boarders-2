@@ -6315,3 +6315,18 @@ void func_80093D74(SVECTOR *input, SVECTOR *output)
     ApplyMatrixSV(&D_8009FCA8, input, output);
     PopMatrix();
 }
+
+// FUNCTION: BP.BIN:0x80093E9C
+void func_80093E9C(SVECTOR *rotation)
+{
+    D_8009FCD0.vx = 0;
+    D_8009FCD0.vy = 0;
+    D_8009FCD0.vz = 0;
+    D_8009FA38 = D_8009FCD0;
+    D_8009FCA8 = D_80058E20;
+    D_8009FE78 = D_80058E20;
+    D_8009FCD0 = *rotation;
+    D_8009FCD0.vx = (D_8009FCD0.vx << 20) >> 20;
+    D_8009FCD0.vy = (D_8009FCD0.vy << 20) >> 20;
+    D_8009FCD0.vz = (D_8009FCD0.vz << 20) >> 20;
+}
