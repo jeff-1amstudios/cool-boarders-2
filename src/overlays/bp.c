@@ -212,6 +212,8 @@ extern const int D_80097A6C[12];
 extern const int D_80097A9C[7];
 extern const unsigned char D_80097B3C[101];
 
+extern void *func_800949B4(void *command, BpAnimationState *state,
+                            const int *coordinate_indices, unsigned long *pmd, int mode);
 extern BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFrame *frame,
                                        BpAnimationState *state, const int *coordinate_indices,
                                        unsigned long *pmd, int mode);
@@ -6398,4 +6400,21 @@ void func_80094868(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third)
     if (third != 0) {
         D_8009F9F0[2] = *third;
     }
+}
+
+// FUNCTION: BP.BIN:0x80094910
+BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFrame *frame,
+                                BpAnimationState *state, const int *coordinate_indices,
+                                unsigned long *pmd, int mode)
+{
+    unsigned int count = frame->command_count;
+    unsigned int i;
+
+    if (frame->start <= frame_index) {
+        frame++;
+        for (i = 0; i < count; i++) {
+            frame = func_800949B4(frame, state, coordinate_indices, pmd, mode);
+        }
+    }
+    return frame;
 }
