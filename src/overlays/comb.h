@@ -35,4 +35,12 @@ void func_8005D774(int first, int second, int mode);
 
 int func_8005DEE4(int mode, int value);
 
+typedef struct CombSceneEntry {
+    unsigned char unknown_00[12];
+    short linked_entries[3];
+    unsigned char unknown_12[38];
+} CombSceneEntry;
+
+void func_8005DF88(GsOT *ot, void *view, void *position, int mode, int entry);
+
 #endif

@@ -58,6 +58,14 @@ extern unsigned char D_8009A2D8[];
 extern unsigned char D_8009A2D9[];
 extern unsigned char D_8009A2DA[];
 
+extern int D_800A4A28;
+extern int D_800A4A90;
+extern MATRIX D_80058E20;
+extern CombSceneEntry *D_800A5AE8;
+extern int D_800A5D64;
+extern void func_8005E0D8(GsOT *ot, void *view, void *position, int entry,
+                          int previous, int first, int last, int mode, int pass);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -336,4 +344,29 @@ int func_8005DEE4(int mode, int value)
         break;
     }
     return result;
+}
+
+// FUNCTION: COMB.BIN:0x8005DF88
+void func_8005DF88(GsOT *ot, void *view, void *position, int mode, int entry)
+{
+    int i;
+    int linked;
+    int fill = -1;
+
+    D_800A4A28 = 0;
+    for (i = 19; i >= 0; i--) {
+        ((int *)D_800A4A2C)[i] = fill;
+    }
+    i = 0;
+    GsSetLightMatrix(&D_80058E20);
+    D_800A4A90 = -1;
+    do {
+        linked = D_800A5AE8[entry].linked_entries[i];
+        if (linked >= 0) {
+            func_8005E0D8(ot, view, position, linked, -1, 0, 1, 0, 0);
+        }
+        i++;
+    } while (i < 3);
+    D_800A4A90 = entry;
+    func_8005E0D8(ot, view, position, entry, -1, 0, D_800A5D64, mode, 2);
 }
