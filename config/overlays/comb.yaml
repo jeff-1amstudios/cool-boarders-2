@@ -46,6 +46,7 @@ segments:
   - [0x3c8, asm, body_3c8]
   - [0xa00, c, func_8005B568]
   - [0xca0, c, func_8005B808]
-  - [0xd68, asm, body_d68]
+  - [0xd68, c, func_8005B8D0]
+  - [0xe00, asm, body_e00]
   - [0x3d520, data, data]
 - [0x4b3a0]

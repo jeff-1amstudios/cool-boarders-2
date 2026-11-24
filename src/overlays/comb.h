@@ -27,4 +27,6 @@ typedef struct CombSettings {
 
 int func_8005B568(void);
 
+void func_8005B8D0(void);
+
 #endif

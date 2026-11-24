@@ -27,6 +27,11 @@ extern int D_8009FF94;
 extern void func_8007AC50(void *effects);
 extern void func_80079B90(void);
 
+extern void func_8002F750(PACKET *work_base);
+extern PACKET *D_800A4A20[2];
+extern GsOT D_800A49E4[1][2];
+extern GsOT *D_800A5D0C[1];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -125,4 +130,25 @@ void func_8005B808(void)
     }
     func_8001F378(D_800A4A2C);
     func_80079B90();
+}
+
+// FUNCTION: COMB.BIN:0x8005B8D0
+void func_8005B8D0(void)
+{
+    int active;
+    GsOT *ot;
+    GsOT **current;
+    int i;
+
+    active = GsGetActiveBuff();
+    func_8002F750(D_800A4A20[active]);
+    i = 0;
+    current = D_800A5D0C;
+    ot = &D_800A49E4[0][active];
+    do {
+        *current++ = ot;
+        ClearOTagR((u_long *)ot->org, 0x800);
+        ot += 2;
+        i++;
+    } while (i < 1);
 }
