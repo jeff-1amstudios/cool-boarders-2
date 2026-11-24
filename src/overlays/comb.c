@@ -24,6 +24,8 @@ extern short D_8009A358[];
 extern short D_8009A35A[];
 extern int D_8009FF90;
 extern int D_8009FF94;
+extern void func_8007AC50(void *effects);
+extern void func_80079B90(void);
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -104,4 +106,23 @@ int func_8005B568(void)
     D_8009FF94 = 0;
     D_8009FF90 = state;
     return -1;
+}
+
+// FUNCTION: COMB.BIN:0x8005B808
+void func_8005B808(void)
+{
+    int i;
+    int offset;
+
+    for (i = 0; i < 2; i++) {
+        func_8007AC50(D_800A5B10[i]->effects);
+        func_8001F378(D_8009FFB8[i]);
+        func_8001F378(D_800A5B10[i]);
+    }
+    for (offset = 0; offset < 1; offset += 8) {
+        func_8001F378(*(void **)((unsigned char *)D_800A4A0C + offset));
+        func_8001F378(*(void **)((unsigned char *)D_800A4A10 + offset));
+    }
+    func_8001F378(D_800A4A2C);
+    func_80079B90();
 }
