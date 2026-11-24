@@ -6179,3 +6179,26 @@ long func_80092D24(short x, short z)
     }
     return SquareRoot0(absolute_x * absolute_x + absolute_z * absolute_z);
 }
+
+// FUNCTION: BP.BIN:0x80092D7C
+int func_80092D7C(short x, short z)
+{
+    int absolute_x = x;
+    int absolute_z;
+    int x_squared;
+    int z_squared;
+    unsigned int root;
+
+    if (absolute_x < 0) {
+        absolute_x = -absolute_x;
+    }
+    absolute_z = z;
+    if (absolute_z < 0) {
+        absolute_z = -absolute_z;
+    }
+    x_squared = absolute_x * absolute_x;
+    z_squared = absolute_z * absolute_z;
+    absolute_z = z_squared + x_squared;
+    root = SquareRoot12(absolute_z << 12);
+    return ((root >> 11) & 1) + (root >> 12);
+}
