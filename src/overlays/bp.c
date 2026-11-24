@@ -6435,3 +6435,33 @@ GsDOBJ3 *func_80094F9C(BpAnimationState *state, unsigned long id)
     }
     return object;
 }
+
+// FUNCTION: BP.BIN:0x800950A4
+GsDOBJ3 *func_800950A4(BpAnimationState *state, unsigned long id)
+{
+    GsDOBJ3 *object = state->objects;
+    int index;
+    int count;
+
+    for (index = 0; index < state->active_count; index++, object++) {
+        if (object->id == -1 || object->id == id) {
+            break;
+        }
+    }
+    if (index >= state->object_count) {
+        object = 0;
+        goto done;
+    }
+    if (object->id == -1) {
+        count = state->active_count;
+        if (index >= count) {
+            state->active_count = count + 1;
+            object = &state->objects[count];
+        }
+        object->id = id;
+        object->attribute = 0;
+        GsInitCoordinate2(0, object->coord2);
+    }
+done:
+    return object;
+}

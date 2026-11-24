@@ -795,4 +795,6 @@ void func_80094868(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third);
 
 GsDOBJ3 *func_80094F9C(BpAnimationState *state, unsigned long id);
 
+GsDOBJ3 *func_800950A4(BpAnimationState *state, unsigned long id);
+
 #endif
