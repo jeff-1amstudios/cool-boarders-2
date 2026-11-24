@@ -220,6 +220,8 @@ extern BpAnimationFrame *func_80094910(unsigned int frame_index, BpAnimationFram
 extern BpAnimationFrame *func_8009538C(unsigned int frame_index, BpAnimationFrame *frame,
                                        BpAnimationState *state, const int *coordinate_indices,
                                        unsigned long *pmd, int mode);
+extern void *func_80095430(void *command, BpAnimationState *state,
+                            const int *coordinate_indices, unsigned long *pmd, int mode);
 extern GsCOORDINATE2 *func_80064460(BpAnimationState *state, GsCOORDINATE2 *parent,
                                  int offset, int extent);
 
@@ -6545,4 +6547,21 @@ int func_80095338(unsigned int *entry)
         header->type = -header->type;
     }
     return result;
+}
+
+// FUNCTION: BP.BIN:0x8009538C
+BpAnimationFrame *func_8009538C(unsigned int frame_index, BpAnimationFrame *frame,
+                                BpAnimationState *state, const int *coordinate_indices,
+                                unsigned long *pmd, int mode)
+{
+    unsigned int count = frame->command_count;
+    unsigned int i;
+
+    if (frame->start <= frame_index) {
+        frame++;
+        for (i = 0; i < count; i++) {
+            frame = func_80095430(frame, state, coordinate_indices, pmd, mode);
+        }
+    }
+    return frame;
 }
