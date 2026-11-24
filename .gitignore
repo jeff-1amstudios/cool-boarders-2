@@ -43,6 +43,11 @@
 !/tools/test_target_queue.py
 !/tools/validate.py
 
+# Project-authored Codex knowledge-curation skill.
+!/tools/skills/
+/tools/skills/*
+!/tools/skills/curate-decomp-knowledge/
+
 # Project-authored Docker recipes, Ghidra scripts and Splat extensions.
 !/tools/ghidra-docker/
 /tools/ghidra-docker/*

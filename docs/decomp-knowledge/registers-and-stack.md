@@ -129,3 +129,36 @@ reuse in REG-002. Trace copies and lifetimes, rather than guessing local names
 or declaration order. Do not patch the allocator or retune the compiler to
 force a result. RTL/object diagnostics explain candidates; exact containing-file
 comparison remains the acceptance gate.
+
+## REG-003 — Verified: indexed traversal can change saved-register allocation
+
+Scope: `BP.BIN:0x8009479C`, accepted commit
+`88aacb07e3501280ff2765371c399b5d649e558f`,
+[2026-11-25 review](reviews/1795538906012286000.md). The per-attempt full-file
+record reports BP.BIN identical to pinned SHA-256
+`b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797`.
+
+```c
+/* Worker-reported previous second loop: */
+for (i = 0; i < object_count; i++, objects++)
+    if (objects->pmd) func_800940A8(objects);
+/* Accepted second loop: */
+for (i = 0; i < object_count; i++)
+    if (objects[i].pmd) func_800940A8(&objects[i]);
+```
+
+The accepted indexed form is still strength-reduced to an advancing pointer:
+`addu s0,a1,zero` at `0x800947A4`, counter initialization in s1 at
+`0x800947B4`, `lw v0,8(s0)` at `0x80094824`, and `addiu s0,s0,0x18`
+at `0x80094848`. The worker reported these pointer/counter registers exchanged
+in the earlier form; its intermediate diagnostics were overwritten. Declaration
+reordering did not fix that permutation, and indexing the first initialization
+loop changed its instruction shape. Vary the source representation of the
+specific problematic traversal, preserving unaffected loops and SDK field types.
+Use REG-W001 to inspect lifetime/priority differences; indexing does not prescribe
+which register another function will receive.
+
+Recipe: decompals/old-gcc 0.17 `gcc-2.7.2-psx`, cc1 `-O2 -G0 -mips1`;
+maspsx pin `4ffa8b5106f9780d5d4aa7609f184949433ddbbc`,
+`--aspsx-version 2.56 --expand-div -G0`; GNU as
+`-EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections`.

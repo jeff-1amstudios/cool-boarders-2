@@ -1,0 +1,4 @@
+interface:
+  display_name: "Curate Decompilation Knowledge"
+  short_description: "Review batch notes and preserve reusable findings"
+  default_prompt: "Use $curate-decomp-knowledge to review pending Cool Boarders 2 batch notes and curate reusable findings."

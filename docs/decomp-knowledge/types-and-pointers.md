@@ -33,3 +33,42 @@ and signedness claims require their own comparisons; do not infer them from this
 Recipe: old-gcc 0.17 `gcc-2.7.2-psx`, cc1 `-O2 -G0 -mips1`; maspsx
 `--aspsx-version 2.56 --expand-div -G0`; GNU as `-EL -march=r3000 -mtune=r3000
 -mabi=32 -O1 -G0 -no-pad-sections`. Seeded from the existing review on 2026-11-23.
+
+Independent aggregate-copy evidence, reviewed 2026-11-25: accepted BP.BIN
+functions `0x80093A94`, `0x80093D74`, `0x80093E9C`, `0x800944E8`,
+`0x8009456C` and `0x80094868` match with ordinary SDK aggregate assignments.
+SVECTOR copies use unaligned pairs; MATRIX, SPRT, DR_MODE and GsF_LIGHT use
+aligned word copies. Their acceptance commits and full-file records are in
+the [batch review](reviews/1795538906012286000.md); recipe is the same as above,
+with maspsx pin `4ffa8b5106f9780d5d4aa7609f184949433ddbbc`.
+These first-candidate successes qualify the technique: retain direct typed
+copies when they already reproduce the reference; scalar views are a targeted
+response to evidenced alignment differences, not a prerequisite for matching.
+
+## TYPE-002 — Verified: widen a local without changing its stored field
+
+Scope: `BP.BIN:0x80094910`, accepted commit
+`f821670746bd4c7469da38913d927dd1f13aa837`,
+[2026-11-25 review](reviews/1795538906012286000.md). Archived validation records
+the entire BP.BIN identical to pinned SHA-256
+`b5422780197f468835494e495079871823470f9fe314f2666d1e32c431ddb797`.
+
+```c
+/* Worker-reported first candidate: */
+unsigned short count = frame->command_count;
+/* Accepted; command_count remains an unsigned-short struct field: */
+unsigned int count = frame->command_count;
+```
+
+The accepted C loads directly into the saved counter with
+`lhu s1,2(a1)` at `0x80094940`. The worker reported an extra `andi ...,0xffff`
+and move with the narrow local; the original intermediate diagnostic is no
+longer saved. The final C and load are independently inspectable. When a narrow
+field feeds a word-sized loop, distinguish the field's layout from the local's
+arithmetic width before changing shared types. This proves a viable local type
+for this function, not a universal rule that short locals require masking.
+
+Recipe: decompals/old-gcc 0.17 `gcc-2.7.2-psx`, cc1 `-O2 -G0 -mips1`;
+maspsx pin `4ffa8b5106f9780d5d4aa7609f184949433ddbbc`,
+`--aspsx-version 2.56 --expand-div -G0`; GNU as
+`-EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections`.

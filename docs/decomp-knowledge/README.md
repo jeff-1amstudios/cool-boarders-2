@@ -6,9 +6,9 @@ viable matching C, not proof of the original source or a universal compiler reci
 
 | Topic | Search terms / entries |
 | --- | --- |
-| [Scheduling and C constructs](scheduling.md) | inline, return cursor, delay slot, constant load; SCHED-001 |
-| [Types and pointer arithmetic](types-and-pointers.md) | CdlLOC, alignment, struct copy, lw/sw, stride; TYPE-001 |
-| [Registers and stack layout](registers-and-stack.md) | lifetime, buffer scopes, frame size, saved registers, allocation priority, scratch reuse, RTL/LLDB workflow; STACK-H001, REG-H001, REG-H002, REG-002, REG-W001 |
+| [Scheduling and C constructs](scheduling.md) | inline, return cursor, delay slot, constant load, store order, short reload; SCHED-001, SCHED-002 |
+| [Types and pointer arithmetic](types-and-pointers.md) | CdlLOC, alignment, struct copy, lw/sw, stride, narrow field, widened local; TYPE-001, TYPE-002 |
+| [Registers and stack layout](registers-and-stack.md) | lifetime, buffer scopes, frame size, saved registers, allocation priority, scratch reuse, indexed traversal, RTL/LLDB workflow; STACK-H001, REG-H001, REG-H002, REG-002, REG-003, REG-W001 |
 | [Optimization and toolchain](optimization.md) | division, traps, maspsx, provisional flags; OPT-001 |
 
 ## Before an attempt
@@ -91,3 +91,11 @@ with `Review: promoted <IDs> / duplicate <IDs> / function-specific / no new insi
 and a documentation commit when available, so the next session can resume pending
 work. Do not delete ignored archives or make them the sole home of reusable
 findings. No new match or savings percentage is implied by documentation updates.
+
+## Review records
+
+See the [session review inventory](reviews/README.md) for completed note reviews.
+Each session record preserves reviewed attempt outcomes, decisions, evidence
+references and useful function-specific failed approaches. The 2026-11-25 review
+covered all 27 available notes. Attempts without notes are valid and are silently
+skipped; they do not create pending review work.
