@@ -475,6 +475,7 @@ extern BpFont D_8009FA70[];
 extern SVECTOR D_8009FA38;
 extern SVECTOR D_8009FCD0;
 extern MATRIX D_8009FE78;
+extern MATRIX D_8009FCA8;
 
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
@@ -6297,5 +6298,20 @@ void func_80093A94(VECTOR *input, VECTOR *output)
     }
     PushMatrix();
     ApplyMatrixLV(&D_8009FE78, input, output);
+    PopMatrix();
+}
+
+// FUNCTION: BP.BIN:0x80093D74
+void func_80093D74(SVECTOR *input, SVECTOR *output)
+{
+    if (D_8009FA38.vx != D_8009FCD0.vx ||
+        D_8009FA38.vy != D_8009FCD0.vy ||
+        D_8009FA38.vz != D_8009FCD0.vz) {
+        D_8009FA38 = D_8009FCD0;
+        D_8009FCA8 = D_80058E20;
+        RotMatrix(&D_8009FCD0, &D_8009FCA8);
+    }
+    PushMatrix();
+    ApplyMatrixSV(&D_8009FCA8, input, output);
     PopMatrix();
 }
