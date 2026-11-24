@@ -40,6 +40,14 @@ extern TILE D_800A4A50;
 extern DR_MODE D_800A4A6C;
 extern void func_80096D78(GsOT_TAG *ot, DR_MODE *mode);
 
+extern int D_80058E10;
+extern int D_80058E18;
+extern int D_800A4A14;
+extern short D_800A4A18;
+extern short D_800A4A1A;
+extern short D_800A4A1C;
+extern short D_800A4A1E;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -197,5 +205,48 @@ void func_8005BB00(GsOT *ot, unsigned char shade)
         ot->org[3].p = (unsigned long)D_80058ACC;
         D_80058ACC += sizeof(TILE);
         func_80096D78(&ot->org[3], &D_800A4A6C);
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8005BBD8
+void func_8005BBD8(int mode)
+{
+    switch (mode) {
+    case 1:
+        ((short *)&D_800A4A14)[0] = D_80058E10 / 4;
+        ((short *)&D_800A4A14)[1] = D_80058E18 / 2;
+        D_800A4A18 = D_80058E10 * 3 / 4;
+        D_800A4A1A = D_80058E18 / 2;
+        D_800A4A18 = 0;
+        D_800A4A1A = 0;
+        D_800A4A1C = D_80058E10 / 2;
+        D_800A4A1E = D_80058E18;
+        ((short *)D_800A4A20)[0] = D_80058E10 / 2;
+        ((short *)D_800A4A20)[1] = 0;
+        ((short *)D_800A4A20)[2] = D_80058E10 / 2;
+        ((short *)D_800A4A20)[3] = D_80058E18;
+        break;
+    case 2:
+        ((short *)&D_800A4A14)[0] = D_80058E10 / 2;
+        ((short *)&D_800A4A14)[1] = D_80058E18 / 4;
+        D_800A4A18 = D_80058E10 / 2;
+        D_800A4A1A = D_80058E18 * 3 / 4;
+        D_800A4A18 = 0;
+        D_800A4A1A = 0;
+        D_800A4A1C = D_80058E10;
+        D_800A4A1E = D_80058E18 / 2;
+        ((short *)D_800A4A20)[0] = 0;
+        ((short *)D_800A4A20)[1] = D_80058E18 / 2;
+        ((short *)D_800A4A20)[2] = D_80058E10;
+        ((short *)D_800A4A20)[3] = D_80058E18 / 2;
+        break;
+    default:
+        D_800A4A18 = 0;
+        D_800A4A1A = 0;
+        ((short *)&D_800A4A14)[0] = D_80058E10 / 2;
+        ((short *)&D_800A4A14)[1] = D_80058E18 / 2;
+        D_800A4A1C = D_80058E10;
+        D_800A4A1E = D_80058E18;
+        break;
     }
 }
