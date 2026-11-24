@@ -54,5 +54,7 @@ segments:
   - [0xf98, c, func_8005BB00]
   - [0x1070, c, func_8005BBD8]
   - [0x1264, asm, body_1264]
+  - [0x2c0c, c, func_8005D774]
+  - [0x2da8, asm, body_2da8]
   - [0x3d520, data, data]
 - [0x4b3a0]

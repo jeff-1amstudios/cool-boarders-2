@@ -31,4 +31,6 @@ void func_8005B8D0(void);
 
 void func_8005BB00(GsOT *ot, unsigned char shade);
 
+void func_8005D774(int first, int second, int mode);
+
 #endif
