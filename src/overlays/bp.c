@@ -472,6 +472,10 @@ extern SPRT *func_80086108(unsigned long *ordering_table, SPRT *sprite, short x,
 
 extern BpFont D_8009FA70[];
 
+extern SVECTOR D_8009FA38;
+extern SVECTOR D_8009FCD0;
+extern MATRIX D_8009FE78;
+
 // FUNCTION: BP.BIN:0x8005B4A4
 int func_8005B4A4(void)
 {
@@ -6276,4 +6280,22 @@ void func_80093A40(int font, int translucent, unsigned char red,
         code = sprite->code & 0xFD;
     }
     sprite->code = code;
+}
+
+// FUNCTION: BP.BIN:0x80093A94
+void func_80093A94(VECTOR *input, VECTOR *output)
+{
+    if (D_8009FA38.vx != D_8009FCD0.vx ||
+        D_8009FA38.vy != D_8009FCD0.vy ||
+        D_8009FA38.vz != D_8009FCD0.vz) {
+        D_8009FE78 = D_80058E20;
+        D_8009FA38.vx = -D_8009FCD0.vx;
+        D_8009FA38.vy = -D_8009FCD0.vy;
+        D_8009FA38.vz = -D_8009FCD0.vz;
+        RotMatrix(&D_8009FA38, &D_8009FE78);
+        D_8009FA38 = D_8009FCD0;
+    }
+    PushMatrix();
+    ApplyMatrixLV(&D_8009FE78, input, output);
+    PopMatrix();
 }
