@@ -6465,3 +6465,27 @@ GsDOBJ3 *func_800950A4(BpAnimationState *state, unsigned long id)
 done:
     return object;
 }
+
+// FUNCTION: BP.BIN:0x80095170
+GsDOBJ3 *func_80095170(BpAnimationState *state, unsigned long id)
+{
+    GsDOBJ3 *object = state->objects;
+    int index;
+
+    for (index = 0; index < state->active_count; index++, object++) {
+        if (object->id == id) {
+            break;
+        }
+    }
+    if (index < state->active_count) {
+        object->id = -1;
+        if (index == state->active_count - 1) {
+            do {
+                state->active_count--;
+                object--;
+            } while (object->id == -1);
+        }
+        return object;
+    }
+    return 0;
+}
