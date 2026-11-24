@@ -6202,3 +6202,43 @@ int func_80092D7C(short x, short z)
     root = SquareRoot12(absolute_z << 12);
     return ((root >> 11) & 1) + (root >> 12);
 }
+
+// FUNCTION: BP.BIN:0x80093514
+int func_80093514(GsOT_TAG *tag, SPRT *sprite, unsigned char *text,
+                  int x, int y, int advance_x, int advance_y, int wrap)
+{
+    int count = 0;
+    unsigned char saved_u;
+    unsigned char saved_v;
+    short column;
+    short row;
+    unsigned char *cursor;
+
+    sprite->x0 = x;
+    sprite->y0 = y;
+    if (*text != 0) {
+        cursor = text;
+        do {
+            column = *cursor & 15;
+            row = ((unsigned int)*cursor >> 4) - 2;
+            saved_u = sprite->u0;
+            saved_v = sprite->v0;
+            sprite->u0 = saved_u + sprite->w * column;
+            sprite->v0 = sprite->v0 + sprite->h * row;
+            func_800944E8(tag, sprite);
+            sprite->x0 += advance_x;
+            sprite->u0 = saved_u;
+            sprite->v0 = saved_v;
+            if (wrap && (D_80058E10 >> 1) <= sprite->x0) {
+                sprite->x0 = x;
+                sprite->y0 += advance_y;
+                if (sprite->y0 >= (D_80058E18 >> 1)) {
+                    sprite->y0 = -(D_80058E18 >> 1);
+                }
+            }
+            cursor++;
+            count++;
+        } while (*cursor != 0);
+    }
+    return count;
+}
