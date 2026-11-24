@@ -43,4 +43,16 @@ typedef struct CombSceneEntry {
 
 void func_8005DF88(GsOT *ot, void *view, void *position, int mode, int entry);
 
+typedef struct CombRenderView {
+    unsigned char unknown_000[0x188];
+    GsCOORDINATE2 coordinate;
+    unsigned char unknown_1d8[12];
+    GsDOBJ3 *objects;
+    int object_count;
+    unsigned char unknown_1ec[0xA68];
+    short forward_order;
+} CombRenderView;
+
+void func_8005E7A4(GsOT *ot, CombPlayer *player, int index);
+
 #endif

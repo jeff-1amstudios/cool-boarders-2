@@ -66,6 +66,11 @@ extern int D_800A5D64;
 extern void func_8005E0D8(GsOT *ot, void *view, void *position, int entry,
                           int previous, int first, int last, int mode, int pass);
 
+extern int D_80099ED0;
+extern long D_8009FF88;
+extern void func_8005ED84(CombPlayer *player);
+extern void func_8006AC7C(GsOT *ot, CombPlayer *player, int shift);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -369,4 +374,63 @@ void func_8005DF88(GsOT *ot, void *view, void *position, int mode, int entry)
     } while (i < 3);
     D_800A4A90 = entry;
     func_8005E0D8(ot, view, position, entry, -1, 0, D_800A5D64, mode, 2);
+}
+
+// FUNCTION: COMB.BIN:0x8005E7A4
+void func_8005E7A4(GsOT *ot, CombPlayer *player, int index)
+{
+    MATRIX local_screen;
+    MATRIX local_world;
+    MATRIX saved;
+    VECTOR scale;
+    VECTOR temporary;
+    int count = ((CombRenderView *)player)->object_count;
+    GsDOBJ3 *objects = ((CombRenderView *)player)->objects;
+    int forward = ((CombRenderView *)player)->forward_order;
+    int shift;
+    int i;
+    int offset;
+    GsDOBJ3 *object;
+    SVECTOR rotation;
+    int value;
+    int invalid;
+
+    saved = ((CombRenderView *)player)->coordinate.coord;
+    shift = D_80099ED0 + 3;
+    memset_800449E8((unsigned char *)&temporary, 0, sizeof(temporary));
+    temporary.vx = (&D_8009FF88)[index];
+    temporary.vy = (&D_8009FF88)[index];
+    temporary.vz = (&D_8009FF88)[index];
+    i = 0;
+    scale = temporary;
+    ScaleMatrix(&((CombRenderView *)player)->coordinate.coord, &scale);
+    func_8005ED84(player);
+    if (count > 0) {
+        offset = 0;
+        do {
+            object = (GsDOBJ3 *)((unsigned char *)objects + offset);
+            if (forward == 0) {
+                value = count - 1;
+                value -= i;
+                invalid = value * 24;
+                object = (GsDOBJ3 *)((unsigned char *)objects + invalid);
+            }
+            value = object->id;
+            invalid = -1;
+            if (value != invalid && object->pmd != 0) {
+                object->attribute = 0;
+                GsGetLws(object->coord2, &local_world, &local_screen);
+                GsSetLsMatrix(&local_screen);
+                GsSortObject3(object, ot, shift);
+            }
+            i++;
+            offset += sizeof(GsDOBJ3);
+        } while (i < count);
+    }
+    GsGetLs(&((CombRenderView *)player)->coordinate, &local_screen);
+    GsSetLsMatrix(&local_screen);
+    ot->org += 4;
+    func_8006AC7C(ot, player, shift);
+    ot->org -= 4;
+    ((CombRenderView *)player)->coordinate.coord = saved;
 }
