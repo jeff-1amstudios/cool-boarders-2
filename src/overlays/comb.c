@@ -119,6 +119,8 @@ extern int *D_800A5AE0;
 extern int D_800A4A7C[4];
 extern int D_8009FFA4;
 
+extern int func_8008DB08(int course, int *option, int active);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -829,4 +831,32 @@ unsigned int func_800600E8(unsigned int value, int time)
         }
     }
     return value;
+}
+
+// FUNCTION: COMB.BIN:0x800605A8
+int func_800605A8(void)
+{
+    int active = *(int *)(D_800A5D5C->unknown_16 + 2) != 3;
+    int result;
+    int *option;
+
+    if (((CombPlayerCheckpointView *)D_800A5B10[0])->side ==
+        ((CombPlayerCheckpointView *)D_800A5B10[1])->side) {
+        *(long *)&D_8009FF94 = -1;
+    }
+    option = &D_8009FF90;
+    result = func_8008DB08(D_800A5D5C->course, option, active);
+    D_800A5D5C->option = *option;
+    if (result != 1) {
+        if (result < 2) {
+            if (result == 0) {
+                result = 2;
+            } else {
+                result = 0;
+            }
+        } else {
+            result = 0;
+        }
+    }
+    return result;
 }
