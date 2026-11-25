@@ -153,6 +153,8 @@ extern int func_800702F4(CombSurfaceState *surface, int heading);
 extern int D_80098204;
 extern int D_80098208;
 
+extern void func_80096580(SVECTOR *source, SVECTOR *destination);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2146,4 +2148,40 @@ void func_80062C94(CombPlayerImpulseView *player, int alternate)
     else
         impulse = -D_80098204;
     player->acceleration_y += (impulse * (player->parameters->scale >> 6)) / 64;
+}
+
+// FUNCTION: COMB.BIN:0x80062CF8
+void func_80062CF8(CombPlayerDirectionalImpulseView *player, int mode)
+{
+    int impulse;
+    int x;
+    int z;
+    SVECTOR offset;
+
+    impulse = 0x64000;
+    if (player->direction == 0)
+        impulse = -0x64000;
+    x = 0;
+    z = 0;
+    switch (mode) {
+    case 0:
+        z = (impulse >> 4) / 900;
+        break;
+    case 1:
+        z = (-impulse >> 4) / 900;
+        break;
+    case 2:
+        x = (-impulse >> 4) / 900;
+        break;
+    case 3:
+        x = (impulse >> 4) / 900;
+        break;
+    }
+    offset.vx = x;
+    offset.vy = 0;
+    offset.vz = z;
+    func_80096580(&offset, &offset);
+    player->acceleration_x += offset.vx * 0x3840;
+    player->acceleration_y += offset.vy * 0x3840;
+    player->acceleration_z += offset.vz * 0x3840;
 }

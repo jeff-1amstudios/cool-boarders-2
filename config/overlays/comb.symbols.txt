@@ -161,3 +161,5 @@ func_80062694 = 0x80062694; // type:func
 func_80062C94 = 0x80062C94; // type:func
 D_80098204 = 0x80098204; // type:s32 size:0x4
 D_80098208 = 0x80098208; // type:s32 size:0x4
+func_80062CF8 = 0x80062CF8; // type:func
+func_80096580 = 0x80096580; // type:func

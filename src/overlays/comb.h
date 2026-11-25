@@ -640,4 +640,15 @@ typedef struct CombPlayerImpulseView {
 
 void func_80062C94(CombPlayerImpulseView *player, int alternate);
 
+typedef struct CombPlayerDirectionalImpulseView {
+    unsigned char unknown_0000[0xC54];
+    short direction;
+    unsigned char unknown_0c56[0x3C82];
+    int acceleration_x;
+    int acceleration_y;
+    int acceleration_z;
+} CombPlayerDirectionalImpulseView;
+
+void func_80062CF8(CombPlayerDirectionalImpulseView *player, int mode);
+
 #endif
