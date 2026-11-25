@@ -139,6 +139,9 @@ extern int D_80098200;
 extern void func_8006FC8C(CombSurfaceState *surface, VECTOR *position);
 
 extern void func_8002EE40(long projection);
+extern void func_800966A8(SVECTOR *rotation);
+extern int func_80060E14(CombCameraPlayerView *player, int value, int update);
+extern void func_80061440(CombCameraPlayerView *player, int speed, int update);
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -1413,4 +1416,140 @@ void func_80060940(CombPlayerCameraView *player, int mode)
         state->camera_mode = 4;
         break;
     }
+}
+
+// FUNCTION: COMB.BIN:0x80061E48
+int func_80061E48(CombCameraPlayerView *player, int update)
+{
+    CombCameraControl *camera = (CombCameraControl *)player->motion;
+    int angle_b = player->angle_b;
+    int angle_a = player->angle_a;
+    int mode = camera->mode;
+    int result = 0;
+    int roll;
+    int step;
+    int value;
+    int yaw;
+    int speed;
+    int lean;
+    int state;
+    int saved_z;
+    int saved_x;
+    CombCameraControl *transform;
+
+    if (player->pose->amount >= 0) {
+        roll = 0;
+        func_80061C20((CombPosePlayer *)player);
+        goto apply_view;
+    }
+    step = camera->transition;
+    if (step >= 0) {
+        step++;
+        if (step < 4) {
+            roll = 100;
+            if (mode == 0) {
+                camera->height = 250 + step * roll / 4;
+                camera->view.vpz = step << 7;
+                camera->view.vrz = 0;
+            } else {
+                state = 4 - step;
+                camera->height = 250 + state * roll / 4;
+                camera->view.vpz = state << 7;
+                camera->view.vrz = 0;
+            }
+            camera->previous_height = camera->height;
+            mode = 1;
+        } else {
+            func_80060940((CombPlayerCameraView *)player, mode);
+            step = -1;
+        }
+        camera->transition = step;
+    }
+    state = player->state;
+    if (state >= 44) state -= 42;
+    result = -1;
+    switch (mode) {
+    case 2:
+        transform = (CombCameraControl *)player->motion;
+        transform->coordinate.coord = D_80058E20;
+        RotMatrixX(1024, &transform->coordinate.coord);
+        transform->coordinate.coord.t[1] = -1000;
+        transform->coordinate.super = 0;
+        transform->coordinate.flg = 0;
+        transform->saved_height = player->height;
+        camera->word_190 = 0;
+        break;
+    case 5:
+        camera->word_190 = 0;
+        break;
+    case 1:
+        if (state == 7) {
+            yaw = player->camera_yaw;
+            if (player->direction == 0) value = yaw + 170;
+            else value = yaw - 170;
+            player->camera_yaw = value;
+        } else if (state == 8) {
+            player->camera_yaw = player->yaw + player->camera_yaw - ((player->yaw + player->camera_yaw) >> 2);
+        } else {
+            player->camera_yaw = player->yaw;
+        }
+        step = player->yaw;
+        value = player->camera_yaw;
+        saved_x = (unsigned short)player->rotation.vx;
+        saved_z = (unsigned short)player->rotation.vz;
+        player->rotation.vx = 0;
+        player->rotation.vz = 0;
+        value = (value << 20) >> 20;
+        player->camera_yaw = value;
+        player->yaw = value;
+        func_800966A8(&player->rotation);
+        player->rotation.vx = saved_x;
+        player->rotation.vz = saved_z;
+        camera->word_190 = func_80060E14(player, camera->word_190, update);
+        player->yaw = step;
+        break;
+    case 0:
+        roll = player->velocity.vx >> 6;
+        step = roll * roll;
+        roll = player->velocity.vz >> 6;
+        speed = SquareRoot12(step + roll * roll);
+        func_80061440(player, ((speed * 36 / 10) * 17) / 11, update);
+        camera->word_190 = 0;
+        break;
+    case 6:
+        roll = player->velocity.vx >> 6;
+        step = roll * roll;
+        roll = player->velocity.vz >> 6;
+        speed = SquareRoot12(step + roll * roll);
+        func_80061440(player, ((speed * 36 / 10) * 17) / 11, update);
+        speed = camera->coordinate.coord.t[1];
+        camera->word_190 = 0;
+        camera->coordinate.coord.t[1] = speed + 50;
+        break;
+    }
+camera_ready:
+    if (update == 0) {
+        if (camera->mode == 1) {
+            if (player->direction != 0) lean = player->lean;
+            else lean = -player->lean;
+            roll = lean * 360;
+            if (angle_a != 0) {
+                step = (angle_b - angle_a) * (90 - roll / 4096) * 128;
+                roll += step;
+            }
+            camera->view.rz = roll;
+            goto apply_view;
+        }
+        roll = 0;
+        if (camera->mode != 5) {
+            camera->view.rz = 0;
+            goto apply_view;
+        }
+    }
+    roll = camera->view.rz;
+apply_view:
+    camera->view.super->flg = 0;
+    GsSetRefView2L(&camera->view);
+    camera->view.rz = roll;
+    return result;
 }

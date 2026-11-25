@@ -404,4 +404,47 @@ typedef struct CombPlayerCameraView {
 
 void func_80060940(CombPlayerCameraView *player, int mode);
 
+typedef struct CombCameraControl {
+    short mode;
+    unsigned char unknown_002[6];
+    short transition;
+    unsigned char unknown_00a[2];
+    GsRVIEW2 view;
+    SVECTOR rotation;
+    GsCOORDINATE2 coordinate;
+    short height;
+    short previous_height;
+    unsigned char unknown_088[0x108];
+    int word_190;
+    unsigned char unknown_194[0x10];
+    int saved_height;
+} CombCameraControl;
+
+typedef struct CombCameraPlayerView {
+    unsigned char unknown_000[0x24];
+    int lean;
+    unsigned char unknown_028[0x14];
+    short height;
+    unsigned char unknown_03e[0x19A];
+    SVECTOR rotation;
+    unsigned char unknown_1e0[0x4E4];
+    int state;
+    unsigned char unknown_6c8[0x10];
+    CombMotionState *motion;
+    unsigned char unknown_6dc[0x64];
+    short angle_a;
+    short angle_b;
+    unsigned char unknown_744[0x510];
+    short direction;
+    unsigned char unknown_c56[0x5A];
+    short yaw;
+    short camera_yaw;
+    unsigned char unknown_cb4[0x3C34];
+    VECTOR velocity;
+    unsigned char unknown_48f8[0x28];
+    CombPoseInput *pose;
+} CombCameraPlayerView;
+
+int func_80061E48(CombCameraPlayerView *player, int update);
+
 #endif
