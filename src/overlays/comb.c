@@ -110,6 +110,9 @@ extern void func_8006AB40(GsOT *ot, unsigned int value, int first, int second);
 extern void func_8006C4AC(GsOT *ot, int first, int second, int value);
 extern void func_8006AB94(GsOT *ot, int shift);
 
+extern int func_8006A9EC(GsOT *ot, CombPlayerRenderStateView *player,
+                         unsigned int mask, int first, int second);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -697,4 +700,24 @@ void func_8005F23C(GsOT *ot, CombPlayer *player, int first, int second)
             if (mode > 5) func_8006AB94(ot, shift);
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x8005FB48
+void func_8005FB48(int mode, unsigned int mask)
+{
+    CombPlayerRenderStateView *player;
+    unsigned int active_mask;
+    int index = 0;
+    int zero = 0;
+    GsOT **current = D_800A5D0C;
+
+    do {
+        player = (CombPlayerRenderStateView *)D_800A5B10[index];
+        active_mask = 0;
+        if (index == 0 && mode == 2) {
+            active_mask = mask & -(unsigned int)(*player->surface != 3);
+        }
+        player->result = func_8006A9EC(*current, player, active_mask, zero, zero);
+        index++;
+    } while (index < 2);
 }

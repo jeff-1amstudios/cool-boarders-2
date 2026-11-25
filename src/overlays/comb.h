@@ -163,4 +163,13 @@ typedef struct CombPlayerRaceHudView {
     CombRaceStateView *race;
 } CombPlayerRaceHudView;
 
+typedef struct CombPlayerRenderStateView {
+    unsigned char unknown_000[0x1E0];
+    int result;
+    unsigned char unknown_1e4[0x4F4];
+    short *surface;
+} CombPlayerRenderStateView;
+
+void func_8005FB48(int mode, unsigned int mask);
+
 #endif
