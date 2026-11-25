@@ -594,6 +594,8 @@ class Runner:
             'Do not install tools, read outside the repository, or discover instruction files. '
             'Preserve every accepted function, declaration, type, symbol, and data/code boundary from main. '
             'Carry forward the selected function candidate, its types/declarations and its measured table splits. '
+            'Preserve the accepted main header prefix byte-for-byte, including blank lines; '
+            'append candidate-only types and prototypes immediately before its final #endif. '
             'Reconcile compatible additions; do not choose one whole file over the other. '
             'Preserve the selected algorithm; reconcile candidate-only type names/prototypes when needed. '
             'Do not change compiler settings, tools, references, or unrelated source. '
