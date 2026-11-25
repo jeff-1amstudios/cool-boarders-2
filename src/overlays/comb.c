@@ -1186,6 +1186,98 @@ int func_80060C24(CombMotionState *state, int sample, int target)
     return target;
 }
 
+// FUNCTION: COMB.BIN:0x80061440
+void func_80061440(CombCameraPlayerView *camera_player, int progress, int frozen)
+{
+    CombPlayerMotionView *player = (CombPlayerMotionView *)camera_player;
+    VECTOR delta;
+    short saved_state;
+    short airborne;
+    CombMotionState *state;
+    CombMotionSample *current;
+    CombMotionSample *next;
+    VECTOR *position;
+    long slope;
+    int heading;
+    int height;
+    int angle;
+    int index;
+    int bounded;
+    int difference;
+    int mode;
+
+    state = player->motion;
+    saved_state = player->state;
+    mode = (unsigned short)state->mode;
+    heading = state->value;
+    height = state->negative_height;
+    airborne = player->airborne;
+    position = &player->position;
+    if (!frozen) {
+        index = state->selected - 3;
+        if (index < 0) index = state->selected + 1;
+        current = &state->samples[state->selected];
+        next = &state->samples[index];
+        difference = current->x - next->x;
+        angle = difference * difference;
+        difference = current->z - next->z;
+        angle = SquareRoot0(angle + difference * difference);
+        if (angle >= 11) angle = ratan2(current->y - next->y, angle);
+        else angle = 0;
+        slope = angle * 3600 >> 12;
+        if (slope > 0) {
+            slope = slope > 800 ? 800 : slope;
+        } else {
+            slope = slope < -800 ? -800 : slope;
+        }
+        mode = func_80060C24(state, slope, (short)mode);
+        index = state->selected + 1;
+        current = state->samples;
+        if (index < 4) current += index;
+        delta.vx = current->x - position->vx;
+        delta.vy = current->y - position->vy;
+        delta.vz = current->z - position->vz;
+        if (player->progress < progress) {
+            slope = ratan2(delta.vx, delta.vz);
+        } else if (player->reverse == 0) {
+            slope = player->heading;
+        } else {
+            slope = player->heading - 2048;
+        }
+        difference = slope - heading;
+        difference = difference << 20 >> 20;
+        if ((unsigned int)(difference + 91) > 182) {
+            if (difference > 0) heading += 91;
+            else heading -= 91;
+        } else heading = slope;
+        heading = heading << 20 >> 20;
+        if (player->vertical_motion < 0 && airborne != 0) {
+            height += 10;
+            difference = -state->unknown_086;
+            bounded = difference < height;
+        } else {
+            height -= 5;
+            difference = -state->height;
+            bounded = height < difference;
+        }
+        if (bounded) height = difference;
+    }
+    ((CombMotionTransformView *)state)->matrix = D_80058E20;
+    slope = ((short)mode << 12) / 3600;
+    RotMatrixX(slope, &((CombMotionTransformView *)state)->matrix);
+    RotMatrixY(heading, &((CombMotionTransformView *)state)->matrix);
+    ((CombMotionTransformView *)state)->matrix.t[1] = height;
+    ((CombMotionTransformView *)state)->word_7c = 0;
+    ((CombMotionTransformView *)state)->word_34 = 0;
+    ((CombMotionTransformView *)state)->rotation.vx = slope;
+    ((CombMotionTransformView *)state)->rotation.vy = heading;
+    ((CombMotionTransformView *)state)->rotation.vz = 0;
+    state->mode = mode;
+    state->value = heading;
+    state->negative_height = height;
+    *(int *)(state + 1) = saved_state;
+}
+
 // FUNCTION: COMB.BIN:0x80060E14
 int func_80060E14(CombCameraPlayerView *camera_player, int active, int frozen)
 {

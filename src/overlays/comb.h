@@ -550,4 +550,32 @@ typedef union CombPitchWork {
     short *cursor;
 } CombPitchWork;
 
+typedef struct CombMotionTransformView {
+    unsigned char unknown_00[0x2C];
+    SVECTOR rotation;
+    int word_34;
+    MATRIX matrix;
+    unsigned char unknown_58[0x24];
+    int word_7c;
+} CombMotionTransformView;
+
+typedef struct CombPlayerMotionView {
+    unsigned char unknown_0000[0x2C];
+    VECTOR position;
+    short state;
+    short airborne;
+    unsigned char unknown_0040[0x19A];
+    short heading;
+    unsigned char unknown_01dc[0x4FC];
+    CombMotionState *motion;
+    unsigned char unknown_06dc[0x28];
+    int progress;
+    unsigned char unknown_0708[0x54C];
+    short reverse;
+    unsigned char unknown_0c56[0x3C96];
+    int vertical_motion;
+} CombPlayerMotionView;
+
+void func_80061440(CombCameraPlayerView *player, int progress, int frozen);
+
 #endif
