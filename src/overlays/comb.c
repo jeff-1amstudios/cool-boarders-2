@@ -953,3 +953,16 @@ void func_800607B4(CombMotionState *state, short mode, int value, int x, int y, 
     state->word_1a0 = 0;
     ReadGeomOffset(&D_800A5D60, &D_800A5D68);
 }
+
+// FUNCTION: COMB.BIN:0x80060BD8
+void func_80060BD8(CombMotionState *state, int *position)
+{
+    unsigned int selected;
+
+    selected = state->selected + 1;
+    selected &= -(unsigned int)((int)selected < 4);
+    state->selected = selected;
+    state->samples[selected].x = position[0];
+    state->samples[selected].y = position[1];
+    state->samples[selected].z = position[2];
+}
