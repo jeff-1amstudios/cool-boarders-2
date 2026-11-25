@@ -653,8 +653,11 @@ class Runner:
             f"Work on existing branch {active['branch']}; Python owns branch switches and commits.\n"
             f"Read {context_directory / 'context.json'} and {context_directory / 'target.s'}.\n"
             + starting_point
-            + f"Fresh reference pseudocode: {context_directory / 'ghidra/target.ghidra.c'}.\n"
-            f"Consult relevant cached types in {context_directory / 'ghidra/ghidra-types.h'} and read current image header "
+            + ("No Ghidra decompiler export is needed for this layout-only pass; use the saved C and target assembly.\n"
+               if layout_repair else
+               f"Fresh reference pseudocode: {context_directory / 'ghidra/target.ghidra.c'}.\n"
+               f"Consult relevant cached types in {context_directory / 'ghidra/ghidra-types.h'}.\n")
+            + "Read current image header "
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
             f"Implement only this function in {source_file(active)}, with // FUNCTION: {key(active)}; "
             "replace its existing block when restarting from an accepted donor, preserving all other blocks.\n"
@@ -713,6 +716,37 @@ class Runner:
             raise failure
         if self.agent_tokens:
             return usage(directory / 'agent.log').get('budget_stop')
+
+    def matching_saved_candidate(self, session):
+        """Recompile an existing branch candidate before requesting decompiler output."""
+        active = session['active']
+        directory = self.w.ROOT / active['context']
+        if (directory / 'reuse.json').exists():
+            return False  # The authorized donor workflow still takes precedence.
+        source = self.w.ROOT / source_file(active)
+        if not source.is_file() or key(active) not in sections(source.read_text())[1]:
+            return False
+        saved = resume_candidate(self.w.ROOT, active)
+        if saved and saved['previous_body_sha256'] == active.get('body_sha256'):
+            previous = self.w.ROOT / saved['previous_context']
+            for name in ('knowledge.md', 'ghidra-update.json'):
+                if (previous / name).is_file():
+                    shutil.copy2(previous / name, directory / name)
+        # The compiler check must be fresh; archived scores cannot select this path.
+        report = directory / 'object-report.json'
+        report.unlink(missing_ok=True)
+        try:
+            self.w.command([sys.executable, 'tools/decomp_step.py', '--context',
+                            str(directory / 'context.json')], 'retry-object-check',
+                           directory=directory, timeout=300)
+            matched = json.loads(report.read_text())['units'][0]['measures'].get('fuzzy_match_percent') == 100.0
+        except (RuntimeError, OSError, ValueError, KeyError, IndexError):
+            matched = False
+        self.invariant(session)
+        if matched:
+            print(f'Saved candidate freshly matches 100%; skipping Ghidra decompilation for {key(active)}', flush=True)
+            return True
+        return False
 
     def candidate(self, session, tracked, before, old_symbols, prior_c, *, layout_repair=False):
         active = session["active"]
@@ -1125,17 +1159,6 @@ class Runner:
             self.w.save_state(session)
             number = len(session["completed"]) + len(session["deferred"]) + 1
             print(f"\nTarget {number}/{session['limit']}: {key(active)} ({active['size']} bytes)", flush=True)
-            if not active.get('boundary_findings'):
-                from decomp_ghidra import export
-                try:
-                    export(self.w, active, sync_types=sync_types_pending)
-                    sync_types_pending = False
-                except BaseException:
-                    # An unavailable/locked Ghidra project is infrastructure
-                    # failure, not evidence against reconstructing this target.
-                    session.update(stop_reason='Fresh Ghidra export failed before agent launch')
-                    self.w.save_state(session)
-                    raise
             self.start_branch(session)
             baseline = session["integration_head"]
             before = yaml.safe_load(self.w.git("show", f"{baseline}:{active.get('build_config', 'scus_943.58.yaml')}"))
@@ -1148,7 +1171,16 @@ class Runner:
                 if session["active"].get("boundary_findings"):
                     launched = True
                     raise Rejected("Selected-target split blocker: " + json.dumps(session["active"]["boundary_findings"]))
-                budget_stop = self.launch(session)
+                if not self.matching_saved_candidate(session):
+                    from decomp_ghidra import export
+                    try:
+                        export(self.w, active, sync_types=sync_types_pending)
+                        sync_types_pending = False
+                    except (RuntimeError, OSError) as error:
+                        session.update(stop_reason='Fresh Ghidra export failed before agent launch')
+                        self.w.save_state(session)
+                        raise AgentUnavailable('Fresh Ghidra export failed before agent launch: ' + str(error)) from error
+                    budget_stop = self.launch(session)
                 launched = True
                 self.invariant(session)
                 paths, expected_hashes = self.candidate(session, tracked, before, old_symbols, prior_c)

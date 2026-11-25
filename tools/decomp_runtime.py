@@ -164,7 +164,10 @@ def usage(path):
         for name, count in repair['tokens'].items():
             counts[name] = counts.get(name, 0) + count
         result['tokens'] = counts
-        result['complete'] = result['complete'] and repair['complete']
+        result['complete'] = (result['complete'] or not path.exists()) and repair['complete']
+        for field in ('model', 'effort'):
+            if field not in result and field in repair:
+                result[field] = repair[field]
         result['error'] = repair['error'] or result['error']
         result['message'] = repair['message'] or result['message']
         if repair.get('budget_stop'):

@@ -28,6 +28,14 @@ Use a headless edit → validate → inspect → iterate workflow. Add/edit C an
 
 For automatic batches, supply each worker a fresh headless Ghidra decompilation with SDK names/types and current accepted analysis. Keep one persistent branch per function. On retry, update that branch with current main and edit its existing candidate directly in the regular image source; never delete/recreate the branch. Use archived candidates only when the branch has no saved function. Resume its diagnostics/notes, including across batches; use fresh Ghidra output as reference rather than replacing prior work. Reconcile candidate declarations and boundaries with current main, and record concrete reasons for discarding any prior work. Start from Ghidra pseudocode only when no saved candidate exists. The worker iterates only on its selected function with `decomp_step.py`; the supervisor owns containing-file validation, commits and transactional Ghidra feedback. Persist accepted types, global typings and prototypes for subsequent decompilations. Failed candidates must not update the saved analysis.
 
+User-authorized layout-retry exception: merge the persistent candidate branch
+before exporting decompiler output. Recompile an existing candidate first; if its
+fresh selected-object diagnostic is 100%, skip Ghidra decompilation and the C
+reconstruction worker. Run containing-file validation and, if needed, the layout
+repair agent directly from the saved C, assembly and prior evidence. Ghidra
+feedback planning/import after exact acceptance remains required. Below 100%,
+retain the fresh Ghidra export requirement for reconstruction workers.
+
 Do not add or run unit tests unless the user explicitly requests them. Verify changes with focused headless Ghidra runs and the required exact binary comparisons.
 
 User-authorized donor-reuse exception: when an accepted C function has the same exact or normalized assembly fingerprint, use that donor as the starting point even on a deferred-function retry. It takes precedence over the existing branch/archived candidate. Keep the persistent branch and its history; preserve prior source and notes for reference, replace only the selected function block, and record the donor and replacement reason. Compile the minimally adapted donor before changing its algorithm. All source-scope, fresh Ghidra and exact containing-file acceptance requirements still apply.

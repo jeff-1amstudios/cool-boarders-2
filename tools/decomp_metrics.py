@@ -26,8 +26,10 @@ def atomic_text(path, text):
 def timing(directory):
     """Old log mtimes approximate launcher wall time, never exact model time."""
     measured = read(directory / 'worker-timing.json')
+    repair = read(directory / 'layout-repair/worker-timing.json')
+    if not measured and repair:
+        return dict(repair, layout_repair=repair)
     if measured:
-        repair = read(directory / 'layout-repair/worker-timing.json')
         if repair:
             measured = dict(measured, finished_at=repair['finished_at'],
                             seconds=round(measured['seconds'] + repair['seconds'], 3),
