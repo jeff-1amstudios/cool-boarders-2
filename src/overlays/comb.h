@@ -612,4 +612,19 @@ void func_80062694(CombSpeedPlayer *player, int braking, int half_speed,
 
 int func_80062978(CombPlayerHeadingView *player, int turn_step, int divisor);
 
+typedef struct CombPlayerSlopeView {
+    unsigned char unknown_000[0x28];
+    CombSurfaceState surface;
+    unsigned char unknown_080[0xB0];
+    CombSurfaceState alternate_surface;
+    unsigned char unknown_188[0x52];
+    short heading;
+    unsigned char unknown_1dc[0x4FC];
+    CombMotionState *motion;
+    unsigned char unknown_6dc[0x5E4];
+    int history_index;
+} CombPlayerSlopeView;
+
+unsigned int func_80062B2C(CombPlayerSlopeView *player);
+
 #endif

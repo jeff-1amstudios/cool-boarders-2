@@ -148,6 +148,8 @@ extern void func_8001E468(int bank, int category, int row);
 extern void func_800962A0(int *destination, int *source);
 extern int func_80095530(short x, short z);
 
+extern int func_800702F4(CombSurfaceState *surface, int heading);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2078,4 +2080,55 @@ int func_80062978(CombPlayerHeadingView *player, int turn_step, int divisor)
     player->motion_x = motion_x >> 12;
     player->motion_z = motion_z >> 12;
     return -(magnitude < 0x400);
+}
+
+// FUNCTION: COMB.BIN:0x80062B2C
+unsigned int func_80062B2C(CombPlayerSlopeView *player)
+{
+    int index;
+    CombSurfaceState *surface;
+    int heading;
+    int *history_a;
+    int *history_b;
+    int first;
+    int second;
+    int i;
+    int value_a;
+    int value_b;
+    int *cursor_a;
+    int *cursor_b;
+
+    index = player->history_index % 16;
+    if (player->alternate_surface.word_18 == 0)
+        surface = &player->surface;
+    else
+        surface = &player->alternate_surface;
+    heading = (player->heading << 20) >> 20;
+    history_a = player->motion->history_a;
+    history_b = player->motion->history_b;
+    first = (short)func_800702F4(surface, heading);
+    second = (short)func_800702F4(surface, ((heading - 1024) << 20) >> 20);
+    if (surface->mode == 0) {
+        history_a[index] = first;
+        history_b[index] = second;
+    } else {
+        history_b[index] = 0;
+    }
+    first = 0;
+    second = 0;
+    i = 0;
+    cursor_b = history_b;
+    cursor_a = history_a;
+    do {
+        value_b = *cursor_b++;
+        value_a = *cursor_a++;
+        i++;
+        first += value_a;
+        second += value_b;
+    } while (i < 16);
+    first /= 16;
+    second /= 16;
+    second = (second << 20) >> 20;
+    first = (first << 20) >> 20;
+    return (first << 16) | (second & 0xFFFF);
 }
