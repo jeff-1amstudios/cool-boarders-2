@@ -2032,3 +2032,50 @@ void func_80062694(CombSpeedPlayer *player, int braking, int half_speed,
         }
     }
 }
+
+// FUNCTION: COMB.BIN:0x80062978
+int func_80062978(CombPlayerHeadingView *player, int turn_step, int divisor)
+{
+    long motion_x = player->motion_x;
+    int difference = motion_x >> 6;
+    int speed = difference * difference;
+    long motion_z = player->motion_z;
+    short heading = player->heading;
+    int magnitude;
+    int folded;
+    int temporary;
+
+    difference = motion_z >> 6;
+    speed += difference * difference;
+    speed = SquareRoot12(speed);
+    motion_z = ratan2(-motion_x, -motion_z);
+    temporary = (unsigned short)heading;
+    temporary <<= 16;
+    temporary >>= 16;
+    temporary = motion_z - temporary;
+    temporary <<= 20;
+    difference = temporary >> 20;
+    magnitude = __builtin_abs(difference);
+    folded = magnitude;
+    if (magnitude > 0x400)
+        folded = 0x800 - magnitude;
+    speed = speed * (0x400 - folded / divisor) >> 10;
+    if (turn_step < folded) {
+        difference = difference < 0 ? -turn_step : turn_step;
+        if (magnitude >= 0x400)
+            motion_z += difference;
+        else
+            motion_z -= difference;
+    } else {
+        if (magnitude < 0x400)
+            motion_z = (short)heading;
+        else {
+            motion_z = ((heading - 0x800) << 20) >> 20;
+        }
+    }
+    motion_x = -(speed * rsin(motion_z));
+    motion_z = -(speed * rcos(motion_z));
+    player->motion_x = motion_x >> 12;
+    player->motion_z = motion_z >> 12;
+    return -(magnitude < 0x400);
+}

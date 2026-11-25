@@ -610,4 +610,6 @@ typedef struct CombSpeedPlayer {
 void func_80062694(CombSpeedPlayer *player, int braking, int half_speed,
                    int strong, int timer_mode, int scale);
 
+int func_80062978(CombPlayerHeadingView *player, int turn_step, int divisor);
+
 #endif
