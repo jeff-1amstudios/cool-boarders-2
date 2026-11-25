@@ -22,7 +22,7 @@ options:
   o_as_suffix: true
   use_legacy_include_asm: false
   migrate_rodata_to_functions: false
-  section_order: [.rodata, .text, .data, .bss]
+  section_order: [.text, .rodata, .data, .bss]
   symbol_addrs_path: [config/overlays/comb.symbols.txt]
   reloc_addrs_path: []
   undefined_funcs_auto_path: build/overlays/comb/undefined_funcs.txt
@@ -40,7 +40,10 @@ segments:
   start: 0x0
   vram: 0x8005ab68
   subsegments:
-  - [0x0, rodata, header]
+  - start: 0x0
+    type: rodata
+    name: header
+    linker_section_order: .text
   - [0x4, asm, body]
   - [0x33c, c, func_8005AEA4]
   - [0x3c8, asm, body_3c8]

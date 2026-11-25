@@ -276,6 +276,14 @@ boundaries, options, declarations and compiler settings remain protected. This
 addresses cases such as a compiler-emitted switch table being linked before code
 while its original bytes remain in retained data.
 
+COMB uses `.text` before `.rodata` in Splat's section order, with its retained
+four-byte header explicitly ordered in `.text` and selected switch tables ordered
+in `.data` at their original offsets. With `.rodata` first, pinned Splat can use a
+later explicit table as the same-name function's base segment, generating a bogus
+`src/.../func.s` reference input and duplicate table placement. The text-first
+configuration keeps the function as the base and preserves the original BIN
+layout; the header remains retained data, not authored C.
+
 The first failure's reports and candidate archive are preserved under
 `<attempt>/layout-repair/before/`; the follow-up has its own prompt, agent log and
 timing under `layout-repair/`. Token totals and worker time include both agents.
