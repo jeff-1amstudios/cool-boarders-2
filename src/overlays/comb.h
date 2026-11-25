@@ -231,4 +231,6 @@ int func_80060660(CombPlayerCheckpointView *player);
 
 void func_800606F0(void);
 
+void func_80060728(void);
+
 #endif

@@ -128,3 +128,6 @@ func_800606F0 = 0x800606F0; // type:func
 func_80015F68 = 0x80015F68; // type:func
 func_800172B8 = 0x800172B8; // type:func
 SpuSetKey = 0x8003F3F4; // type:func
+func_80060728 = 0x80060728; // type:func
+func_80015F98 = 0x80015F98; // type:func
+func_800173C0 = 0x800173C0; // type:func

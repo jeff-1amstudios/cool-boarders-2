@@ -124,6 +124,9 @@ extern int func_8008DB08(int course, int *option, int active);
 extern int func_80015F68(void);
 extern void func_800172B8(void);
 
+extern int func_80015F98(void);
+extern void func_800173C0();
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -896,4 +899,16 @@ void func_800606F0(void)
     func_80015F68();
     func_800172B8();
     SpuSetKey(0, 0x780FF);
+}
+
+// FUNCTION: COMB.BIN:0x80060728
+void func_80060728(void)
+{
+    int selected;
+
+    func_80015F98();
+    selected = *(short *)D_800A5D5C->unknown_16;
+    if (selected >= 0) {
+        func_800173C0(selected, 2);
+    }
 }
