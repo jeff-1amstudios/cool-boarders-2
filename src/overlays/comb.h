@@ -378,4 +378,30 @@ typedef struct CombPlayerSurfaceMotionView {
 
 void func_800608D4(CombPlayerSurfaceMotionView *player);
 
+typedef struct CombCameraModeView {
+    short camera_mode;
+    unsigned char unknown_002[8];
+    unsigned short projection;
+    GsRVIEW2 view;
+    SVECTOR rotation;
+    GsCOORDINATE2 camera_coordinate;
+    short height;
+    short unknown_086;
+} CombCameraModeView;
+
+typedef struct CombPlayerCameraView {
+    int unknown_0000;
+    int x;
+    int y;
+    int z;
+    unsigned char unknown_0010[0x20];
+    int target_y;
+    unsigned char unknown_0034[0x6A4];
+    CombCameraModeView *camera;
+    unsigned char unknown_06dc[0x4242];
+    signed char secondary_view;
+} CombPlayerCameraView;
+
+void func_80060940(CombPlayerCameraView *player, int mode);
+
 #endif

@@ -138,6 +138,8 @@ extern int D_800981FC;
 extern int D_80098200;
 extern void func_8006FC8C(CombSurfaceState *surface, VECTOR *position);
 
+extern void func_8002EE40(long projection);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -1274,4 +1276,141 @@ void func_800608D4(CombPlayerSurfaceMotionView *player)
     }
     motion->heading = heading;
     motion->reset = 0;
+}
+
+// FUNCTION: COMB.BIN:0x80060940
+void func_80060940(CombPlayerCameraView *player, int mode)
+{
+    CombCameraModeView *state = player->camera;
+    int primary = -(player->secondary_view < 1);
+
+    switch (mode) {
+    case 5:
+        state = player->camera;
+        state->camera_mode = 5;
+        state->projection = 600;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpx = player->x;
+        state->view.vpy = (player->y + player->target_y) >> 1;
+        state->view.vpz = player->z;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        state->view.super = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        state->rotation.vx = 0;
+        state->rotation.vy = 0;
+        state->rotation.vz = 0;
+        break;
+    case 2:
+        state->camera_mode = 2;
+        state->projection = 150;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpz = 512;
+        state->view.super = &state->camera_coordinate;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        state->rotation.vx = 0;
+        state->rotation.vy = 0;
+        state->rotation.vz = 0;
+        break;
+    case 1:
+        state->camera_mode = 1;
+        state->projection = 150;
+        state->height = 250;
+        state->unknown_086 = 250;
+        state->view.vrz = -512;
+        state->view.super = &state->camera_coordinate;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vpz = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        break;
+    case 0:
+        state->projection = 150;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpz = 512;
+        state->view.super = &state->camera_coordinate;
+        state->camera_mode = 0;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        break;
+    case 6:
+        state->camera_mode = 6;
+        state->projection = 250;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpz = 1024;
+        state->view.super = &state->camera_coordinate;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        break;
+    case 3:
+        state->camera_mode = 3;
+        state->projection = 150;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpz = 512;
+        state->view.super = &state->camera_coordinate;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        break;
+    case 4:
+        state->projection = 150;
+        state->height = 350;
+        state->unknown_086 = 200;
+        state->view.vpz = 512;
+        state->view.super = &state->camera_coordinate;
+        state->camera_mode = 0;
+        state->view.vpx = 0;
+        state->view.vpy = 0;
+        state->view.vrx = 0;
+        state->view.vry = 0;
+        state->view.vrz = 0;
+        state->view.rz = 0;
+        if (primary == -1) {
+            func_8002EE40(state->projection);
+        }
+        state->camera_mode = 4;
+        break;
+    }
 }
