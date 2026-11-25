@@ -10,6 +10,7 @@ viable matching C, not proof of the original source or a universal compiler reci
 | [Types and pointer arithmetic](types-and-pointers.md) | CdlLOC, alignment, struct copy, lw/sw, stride, narrow field, widened local; TYPE-001, TYPE-002 |
 | [Registers and stack layout](registers-and-stack.md) | lifetime, buffer scopes, frame size, saved registers, allocation priority, scratch reuse, indexed traversal, RTL/LLDB workflow; STACK-H001, REG-H001, REG-H002, REG-002, REG-003, REG-W001 |
 | [Optimization and toolchain](optimization.md) | division, traps, maspsx, provisional flags; OPT-001 |
+| [Layout and generated tables](layout-and-tables.md) | Splat, section order, switch table, rodata, missing reference source; LAYOUT-001 |
 
 ## Before an attempt
 
