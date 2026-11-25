@@ -70,6 +70,14 @@ do not install dependencies, change tools or perform repository maintenance.
   split configuration, add new symbols to its supplied symbol file, and add
   headers only under its source directory. Do not change other source files,
   tools, reference bytes, compiler recipe, documentation or queue metadata.
+- When the supervisor assigns a layout-repair follow-up, preserve the matching
+  C and repair the selected function's generated data ownership. An explicit
+  `.rodata` dictionary may carve its table out of retained `data`/`rodata`:
+  name it after the selected C unit, set `linker_section_order` to the original
+  section (`.data` or `.rodata`), and retain explicit data boundaries before and
+  after the table. Establish the extent from pinned bytes and compiler output.
+  Preserve these ownership splits on later retries. Full-file validation stays
+  with the supervisor; do not edit generated linker scripts or assembly.
 - New symbols may be inserted anywhere in the supplied symbol file. Preserve
   existing definitions and their order; do not add duplicate symbol names.
 - Splat symbol metadata does not support `type:data`. For data symbols, omit

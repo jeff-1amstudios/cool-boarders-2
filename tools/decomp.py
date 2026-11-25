@@ -299,14 +299,22 @@ def validate(session):
     attempt = directory / "candidate"
     attempt.mkdir(parents=True, exist_ok=True)
     archive_edits(attempt, session.get("integration_head", "HEAD"))
+    image = active.get("image", "SCUS_943.58")
+    report_path = ROOT / 'reports/boot-rebuild.json' if image == 'SCUS_943.58' else ROOT / 'reports/overlay-rebuild' / (Path(active['build_config']).stem + '.json')
+    object_report = ROOT / 'reports/objdiff.json'
+    # A repair may launch only from this validation's diagnostics, including
+    # when make/compilation fails before validate.py clears its own reports.
+    for path in (report_path, object_report, directory / 'validation.json',
+                 directory / 'validation-object-report.json'):
+        path.unlink(missing_ok=True)
     try:
         # Validation has its own timeout, independent of the worker allowance.
         command(validation_command(active), "validate", directory=attempt, timeout=300)
     finally:
-        image = active.get("image", "SCUS_943.58")
-        report_path = ROOT / 'reports/boot-rebuild.json' if image == 'SCUS_943.58' else ROOT / 'reports/overlay-rebuild' / (Path(active['build_config']).stem + '.json')
         if report_path.exists():
             shutil.copy2(report_path, directory / 'validation.json')
+        if object_report.exists():
+            shutil.copy2(object_report, directory / 'validation-object-report.json')
         if active.get('unit'):
             diff = ROOT / 'reports/objdiff' / (active['unit'] + '.json')
             if diff.exists():

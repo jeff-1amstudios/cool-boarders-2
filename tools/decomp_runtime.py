@@ -156,6 +156,19 @@ def usage(path):
         result['effort'] = effort
     if budget_stop:
         result['budget_stop'] = budget_stop
+    repair_log = path.parent / 'layout-repair/agent.log'
+    if path.name == 'agent.log' and repair_log.is_file():
+        repair = usage(repair_log)
+        result['layout_repair'] = repair
+        counts = dict(result['tokens'])
+        for name, count in repair['tokens'].items():
+            counts[name] = counts.get(name, 0) + count
+        result['tokens'] = counts
+        result['complete'] = result['complete'] and repair['complete']
+        result['error'] = repair['error'] or result['error']
+        result['message'] = repair['message'] or result['message']
+        if repair.get('budget_stop'):
+            result['budget_stop'] = repair['budget_stop']
     return result
 
 
@@ -163,10 +176,12 @@ def attempt_result(root, row, status, reason=None):
     result = {k:row[k] for k in ('identity','image','address','name','size','context','branch','base_commit','commit','checkpoint') if k in row}
     directory = root / row['context']
     result.update(status=status, reason=reason, agent=usage(directory / 'agent.log'))
-    for field in ('agent_tokens', 'requested_model', 'requested_effort'):
+    for field in ('agent_tokens', 'requested_model', 'requested_effort', 'layout_repair'):
         if field in row:
             result[field] = row[field]
-    custom_report = directory / 'agent-last-message.txt'
+    custom_report = directory / 'layout-repair/agent-last-message.txt'
+    if not custom_report.exists():
+        custom_report = directory / 'agent-last-message.txt'
     if custom_report.exists():
         result['agent']['message'] = custom_report.read_text()
     from decomp_metrics import timing

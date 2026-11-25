@@ -138,6 +138,52 @@ def review_symbol_additions(before, after):
     return added
 
 
+def review_layout_data(expected, after, unit):
+    """Allow explicit ownership of selected-unit rodata inside retained data spans."""
+    for index, segment in enumerate(expected['segments']):
+        if not isinstance(segment, dict):
+            continue
+        rows = segment.get('subsegments', [])
+        proposed = after['segments'][index]['subsegments']
+        rebuilt = []
+        for i, row in enumerate(rows):
+            if not isinstance(row, list) or len(row) != 3 or row[1] not in ('data', 'rodata'):
+                rebuilt.append(row)
+                continue
+            low = row[0]
+            following = rows[i + 1] if i + 1 < len(rows) else expected['segments'][index + 1]
+            high = following[0] if isinstance(following, list) else following['start']
+            owned = [r for r in proposed if isinstance(r, dict) and r.get('type') == '.rodata'
+                     and r.get('name') == unit and isinstance(r.get('start'), int)
+                     and low <= r['start'] < high]
+            if not owned:
+                rebuilt.append(row)
+                continue
+            # Only the exact emitted extent may be carved out. A retained-data
+            # suffix is required so unrelated data cannot silently be swallowed.
+            cursor = low
+            for data in sorted(owned, key=lambda r: r['start']):
+                if set(data) != {'start', 'type', 'name', 'linker_section_order'} or data['linker_section_order'] != '.' + row[1]:
+                    raise Rejected('Selected rodata must retain the original data section order')
+                start = data['start']
+                if start < cursor or start % 4:
+                    raise Rejected('Invalid selected rodata boundary')
+                if cursor < start:
+                    rebuilt.append(row)
+                rebuilt.append(data)
+                suffix = next((r for r in proposed if isinstance(r, list) and len(r) == 3
+                               and r[1] == row[1] and start < r[0] <= high), None)
+                if suffix is None or not re.fullmatch(r'[A-Za-z_]\w*', str(suffix[2])):
+                    raise Rejected('Selected rodata needs an explicit retained-data end boundary')
+                cursor = suffix[0]
+                if cursor < high:
+                    # Preserve the supplied name, but no other retained layout changes.
+                    row = suffix
+            if cursor < high:
+                rebuilt.append(row)
+        segment['subsegments'] = rebuilt
+
+
 def review_split(before, after, target):
     """Permit only splitting the containing assembly span around the selected C unit."""
     expected = copy.deepcopy(before)
@@ -174,6 +220,8 @@ def review_split(before, after, target):
                     raise Rejected("Retained assembly must resume at the original function end")
                 replacement.append(suffix)
             expected["segments"][index]["subsegments"][i:i + 1] = replacement
+            # Also audit saved layout repairs when a persistent branch is retried.
+            review_layout_data(expected, after, selected[2])
             if after != expected:
                 raise Rejected("Split changed options, unrelated segments or boundaries")
             return source_file(target)
@@ -521,17 +569,26 @@ class Runner:
                 raise RuntimeError(f"Out-of-scope edit {name}; stopping without resetting the checkout")
         return sorted(changed)
 
-    def launch(self, session):
+    def launch(self, session, *, layout_repair=False):
         active = session["active"]
-        directory = self.w.ROOT / active["context"]
+        context_directory = self.w.ROOT / active["context"]
+        directory = context_directory / 'layout-repair' if layout_repair else context_directory
+        directory.mkdir(parents=True, exist_ok=True)
         # Ghidra/export time must not reduce the worker's own allowance.
         seconds = self.args.agent_seconds
         budget_note = (f"The supervisor also stops you at {self.agent_tokens:,} uncached input plus output "
                        "tokens. Save useful edits and evidence as you go.\n" if self.agent_tokens else "")
-        saved = resume_candidate(self.w.ROOT, active)
+        saved = None if layout_repair else resume_candidate(self.w.ROOT, active)
         current_source = self.w.ROOT / source_file(active)
         _, current_blocks = sections(current_source.read_text() if current_source.exists() else '')
-        if (directory / 'reuse.json').is_file():
+        if layout_repair:
+            starting_point = (
+                'The selected object reached 100% diagnostics, but the pinned full-file comparison failed.\n'
+                'Preserve its existing C implementation and repair its layout in place. '
+                f'Read {directory / "before/validation.json"}, the saved object diagnostics, candidate patch '
+                f'and candidate/validate.log under {directory / "before"}.\n'
+            )
+        elif (directory / 'reuse.json').is_file():
             reuse = json.loads((directory / 'reuse.json').read_text())
             if key(active) in current_blocks:
                 (directory / 'superseded-candidate.c').write_text(current_blocks[key(active)])
@@ -575,37 +632,55 @@ class Runner:
             f"Your only repository/workspace root is {self.w.ROOT.resolve()}.\n\n"
             + (self.w.ROOT / "FUNCTION_AGENTS.md").read_text()
         )
+        if layout_repair:
+            instructions += (
+                '\n\n# Layout-repair assignment\n'
+                'This follow-up repairs the already implemented selected function. Preserve its C, '
+                'shared declarations and types. Do not restart from Ghidra or a donor. '
+                'You may additionally carve selected-function read-only data out of retained data/rodata '
+                'in the supplied split config: use an explicit .rodata dictionary named after the C unit, '
+                'linker_section_order matching the original data section, and an explicit retained-data '
+                'suffix at the end. Preserve all unrelated boundaries, options and symbols. '
+                'Determine table extent and contents from pinned bytes and compiler output. '
+                'Do not edit generated assembly/linker scripts, reference bytes, tools or compiler settings. '
+                'Use decomp_step.py for selected-object diagnostics; Python reruns the full-file gate. '
+                'Write layout evidence and remaining blockers in the original attempt knowledge.md. '
+                'Do not overwrite ghidra-update.json unless correcting evidenced analysis.\n'
+            )
         prompt = (
             "# Selected function\n"
             f"Implement exactly {active['name']} at {key(active)} ({active['size']} bytes).\n"
             f"Work on existing branch {active['branch']}; Python owns branch switches and commits.\n"
-            f"Read {directory / 'context.json'} and {directory / 'target.s'}.\n"
+            f"Read {context_directory / 'context.json'} and {context_directory / 'target.s'}.\n"
             + starting_point
-            + f"Fresh reference pseudocode: {directory / 'ghidra/target.ghidra.c'}.\n"
-            f"Consult relevant cached types in {directory / 'ghidra/ghidra-types.h'} and read current image header "
+            + f"Fresh reference pseudocode: {context_directory / 'ghidra/target.ghidra.c'}.\n"
+            f"Consult relevant cached types in {context_directory / 'ghidra/ghidra-types.h'} and read current image header "
             f"{Path(source_file(active)).with_suffix('.h')}.\n"
             f"Implement only this function in {source_file(active)}, with // FUNCTION: {key(active)}; "
             "replace its existing block when restarting from an accepted donor, preserving all other blocks.\n"
             f"New headers belong under {source_dir(active)}. Split only this function in "
             f"{active.get('build_config', 'scus_943.58.yaml')}; add new symbols only to "
             f"{active.get('symbol_file', 'symbol_addrs.txt')}, preserving existing definitions.\n"
-            f"Use tools/.venv/bin/python tools/decomp_step.py --context {directory / 'context.json'}.\n"
-            f"Write evidence to {directory / 'ghidra-update.json'}.\n"
+            f"Use tools/.venv/bin/python tools/decomp_step.py --context {context_directory / 'context.json'}.\n"
+            f"Write evidence to {context_directory / 'ghidra-update.json'}.\n"
             "Before compiling, consult docs/decomp-knowledge/README.md and relevant topic entries.\n"
-            f"Record reusable findings or useful failed experiments in {directory / 'knowledge.md'} "
+            f"Record reusable findings or useful failed experiments in {context_directory / 'knowledge.md'} "
             "using the index's proposal format; write 'No new reusable insight' when appropriate.\n"
             f"{budget_note}"
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
-            "the selected object matches and evidence is written.\n")
+            + ("the layout repair is ready for supervisor full-file verification and evidence is written.\n"
+               if layout_repair else "the selected object matches and evidence is written.\n"))
         (directory / "agent-prompt.md").write_text(instructions + "\n\n" + prompt)
         env = os.environ.copy()
         temporary = self.w.ROOT / "tools/tmp/decomp-agents"
         temporary.mkdir(parents=True, exist_ok=True)
-        env.update(TMPDIR=str(temporary), CB2_DECOMP_CONTEXT=str(directory / "context.json"),
+        env.update(TMPDIR=str(temporary), CB2_DECOMP_CONTEXT=str(context_directory / "context.json"),
                    CB2_AGENT_REPORT=str(directory / "agent-last-message.txt"))
         argv = list(self.launcher)
         if self.args.agent_command is None:
             cache = self.w.ROOT / "tools/cache/decomp-agents" / Path(session["directory"]).name / slug(active)
+            if layout_repair:
+                cache /= 'layout-repair'
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
             # Disable automatic project docs AND explicitly prohibit manual
@@ -639,7 +714,7 @@ class Runner:
         if self.agent_tokens:
             return usage(directory / 'agent.log').get('budget_stop')
 
-    def candidate(self, session, tracked, before, old_symbols, prior_c):
+    def candidate(self, session, tracked, before, old_symbols, prior_c, *, layout_repair=False):
         active = session["active"]
         baseline = session["integration_head"]
         paths = self.paths(tracked, session["active"], baseline)
@@ -698,7 +773,37 @@ class Runner:
                                   for r in s.get('subsegments', []) if isinstance(r, list)
                                   and r[1] == 'c' and s['vram'] + r[0] - s['start'] == int(active['address'], 16))
         expected_hashes = self.w.content_hashes(paths)
-        current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
+        try:
+            current = self.w.validate(session)  # Agent messages/scores never substitute for this gate.
+        except RuntimeError:
+            if layout_repair or not self.layout_repair_needed(active):
+                raise
+            directory = self.w.ROOT / active['context']
+            repair = directory / 'layout-repair'
+            if repair.exists():
+                raise  # One bounded follow-up per attempt, including interruption recovery.
+            self.invariant(session)
+            if paths != self.paths(tracked, active, baseline) or self.w.content_hashes(paths) != expected_hashes:
+                raise RuntimeError('Candidate changed during failed validation; refusing layout repair')
+            repair.mkdir()
+            snapshot = repair / 'before'
+            snapshot.mkdir()
+            for name in ('validation.json', 'validation-object-report.json', 'object-diff.json',
+                         'object-report.json', 'knowledge.md', 'ghidra-update.json'):
+                if (directory / name).is_file():
+                    shutil.copy2(directory / name, snapshot / name)
+            shutil.copytree(directory / 'candidate', snapshot / 'candidate')
+            print(f'Object diagnostic matched but full-file gate failed; launching layout repair for {key(active)}', flush=True)
+            active['layout_repair'] = True
+            self.w.save_state(session)
+            stop = self.launch(session, layout_repair=True)
+            self.invariant(session)
+            try:
+                return self.candidate(session, tracked, before, old_symbols, prior_c, layout_repair=True)
+            except RuntimeError as error:
+                if stop:
+                    raise Rejected(f"Layout-repair token budget reached ({stop['spent']:,}/{stop['budget']:,}): {error}") from error
+                raise
         now_c = coverage(current)
         if now_c != {**prior_c, key(session["active"]): session["active"]["size"]}:
             raise Rejected("C coverage changed outside the selected function")
@@ -714,6 +819,19 @@ class Runner:
         if self.w.content_hashes(paths) != expected_hashes:
             raise Rejected("Candidate changed during Ghidra feedback planning")
         return paths, expected_hashes
+
+    def layout_repair_needed(self, active):
+        """Use fresh supervisor diagnostics, never a worker's claimed score."""
+        directory = self.w.ROOT / active['context']
+        try:
+            comparison = json.loads((directory / 'validation.json').read_text())
+            report = json.loads((directory / 'validation-object-report.json').read_text())
+            unit = next(u for u in report['units'] if u['name'] == active['unit'])
+            image = comparison.get('image', Path(comparison.get('original', '')).name)
+            return (comparison['identical'] is False and image == active.get('image', 'SCUS_943.58')
+                    and unit['measures'].get('fuzzy_match_percent') == 100.0)
+        except (OSError, ValueError, KeyError, StopIteration, TypeError):
+            return False
 
     def reject(self, session, tracked, reason, *, retryable=False):
         active = session["active"]
