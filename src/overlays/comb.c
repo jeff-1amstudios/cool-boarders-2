@@ -1077,3 +1077,16 @@ void func_80061AB0(CombMotionPlayer *player, int *position)
     transform->coordinate.flg = 0;
     transform->coordinate.coord.t[2] = z - player_z;
 }
+
+// FUNCTION: COMB.BIN:0x80061AFC
+void func_80061AFC(CombMotionPlayer *player, int *position)
+{
+    CombCameraState *camera = (CombCameraState *)player->motion;
+
+    camera->view.vpx = camera->position[0] - player->position[0];
+    camera->view.vpy = camera->position[1] - player->position[1];
+    camera->view.vpz = camera->position[2] - player->position[2];
+    camera->view.vrx = position[0] - player->position[0];
+    camera->view.vry = position[1] - player->position[1] - 150;
+    camera->view.vrz = position[2] - player->position[2];
+}

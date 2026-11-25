@@ -297,4 +297,13 @@ void func_80061A64(CombMotionPlayer *player, int *position);
 
 void func_80061AB0(CombMotionPlayer *player, int *position);
 
+typedef struct CombCameraState {
+    unsigned char unknown_000[0xC];
+    GsRVIEW2 view;
+    unsigned char unknown_02c[0x17C];
+    int position[3];
+} CombCameraState;
+
+void func_80061AFC(CombMotionPlayer *player, int *position);
+
 #endif
