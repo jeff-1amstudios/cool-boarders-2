@@ -22,7 +22,9 @@ No authored C or compiler recipe change is required. Configuration commit
 `c92ccc9` passes the pinned full COMB comparison on main. The unchanged saved C
 for COMB.BIN:0x800608D4, COMB.BIN:0x80060940 and COMB.BIN:0x80061E48 also passes
 individually with the measured table splits: 308128 bytes, zero differences.
-These candidate branches have not thereby been integrated or imported into Ghidra.
+Those checks initially validated isolated candidate branches only. All three are
+now integrated with transactional Ghidra feedback; the subsequent all-15-image
+gate passes. See the [acceptance follow-up](reviews/1795625601628029000.md).
 
 Recipe: old-gcc release 0.17, gcc-2.7.2-psx `-O2 -G0 -mips1`; maspsx
 `4ffa8b5106f9780d5d4aa7609f184949433ddbbc`, `--aspsx-version 2.56 --expand-div -G0`;
