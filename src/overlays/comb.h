@@ -172,4 +172,6 @@ typedef struct CombPlayerRenderStateView {
 
 void func_8005FB48(int mode, unsigned int mask);
 
+int func_8005FC1C(int course, int value, int difference, int penalty);
+
 #endif

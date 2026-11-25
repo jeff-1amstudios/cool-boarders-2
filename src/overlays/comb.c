@@ -113,6 +113,8 @@ extern void func_8006AB94(GsOT *ot, int shift);
 extern int func_8006A9EC(GsOT *ot, CombPlayerRenderStateView *player,
                          unsigned int mask, int first, int second);
 
+extern int D_8009A39C[10];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -720,4 +722,22 @@ void func_8005FB48(int mode, unsigned int mask)
         player->result = func_8006A9EC(*current, player, active_mask, zero, zero);
         index++;
     } while (index < 2);
+}
+
+// FUNCTION: COMB.BIN:0x8005FC1C
+int func_8005FC1C(int course, int value, int difference, int penalty)
+{
+    int result;
+
+    value += 2500;
+    value += (D_8009A39C[course] - difference) / 20;
+    if (penalty != 0) {
+        result = value - penalty * 10;
+    } else {
+        result = value + 500;
+    }
+    if (result < 0) {
+        result = 0;
+    }
+    return result;
 }
