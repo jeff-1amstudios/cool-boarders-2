@@ -295,4 +295,6 @@ typedef struct CombMotionPlayer {
 
 void func_80061A64(CombMotionPlayer *player, int *position);
 
+void func_80061AB0(CombMotionPlayer *player, int *position);
+
 #endif
