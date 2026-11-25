@@ -88,4 +88,69 @@ typedef struct CombPlayerHeadingView {
 
 void func_8005EDC4(CombPlayerHeadingView *view, int value);
 
+typedef struct CombHudEntry {
+    unsigned char unknown[0x34];
+} CombHudEntry;
+
+typedef struct CombHudState {
+    int unknown_00;
+    int value_04;
+    int value_08;
+    int value_0c;
+    int value_10;
+    int value_14;
+    int unknown_18;
+    int value_1c;
+    int value_20;
+    unsigned char unknown_24[0x18];
+    int value_3c;
+    int unknown_40;
+    int value_44;
+    int value_48;
+    int value_4c;
+    int value_50;
+    int countdown;
+    int value_58;
+    int value_5c;
+} CombHudState;
+
+typedef struct CombMovementHudView {
+    unsigned char unknown_00[0x1C];
+    int angular_speed;
+    unsigned char unknown_20[0x18];
+    unsigned short speed;
+} CombMovementHudView;
+
+typedef struct CombPlayerHudView {
+    unsigned char unknown_0000[0x3C];
+    short state;
+    unsigned char unknown_003e[0x69A];
+    short *surface;
+    unsigned char unknown_06dc[0x28];
+    int progress;
+    unsigned char unknown_0708[0x2C];
+    CombMovementHudView movement;
+    unsigned char unknown_0770[0x4A];
+    short display_position;
+    unsigned char unknown_07bc[4];
+    short display_side;
+    unsigned char unknown_07c2[6];
+    CombHudState hud;
+    unsigned char unknown_0828[0x28];
+    CombHudEntry *entries;
+    unsigned char unknown_0854[0x36];
+    short entry_count;
+    unsigned char unknown_088c[0x42A];
+    short value_cb6;
+    unsigned char unknown_0cb8[0x1E];
+    short value_cd6;
+    unsigned char unknown_0cd8[0x138];
+    unsigned char display_e10[0x3AE8];
+    int previous_progress;
+    unsigned char unknown_48fc[0x20];
+    short value_491c;
+} CombPlayerHudView;
+
+void func_8005EEE0(GsOT *ot, CombPlayerHudView *player, int first, int second);
+
 #endif

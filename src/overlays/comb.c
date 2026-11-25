@@ -86,6 +86,22 @@ extern void func_80080D78(GsOT *ot, int effect, int update, int mode,
 
 extern void func_8007E198(int value, short angle, int active, int mode, int extra);
 
+extern short D_800A4A30;
+extern int D_8009FF98;
+extern int func_8006AC14(GsOT *ot, int side, int position, int mode, int extra);
+extern void func_8006BBB4(GsOT *ot, int mode, int *state, int shift, int value);
+extern void func_8006BB5C(GsOT *ot, int value, int *state, int shift, int extra);
+extern void func_8006C2C8(GsOT *ot, int *state, int shift, int value);
+extern void func_8006BC98(GsOT *ot, int *state, int shift);
+extern void func_8006B528(GsOT *ot, CombHudEntry *entry, int *state, int shift, int value);
+extern void func_8006C358(GsOT *ot, int *state, int shift, int value, int extra);
+extern int func_8006AEEC(GsOT *ot, int *state, int shift, CombPlayerHudView *player,
+                        int first, int second, int active, int mode);
+extern void func_8006BEF8(GsOT *ot, void *state, int value, CombHudEntry *entries,
+                         int count, int first, int second, int mode, int speed);
+extern void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int value, int shift, int extra);
+extern void func_8006BCD4(GsOT *ot, int value, int mode, int first, int second);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -580,4 +596,67 @@ void func_8005EDC4(CombPlayerHeadingView *view, int value)
         active = 0;
     }
     func_8007E198(value, (short)angle, active, mode, extra);
+}
+
+// FUNCTION: COMB.BIN:0x8005EEE0
+void func_8005EEE0(GsOT *ot, CombPlayerHudView *player, int first, int second)
+{
+    CombHudState *hud;
+    CombMovementHudView *movement;
+    int entry = player->entry_count - 1;
+    int shift = -(unsigned int)(first != second);
+    int surface;
+    int value;
+    int speed;
+    unsigned char before;
+    int angular_speed;
+
+    hud = &player->hud;
+    movement = &player->movement;
+    if (entry < 0) entry = 0;
+    surface = *player->surface;
+    if (surface == 1 || *(int *)(D_800A5D5C->unknown_16 + 2) == 6) {
+        player->display_position = func_8006AC14(ot, player->display_side,
+                                                player->display_position, 0, 0);
+    } else {
+        player->display_position = 200;
+    }
+    func_8006BBB4(ot, 2, &hud->value_1c, shift, hud->value_20);
+    func_8006BB5C(ot, hud->value_08, &hud->value_04, shift, player->value_491c);
+    func_8006C2C8(ot, &hud->value_3c, shift, player->value_cd6);
+    func_8006BC98(ot, &hud->value_0c, shift);
+    value = 120;
+    if (D_800A4A30 != 0) {
+        func_8006B528(ot, (CombHudEntry *)((int)player->entries + entry * 0x34), &hud->value_4c, shift, value);
+    }
+    if (second != 3) {
+        angular_speed = movement->angular_speed;
+        if (angular_speed != 0) {
+            value = angular_speed * 180;
+            if (value < 0) value = -value;
+            func_8006C358(ot, &hud->value_44, shift, value, hud->value_48);
+        }
+        if (second != 4) {
+            value = 0;
+            if (surface != 3 && surface != 5 && first != 5 && player->state >= 5) {
+                before = player->previous_progress < player->progress;
+                if (before || hud->countdown != 0) {
+                    value = -1;
+                    if (!before && shift == 0 && hud->countdown != 0) {
+                        hud->countdown--;
+                    }
+                }
+            }
+            hud->value_58 = func_8006AEEC(ot, &hud->value_50, shift, player,
+                                          hud->value_5c, hud->value_58, value, 3);
+        }
+        value = D_8009FF98;
+        if (value == 4) speed = player->value_cd6;
+        else speed = movement->speed;
+        func_8006BEF8(ot, player->display_e10, player->value_cb6, player->entries,
+                      player->entry_count, 0, 0, value, speed);
+        if (D_8009FF98 == 1 && hud->value_10 >= 0) hud->value_10 = -1;
+        func_8006B2D0(ot, (CombHudEntry *)((int)player->entries + entry * 0x34), &hud->value_10, hud->value_14, shift, 0);
+        func_8006BCD4(ot, player->value_491c, 1, 0, 0);
+    }
 }
