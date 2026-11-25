@@ -267,4 +267,6 @@ void func_800607B4(CombMotionState *state, short mode, int value, int x, int y, 
 
 void func_80060BD8(CombMotionState *state, int *position);
 
+int func_80060C24(CombMotionState *state, int sample, int target);
+
 #endif

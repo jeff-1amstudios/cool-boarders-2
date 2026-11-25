@@ -137,3 +137,5 @@ ReadGeomOffset = 0x8002012C; // type:func
 D_800A5D60 = 0x800A5D60; // size:0x4
 D_800A5D68 = 0x800A5D68; // size:0x4
 func_80060BD8 = 0x80060BD8; // type:func
+
+func_80060C24 = 0x80060C24; // type:func

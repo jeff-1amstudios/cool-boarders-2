@@ -966,3 +966,82 @@ void func_80060BD8(CombMotionState *state, int *position)
     state->samples[selected].y = position[1];
     state->samples[selected].z = position[2];
 }
+
+// FUNCTION: COMB.BIN:0x80060C24
+int func_80060C24(CombMotionState *state, int sample, int target)
+{
+    short *history = state->angles;
+    int i;
+    int delta;
+    int j;
+    int difference;
+    int adjusted;
+
+    delta = history[0] - target;
+    for (i = 1; i < 4; i++) {
+        if (history[i] == target) {
+            continue;
+        }
+        j = history[i] - target;
+        if (delta == 0) {
+            delta = j;
+        } else if (delta * j < 0) {
+            delta = 0;
+            break;
+        }
+    }
+    if (delta != 0) {
+        if (i != 4) {
+            for (j = 3; j >= 0; j--) {
+                history[j] = target;
+            }
+        } else if (delta > 0) {
+            for (i = 0; i < 4; i++) {
+                if (history[i] > sample) {
+                    for (j = i; j < 4; j++) {
+                        history[j] = sample;
+                    }
+                    break;
+                }
+            }
+        } else {
+            for (i = 0; i < 4; i++) {
+                if (history[i] < sample) {
+                    for (j = i; j < 4; j++) {
+                        history[j] = sample;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    delta = sample;
+    j = history[0];
+    for (i = 0; i < 3; i++) {
+        history[i] = history[i + 1];
+    }
+    history[i] = delta;
+    delta = j;
+    if (delta >= target) {
+        difference = delta - target;
+        if (difference > 5) {
+            delta = difference;
+            delta /= 64;
+            adjusted = target + 5;
+            target = adjusted + delta;
+        } else {
+            target = delta;
+        }
+    } else {
+        difference = target - delta;
+        if (difference > 5) {
+            delta = difference;
+            delta /= 64;
+            adjusted = target - 5;
+            target = adjusted - delta;
+        } else {
+            target = delta;
+        }
+    }
+    return target;
+}
