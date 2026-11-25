@@ -651,4 +651,6 @@ typedef struct CombPlayerDirectionalImpulseView {
 
 void func_80062CF8(CombPlayerDirectionalImpulseView *player, int mode);
 
+void func_80062E8C(CombPlayerDirectionalImpulseView *player, int mode);
+
 #endif

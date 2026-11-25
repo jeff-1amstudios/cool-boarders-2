@@ -2185,3 +2185,39 @@ void func_80062CF8(CombPlayerDirectionalImpulseView *player, int mode)
     player->acceleration_y += offset.vy * 0x3840;
     player->acceleration_z += offset.vz * 0x3840;
 }
+
+// FUNCTION: COMB.BIN:0x80062E8C
+void func_80062E8C(CombPlayerDirectionalImpulseView *player, int mode)
+{
+    int impulse;
+    int x;
+    int z;
+    SVECTOR offset;
+
+    impulse = 0x64000;
+    if (player->direction == 0)
+        impulse = -0x64000;
+    x = 0;
+    z = 0;
+    switch (mode) {
+    case 0:
+        z = (impulse >> 4) / 900;
+        break;
+    case 1:
+        z = (-impulse >> 4) / 900;
+        break;
+    case 2:
+        x = (-impulse >> 4) / 900;
+        break;
+    case 3:
+        x = (impulse >> 4) / 900;
+        break;
+    }
+    offset.vx = x;
+    offset.vy = 0;
+    offset.vz = z;
+    func_80096580(&offset, &offset);
+    player->acceleration_x += offset.vx * 0x3840;
+    player->acceleration_y += offset.vy * 0x3840;
+    player->acceleration_z += offset.vz * 0x3840;
+}
