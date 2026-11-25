@@ -141,3 +141,8 @@ func_80060BD8 = 0x80060BD8; // type:func
 func_80060C24 = 0x80060C24; // type:func
 
 D_800981C8 = 0x800981C8; // size:0x10
+func_800622D8 = 0x800622D8; // type:func
+func_8006FC8C = 0x8006FC8C; // type:func
+D_800981F8 = 0x800981F8; // type:s32 size:0x4
+D_800981FC = 0x800981FC; // type:s32 size:0x4
+D_80098200 = 0x80098200; // type:s32 size:0x4

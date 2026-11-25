@@ -326,4 +326,37 @@ typedef struct CombPoseState {
 
 void func_80061C20(CombPosePlayer *player);
 
+typedef struct CombSurfaceState {
+    int kind;
+    int x, y, z;
+    int word_10;
+    short surface;
+    short mode;
+    int word_18;
+    SVECTOR offset;
+    unsigned char unknown_24[0x18];
+    int normal[3];
+    int word_48;
+    int height;
+    int word_50;
+    int word_54;
+} CombSurfaceState;
+
+typedef struct CombSurfaceMotionPlayer {
+    unsigned char unknown_0000[0x80];
+    CombSurfaceState surface;
+    unsigned char unknown_00d8[0x58];
+    CombSurfaceState alternate_surface;
+    unsigned char unknown_0188[0xAD4];
+    int slow;
+    unsigned char unknown_0c60[0x3C78];
+    int motion_x;
+    int motion_y;
+    int motion_z;
+    unsigned char unknown_48e4[8];
+    int vertical_speed;
+} CombSurfaceMotionPlayer;
+
+void func_800622D8(CombSurfaceMotionPlayer *player);
+
 #endif
