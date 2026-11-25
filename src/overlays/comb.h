@@ -359,4 +359,23 @@ typedef struct CombSurfaceMotionPlayer {
 
 void func_800622D8(CombSurfaceMotionPlayer *player);
 
+typedef struct CombSurfaceMotionView {
+    short state;
+    unsigned char unknown_002[6];
+    short reset;
+    unsigned char unknown_00a[0x10E];
+    int heading;
+} CombSurfaceMotionView;
+
+typedef struct CombPlayerSurfaceMotionView {
+    unsigned char unknown_000[0x1DA];
+    short heading;
+    unsigned char unknown_1dc[0x4FC];
+    CombSurfaceMotionView *motion;
+    unsigned char unknown_6dc[0x578];
+    short reverse;
+} CombPlayerSurfaceMotionView;
+
+void func_800608D4(CombPlayerSurfaceMotionView *player);
+
 #endif

@@ -1246,3 +1246,32 @@ void func_800622D8(CombSurfaceMotionPlayer *player)
     player->motion_y += delta.vy;
     player->motion_z += delta.vz;
 }
+
+// FUNCTION: COMB.BIN:0x800608D4
+void func_800608D4(CombPlayerSurfaceMotionView *player)
+{
+    CombSurfaceMotionView *motion = player->motion;
+    int state = motion->state;
+    int heading;
+
+    switch (state) {
+    case 0:
+        state = 1;
+        break;
+    case 2:
+        state = 6;
+        break;
+    case 1:
+    case 5:
+    case 6:
+        state = 0;
+        break;
+    }
+    motion->state = state;
+    heading = player->heading;
+    if (player->reverse != 0) {
+        heading += 0x800;
+    }
+    motion->heading = heading;
+    motion->reset = 0;
+}
