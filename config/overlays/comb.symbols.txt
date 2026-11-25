@@ -117,3 +117,7 @@ func_8005FC1C = 0x8005FC1C; // type:func
 D_8009A39C = 0x8009A39C; // type:s32 size:0x28
 
 func_8006009C = 0x8006009C; // type:func
+func_800600E8 = 0x800600E8; // type:func
+D_800A5AE0 = 0x800A5AE0; // size:0x4
+D_800A4A7C = 0x800A4A7C; // size:0x10
+D_8009FFA4 = 0x8009FFA4; // type:s32 size:0x4

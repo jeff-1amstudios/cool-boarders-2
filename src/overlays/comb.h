@@ -205,4 +205,24 @@ typedef struct CombSetupState {
 
 void func_8006009C(CombSetupState *state, CombSetupSource *source, int *progress);
 
+typedef struct CombPlayerCheckpointView {
+    unsigned char unknown_0000[0x7E0];
+    int checkpoint_reset;
+    int comparison_state;
+    int time_difference;
+    unsigned char unknown_07ec[0x4CA];
+    short checkpoint;
+    short previous_checkpoint;
+    unsigned char unknown_0cba[2];
+    int checkpoint_value;
+    unsigned char unknown_0cc0[0x12];
+    short finished_value;
+    unsigned char unknown_0cd4[0x13C];
+    int checkpoint_times[4];
+    unsigned char unknown_0e20[0x3AFC];
+    short side;
+} CombPlayerCheckpointView;
+
+unsigned int func_800600E8(unsigned int value, int time);
+
 #endif

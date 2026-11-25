@@ -115,6 +115,10 @@ extern int func_8006A9EC(GsOT *ot, CombPlayerRenderStateView *player,
 
 extern int D_8009A39C[10];
 
+extern int *D_800A5AE0;
+extern int D_800A4A7C[4];
+extern int D_8009FFA4;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -751,4 +755,78 @@ void func_8006009C(CombSetupState *state, CombSetupSource *source, int *progress
     state->link = source->link;
     state->link->value = state->value;
     state->link->progress = progress;
+}
+
+// FUNCTION: COMB.BIN:0x800600E8
+unsigned int func_800600E8(unsigned int value, int time)
+{
+    int *bonuses;
+    CombPlayer **players = D_800A5B10;
+    CombPlayer **cursor;
+    int second_side = 0;
+    int first_side = 0;
+    unsigned int index;
+    int other;
+    int checkpoint;
+    int previous;
+    int last_checkpoint;
+    int last_time;
+    CombPlayerCheckpointView *player;
+    index = 0;
+    bonuses = D_800A5AE0;
+
+    cursor = players;
+    for (; (int)index < 2; index++, cursor++) {
+        player = (CombPlayerCheckpointView *)*cursor;
+        checkpoint = player->checkpoint;
+        previous = player->previous_checkpoint;
+        if (checkpoint < 4) {
+            player->checkpoint_times[checkpoint] = time;
+            if (player->side == 1) D_800A4A7C[checkpoint] = time;
+        }
+        if (checkpoint >= 2 && checkpoint > previous) {
+            if (checkpoint <= D_8009FFA4 && checkpoint < 4) {
+                player->comparison_state = 0;
+            }
+            if (checkpoint > D_8009FFA4 && checkpoint < 4) {
+                value += bonuses[checkpoint - 1];
+                D_8009FFA4 = checkpoint;
+                for (other = 0; other < 2; other++) {
+                    ((CombPlayerCheckpointView *)players[other])->checkpoint_reset = 0;
+                }
+            }
+            if (index < 2 && checkpoint >= 4) {
+                player->finished_value = player->checkpoint_value;
+            }
+        } else if (player->comparison_state == 0) {
+            player->comparison_state = -1;
+        }
+    }
+    last_checkpoint = 0;
+    last_time = 0;
+    for (index = 0; (int)index < 2; index++) {
+        player = (CombPlayerCheckpointView *)D_800A5B10[index];
+        if (player->side == 1) first_side = index;
+        if (player->comparison_state == 0) {
+            other = player->checkpoint - 1;
+            player->time_difference = player->checkpoint_times[other] - D_800A4A7C[other];
+            if (player->side == 2) {
+                last_checkpoint = other;
+                last_time = player->checkpoint_times[other];
+                second_side = index;
+            }
+        }
+    }
+    if (last_checkpoint != 0) {
+        CombPlayerCheckpointView *player;
+        player = (CombPlayerCheckpointView *)D_800A5B10[first_side];
+        player->time_difference = D_800A4A7C[last_checkpoint] - last_time;
+        player->comparison_state = 0;
+        if (player->time_difference == 0) {
+            CombPlayerCheckpointView *second_player = (CombPlayerCheckpointView *)D_800A5B10[second_side];
+            second_player->time_difference = 0;
+            second_player->comparison_state = 0;
+        }
+    }
+    return value;
 }
