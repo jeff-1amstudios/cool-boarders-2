@@ -292,8 +292,16 @@ def review_header_extension(before, after):
         raise Rejected('Existing header declarations or guard changed; append before the final #endif')
 
 
-def review_shared_extension(before, after):
-    """Permit new top-level externs/includes while protecting established declarations."""
+def review_shared_extension(before, after, *, selected_symbol=None):
+    """Protect shared declarations, allowing the selected function's prototype to evolve."""
+    if selected_symbol is not None:
+        # The selected definition may need corrected argument types, including
+        # when reusing a donor. Its callers are still checked by full-file
+        # validation. Preserve every unrelated declaration byte-for-byte.
+        prototype = re.compile(r'^extern[ \t]+(?:[A-Za-z_]\w*[ \t*]+)+'
+                               + re.escape(selected_symbol)
+                               + r'\s*\([^;{}]*\)\s*;[^\S\n]*\n?', re.M)
+        before, after = prototype.sub('', before), prototype.sub('', after)
     previous, proposed = before.splitlines(keepends=True), after.splitlines(keepends=True)
     for operation, old_start, _, start, end in difflib.SequenceMatcher(
             None, previous, proposed, autojunk=False).get_opcodes():
@@ -423,9 +431,7 @@ class Runner:
                 # Older attempts sometimes moved the selected function's extern
                 # into its image header. That selected prototype may be replaced;
                 # all other established declarations must still be preserved.
-                prototype = re.compile(r'^extern\s+[^;{}]*\b' + re.escape(active['name'])
-                                       + r'\s*\([^;{}]*\)\s*;[^\S\n]*\n?', re.M)
-                review_shared_extension(prototype.sub('', old_shared), prototype.sub('', new_shared))
+                review_shared_extension(old_shared, new_shared, selected_symbol=active['name'])
                 old_blocks = {k: v.rstrip() for k, v in old_blocks.items()}
                 new_blocks = {k: v.rstrip() for k, v in new_blocks.items()}
                 if key(active) in old_blocks or {k: v for k, v in new_blocks.items() if k != key(active)} != old_blocks:
@@ -659,7 +665,7 @@ class Runner:
                 previous = subprocess.check_output(['git', 'show', f'{baseline}:{entry}'], cwd=self.w.ROOT).decode()
             shared, blocks = sections(previous)
             new_shared, new_blocks = sections(text)
-            review_shared_extension(shared, new_shared)
+            review_shared_extension(shared, new_shared, selected_symbol=active['name'])
             identity = key(active)
             # Appending a FUNCTION marker can add separator whitespace to the
             # preceding block. Ignore only that trailing whitespace; preserve

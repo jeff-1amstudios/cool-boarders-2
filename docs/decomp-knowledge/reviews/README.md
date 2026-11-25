@@ -17,3 +17,5 @@ Completed reviews are skipped on subsequent runs while the durable reference
 exists. Attempts without notes are silently skipped and create no pending work.
 
 Reviewed 2026-11-25: [session 1795560864174034000](1795560864174034000.md), four further notes (three accepted, one deferred); no new topic IDs.
+
+Reviewed 2026-11-25: [session 1795564671056946000](1795564671056946000.md), one deferred donor-reuse note; no new topic IDs. Selected-prototype scope rejection diagnosed; full-image acceptance remains pending.
