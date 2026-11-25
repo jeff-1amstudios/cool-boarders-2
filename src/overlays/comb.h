@@ -65,4 +65,6 @@ typedef struct CombPlayerEffectView {
 
 void func_8005EB18(GsOT *ot, CombPlayer *player);
 
+int func_8005EC58(VECTOR *origin, MATRIX *matrix, VECTOR *normal);
+
 #endif
