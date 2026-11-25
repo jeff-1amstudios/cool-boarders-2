@@ -653,4 +653,27 @@ void func_80062CF8(CombPlayerDirectionalImpulseView *player, int mode);
 
 void func_80062E8C(CombPlayerDirectionalImpulseView *player, int mode);
 
+typedef struct CombSessionSettingsView {
+    CombSettings settings;
+    unsigned char unknown_1e[6];
+    short first_flag;
+    short second_flag;
+} CombSessionSettingsView;
+
+typedef struct CombSessionPlayerView {
+    unsigned char unknown_0000[0xCBC];
+    int progress;
+    unsigned char unknown_0cc0[0x14];
+    short duration;
+    unsigned char unknown_0cd6[0x3C48];
+    signed char secondary_view;
+} CombSessionPlayerView;
+
+typedef struct CombSceneCountView {
+    unsigned char unknown_00[4];
+    unsigned short count;
+} CombSceneCountView;
+
+int func_80063020(FileLoadState *files, int mode);
+
 #endif

@@ -155,6 +155,31 @@ extern int D_80098208;
 
 extern void func_80096580(SVECTOR *source, SVECTOR *destination);
 
+extern int D_80047D58[];
+extern int D_800A4B24;
+extern short *D_800A5D50;
+extern int D_8009A500;
+extern void *D_800A4AA4;
+extern CombSceneCountView *D_800A4AA8;
+extern GsRVIEW2 *D_800A5EF8;
+extern int D_8005AB5C;
+extern int func_80063714(FileLoadState *files, CombSettings *settings);
+extern int func_800761BC(void);
+extern int func_80076EF8(void);
+extern void func_800808C8(void);
+extern void func_800657DC(void);
+extern void func_80075C54(void);
+extern void func_80076864(void);
+extern void func_800640EC(void *data, CombSceneEntry *entries, int count);
+extern void func_80063460(CombSettings *settings, int state, int update, int alternate);
+extern void func_80095448(GsRVIEW2 *view, int projection);
+extern void func_80079BB8(int frames);
+extern int func_8005BDCC(int state, int duration);
+extern void func_8007A0DC(void);
+extern void func_80063DA4(void);
+extern void func_80076F58(void);
+extern void func_80076204(void);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2220,4 +2245,129 @@ void func_80062E8C(CombPlayerDirectionalImpulseView *player, int mode)
     player->acceleration_x += offset.vx * 0x3840;
     player->acceleration_y += offset.vy * 0x3840;
     player->acceleration_z += offset.vz * 0x3840;
+}
+
+// FUNCTION: COMB.BIN:0x80063020
+int func_80063020(FileLoadState *files, int mode)
+{
+    int duration;
+    short success;
+    int initial_state;
+    short alternate;
+    unsigned short saved_option;
+    int first_flag;
+    int second_flag;
+    int i;
+    CombPlayer **players;
+    CombPlayer **player_base;
+    CombSessionPlayerView *player;
+    CombSettings *settings;
+    short *flags;
+
+    SetDispMask(1);
+    duration = 0x1B8;
+    if (mode < 0)
+        D_800A4B24 = D_80047D58[-mode];
+    settings = D_800A5D5C;
+    flags = D_800A5D50;
+    first_flag = ((CombSessionSettingsView *)settings)->first_flag;
+    second_flag = ((CombSessionSettingsView *)settings)->second_flag;
+    flags[0] = 0;
+    flags[1] = 0;
+    first_flag = first_flag != 0;
+    second_flag = -(second_flag != 0);
+    D_8009A500 = first_flag;
+    *(int *)D_8009A4FC = second_flag;
+    success = func_80063714(files, settings);
+    success &= func_8005B568();
+    success &= func_800761BC();
+    success &= func_80076EF8();
+    func_800808C8();
+    func_800657DC();
+    func_80075C54();
+    func_80076864();
+    if (success != 0) {
+        func_800640EC(D_800A4AA4, D_800A5AE8, D_800A4AA8->count);
+        if (mode == 0) mode = 4;
+        else if (mode > 0) {
+            if (mode == 2) mode = 9;
+            else mode = 7;
+        }
+        else mode = 8;
+    } else {
+        mode = 0;
+    }
+    initial_state = mode;
+    if ((unsigned int)mode < 2) goto cleanup;
+    if ((unsigned int)(mode - 10) < 2) goto cleanup;
+    player_base = D_800A5B10;
+    for (;;) {
+        if ((unsigned int)(mode - 12) < 2) goto cleanup;
+        alternate = -(D_800A5D5C->course == 1);
+        if (D_800A5D5C->course == 6) alternate = -1;
+        if (D_800A5D5C->course == 15) alternate = -1;
+        func_80063460(D_800A5D5C, mode, 0, alternate);
+        func_80095448(D_800A5EF8, 400);
+        func_80079BB8(300);
+        if (mode < 6) {
+            if (mode >= 2) mode = func_8005BDCC(2, 0);
+        }
+        if (mode >= 6 && (mode < 9 || (alternate = -1, mode == 9))) {
+            func_80063460(D_800A5D5C, mode, -1, alternate);
+            saved_option = *(unsigned short *)D_800A5D5C->unknown_16;
+            switch (mode) {
+            case 6:
+            case 7:
+                duration = ((CombSessionPlayerView *)D_800A5B10[0])->duration;
+                *(unsigned short *)D_800A5D5C->unknown_16 = 16;
+                break;
+            case 8:
+                duration = 1800;
+                i = rand();
+                func_80060940((CombPlayerCameraView *)D_800A5B10[0], -((i & 1) == 0) & 5);
+                break;
+            case 9:
+                duration = ((CombSessionPlayerView *)D_800A5B10[0])->duration;
+                break;
+            }
+            i = 0;
+            players = player_base;
+            do {
+                ((CombSessionPlayerView *)players[i])->progress = 0;
+                i++;
+            } while (i < 2);
+            ((CombSessionPlayerView *)D_800A5B10[0])->secondary_view = -1;
+            mode = func_8005BDCC(mode, duration);
+            switch (initial_state) {
+            case 7:
+                mode = 1;
+                break;
+            case 8:
+            case 9:
+                mode = -(((CombSessionPlayerView *)D_800A5B10[0])->progress < duration) & 13;
+                break;
+            }
+            *(unsigned short *)D_800A5D5C->unknown_16 = saved_option;
+        }
+        func_8007A0DC();
+        if (D_8005AB5C == -1) mode = 0;
+        if ((unsigned int)mode < 2) goto cleanup;
+        if ((unsigned int)(mode - 10) < 2) break;
+    }
+cleanup:
+    VSync(0);
+    SpuSetKey(0, 0x7F80FF);
+    func_8005B808();
+    func_80063DA4();
+    func_80076F58();
+    func_80076204();
+    switch (mode) {
+    case 1: duration = 2; break;
+    case 10: duration = 3; break;
+    case 11: duration = 4; break;
+    case 12: duration = 5; break;
+    case 13: duration = 0; break;
+    default: duration = 1; break;
+    }
+    return duration;
 }
