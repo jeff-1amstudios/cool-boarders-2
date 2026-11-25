@@ -127,6 +127,9 @@ extern void func_800172B8(void);
 extern int func_80015F98(void);
 extern void func_800173C0();
 
+extern long D_800A5D60;
+extern long D_800A5D68;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -911,4 +914,42 @@ void func_80060728(void)
     if (selected >= 0) {
         func_800173C0(selected, 2);
     }
+}
+
+// FUNCTION: COMB.BIN:0x800607B4
+void func_800607B4(CombMotionState *state, short mode, int value, int x, int y, int z)
+{
+    int i;
+
+    for (i = 0; i < 16; i++) {
+        state->history_a[i] = 0;
+        state->history_b[i] = 0;
+    }
+    state->angle_buffer = state->angles;
+    for (i = 3; i >= 0; i--) {
+        state->angles[i] = 0;
+    }
+    state->mode = mode;
+    state->value = value;
+    state->samples[0].x = x;
+    state->samples[0].y = y;
+    state->samples[0].z = z;
+    state->samples[0].rotation.vx = 0;
+    state->samples[0].rotation.vy = 0;
+    state->samples[0].rotation.vz = 0;
+    state->samples[0].active = 1;
+    state->negative_height = -state->height;
+    for (i = 1; i < 4; i++) {
+        state->samples[i] = state->samples[0];
+    }
+    state->selected = -1;
+    state->timer = -10;
+    state->word_124 = 0;
+    state->word_128 = 0;
+    state->word_190 = 0;
+    state->word_194 = 0;
+    state->word_198 = 0;
+    state->word_19c = 0;
+    state->word_1a0 = 0;
+    ReadGeomOffset(&D_800A5D60, &D_800A5D68);
 }
