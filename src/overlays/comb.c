@@ -180,6 +180,27 @@ extern void func_80063DA4(void);
 extern void func_80076F58(void);
 extern void func_80076204(void);
 
+extern short D_80010CE4[];
+extern GsF_LIGHT D_800A5CD8[3];
+extern short D_800A5B18;
+extern void *D_800A4B20;
+extern int D_8009A490;
+extern void func_80063DDC(int course);
+extern void func_80063E24(int course);
+extern void func_80097074(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third);
+extern void func_80074DB4(CombPlayer *player, short *settings, int mode);
+extern void func_80070CC4(void);
+extern void func_8005AF30(int course, int character_flag, int motion_flag,
+                          int alternate, int active);
+extern void func_80065BA0(int update);
+extern void func_8006A8A8(int flag);
+extern void func_80074230(void);
+extern void func_80074D0C(int course);
+extern void func_80075A48(void);
+extern void func_80080938(int mode);
+extern void func_80080AB0(void *data, int course, int state, int option);
+extern void func_8007FAB8(int option);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2370,4 +2391,77 @@ cleanup:
     default: duration = 1; break;
     }
     return duration;
+}
+
+// FUNCTION: COMB.BIN:0x80063460
+void func_80063460(CombSettings *settings, int state, int update, int alternate)
+{
+    int character_flag;
+    int course;
+    short motion_flag;
+    short second_flag;
+    int active;
+    int i;
+    CombPlayer **players;
+
+    character_flag = -(D_80010CE4[settings->character] != 0);
+    course = settings->course;
+    active = -1;
+    if (update == 0)
+        motion_flag = -(D_800A5D50[0] != 0);
+    else
+        motion_flag = -1;
+    second_flag = -(D_800A5D50[1] != 0);
+    func_80063DDC(course);
+    func_80063E24(course);
+    func_80097074(&D_800A5CD8[0], &D_800A5CD8[1], &D_800A5CD8[2]);
+    switch (state) {
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 7:
+    case 8:
+    case 9:
+        i = 0;
+        players = D_800A5B10;
+        do {
+            if (i == 0) {
+                func_80074DB4(players[0], &settings->character, 0);
+                ((CombPlayerNameView *)players[0])->name[0] = 'U';
+                ((CombPlayerNameView *)players[0])->name[1] = 'S';
+                ((CombPlayerNameView *)players[0])->name[2] = 'E';
+                ((CombPlayerNameView *)players[0])->name[3] = 'R';
+            } else {
+                func_80074DB4(players[i], &settings->second_character, 0);
+                ((CombPlayerNameView *)players[i])->name[0] = 'C';
+                ((CombPlayerNameView *)players[i])->name[1] = 'P';
+                ((CombPlayerNameView *)players[i])->name[2] = 'U';
+                ((CombPlayerNameView *)players[i])->name[3] = ' ';
+            }
+            i++;
+        } while (i < 2);
+        break;
+    case 6:
+        active = 0;
+        break;
+    }
+    func_80070CC4();
+    func_8005AF30(course, character_flag, motion_flag, alternate, active);
+    func_80065BA0(update);
+    func_8006A8A8(second_flag);
+    func_80074230();
+    func_80074D0C(course);
+    func_80075A48();
+    D_800A5B18 = 0;
+    func_80080938(0);
+    if (course < 5) {
+        if (course >= 3 && D_800A4B20 != 0) {
+            func_80080AB0(D_800A4B20, course, (short)D_8009A490, D_8009A4FC[0]);
+            D_8009A490 = 1;
+        }
+    }
+    func_8007FAB8(D_8009A4FC[0]);
+    func_800166A4();
+    func_80016804();
 }

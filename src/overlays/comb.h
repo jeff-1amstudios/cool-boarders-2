@@ -676,4 +676,11 @@ typedef struct CombSceneCountView {
 
 int func_80063020(FileLoadState *files, int mode);
 
+typedef struct CombPlayerNameView {
+    unsigned char unknown_0000[0xCC4];
+    unsigned char name[4];
+} CombPlayerNameView;
+
+void func_80063460(CombSettings *settings, int state, int update, int alternate);
+
 #endif

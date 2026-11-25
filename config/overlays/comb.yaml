@@ -105,7 +105,8 @@ segments:
   - [0x8190, c, func_80062CF8]
   - [0x8324, c, func_80062E8C]
   - [0x84b8, c, func_80063020]
-  - [0x88f8, asm, body_88f8]
+  - [0x88f8, c, func_80063460]
+  - [0x8bac, asm, body_8bac]
   - [0x3d520, data, data]
   # Seven-entry switch table owned by func_800608D4.
   - start: 0x3d624
@@ -136,4 +137,10 @@ segments:
     name: func_80063020
     linker_section_order: .data
   - [0x3d6f0, data, data_3D6F0]
+  # Eight-word switch table owned by func_80063460 at 0x8009825C.
+  - start: 0x3d6f4
+    type: .rodata
+    name: func_80063460
+    linker_section_order: .data
+  - [0x3d714, data, data_3D714]
 - [0x4b3a0]
