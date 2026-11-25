@@ -51,7 +51,8 @@ extern short D_800A4A1E;
 extern void func_8005F23C(GsOT *ot, CombPlayer *player, int first, int second);
 extern int func_8005D910(GsOT *ot, int view, int first, int second, int mode);
 extern void func_80080808(void);
-extern void func_8005DE24(GsOT *ot, int view, RECT *clip, int x, int y, int mode);
+extern void func_8005DE24(GsOT *ot, int player, RECT *clip,
+                          unsigned char red, unsigned char green, unsigned char blue);
 extern void func_80016748(void);
 extern void func_80016AEC(void);
 extern unsigned char D_8009A2D8[];
@@ -383,6 +384,26 @@ void func_8005D774(int first, int second, int mode)
     } while (view < 1);
     func_80016748();
     func_80016AEC();
+}
+
+// FUNCTION: COMB.BIN:0x8005DE24
+void func_8005DE24(GsOT *ot, int player, RECT *clip,
+                   unsigned char red, unsigned char green, unsigned char blue)
+{
+    TILE *tile = (TILE *)D_80058ACC;
+
+    ((GsOT_TAG *)tile)->num = 3;
+    tile->code = 0x60;
+    tile->r0 = red;
+    tile->g0 = green;
+    tile->b0 = blue;
+    tile->x0 = -clip->w / 2;
+    tile->y0 = -clip->h / 2;
+    tile->w = clip->w;
+    tile->h = clip->h;
+    ((GsOT_TAG *)tile)->p = ot->org[0x7FF].p;
+    ot->org[0x7FF].p = (unsigned long)tile;
+    D_80058ACC = (PACKET *)(tile + 1);
 }
 
 // FUNCTION: COMB.BIN:0x8005DEE4
