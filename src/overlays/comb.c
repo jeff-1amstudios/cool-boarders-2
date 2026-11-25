@@ -1045,3 +1045,19 @@ int func_80060C24(CombMotionState *state, int sample, int target)
     }
     return target;
 }
+
+// FUNCTION: COMB.BIN:0x80061A64
+void func_80061A64(CombMotionPlayer *player, int *position)
+{
+    CombMotionTransform *transform = (CombMotionTransform *)player->motion;
+    int z;
+    int player_z;
+
+    transform->coordinate.coord.t[0] = position[0] - player->position[0];
+    transform->coordinate.coord.t[1] = position[1] - player->position[1] - player->motion->height;
+    z = position[2];
+    player_z = player->position[2];
+    transform->coordinate.super = 0;
+    transform->coordinate.flg = 0;
+    transform->coordinate.coord.t[2] = z - player_z;
+}
