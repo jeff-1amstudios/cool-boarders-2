@@ -139,3 +139,5 @@ D_800A5D68 = 0x800A5D68; // size:0x4
 func_80060BD8 = 0x80060BD8; // type:func
 
 func_80060C24 = 0x80060C24; // type:func
+
+D_800981C8 = 0x800981C8; // size:0x10

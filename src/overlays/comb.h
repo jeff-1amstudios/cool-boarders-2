@@ -306,4 +306,24 @@ typedef struct CombCameraState {
 
 void func_80061AFC(CombMotionPlayer *player, int *position);
 
+typedef struct CombPoseInput {
+    unsigned char unknown_00[0x64];
+    short amount;
+} CombPoseInput;
+
+typedef struct CombPosePlayer {
+    CombMotionPlayer player;
+    unsigned char unknown_48e8[0x38];
+    CombPoseInput *pose;
+} CombPosePlayer;
+
+typedef struct CombPoseState {
+    CombMotionTransform transform;
+    short height;
+    unsigned char unknown_086[0x11E];
+    int saved_height;
+} CombPoseState;
+
+void func_80061C20(CombPosePlayer *player);
+
 #endif

@@ -130,6 +130,8 @@ extern void func_800173C0();
 extern long D_800A5D60;
 extern long D_800A5D68;
 
+extern VECTOR D_800981C8;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -1089,4 +1091,54 @@ void func_80061AFC(CombMotionPlayer *player, int *position)
     camera->view.vrx = position[0] - player->position[0];
     camera->view.vry = position[1] - player->position[1] - 150;
     camera->view.vrz = position[2] - player->position[2];
+}
+
+// FUNCTION: COMB.BIN:0x80061C20
+void func_80061C20(CombPosePlayer *player)
+{
+    VECTOR position;
+    VECTOR rotation;
+    CombPoseState *state = (CombPoseState *)player->player.motion;
+    int amount = player->pose->amount;
+    short *height = &player->player.height;
+    int threshold = 70;
+    int delta;
+    int angle;
+    int limit;
+    GsCOORDINATE2 *coordinate;
+
+    memset_800449E8((unsigned char *)&rotation, 0, sizeof(rotation));
+    rotation.vx = 0;
+    rotation.vy = -state->height;
+    rotation.vz = 0;
+    position = rotation;
+    rotation = D_800981C8;
+    state->transform.coordinate.coord = D_80058E20;
+    coordinate = &state->transform.coordinate;
+    if (amount > threshold) {
+        delta = amount - 70;
+        angle = 100;
+        angle *= delta;
+        position.vy -= angle;
+        angle = 17;
+        rotation.vz = delta * angle;
+    } else {
+        angle = 3072;
+        angle = ((threshold - amount) * angle) / threshold;
+        limit = 1024;
+        if (angle < 1025) limit = angle;
+        rotation.vx -= limit;
+    }
+    RotMatrixZ(rotation.vz, &coordinate->coord);
+    RotMatrixX(rotation.vx, &coordinate->coord);
+    coordinate->coord.t[0] = position.vx;
+    coordinate->coord.t[1] = position.vy;
+    coordinate->coord.t[2] = position.vz;
+    coordinate->super = 0;
+    coordinate->flg = 0;
+    state->transform.rotation.vx = rotation.vx;
+    state->transform.rotation.vy = rotation.vy;
+    state->transform.rotation.vz = rotation.vz;
+    *(int *)((unsigned char *)state + 0x24) = 0;
+    state->saved_height = *height;
 }
