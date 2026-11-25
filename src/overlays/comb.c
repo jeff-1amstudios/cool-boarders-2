@@ -121,6 +121,9 @@ extern int D_8009FFA4;
 
 extern int func_8008DB08(int course, int *option, int active);
 
+extern int func_80015F68(void);
+extern void func_800172B8(void);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -885,4 +888,12 @@ int func_80060660(CombPlayerCheckpointView *player)
         }
     }
     return result;
+}
+
+// FUNCTION: COMB.BIN:0x800606F0
+void func_800606F0(void)
+{
+    func_80015F68();
+    func_800172B8();
+    SpuSetKey(0, 0x780FF);
 }

@@ -124,3 +124,7 @@ D_8009FFA4 = 0x8009FFA4; // type:s32 size:0x4
 func_800605A8 = 0x800605A8; // type:func
 func_8008DB08 = 0x8008DB08; // type:func
 func_80060660 = 0x80060660; // type:func
+func_800606F0 = 0x800606F0; // type:func
+func_80015F68 = 0x80015F68; // type:func
+func_800172B8 = 0x800172B8; // type:func
+SpuSetKey = 0x8003F3F4; // type:func

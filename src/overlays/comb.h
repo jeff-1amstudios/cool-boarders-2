@@ -229,4 +229,6 @@ int func_800605A8(void);
 
 int func_80060660(CombPlayerCheckpointView *player);
 
+void func_800606F0(void);
+
 #endif
