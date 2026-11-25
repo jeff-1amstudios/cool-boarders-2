@@ -860,3 +860,29 @@ int func_800605A8(void)
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x80060660
+int func_80060660(CombPlayerCheckpointView *player)
+{
+    CombSettings *settings = D_800A5D5C;
+    int active = *(int *)(settings->unknown_16 + 2) != 3;
+    int result;
+    int *option;
+
+    player->finished_value = player->checkpoint_value;
+    option = &D_8009FF90;
+    result = func_8008DB08(settings->course, option, active);
+    D_800A5D5C->option = *option;
+    if (result != 1) {
+        if (result < 2) {
+            if (result == 0) {
+                result = 2;
+            } else {
+                result = 0;
+            }
+        } else {
+            result = 0;
+        }
+    }
+    return result;
+}

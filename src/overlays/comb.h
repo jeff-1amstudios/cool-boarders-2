@@ -227,4 +227,6 @@ unsigned int func_800600E8(unsigned int value, int time);
 
 int func_800605A8(void);
 
+int func_80060660(CombPlayerCheckpointView *player);
+
 #endif
