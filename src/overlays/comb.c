@@ -143,6 +143,8 @@ extern void func_800966A8(SVECTOR *rotation);
 extern int func_80060E14(CombCameraPlayerView *player, int value, int update);
 extern void func_80061440(CombCameraPlayerView *player, int speed, int update);
 
+extern void func_8001E468(int bank, int category, int row);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -873,6 +875,108 @@ unsigned int func_800600E8(unsigned int value, int time)
         }
     }
     return value;
+}
+
+// FUNCTION: COMB.BIN:0x80060328
+static __inline__ int comb_result_score(int course, int value, int difference, int penalty)
+{
+    int result;
+    value += 2500;
+    value += (D_8009A39C[course] - difference) / 20;
+    if (penalty != 0) result = value - penalty * 10;
+    else result = value + 500;
+    if (result < 0) result = 0;
+    return result;
+}
+
+void func_80060328(CombPlayerResultView *first, CombPlayerResultView *second, int result)
+{
+    int first_total = 0;
+    int second_total = 0;
+    int i = 0;
+    int bank = *(int *)(D_800A5D5C->unknown_16 + 2) != 3;
+    int first_time = first->finish_time - first->start_time;
+    int second_time = second->finish_time - second->start_time;
+    int first_finished = first->finished;
+    int second_finished = second->finished;
+    int count = first->entry_count;
+    int course = D_800A5D5C->course;
+    CombResultWork work;
+    CombResultEntry *second_entry;
+    int first_score;
+    int second_score;
+    int tied;
+    int first_rank;
+    int second_rank;
+
+    if (count > 0) {
+        second_entry = second->entries;
+        work.entry = first->entries;
+        do {
+            second_total += second_entry->score;
+            first_total += work.entry->score;
+            second_entry++;
+            work.entry++;
+            i++;
+        } while (i < count);
+    }
+    {
+        int score;
+        int penalty;
+        work.value = first_total + 2500;
+        work.value += (D_8009A39C[course] - first_time) / 20;
+        penalty = first->penalty;
+        if (penalty != 0) score = work.value - penalty * 10;
+        else score = work.value + 500;
+        if (score < 0) score = 0;
+        first_score = score;
+    }
+    second_score = comb_result_score(course, second_total, second_time, second->penalty);
+
+    first_rank = 1;
+    second_rank = 1;
+    if (result == 0) {
+        switch (D_8009FF90) {
+        case 0:
+        case 1:
+            if (first_finished == 0) first_rank = 2;
+            else if (second_finished == 0) second_rank = 2;
+            break;
+        case 2:
+            if (first_finished == 0) first_rank = 2;
+            else if (second_finished == 0) second_rank = 2;
+            else if (first_total != second_total) {
+                if (first_total > second_total) second_rank = 2;
+                else first_rank = 2;
+            }
+            break;
+        case 3:
+        default:
+            do {
+                tied = first_score == second_score;
+            } while (0);
+            if (!tied) {
+                if (first_score > second_score) {
+                    first_rank = 1;
+                    second_rank = 2;
+                } else {
+                    first_rank = 2;
+                    second_rank = 1;
+                }
+            }
+            break;
+        }
+    } else if (result == 1) first_rank = 2;
+    else if (result == 2) second_rank = 2;
+    first->rank = first_rank;
+    first->result->rank = first_rank;
+    second->rank = second_rank;
+    second->result->rank = second_rank;
+    if (first_rank != second_rank) {
+        if (first_rank == 1) D_8009FF94 = 0;
+        else D_8009FF94 = 1;
+    } else D_8009FF94 = -1;
+    func_8001E468(bank, D_8009FF90, D_8009FF94);
 }
 
 // FUNCTION: COMB.BIN:0x800605A8

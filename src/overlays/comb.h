@@ -447,4 +447,41 @@ typedef struct CombCameraPlayerView {
 
 int func_80061E48(CombCameraPlayerView *player, int update);
 
+typedef struct CombResultEntry {
+    unsigned char unknown_00[0x14];
+    int score;
+    unsigned char unknown_18[0x1C];
+} CombResultEntry;
+
+typedef struct CombResultState {
+    unsigned char unknown_00[0x58];
+    short rank;
+} CombResultState;
+
+typedef struct CombPlayerResultView {
+    unsigned char unknown_0000[0x850];
+    CombResultEntry *entries;
+    unsigned char unknown_0854[0x34];
+    short entry_count;
+    unsigned char unknown_088a[0x448];
+    short finished;
+    unsigned char unknown_0cd4[2];
+    short penalty;
+    unsigned char unknown_0cd8[0x138];
+    int start_time;
+    unsigned char unknown_0e14[8];
+    int finish_time;
+    unsigned char unknown_0e20[0x3AFC];
+    short rank;
+    unsigned char unknown_491e[2];
+    CombResultState *result;
+} CombPlayerResultView;
+
+void func_80060328(CombPlayerResultView *first, CombPlayerResultView *second, int result);
+
+typedef union CombResultWork {
+    CombResultEntry *entry;
+    int value;
+} CombResultWork;
+
 #endif
