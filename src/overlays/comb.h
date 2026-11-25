@@ -578,4 +578,36 @@ typedef struct CombPlayerMotionView {
 
 void func_80061440(CombCameraPlayerView *player, int progress, int frozen);
 
+typedef struct CombSpeedParameters {
+    unsigned char unknown_00[0xE];
+    short percent;
+} CombSpeedParameters;
+
+typedef struct CombSpeedPlayer {
+    unsigned char unknown_0000[0x6FC];
+    int speed_limit;
+    unsigned char unknown_0700[0x34];
+    int mode;
+    int active;
+    unsigned char unknown_073c[0x30];
+    unsigned short timer;
+    unsigned char unknown_076e[0x4CA];
+    CombSpeedParameters *parameters;
+    unsigned char unknown_0c3c[0x20];
+    int slow;
+    unsigned char unknown_0c60[0x3C78];
+    int acceleration_x;
+    unsigned char unknown_48dc[4];
+    int acceleration_z;
+    unsigned char unknown_48e4[4];
+    int velocity_x;
+    unsigned char unknown_48ec[4];
+    int velocity_z;
+    unsigned char unknown_48f4[8];
+    int deceleration;
+} CombSpeedPlayer;
+
+void func_80062694(CombSpeedPlayer *player, int braking, int half_speed,
+                   int strong, int timer_mode, int scale);
+
 #endif

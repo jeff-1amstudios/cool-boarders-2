@@ -156,3 +156,5 @@ SquareRoot12 = 0x8001FBDC; // type:func
 RotMatrixX = 0x8002093C; // type:func
 func_80095530 = 0x80095530; // type:func
 func_800962A0 = 0x800962A0; // type:func
+
+func_80062694 = 0x80062694; // type:func

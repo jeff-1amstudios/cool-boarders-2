@@ -1952,3 +1952,83 @@ apply_view:
     camera->view.rz = roll;
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x80062694
+void func_80062694(CombSpeedPlayer *player, int braking, int half_speed,
+                   int strong, int timer_mode, int scale)
+{
+    int limit = player->speed_limit;
+    int slow = player->slow;
+    int percent = player->parameters->percent;
+    int active = player->active;
+    int mode = player->mode;
+    int decrement = 98;
+    int x, z, speed;
+    int value;
+    int new_x, new_z;
+
+    if (timer_mode == -1 && (value = player->timer) > 0) {
+        value -= 3;
+        value = value < 0 ? 0 : value;
+        player->timer = value;
+        value = 0x2E035;
+        if (value < limit)
+            speed = limit;
+        else
+            speed = 0x2E035;
+        limit = speed;
+    }
+    if (scale != 0)
+        limit = (limit * scale) / 4096;
+    if (half_speed != 0) {
+        limit >>= 1;
+    } else if (slow < 0 && braking == 0) {
+        limit = (limit * percent) / 100;
+    }
+    value = player->velocity_x >> 6;
+    x = value * value;
+    value = player->velocity_z >> 6;
+    z = value * value;
+    speed = SquareRoot12(x + z);
+    if (active != 0) {
+        switch (mode) {
+        case 3:
+        case 4:
+            limit = 0;
+            value = !strong;
+            if (value == 0) value = 4;
+            else value = 1;
+            decrement = (player->deceleration * value) / 100;
+            break;
+        case 0:
+        default:
+            if (speed < 0x3983)
+                break;
+        case 1:
+        case 2:
+            limit = 0;
+            decrement = player->deceleration / 100;
+            break;
+        }
+    }
+    if (limit <= speed || braking != 0) {
+        if (speed - limit >= 0x5C1) {
+            player->acceleration_x = 0;
+            player->acceleration_z = 0;
+            if (half_speed != 0)
+                limit = speed + decrement * -8;
+            else
+                limit = speed - decrement;
+        } else if (braking != 0) {
+            limit = speed - 0x170;
+        }
+        speed >>= 6;
+        limit >>= 6;
+        if (speed > 0 && limit > 0) {
+            new_x = player->velocity_x * limit / speed;
+            new_z = player->velocity_z * limit / speed;
+            player->velocity_x = new_x;
+            player->velocity_z = new_z;
+        }
+    }
+}
