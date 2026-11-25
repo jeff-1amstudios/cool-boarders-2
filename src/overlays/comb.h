@@ -627,4 +627,17 @@ typedef struct CombPlayerSlopeView {
 
 unsigned int func_80062B2C(CombPlayerSlopeView *player);
 
+typedef struct CombImpulseParameters {
+    int scale;
+} CombImpulseParameters;
+
+typedef struct CombPlayerImpulseView {
+    unsigned char unknown_0000[0xC38];
+    CombImpulseParameters *parameters;
+    unsigned char unknown_0c3c[0x3CA0];
+    int acceleration_y;
+} CombPlayerImpulseView;
+
+void func_80062C94(CombPlayerImpulseView *player, int alternate);
+
 #endif

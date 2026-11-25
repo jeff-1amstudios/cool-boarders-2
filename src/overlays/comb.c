@@ -150,6 +150,9 @@ extern int func_80095530(short x, short z);
 
 extern int func_800702F4(CombSurfaceState *surface, int heading);
 
+extern int D_80098204;
+extern int D_80098208;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2131,4 +2134,16 @@ unsigned int func_80062B2C(CombPlayerSlopeView *player)
     second = (second << 20) >> 20;
     first = (first << 20) >> 20;
     return (first << 16) | (second & 0xFFFF);
+}
+
+// FUNCTION: COMB.BIN:0x80062C94
+void func_80062C94(CombPlayerImpulseView *player, int alternate)
+{
+    int impulse;
+
+    if (alternate != 0)
+        impulse = -D_80098208;
+    else
+        impulse = -D_80098204;
+    player->acceleration_y += (impulse * (player->parameters->scale >> 6)) / 64;
 }
