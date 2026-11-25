@@ -5,14 +5,14 @@ A matching decompilation of the USA PS1 release (`SCUS_943.58`) and its 14 known
 ## Progress
 
 <!-- progress:start -->
-Snapshot: **25 November 2026**. Counts cover non-SDK function instances across all 15 images.
+Snapshot: **26 November 2026**. Counts cover non-SDK function instances across all 15 images.
 
 | Binary | Functions | Percent | Deferred |
 | --- | ---: | ---: | ---: |
 | `SCUS_943.58` | 164 / 187 | 87.70% | 22 |
 | `BDEDIT.BIN` | 77 / 81 | 95.06% | 4 |
 | `BP.BIN` | 172 / 246 | 69.92% | 74 |
-| `COMB.BIN` | 34 / 273 | 12.45% | 19 |
+| `COMB.BIN` | 38 / 273 | 13.92% | 15 |
 | `ENDING.BIN` | 0 / 41 | 0.00% | 0 |
 | `FREE.BIN` | 0 / 291 | 0.00% | 0 |
 | `HP.BIN` | 0 / 269 | 0.00% | 0 |
@@ -24,7 +24,7 @@ Snapshot: **25 November 2026**. Counts cover non-SDK function instances across a
 | `SBC2.BIN` | 0 / 278 | 0.00% | 0 |
 | `TM.BIN` | 0 / 278 | 0.00% | 0 |
 | `VS.BIN` | 0 / 257 | 0.00% | 0 |
-| **Total** | **447 / 2,920** | **15.31%** | **119** |
+| **Total** | **451 / 2,920** | **15.45%** | **115** |
 
 Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; 1 curated hold remains outside the deferred count.
 
