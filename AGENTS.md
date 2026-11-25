@@ -36,6 +36,14 @@ repair agent directly from the saved C, assembly and prior evidence. Ghidra
 feedback planning/import after exact acceptance remains required. Below 100%,
 retain the fresh Ghidra export requirement for reconstruction workers.
 
+User-authorized merge recovery: if an ordinary persistent-branch merge conflicts,
+invoke a bounded Codex agent to reconcile the selected image's conflicted files.
+Preserve accepted main content, the selected candidate, and branch history. The
+supervisor audits the resolution, stages and completes the merge, reruns the merge
+command, then continues normal matching and exact full-file acceptance. The agent
+must not stage, commit, change refs, or alter unrelated files. Failed repairs leave
+the merge intact for inspection.
+
 Do not add or run unit tests unless the user explicitly requests them. Verify changes with focused headless Ghidra runs and the required exact binary comparisons.
 
 User-authorized donor-reuse exception: when an accepted C function has the same exact or normalized assembly fingerprint, use that donor as the starting point even on a deferred-function retry. It takes precedence over the existing branch/archived candidate. Keep the persistent branch and its history; preserve prior source and notes for reference, replace only the selected function block, and record the donor and replacement reason. Compile the minimally adapted donor before changing its algorithm. All source-scope, fresh Ghidra and exact containing-file acceptance requirements still apply.

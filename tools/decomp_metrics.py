@@ -26,15 +26,14 @@ def atomic_text(path, text):
 def timing(directory):
     """Old log mtimes approximate launcher wall time, never exact model time."""
     measured = read(directory / 'worker-timing.json')
-    repair = read(directory / 'layout-repair/worker-timing.json')
-    if not measured and repair:
-        return dict(repair, layout_repair=repair)
-    if measured:
-        if repair:
-            measured = dict(measured, finished_at=repair['finished_at'],
-                            seconds=round(measured['seconds'] + repair['seconds'], 3),
-                            layout_repair=repair)
-        return measured
+    phases = {name.replace('-', '_'): read(directory / name / 'worker-timing.json')
+              for name in ('merge-repair', 'layout-repair')}
+    samples = ([measured] if measured else []) + [v for v in phases.values() if v]
+    if samples:
+        return dict(started_at=min(v['started_at'] for v in samples),
+                    finished_at=max(v['finished_at'] for v in samples),
+                    seconds=round(sum(v['seconds'] for v in samples), 3),
+                    source='measured_monotonic', **{k: v for k, v in phases.items() if v})
     prompt, log = directory / 'agent-prompt.md', directory / 'agent.log'
     if prompt.exists() and log.exists():
         start, end = prompt.stat().st_mtime, log.stat().st_mtime

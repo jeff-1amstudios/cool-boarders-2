@@ -311,7 +311,7 @@ Startup checks the branch, clean checkout, saved attempt state and reference fin
 
 After successful final all-image validation, the supervisor runs `tools/readme_progress.py`'s updater to refresh the marked progress block in `README.md`. Counts use a fresh target inventory and persistent deferrals, excluding SDK entries and already reconstructed targets. This happens after the worker acceptance checks, so documentation changes cannot interfere with candidate review. Review and commit the README snapshot before starting another batch, which requires a clean checkout. For a manual refresh (including after requeueing deferrals), run `make progress`; it validates all images before updating the snapshot and leaves the README untouched if validation fails.
 
-Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores the clean `main` checkout before continuing; it skips the restored-baseline full-file check while the batch has no accepted functions. Each function has one persistent `codex/match-<identity>` branch. Retries switch to that existing branch and merge current `main` into it, retaining candidate C, headers, symbols, split configuration and WIP history. Merge conflicts stop before worker launch with the branch and index intact for resolution. The worker edits the existing function directly in the regular image source. Archived candidates are fallback recovery material when no function exists on the branch; they do not replace existing branch source. The harness never deletes or recreates a function branch on retry. WIP commits never enter `main`.
+Each attempt retains its prompt, context, agent/build logs, candidate patch/sources, diagnostics and one `result.json`. A blocked, timed-out or nonmatching attempt gets a clearly marked WIP checkpoint on its function branch; prohibited source forms stay only in the ignored archive, with an empty WIP marker. Python restores the clean `main` checkout before continuing; it skips the restored-baseline full-file check while the batch has no accepted functions. Each function has one persistent `codex/match-<identity>` branch. Retries switch to that existing branch and merge current `main` into it, retaining candidate C, headers, symbols, split configuration and WIP history. Ordinary merge conflicts invoke the bounded merge-repair agent described below before reconstruction starts. The worker edits the existing function directly in the regular image source. Archived candidates are fallback recovery material when no function exists on the branch; they do not replace existing branch source. The harness never deletes or recreates a function branch on retry. WIP commits never enter `main`.
 
 One batch `result.json` records totals, recorded worker tokens, missing usage records and links to attempt results. `reports/decomp/state.json` identifies the current batch and any interrupted operation. Old session directories and archives remain untouched. There are no manual-session commands, detached launcher, separate boundary decisions, progress files or structural-cache updates.
 
@@ -375,3 +375,27 @@ edits can invalidate estimates. Summed worker time is not batch wall time.
 See [the session efficiency review](token-efficiency.md) for findings and changes.
 
 Launcher/authentication failures stop after preserving work. Ctrl-C/SIGTERM kills the agent process group, preserves its in-scope candidate and returns to main with the function eligible for retry. Unexpected source/index/ref changes stop with the checkout intact. If Git fails mid-commit/integration, inspect the recorded branch/commit and working tree before starting again; the runner does not guess or reset unexpected changes. Hard-killed worker attempts in known pre-integration phases can be recovered by `start` under the recovery guards above.
+
+
+## Merge-conflict repair
+
+When merging current main into a persistent function branch fails with actual
+conflicts in the selected image's C, header, split config or symbols, Python
+launches one Codex repair agent. It uses the configured launcher, model, effort,
+time and token allowance. The agent receives the conflict paths and both commit
+IDs, preserves accepted main content and the saved selected candidate, and edits
+only the conflicted files. It does not invoke Ghidra, stage, commit or change refs.
+
+Python checks that Git state and the index stayed unchanged, then reruns the
+candidate source/type/split/symbol scope audits against main. It stages the
+resolved conflict paths, checks the staged diff, completes the merge, and reruns
+`git merge --no-edit <main-commit>` before continuing. The candidate still needs
+fresh object diagnostics and exact full-file validation. A merge commit on a
+function branch never constitutes acceptance into main.
+
+Prompts, conflict snapshots and evidence live in `<attempt>/merge-repair/`;
+worker totals include that agent. Infrastructure failures, incompatible edits,
+unresolved conflicts or failed audits preserve the merge for inspection. Recovery
+can handle a recorded ordinary merge that stopped before repair launch; it does
+not blindly relaunch an agent after an existing repair log or guess about a
+partially committed resolution. Donor restarts retain their existing behavior.

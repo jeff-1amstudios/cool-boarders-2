@@ -156,15 +156,18 @@ def usage(path):
         result['effort'] = effort
     if budget_stop:
         result['budget_stop'] = budget_stop
-    repair_log = path.parent / 'layout-repair/agent.log'
-    if path.name == 'agent.log' and repair_log.is_file():
+    for phase in ('merge-repair', 'layout-repair'):
+        repair_log = path.parent / phase / 'agent.log'
+        if path.name != 'agent.log' or not repair_log.is_file():
+            continue
         repair = usage(repair_log)
-        result['layout_repair'] = repair
+        result[phase.replace('-', '_')] = repair
         counts = dict(result['tokens'])
         for name, count in repair['tokens'].items():
             counts[name] = counts.get(name, 0) + count
         result['tokens'] = counts
-        result['complete'] = (result['complete'] or not path.exists()) and repair['complete']
+        had_worker = path.exists() or any(k in result for k in ('merge_repair', 'layout_repair') if k != phase.replace('-', '_'))
+        result['complete'] = (result['complete'] or not had_worker) and repair['complete']
         for field in ('model', 'effort'):
             if field not in result and field in repair:
                 result[field] = repair[field]

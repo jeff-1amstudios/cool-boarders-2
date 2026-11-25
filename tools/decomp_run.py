@@ -543,7 +543,7 @@ class Runner:
             if (self.w.ROOT / session['active']['context'] / 'reuse.json').is_file():
                 self.supersede_branch(session)
             else:
-                self.w.git("merge", "--no-edit", session["integration_head"])
+                self.merge_branch(session)
         else:
             self.w.git("switch", "-c", branch, "main")
         session["branch"] = branch
@@ -553,6 +553,92 @@ class Runner:
         self.w.save_state(session)
         self.invariant(session)
         print(f"Function branch: {branch} (base {session['integration_head'][:12]})", flush=True)
+
+    def merge_branch(self, session):
+        """Let a bounded agent resolve a real conflicted merge; Python owns Git."""
+        main = session['integration_head']
+        active = session['active']
+        if (self.w.git('rev-parse', 'HEAD') != active['branch_update_head']
+                or self.w.git('branch', '--show-current') != active['branch']
+                or self.w.git('rev-parse', 'refs/heads/main') != main):
+            raise RuntimeError('Branch update refs changed; refusing merge repair')
+        pending = subprocess.run(['git', 'rev-parse', '--verify', '-q', 'MERGE_HEAD'],
+                                 cwd=self.w.ROOT, capture_output=True, text=True)
+        if pending.returncode:
+            try:
+                self.w.git('merge', '--no-edit', main)
+                return
+            except subprocess.CalledProcessError:
+                pending = subprocess.run(['git', 'rev-parse', '--verify', '-q', 'MERGE_HEAD'],
+                                         cwd=self.w.ROOT, capture_output=True, text=True)
+        conflicts = self.w.git('diff', '--name-only', '--diff-filter=U').splitlines()
+        if pending.returncode or pending.stdout.strip() != main or not conflicts:
+            raise RuntimeError('Branch merge failed without the expected conflicts; inspect Git state')
+        directory = self.w.ROOT / active['context'] / 'merge-repair'
+        if (directory / 'agent.log').exists():
+            raise RuntimeError('Merge repair already attempted; preserved merge needs inspection')
+        directory.mkdir(parents=True, exist_ok=True)
+        tracked = set(self.w.git('ls-tree', '-r', '--name-only', main).splitlines())
+        permitted = {source_file(active), str(Path(source_file(active)).with_suffix('.h')),
+                     active['build_config'], active['symbol_file']}
+        if not set(conflicts) <= permitted:
+            raise RuntimeError('Merge conflicts outside the selected image; preserving checkout')
+        head = self.w.git('rev-parse', 'HEAD')
+        index = subprocess.check_output(['git', 'ls-files', '--stage', '-z'], cwd=self.w.ROOT)
+        self.w.write(directory / 'merge.json', dict(head=head, main=main, conflicts=conflicts))
+        (directory / 'before.patch').write_bytes(subprocess.check_output(['git', 'diff', '--cc'], cwd=self.w.ROOT))
+        instructions = (
+            f'Your only workspace is {self.w.ROOT.resolve()}. Use existing project tools only.\n'
+            'Resolve this existing Git merge by editing only the supplied conflicted files. '
+            'Do not stage, commit, switch branches, reset, abort, invoke decomp.py, or spawn agents. '
+            'Do not install tools, read outside the repository, or discover instruction files. '
+            'Preserve every accepted function, declaration, type, symbol, and data/code boundary from main. '
+            'Carry forward the selected function candidate, its types/declarations and its measured table splits. '
+            'Reconcile compatible additions; do not choose one whole file over the other. '
+            'Preserve the selected algorithm; reconcile candidate-only type names/prototypes when needed. '
+            'Do not change compiler settings, tools, references, or unrelated source. '
+            'If the changes are genuinely incompatible, report the blocker and leave evidence. '
+            'Python audits the result, stages the resolution, completes and rechecks the merge, '
+            'then runs the normal object/full-file acceptance workflow. No Ghidra export is needed here.\n'
+        )
+        prompt = (f'Resolve conflicts for {key(active)} on {active["branch"]}.\n'
+                  f'Accepted main: {main}\nSaved candidate HEAD: {head}\n'
+                  f'Conflicted files: {json.dumps(conflicts)}\n'
+                  f'Read {directory / "merge.json"}, the conflict markers, git show HEAD:<path> '
+                  f'and git show {main}:<path>. Preserve both compatible changes.\n'
+                  f'Write resolution evidence to {directory / "resolution.md"}. '
+                  f'Allowance: {self.args.agent_seconds} seconds, {self.agent_tokens} tokens '
+                  '(0 means no token limit). Leave files resolved and unstaged.\n')
+        active['phase'] = 'repairing_merge'
+        self.w.save_state(session)
+        self.run_agent(session, directory, instructions, prompt)
+        if (self.w.git('rev-parse', 'HEAD') != head
+                or self.w.git('branch', '--show-current') != active['branch']
+                or self.w.git('rev-parse', 'refs/heads/main') != main
+                or self.w.git('rev-parse', 'MERGE_HEAD') != main
+                or subprocess.check_output(['git', 'ls-files', '--stage', '-z'], cwd=self.w.ROOT) != index):
+            raise RuntimeError('Merge agent changed Git state; preserving checkout for inspection')
+        before = yaml.safe_load(self.w.git('show', f'{main}:{active["build_config"]}'))
+        symbols = self.w.git('show', f'{main}:{active["symbol_file"]}')
+        paths, _ = self.review_candidate(session, tracked, before, symbols)
+        raw_paths = set(self.w.git('diff', '--name-only', main).splitlines())
+        raw_paths.update(self.w.git('ls-files', '--others', '--exclude-standard').splitlines())
+        if raw_paths != set(paths):
+            raise RuntimeError('Merge agent changed files outside candidate scope')
+        # git diff --check does not inspect a resolved working file until its
+        # unmerged index entries have been replaced. Check markers explicitly.
+        for name in conflicts:
+            if re.search(r'(?m)^(?:<{7}|={7}|>{7})(?: |$)', (self.w.ROOT / name).read_text()):
+                raise RuntimeError('Merge repair left conflict markers: ' + name)
+        self.w.git('add', '--', *conflicts)
+        self.w.git('diff', '--cached', '--check')
+        if self.w.git('diff', '--name-only', '--diff-filter=U'):
+            raise RuntimeError('Merge repair left unresolved index entries')
+        self.w.git('commit', '--no-edit')
+        session['head'] = self.w.git('rev-parse', 'HEAD')
+        active.update(working_head=session['head'], phase='working')
+        self.w.save_state(session)
+        self.w.git('merge', '--no-edit', main)
 
     def paths(self, tracked, active, base="HEAD"):
         directory = Path(source_dir(active))
@@ -673,6 +759,13 @@ class Runner:
             f"You have at most {int(seconds)} seconds. Leave your best candidate and finish once "
             + ("the layout repair is ready for supervisor full-file verification and evidence is written.\n"
                if layout_repair else "the selected object matches and evidence is written.\n"))
+        return self.run_agent(session, directory, instructions, prompt)
+
+    def run_agent(self, session, directory, instructions, prompt):
+        """Shared launcher for reconstruction, layout and Git-conflict repair."""
+        active = session['active']
+        context_directory = self.w.ROOT / active['context']
+        seconds = self.args.agent_seconds
         (directory / "agent-prompt.md").write_text(instructions + "\n\n" + prompt)
         env = os.environ.copy()
         temporary = self.w.ROOT / "tools/tmp/decomp-agents"
@@ -682,8 +775,8 @@ class Runner:
         argv = list(self.launcher)
         if self.args.agent_command is None:
             cache = self.w.ROOT / "tools/cache/decomp-agents" / Path(session["directory"]).name / slug(active)
-            if layout_repair:
-                cache /= 'layout-repair'
+            if directory != context_directory:
+                cache /= directory.relative_to(context_directory)
             for name in ("logs", "state"):
                 (cache / name).mkdir(parents=True, exist_ok=True)
             # Disable automatic project docs AND explicitly prohibit manual
@@ -748,7 +841,7 @@ class Runner:
             return True
         return False
 
-    def candidate(self, session, tracked, before, old_symbols, prior_c, *, layout_repair=False):
+    def review_candidate(self, session, tracked, before, old_symbols):
         active = session["active"]
         baseline = session["integration_head"]
         paths = self.paths(tracked, session["active"], baseline)
@@ -786,6 +879,12 @@ class Runner:
             function_source(text, identity)
         except ValueError as error:
             raise Rejected(str(error)) from error
+        return paths, after
+
+    def candidate(self, session, tracked, before, old_symbols, prior_c, *, layout_repair=False):
+        active = session['active']
+        baseline = session['integration_head']
+        paths, after = self.review_candidate(session, tracked, before, old_symbols)
         # Normalize cosmetic EOF separators only after scope/content review,
         # before hashing, archiving and authoritative full-file validation.
         for name in paths:
@@ -938,22 +1037,23 @@ class Runner:
             session['active'] = dict(session['interrupted'][-1])
         active = session['active']
         phase = active.get('phase')
-        if phase not in (None, 'creating_branch', 'working', 'checkpointed', 'updating_branch', 'superseding_branch',
+        if phase not in (None, 'creating_branch', 'working', 'checkpointed', 'updating_branch', 'repairing_merge', 'superseding_branch',
                          'restoring_main', 'interrupted'):
             raise RuntimeError(f"Cannot automatically recover phase {phase}; inspect Git/analysis state"
                                + (' or run recover-ghidra' if phase == 'syncing_ghidra' else ''))
         branch = self.w.git('branch', '--show-current')
         head = self.w.git('rev-parse', 'HEAD')
         main_head = self.w.git('rev-parse', 'refs/heads/main')
-        if subprocess.run(['git', 'rev-parse', '--verify', '-q', 'MERGE_HEAD'], cwd=self.w.ROOT,
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
-            raise RuntimeError('Recovery requires resolving the existing Git merge first')
-        if phase in ('updating_branch', 'superseding_branch'):
+        if phase in ('updating_branch', 'repairing_merge', 'superseding_branch') and branch != 'main':
             if main_head != session['integration_head']:
                 raise RuntimeError('main moved during function-branch update; refusing recovery')
-            if not (self.w.ROOT / active['context'] / 'reuse.json').is_file():
-                raise RuntimeError('Interrupted ordinary branch merge requires inspection; no accepted donor authorizes replacement')
-            self.supersede_branch(session)
+            if (self.w.ROOT / active['context'] / 'reuse.json').is_file():
+                self.supersede_branch(session)
+            else:
+                self.merge_branch(session)
+                session['head'] = self.w.git('rev-parse', 'HEAD')
+                active.update(working_head=session['head'], phase='working')
+                self.w.save_state(session)
             self.switch(session, 'main', main_head)
             branch, head, phase = 'main', main_head, 'interrupted'
         # Recovery archives this attempt and reselects the target from fresh
