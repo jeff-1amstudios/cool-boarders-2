@@ -23,3 +23,5 @@ Reviewed 2026-11-25: [session 1795564671056946000](1795564671056946000.md), one 
 Reviewed 2026-11-26: [session 1795595998382409000](1795595998382409000.md), four notes for three requested COMB functions. Promoted LAYOUT-001; supervisor configuration repair restores exact full-file comparisons on all three persistent candidate branches, pending integration.
 
 Reviewed 2026-11-26: [session 1795625601628029000](1795625601628029000.md), two accepted notes following automatic merge repair. Duplicate LAYOUT-001; all three switch-table candidates are now integrated, and all 15 pinned files match.
+
+Reviewed 2026-11-26: [manual COMB.BIN:0x80060328 retry](manual-20261126-comb-80060328.md), the supplied deferred note and its accepted continuation. Extended REG-002 with cursor/integer scratch reuse; all 15 pinned files match.

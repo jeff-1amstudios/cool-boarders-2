@@ -95,6 +95,14 @@ RTL now treats the scratch as a global quantity across branches. It takes
 source representation, not the original variable names or macro spelling.
 Renaming the union member `word` to `value` left the entire object unchanged.
 
+Independent evidence: `COMB.BIN:0x80060328`, accepted `8a8bb89` on 2026-11-26,
+uses a `CombResultWork` union to reuse the completed entry cursor as an integer
+score base. The combined quantity (12 weighted references / 22 instructions)
+takes `a0` before the penalty takes `a1`; separate locals scored 98.5% diagnostically.
+The entire COMB.BIN is exact under the same recipe. The
+[review](reviews/manual-20261126-comb-80060328.md) preserves the controlled
+before/after C and RTL. This is implementation scratch, not a recovered game layout.
+
 Recipe: old-gcc 0.17 PSX GCC 2.7.2 `-O2 -G0 -mips1`; maspsx pin
 `4ffa8b5106f9780d5d4aa7609f184949433ddbbc`, `--aspsx-version 2.56 --expand-div -G0`;
 GNU as `-EL -march=r3000 -mtune=r3000 -mabi=32 -O1 -G0 -no-pad-sections`.
