@@ -741,3 +741,14 @@ int func_8005FC1C(int course, int value, int difference, int penalty)
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x8006009C
+void func_8006009C(CombSetupState *state, CombSetupSource *source, int *progress)
+{
+    state->values = source->values;
+    state->word_0c = source->word_0c;
+    state->value = source->value;
+    state->link = source->link;
+    state->link->value = state->value;
+    state->link->progress = progress;
+}

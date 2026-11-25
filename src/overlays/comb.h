@@ -174,4 +174,35 @@ void func_8005FB48(int mode, unsigned int mask);
 
 int func_8005FC1C(int course, int value, int difference, int penalty);
 
+typedef struct CombSetupValues {
+    unsigned int word_00, word_04, word_08;
+} CombSetupValues;
+
+typedef struct CombSetupLink {
+    unsigned char unknown_00[0x1C];
+    int value;
+    unsigned char unknown_20[0x28];
+    int *progress;
+} CombSetupLink;
+
+typedef struct CombSetupSource {
+    unsigned char unknown_0000[0x70];
+    CombSetupValues values;
+    unsigned int word_0c;
+    unsigned char unknown_0080[0x1200];
+    CombSetupLink *link;
+    short value;
+} CombSetupSource;
+
+typedef struct CombSetupState {
+    CombSetupValues values;
+    unsigned int word_0c;
+    unsigned char unknown_0010[0x4DC];
+    short value;
+    unsigned char unknown_04ee[2];
+    CombSetupLink *link;
+} CombSetupState;
+
+void func_8006009C(CombSetupState *state, CombSetupSource *source, int *progress);
+
 #endif
