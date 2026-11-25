@@ -102,6 +102,14 @@ extern void func_8006BEF8(GsOT *ot, void *state, int value, CombHudEntry *entrie
 extern void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int value, int shift, int extra);
 extern void func_8006BCD4(GsOT *ot, int value, int mode, int first, int second);
 
+extern int D_8009FFA8;
+extern void func_8006BB20(GsOT *ot, int *state, int shift);
+extern void func_8006BC40(GsOT *ot, int *state, int shift, int *value);
+extern void func_8006BC04(GsOT *ot, int *state, int shift);
+extern void func_8006AB40(GsOT *ot, unsigned int value, int first, int second);
+extern void func_8006C4AC(GsOT *ot, int first, int second, int value);
+extern void func_8006AB94(GsOT *ot, int shift);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -658,5 +666,35 @@ void func_8005EEE0(GsOT *ot, CombPlayerHudView *player, int first, int second)
         if (D_8009FF98 == 1 && hud->value_10 >= 0) hud->value_10 = -1;
         func_8006B2D0(ot, (CombHudEntry *)((int)player->entries + entry * 0x34), &hud->value_10, hud->value_14, shift, 0);
         func_8006BCD4(ot, player->value_491c, 1, 0, 0);
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8005F23C
+void func_8005F23C(GsOT *ot, CombPlayer *player, int first, int second)
+{
+    CombPlayerHudView *view = (CombPlayerHudView *)player;
+    int shift = -(unsigned int)(first != second);
+    int first_state = ((CombPlayerHudView *)D_800A5B10[0])->state;
+    int second_state = ((CombPlayerHudView *)D_800A5B10[1])->state;
+    int first_value = ((CombPlayerHudView *)D_800A5B10[0])->hud.unknown_40;
+    int second_value = ((CombPlayerHudView *)D_800A5B10[1])->hud.unknown_40;
+
+    func_8006BB20(ot, &view->hud.unknown_00, shift);
+    func_8006BC40(ot, (int *)(view->hud.unknown_24 + 4), shift, &D_8009FF90);
+    func_8006BBB4(ot, 1, &view->hud.unknown_18, shift, 0);
+    func_8006BC04(ot, (int *)view->hud.unknown_24, shift);
+    if (second != 3) {
+        if (view->hud.unknown_40 >= 0) {
+            int value = first_value;
+            if (second_value < value) value = second_value;
+            func_8006AB40(ot, value, 0, 0);
+        }
+        func_8006C4AC(ot, first_state, second_state,
+                      ((CombPlayerRaceHudView *)player)->race->value_5c);
+    } else {
+        int mode = D_8009FFA8;
+        if (mode < 8) {
+            if (mode > 5) func_8006AB94(ot, shift);
+        }
     }
 }

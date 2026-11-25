@@ -153,4 +153,14 @@ typedef struct CombPlayerHudView {
 
 void func_8005EEE0(GsOT *ot, CombPlayerHudView *player, int first, int second);
 
+typedef struct CombRaceStateView {
+    unsigned char unknown_00[0x5C];
+    short value_5c;
+} CombRaceStateView;
+
+typedef struct CombPlayerRaceHudView {
+    CombPlayerHudView player;
+    CombRaceStateView *race;
+} CombPlayerRaceHudView;
+
 #endif
