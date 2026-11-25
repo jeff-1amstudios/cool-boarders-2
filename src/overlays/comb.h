@@ -67,4 +67,25 @@ void func_8005EB18(GsOT *ot, CombPlayer *player);
 
 int func_8005EC58(VECTOR *origin, MATRIX *matrix, VECTOR *normal);
 
+typedef struct CombPlayerHeadingView {
+    unsigned char unknown_0000[0x96];
+    short state_96;
+    unsigned char unknown_0098[0xB0];
+    int state_148;
+    unsigned char unknown_014c[0x8E];
+    short heading;
+    unsigned char unknown_01dc[0x4FC];
+    unsigned short *surface;
+    unsigned char unknown_06dc[0x48];
+    int value_724;
+    unsigned char unknown_0728[6];
+    short mode;
+    unsigned char unknown_0730[0x41B8];
+    long motion_x;
+    unsigned char unknown_48ec[4];
+    long motion_z;
+} CombPlayerHeadingView;
+
+void func_8005EDC4(CombPlayerHeadingView *view, int value);
+
 #endif

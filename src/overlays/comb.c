@@ -84,6 +84,8 @@ extern int D_80099ED4;
 extern void func_80080D78(GsOT *ot, int effect, int update, int mode,
                           VECTOR *position, int shift, void *scratch);
 
+extern void func_8007E198(int value, short angle, int active, int mode, int extra);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -553,4 +555,29 @@ int func_8005EC58(VECTOR *origin, MATRIX *matrix, VECTOR *normal)
         return -1;
     }
     return 0;
+}
+
+// FUNCTION: COMB.BIN:0x8005EDC4
+void func_8005EDC4(CombPlayerHeadingView *view, int value)
+{
+    int mode = view->mode;
+    int extra = view->value_724;
+    int active = -(unsigned int)(view->state_96 == 0);
+    int angle;
+
+    angle = ratan2(-view->motion_x, -view->motion_z) - view->heading;
+    angle = (angle << 20) >> 20;
+    switch (D_800A5D5C->course) {
+    case 3:
+    case 5:
+    case 9:
+        if (view->state_148 == -1 && active == -1) {
+            mode = 4;
+        }
+        break;
+    }
+    if ((unsigned int)(*view->surface - 3) < 2) {
+        active = 0;
+    }
+    func_8007E198(value, (short)angle, active, mode, extra);
 }
