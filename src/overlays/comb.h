@@ -484,4 +484,70 @@ typedef union CombResultWork {
     int value;
 } CombResultWork;
 
+/* Detailed motion/player views used by func_80060E14. */
+typedef struct CombPitchMotionState {
+    unsigned char unknown_000[0x10];
+    int translation_y;
+    unsigned char unknown_014[0x18];
+    SVECTOR rotation;
+    int word_034;
+    MATRIX matrix;
+    unsigned char unknown_058[0x24];
+    int word_07c;
+    unsigned char unknown_080[4];
+    short height;
+    short unknown_086;
+    int history_a[16];
+    int history_b[16];
+    short angles[4];
+    short *angle_buffer;
+    short mode;
+    short unknown_116;
+    int value;
+    int negative_height;
+    int timer;
+    int word_124;
+    int word_128;
+    CombMotionSample samples[4];
+    int selected;
+    int word_190;
+    int word_194;
+    int word_198;
+    int word_19c;
+    int word_1a0;
+} CombPitchMotionState;
+
+typedef struct CombMotionExtended {
+    CombPitchMotionState motion;
+    int saved_height;
+} CombMotionExtended;
+
+typedef struct CombPitchMotionPlayer {
+    unsigned char unknown_000[0x2C];
+    int position[3];
+    unsigned char unknown_038[4];
+    short height;
+    short airborne;
+    unsigned char unknown_040[0x19A];
+    short heading;
+    unsigned char unknown_1dc[0x4FC];
+    CombMotionExtended *motion;
+    unsigned char unknown_6dc[0x6C];
+    int movement;
+    unsigned char unknown_74c[0x508];
+    short reverse;
+    unsigned char unknown_c56[0x5A];
+    short rotation_x;
+    short unknown_cb2;
+    short rotation_y;
+} CombPitchMotionPlayer;
+
+int func_80060E14(CombCameraPlayerView *player, int active, int frozen);
+
+typedef union CombPitchWork {
+    int value;
+    unsigned int bits;
+    short *cursor;
+} CombPitchWork;
+
 #endif

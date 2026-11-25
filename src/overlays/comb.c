@@ -145,6 +145,9 @@ extern void func_80061440(CombCameraPlayerView *player, int speed, int update);
 
 extern void func_8001E468(int bank, int category, int row);
 
+extern void func_800962A0(int *destination, int *source);
+extern int func_80095530(short x, short z);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -1181,6 +1184,206 @@ int func_80060C24(CombMotionState *state, int sample, int target)
         }
     }
     return target;
+}
+
+// FUNCTION: COMB.BIN:0x80060E14
+int func_80060E14(CombCameraPlayerView *camera_player, int active, int frozen)
+{
+    CombPitchMotionPlayer *player = (CombPitchMotionPlayer *)camera_player;
+    CombPitchMotionState *state = &player->motion->motion;
+    unsigned int pitch = (unsigned short)state->mode;
+    int heading = state->value;
+    short *history = state->angle_buffer;
+    int position[3];
+    int i, j, sample, next_direction;
+    int *point;
+
+    int selected, denominator, decay;
+    CombPitchWork angle;
+    MATRIX *matrix;
+
+    if (frozen == 0) {
+        selected = state->selected + 1;
+        point = &state->samples[0].x;
+        if (selected < 4) {
+            point += selected * 6;
+        }
+        position[0] = player->position[0] - point[0];
+        position[1] = player->position[1] - point[1];
+        position[2] = player->position[2] - point[2];
+        func_800962A0(position, position);
+        denominator = func_80095530((short)position[0], (short)position[2]);
+        if (position[2] > 0) {
+            denominator = -denominator;
+        }
+        if (denominator != 0) {
+            angle.value = position[1];
+            angle.bits = angle.value << 12;
+            angle.value = catan(angle.value / denominator);
+        } else {
+            angle.value = 0;
+        }
+        if (player->reverse != 0) {
+            angle.value = -angle.value;
+        }
+        sample = (angle.value * 3600) >> 12;
+        angle.value = 0;
+        if (history[0] != (short)pitch) {
+            angle.value = -1;
+            if ((short)pitch < history[0]) {
+                angle.value = 1;
+            }
+        }
+        for (i = 1; i < 4; i++) {
+            if (history[i] == (short)pitch) {
+                continue;
+            }
+            next_direction = -1;
+            if ((short)pitch < history[i]) {
+                next_direction = 1;
+            }
+            if (angle.value == 0) {
+                angle.value = next_direction;
+            } else if (angle.value * next_direction < 0) {
+                angle.value = 0;
+                break;
+            }
+        }
+        if (angle.value != 0) {
+            if (i != 4) {
+                for (j = 3; j >= 0; j--) {
+                    history[j] = pitch;
+                }
+            } else if (angle.value > 0) {
+                for (i = 0; i < 4; i++) {
+                    if (history[i] > sample) {
+                        for (j = i; j < 4; j++) {
+                            history[j] = sample;
+                        }
+                        break;
+                    }
+                }
+            } else {
+                for (i = 0; i < 4; i++) {
+                    if (history[i] < sample) {
+                        for (j = i; j < 4; j++) {
+                            history[j] = sample;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        angle.value = sample;
+        j = history[0];
+        for (i = 0; i < 3; i++) {
+            history[i] = history[i + 1];
+        }
+        history[i] = angle.value;
+        angle.value = j;
+        if (state->word_1a0 != 0 && active != 0 && state->word_19c <= 8) {
+            i = 15;
+            j = 5;
+            if (active > 0) {
+                j = 15;
+            }
+        } else {
+            i = 5;
+            j = 5;
+        }
+        if (angle.value >= (short)pitch) {
+            if (state->word_1a0 == -2) {
+                state->word_1a0 = 0;
+            }
+            if (angle.value - (short)pitch > i) {
+                pitch += j;
+            } else {
+                pitch = angle.value;
+            }
+        } else {
+            if (state->word_1a0 == -1) {
+                state->word_1a0 = -2;
+            }
+            if ((short)pitch - angle.value > i) {
+                pitch -= j;
+            } else {
+                pitch = angle.value;
+            }
+        }
+        if (active > 0) {
+            if (state->word_194 == 0) {
+                state->word_198 = 100;
+                state->word_19c = 10;
+                state->word_1a0 = -1;
+                state->word_194 = ~state->word_194;
+            } else if (state->word_19c != 0) {
+                state->word_19c--;
+            } else {
+                decay = state->word_198;
+                if (decay > 10) {
+                    decay = 10;
+                }
+                state->word_198 -= decay;
+            }
+            if ((unsigned int)(state->word_19c - 7) < 2) {
+                pitch += 60;
+            }
+            if (state->word_19c == 0) {
+                active--;
+            }
+        } else {
+            active = 0;
+            state->word_194 = 0;
+            state->word_198 = 0;
+            state->word_19c = 0;
+            state->word_1a0 = 0;
+        }
+        if ((short)pitch > 800) {
+            pitch = 800;
+        }
+        if ((short)pitch < -800) {
+            pitch = -800;
+        }
+        if (player->reverse == 0) {
+            angle.value = player->heading;
+            i = angle.value - heading;
+        } else {
+            angle.value = player->heading - 2048;
+            i = angle.value - heading;
+        }
+        i = (i << 20) >> 20;
+        if ((player->airborne != 0 && player->movement != 0) ||
+            (unsigned int)(i + 169) < 339) {
+            heading = angle.value;
+        } else if (i > 0) {
+            heading += 170;
+        } else {
+            heading -= 170;
+        }
+        heading = (heading << 20) >> 20;
+    }
+    state->matrix = D_80058E20;
+    sample = ((short)pitch << 12) / 3600;
+    if (player->reverse == 0) {
+        i = player->rotation_x;
+    } else {
+        i = -player->rotation_x;
+    }
+    matrix = &state->matrix;
+    state->rotation.vx = sample + i;
+    state->rotation.vy = 0;
+    state->rotation.vz = 0;
+    RotMatrixX(sample, matrix);
+    RotMatrixY(heading - player->rotation_y, matrix);
+    RotMatrixX(player->rotation_x, matrix);
+    RotMatrixY(player->rotation_y, matrix);
+    state->word_07c = 0;
+    state->word_034 = 0;
+    state->mode = pitch;
+    state->value = heading;
+    state->matrix.t[1] = -state->height - state->translation_y;
+    ((CombMotionExtended *)state)->saved_height = player->height;
+    return active;
 }
 
 // FUNCTION: COMB.BIN:0x80061A64

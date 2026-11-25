@@ -154,3 +154,5 @@ func_80061E48 = 0x80061E48; // type:func
 GsSetRefView2L = 0x800308B4; // type:func
 SquareRoot12 = 0x8001FBDC; // type:func
 RotMatrixX = 0x8002093C; // type:func
+func_80095530 = 0x80095530; // type:func
+func_800962A0 = 0x800962A0; // type:func
