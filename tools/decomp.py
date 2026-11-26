@@ -135,6 +135,32 @@ def content_hashes(paths):
     return {p: hashlib.sha256((ROOT / p).read_bytes()).hexdigest() for p in paths}
 
 
+def stop_process_group(process, path):
+    """Stop descendants, allowing macOS groups containing only exited processes."""
+    import signal
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    except PermissionError as error:
+        # macOS can return EPERM for a process group left with only zombies.
+        # Do not ignore EPERM if a live tool could still edit the checkout.
+        try:
+            listing = subprocess.check_output(
+                ["ps", "-axo", "pgid=,stat="], text=True)
+            members = [fields[1] for line in listing.splitlines()
+                       if len(fields := line.split()) == 2
+                       and fields[0] == str(process.pid)]
+        except (OSError, subprocess.CalledProcessError) as inspection_error:
+            raise RuntimeError(
+                f"Cannot inspect process group {process.pid} after cleanup was denied; "
+                f"inspect {path}: {inspection_error}") from error
+        if any(not status.startswith('Z') for status in members):
+            raise RuntimeError(
+                f"Permission denied stopping live process group {process.pid}; "
+                f"worker cleanup is incomplete; inspect {path}") from error
+
+
 def command(arguments, name, timeout=300, directory=None, input_text=None, env=None):
     env = dict(os.environ if env is None else env)
     # Splat's tqdm bars are interactive redraws, unsuitable for saved batch logs.
@@ -159,24 +185,17 @@ def command(arguments, name, timeout=300, directory=None, input_text=None, env=N
         try:
             process.communicate(input=input_text, timeout=timeout)
             code = process.returncode
-            if name == "agent":
-                # A failed Codex turn can exit while a tool child is still alive.
-                # Stop it before archiving/checkpointing the candidate checkout.
-                import signal
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
         except BaseException as error:
-            import signal
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
+            stop_process_group(process, path)
             process.wait()
             if isinstance(error, subprocess.TimeoutExpired):
                 raise CommandTimeout(f"Command timed out; inspect {path}") from error
             raise
+        else:
+            if name == "agent":
+                # A failed Codex turn can exit while a tool child is still alive.
+                # Stop it before archiving/checkpointing the candidate checkout.
+                stop_process_group(process, path)
         finally:
             done.set()
             output.join()

@@ -12,7 +12,7 @@ Snapshot: **26 November 2026**. Counts cover non-SDK function instances across a
 | `SCUS_943.58` | 164 / 187 | 87.70% | 22 |
 | `BDEDIT.BIN` | 77 / 81 | 95.06% | 4 |
 | `BP.BIN` | 172 / 246 | 69.92% | 74 |
-| `COMB.BIN` | 42 / 273 | 15.38% | 11 |
+| `COMB.BIN` | 43 / 273 | 15.75% | 10 |
 | `ENDING.BIN` | 0 / 41 | 0.00% | 0 |
 | `FREE.BIN` | 0 / 291 | 0.00% | 0 |
 | `HP.BIN` | 0 / 269 | 0.00% | 0 |
@@ -24,7 +24,7 @@ Snapshot: **26 November 2026**. Counts cover non-SDK function instances across a
 | `SBC2.BIN` | 0 / 278 | 0.00% | 0 |
 | `TM.BIN` | 0 / 278 | 0.00% | 0 |
 | `VS.BIN` | 0 / 257 | 0.00% | 0 |
-| **Total** | **455 / 2,920** | **15.58%** | **111** |
+| **Total** | **456 / 2,920** | **15.62%** | **110** |
 
 Functions are shown as matching C / total non-SDK functions; Percent is the matching C share. Matching C requires an exact full-file comparison against the pinned original. Deferred targets remain assembly and await another attempt; 1 curated hold remains outside the deferred count.
 
