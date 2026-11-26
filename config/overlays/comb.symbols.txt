@@ -424,3 +424,5 @@ D_800A4BA0 = 0x800A4BA0; // size:0x4
 D_800A5D10 = 0x800A5D10; // size:0x4
 D_800A5D20 = 0x800A5D20; // size:0x4
 D_800A5D30 = 0x800A5D30; // size:0x4
+
+func_80071A38 = 0x80071A38; // type:func

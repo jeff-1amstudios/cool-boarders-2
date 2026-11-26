@@ -4845,3 +4845,186 @@ void func_80070CC4(void)
     }
     func_80072164();
 }
+
+// FUNCTION: COMB.BIN:0x80071A38
+int func_80071A38(CombPlayer *player, VECTOR *start, VECTOR *end,
+                   VECTOR *position, unsigned int surface)
+{
+    VECTOR from_start;
+    VECTOR from_end;
+    SVECTOR segment;
+    SVECTOR response;
+    VECTOR squares;
+    VECTOR normal;
+    int sign;
+    int result;
+    int limit;
+    int radius;
+    int height;
+    int distance;
+    int length;
+    int second_dot;
+    int initial_distance;
+    int muted;
+    int sample;
+    int max_height;
+    int start_distance;
+    int angle_scale;
+
+    memset(&response, 0, sizeof(response));
+    response.vx = end->vx - start->vx;
+    response.vy = 0;
+    response.vz = end->vz - start->vz;
+    segment = response;
+    memset(&normal, 0, sizeof(normal));
+    sign = -1;
+    sample = -1;
+    normal.vx = segment.vz;
+    normal.vy = 0;
+    normal.vz = -segment.vx;
+    squares = normal;
+    result = 0;
+    height = position->vy;
+    muted = *(signed char *)&player->unknown_4918[6];
+    switch (surface) {
+    case 0x39:
+        limit = 0x300;
+        if (D_800A5D5C->course == 9) {
+            limit = 0x200;
+            radius = 0x200;
+            surface = 1;
+        } else {
+            radius = 0x100;
+        }
+        height -= 0xd00;
+        break;
+    case 0x3a:
+        limit = 0x100;
+        radius = 0x100;
+        height -= 0xd00;
+        if (D_800A5D5C->course == 9) surface = 1;
+        break;
+    case 0x3b:
+        limit = 0x600;
+        radius = 0x300;
+        height -= 0x2800;
+        if (D_800A5D5C->course == 9) surface = 1;
+        break;
+    case 0x3c:
+        limit = 0x80;
+        radius = 0x80;
+        height -= 0xd00;
+        break;
+    default:
+        goto done;
+    }
+    max_height = start->vy;
+    if (max_height < end->vy) max_height = end->vy;
+    length = 0;
+    if (max_height < height) {
+        distance = limit + 1;
+    } else {
+        distance = squares.vx * (position->vx - start->vx) +
+                   squares.vz * (position->vz - start->vz);
+        if (distance < 0) {
+            sign = 1;
+            distance = -distance;
+        }
+        __asm__ volatile (
+            "lwc2 $9, 0(%0)\n\t"
+            "lwc2 $10, 4(%0)\n\t"
+            "lwc2 $11, 8(%0)\n\t"
+            "nop\n\tnop\n\t"
+            "cop2 0xA00428\n\t"
+            "swc2 $25, 0(%0)\n\t"
+            "swc2 $26, 4(%0)\n\t"
+            "swc2 $27, 8(%0)"
+            : : "r" (&squares) : "memory");
+        length = SquareRoot0(squares.vx + squares.vz);
+        if (length != 0) distance /= length;
+    }
+    if (distance > limit || length == 0) goto done;
+    from_start.vx = position->vx - start->vx;
+    from_start.vy = 0;
+    from_start.vz = position->vz - start->vz;
+    from_end.vx = position->vx - end->vx;
+    from_end.vy = 0;
+    from_end.vz = position->vz - end->vz;
+    length = segment.vx * from_start.vx + segment.vz * from_start.vz;
+    second_dot = segment.vx * from_end.vx + segment.vz * from_end.vz;
+    initial_distance = distance;
+    if ((length > 0 && second_dot > 0) ||
+        (length < 0 && second_dot < 0)) {
+        squares.vx = position->vx - end->vx;
+        squares.vz = position->vz - end->vz;
+        distance = squares.vx * (position->vx - end->vx) +
+                   squares.vz * (position->vz - end->vz);
+        distance = distance < 0 ? -distance : distance;
+        __asm__ volatile (
+            "lwc2 $9, 0(%0)\n\t"
+            "lwc2 $10, 4(%0)\n\t"
+            "lwc2 $11, 8(%0)\n\t"
+            "nop\n\tnop\n\t"
+            "cop2 0xA00428\n\t"
+            "swc2 $25, 0(%0)\n\t"
+            "swc2 $26, 4(%0)\n\t"
+            "swc2 $27, 8(%0)"
+            : : "r" (&squares) : "memory");
+        length = SquareRoot0(squares.vx + squares.vz);
+        if (length != 0) distance /= length;
+    }
+    if (distance > limit) goto done;
+    squares.vx = position->vx - start->vx;
+    squares.vz = position->vz - start->vz;
+    start_distance = squares.vx * (position->vx - start->vx) +
+                squares.vz * (position->vz - start->vz);
+    start_distance = start_distance < 0 ? -start_distance : start_distance;
+    __asm__ volatile (
+        "lwc2 $9, 0(%0)\n\t"
+        "lwc2 $10, 4(%0)\n\t"
+        "lwc2 $11, 8(%0)\n\t"
+        "nop\n\tnop\n\t"
+        "cop2 0xA00428\n\t"
+        "swc2 $25, 0(%0)\n\t"
+        "swc2 $26, 4(%0)\n\t"
+        "swc2 $27, 8(%0)"
+        : : "r" (&squares) : "memory");
+    length = SquareRoot0(squares.vx + squares.vz);
+    if (length != 0) start_distance /= length;
+    if (start_distance > radius && distance <= radius) {
+        if (initial_distance < radius / 4) {
+            result = -2;
+            response.vx = segment.vz;
+            response.vy = 0;
+            response.vz = -segment.vx;
+            length = 0;
+        } else {
+            result = -1;
+            length = (short)(segment.vz / 3);
+            second_dot = -segment.vx / 3;
+            response.vy = 0;
+            response.vx = segment.vx + length * sign;
+            response.vz = segment.vz + second_dot * sign;
+            if (sign < 0) {
+                response.vx = -response.vx;
+                response.vz = -response.vz;
+            }
+            length = ratan2(radius - initial_distance, radius);
+            length = length < 0 ? -length : length;
+            angle_scale = length <= 0x400 ? length * 90 : (0x800 - length) * 90;
+            length = angle_scale / 1024 + 15;
+        }
+        if (surface != 0x3c) {
+            D_800A5D10 = length;
+            func_800728EC(player, &segment, &response, surface);
+            D_800A5D10 = 0;
+        }
+    } else if (start_distance > limit && D_800A5D5C->course != 8) {
+        sample = 31;
+    }
+    if (sample >= 0 && muted == 0) {
+        func_80016860(sample, player->unknown_4918[7]);
+    }
+done:
+    return result;
+}
