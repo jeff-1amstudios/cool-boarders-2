@@ -5049,3 +5049,86 @@ void func_80072164(void)
         entry--;
     } while (i >= 0);
 }
+
+// FUNCTION: COMB.BIN:0x800722F8
+int func_800722F8(VECTOR *start, VECTOR *end, VECTOR *edge_start,
+                  VECTOR *edge_end, VECTOR *intersection)
+{
+    long min_x, max_x, min_z, max_z;
+    long edge_min_x, edge_max_x, edge_min_z, edge_max_z;
+    long first, second;
+    long dz, negative_dx, numerator, denominator, side_end;
+    long x, z;
+    long base_x, edge_dz, side_start;
+    int result = 0;
+
+    first = start->vx;
+    second = end->vx;
+    if (second < first) {
+        min_x = second;
+        max_x = first;
+    } else {
+        min_x = first;
+        max_x = second;
+    }
+    first = start->vz;
+    second = end->vz;
+    if (second < first) {
+        min_z = second;
+        max_z = first;
+    } else {
+        min_z = first;
+        max_z = second;
+    }
+    first = edge_start->vx;
+    second = edge_end->vx;
+    if (second < first) {
+        edge_min_x = second;
+        edge_max_x = first;
+    } else {
+        edge_min_x = first;
+        edge_max_x = second;
+    }
+    first = edge_start->vz;
+    second = edge_end->vz;
+    if (second < first) {
+        edge_min_z = second;
+        edge_max_z = first;
+    } else {
+        edge_min_z = first;
+        edge_max_z = second;
+    }
+    if (min_x <= edge_max_x && edge_min_x <= max_x &&
+        min_z <= edge_max_z && edge_min_z <= max_z) {
+        negative_dx = start->vx - end->vx;
+        dz = end->vz - start->vz;
+        base_x = edge_start->vx;
+        numerator = dz * (start->vx - base_x) +
+                    negative_dx * (start->vz - edge_start->vz);
+        edge_dz = edge_end->vz - edge_start->vz;
+        denominator = dz * (edge_end->vx - base_x) + negative_dx * edge_dz;
+        if (denominator != 0) {
+            x = (edge_end->vx - base_x) * numerator / denominator;
+            z = edge_dz * numerator / denominator;
+            side_start = -numerator;
+            intersection->vy = 0;
+            intersection->vx = base_x + x;
+            intersection->vz = edge_start->vz + z;
+            numerator = intersection->vx;
+            z = intersection->vz;
+            if (min_x <= numerator && numerator <= max_x && min_z <= z && z <= max_z &&
+                edge_min_x <= numerator && numerator <= edge_max_x &&
+                edge_min_z <= z && z <= edge_max_z) {
+                side_end = dz * (edge_end->vx - start->vx) +
+                           negative_dx * (edge_end->vz - start->vz);
+                if ((side_start > 0 && side_end <= 0) ||
+                    (side_start >= 0 && side_end < 0)) {
+                    result = -1;
+                } else {
+                    result = -2;
+                }
+            }
+        }
+    }
+    return result;
+}

@@ -1093,4 +1093,7 @@ int func_80071A38(CombPlayer *player, VECTOR *start, VECTOR *end,
 
 void func_80072164(void);
 
+int func_800722F8(VECTOR *start, VECTOR *end, VECTOR *edge_start,
+                  VECTOR *edge_end, VECTOR *intersection);
+
 #endif
