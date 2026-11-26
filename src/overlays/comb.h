@@ -687,4 +687,6 @@ void func_80063DDC(int course);
 
 void func_8006406C(GsOT *ot, GsOT_TAG *tags, unsigned long length);
 
+void func_80064094(CombPlayerCameraView *player);
+
 #endif

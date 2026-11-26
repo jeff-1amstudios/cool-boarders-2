@@ -2566,3 +2566,14 @@ void func_8006406C(GsOT *ot, GsOT_TAG *tags, unsigned long length)
     ot->offset = 0;
     ot->point = 0;
 }
+
+// FUNCTION: COMB.BIN:0x80064094
+void func_80064094(CombPlayerCameraView *player)
+{
+    CombCameraModeView *camera = player->camera;
+
+    D_800A5EF8 = 0;
+    GsInitCoordinate2(0, &camera->camera_coordinate);
+    func_80060940(player, 0);
+    GsSetRefView2(&camera->view);
+}

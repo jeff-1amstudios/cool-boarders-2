@@ -214,3 +214,7 @@ GsSetFlatLight = 0x8002EE70; // type:func
 GsSetAmbient = 0x8002F640; // type:func
 GsSetLightMode = 0x8002F434; // type:func
 GsSetFogParam = 0x8002F4C0; // type:func
+
+func_80064094 = 0x80064094; // type:func
+GsInitCoordinate2 = 0x8002E558; // type:func
+GsSetRefView2 = 0x8002F760; // type:func
