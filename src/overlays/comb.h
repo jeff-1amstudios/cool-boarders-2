@@ -1070,4 +1070,14 @@ int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projecti
 
 int func_800709BC(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection, int speed);
 
+typedef struct CombGeometryHeader {
+    unsigned int unknown_00;
+    short count_04;
+    short count_06;
+    int offset_08;
+    int offset_0c;
+} CombGeometryHeader;
+
+void func_80070C78(unsigned char *scene, CombGeometryHeader *geometry);
+
 #endif

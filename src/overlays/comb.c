@@ -379,6 +379,11 @@ extern void func_800728EC(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, 
 
 extern int func_8006E230(VECTOR *position, int entry, CombSurfaceState *surface, int mode);
 
+extern unsigned char *D_800A4B80;
+extern unsigned char *D_800A4B84;
+extern unsigned short D_800A4B88;
+extern unsigned short D_800A4B8C;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4774,4 +4779,14 @@ int func_800709BC(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projecti
         }
     }
     return heading;
+}
+
+// FUNCTION: COMB.BIN:0x80070C78
+void func_80070C78(unsigned char *scene, CombGeometryHeader *geometry)
+{
+    D_800A5AE8 = (CombSceneEntry *)(scene + 8);
+    D_800A4B80 = (unsigned char *)geometry + geometry->offset_08;
+    D_800A4B84 = (unsigned char *)geometry + geometry->offset_0c;
+    D_800A4B88 = geometry->count_04;
+    D_800A4B8C = geometry->count_06;
 }
