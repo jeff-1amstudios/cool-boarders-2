@@ -4534,3 +4534,38 @@ int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mo
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x800702F4
+int func_800702F4(CombSurfaceState *surface, int heading)
+{
+    SVECTOR sample;
+    SVECTOR relative;
+    int normal_y;
+    int normal_x;
+    int normal_z;
+    CombSceneEntry *entry;
+    int first_height;
+    int second_height;
+    int angle;
+
+    normal_y = surface->normal[1];
+    normal_x = surface->normal[0];
+    normal_z = surface->normal[2];
+    entry = &D_800A5AE8[surface->surface];
+    memset(&relative, 0, sizeof(relative));
+    relative.vx = surface->x - ((int *)entry->unknown_00)[0];
+    relative.vy = 0;
+    relative.vz = surface->z - ((int *)entry->unknown_00)[2];
+    sample = relative;
+    normal_y = normal_y ? normal_y : 1;
+    first_height = (normal_x * (surface->offset.vx - sample.vx) +
+                    normal_y * surface->offset.vy +
+                    normal_z * (surface->offset.vz - sample.vz)) / normal_y;
+    sample.vx -= (rsin((short)heading) << 8) >> 12;
+    sample.vz -= (rcos((short)heading) << 8) >> 12;
+    second_height = (normal_x * (surface->offset.vx - sample.vx) +
+                     normal_y * surface->offset.vy +
+                     normal_z * (surface->offset.vz - sample.vz)) / normal_y;
+    angle = ratan2(second_height - first_height, 256);
+    return (angle << 20) >> 20;
+}

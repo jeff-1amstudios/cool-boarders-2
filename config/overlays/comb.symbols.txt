@@ -1,4 +1,5 @@
 // COMB.BIN; reference SHA-256 is pinned in config/overlays.json.
+memset = 0x800449E8; // type:func
 D_8005AB68 = 0x8005AB68; // type:u32 size:0x4
 func_8005AB6C = 0x8005AB6C; // type:func
 func_8005AEA4 = 0x8005AEA4; // type:func
