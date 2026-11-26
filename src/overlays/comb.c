@@ -251,6 +251,10 @@ extern void func_80015FC8(void);
 extern void func_80016010();
 extern int func_80016220(void);
 
+extern BpAnimationFrame *func_80097B98(unsigned int frame_index, BpAnimationFrame *frame,
+                                       BpAnimationState *state, const int *coordinate_indices,
+                                       unsigned long *pmd, int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2937,5 +2941,94 @@ void func_800658FC(int first_bank, int second_bank)
     func_80016010(first_bank, second_bank, -1);
     while (func_80016220() != 0) {
         VSync(0);
+    }
+}
+
+// FUNCTION: COMB.BIN:0x80065968
+void func_80065968(BpAnimationPlayback *playback, int animation, int mode, int end_frame)
+{
+    unsigned int start = *(animation + playback->animation.first_frame_starts);
+    int index = playback->animation.word_4e4 - start;
+    int count = *(animation + playback->animation.frame_counts);
+    BpAnimationFrame **frames = (animation + playback->animation.animations)->frames;
+    BpAnimationFrame *frame;
+    int limit;
+    int status = 0;
+
+    if (animation > 0 && mode != 0) {
+        if (animation != playback->animation.word_4e0) {
+            index = count & -(mode == 3);
+        }
+        limit = index + 1;
+
+        switch (mode) {
+        case 2:
+            if (index < 0 || index >= count) {
+                index = 0;
+            }
+            /* Fall through. */
+        case 1:
+            frame = frames[index];
+            if (index < 0) {
+                goto inactive;
+            }
+            if (index < count) {
+                if (end_frame == 0) {
+                    limit = index + 1;
+                }
+                if (end_frame > 0) {
+                    if (limit < end_frame) {
+                        limit = end_frame;
+                    }
+                } else {
+                    limit = limit > count ? count : limit;
+                }
+                if (index < limit) {
+                    do {
+                        frame = func_8009711C(index + start, frame, &playback->animation,
+                                              playback->animation.coordinate_indices,
+                                              playback->animation.pmd, 2);
+                        index++;
+                    } while (index < limit);
+                }
+            }
+            if (index < 0) {
+                goto inactive;
+            }
+            if (index < count) {
+                status = -1;
+            } else {
+                status = -2;
+            }
+            break;
+        case 3:
+            index--;
+            frame = frames[index];
+            if (index >= 0 && index < count) {
+                func_80097B98(index + start, frame, &playback->animation,
+                              playback->animation.coordinate_indices, playback->animation.pmd, 2);
+            }
+            if (index < 2) {
+                status = -2;
+            } else if (index < count) {
+                status = -1;
+            } else {
+inactive:
+                status = -2;
+            }
+            break;
+        }
+        playback->animation.word_4e4 = index + start;
+    }
+
+    playback->root_coordinate->coord.t[1] = playback->saved_y;
+    playback->animation.word_4e8 = mode;
+    if (mode == 0) {
+        playback->animation.word_4e8 = 1;
+    }
+    if (status == -1) {
+        playback->animation.word_4dc = animation;
+    } else {
+        playback->animation.word_4dc = -1;
     }
 }

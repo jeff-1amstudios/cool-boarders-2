@@ -843,4 +843,8 @@ void func_800657DC(void);
 
 void func_800658FC(int first_bank, int second_bank);
 
+#include "bp.h"
+
+void func_80065968(BpAnimationPlayback *playback, int animation, int mode, int end_frame);
+
 #endif
