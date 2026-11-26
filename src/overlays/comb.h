@@ -1024,4 +1024,6 @@ typedef struct CombTrickLabelView {
 
 void func_8006BB20(GsOT *ot, int *data, int different);
 
+void func_8006BB5C(GsOT *ot, int value, int *state, int shift, int extra);
+
 #endif

@@ -331,6 +331,9 @@ extern int strlen(char *text);
 
 extern PACKET *func_8007AC70(GsOT_TAG *tag, PACKET *packets, int *data, int different);
 
+extern int D_800A5EA8;
+extern PACKET *func_8007CD1C(GsOT_TAG *tag, PACKET *packet, int value, int *state, int shift);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4046,4 +4049,11 @@ int func_8006B920(CombHudEntry *entry, char *text, int line)
 void func_8006BB20(GsOT *ot, int *data, int different)
 {
     D_80058ACC = func_8007AC70(&ot->org[3], D_80058ACC, data, different);
+}
+
+// FUNCTION: COMB.BIN:0x8006BB5C
+void func_8006BB5C(GsOT *ot, int value, int *state, int shift, int extra)
+{
+    D_800A5EA8 = extra - 1;
+    D_80058ACC = func_8007CD1C(&ot->org[3], D_80058ACC, value, state, shift);
 }

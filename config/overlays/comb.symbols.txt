@@ -358,3 +358,6 @@ D_8009A6BC = 0x8009A6BC; // size:0x18
 strcpy = 0x800449A8; // type:func
 strlen = 0x800449B8; // type:func
 func_8007AC70 = 0x8007AC70; // type:func
+
+D_800A5EA8 = 0x800A5EA8; // size:0x4
+func_8007CD1C = 0x8007CD1C; // type:func
