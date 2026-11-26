@@ -228,6 +228,12 @@ extern CombObjectPercentages D_800988D4;
 extern CombObjectEntry D_8009A410[];
 extern void func_80065BA8(CombObjectParameters *parameters, int mode);
 
+extern BpAnimationFrame *func_8009711C(unsigned int frame_index, BpAnimationFrame *frame,
+                                       BpAnimationState *state, const int *coordinate_indices,
+                                       unsigned long *pmd, int mode);
+extern GsCOORDINATE2 *func_800654F0(BpAnimationState *state, GsCOORDINATE2 *parent,
+                                 int offset, int extent);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2769,4 +2775,27 @@ void func_80064984(CombPlayerReset *state, int reverse)
     state->byte_4912 = 0;
     state->byte_4913 = 0;
     state->value_4904 = 0;
+}
+
+// FUNCTION: COMB.BIN:0x80065428
+void func_80065428(BpAnimationState *state, void *parent, int animation,
+                   int offset, int extent)
+{
+    int i = 0;
+    BpAnimationFrame *frame = *(animation + state->animations)->frames;
+    int count = *(animation + state->frame_counts);
+    unsigned int start = *(animation + state->first_frame_starts);
+    GsCOORDINATE2 *coordinate;
+
+    if (i < count) {
+        do {
+            frame = func_8009711C(i + start, frame, state, state->coordinate_indices,
+                                  state->pmd, 0);
+            i++;
+        } while (i < count);
+    }
+
+    coordinate = func_800654F0(state, parent, offset, extent);
+    ((BpAnimationPlayback *)state)->root_coordinate = coordinate;
+    ((BpAnimationPlayback *)state)->saved_y = (short)coordinate->coord.t[1];
 }
