@@ -3374,3 +3374,26 @@ int func_80069E00(CombScorePlayer *player, BpScore *score)
     }
     return func_8006A230(score);
 }
+
+// FUNCTION: COMB.BIN:0x8006A1A0
+void func_8006A1A0(BpScore *score)
+{
+    int move;
+
+    score->combined_bonus = 0;
+    score->rotation_bonus[0] = score->rotation_bonus[0] / 3;
+    move = score->move_bonus[1] != 0;
+    score->rotation_bonus[1] = score->rotation_bonus[1] / 3;
+    ((unsigned char *)score + move)[4] = 0;
+    score->duration_bonus = 0;
+    score->heading_bonus = 0;
+    score->unknown_07 = 0;
+    score->reverse = 0;
+    score->unknown_08[0] = 0;
+    score->reverse_bonus = 0;
+    score->rotations[0] = 0;
+    score->rotations[1] = 0;
+    score->move_index[0] = -1;
+    score->move_index[1] = -1;
+    score->unknown_26 = 0;
+}
