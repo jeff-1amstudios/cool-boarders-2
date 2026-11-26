@@ -1022,4 +1022,6 @@ typedef struct CombTrickLabelView {
     short twist;
 } CombTrickLabelView;
 
+void func_8006BB20(GsOT *ot, int *data, int different);
+
 #endif

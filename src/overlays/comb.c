@@ -329,6 +329,8 @@ extern char *D_8009A6BC[6];
 extern char *strcpy(char *destination, char *source);
 extern int strlen(char *text);
 
+extern PACKET *func_8007AC70(GsOT_TAG *tag, PACKET *packets, int *data, int different);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4038,4 +4040,10 @@ int func_8006B920(CombHudEntry *entry, char *text, int line)
         value--;
     }
     return value;
+}
+
+// FUNCTION: COMB.BIN:0x8006BB20
+void func_8006BB20(GsOT *ot, int *data, int different)
+{
+    D_80058ACC = func_8007AC70(&ot->org[3], D_80058ACC, data, different);
 }
