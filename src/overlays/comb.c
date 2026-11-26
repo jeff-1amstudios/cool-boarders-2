@@ -3397,3 +3397,13 @@ void func_8006A1A0(BpScore *score)
     score->move_index[1] = -1;
     score->unknown_26 = 0;
 }
+
+// FUNCTION: COMB.BIN:0x8006A230
+int func_8006A230(BpScore *score)
+{
+    return score->height_bonus + score->reverse + score->reverse_bonus
+         + score->move_bonus[0] + score->move_bonus[1]
+         + score->duration_bonus + score->heading_bonus
+         + score->rotation_bonus[0] + score->rotation_bonus[1]
+         + score->combined_bonus + score->distance_bonus;
+}
