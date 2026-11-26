@@ -364,3 +364,4 @@ func_8007AC70 = 0x8007AC70; // type:func
 D_800A5EA8 = 0x800A5EA8; // size:0x4
 func_8007CD1C = 0x8007CD1C; // type:func
 func_8007D780 = 0x8007D780; // type:func
+func_8007B3A8 = 0x8007B3A8; // type:func
