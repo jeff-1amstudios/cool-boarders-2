@@ -201,6 +201,9 @@ extern void func_80080938(int mode);
 extern void func_80080AB0(void *data, int course, int state, int option);
 extern void func_8007FAB8(int option);
 
+extern GsDOBJ2 *D_800A5B04;
+extern GsCOORDINATE2 *D_800A5D18;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2464,4 +2467,11 @@ void func_80063460(CombSettings *settings, int state, int update, int alternate)
     func_8007FAB8(D_8009A4FC[0]);
     func_800166A4();
     func_80016804();
+}
+
+// FUNCTION: COMB.BIN:0x80063DA4
+void func_80063DA4(void)
+{
+    func_8001F378(D_800A5B04);
+    func_8001F378(D_800A5D18);
 }
