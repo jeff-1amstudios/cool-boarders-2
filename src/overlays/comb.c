@@ -320,6 +320,15 @@ extern void func_8009624C(int font, int mode, unsigned char red, unsigned char g
 extern int func_8006B920(CombHudEntry *entry, char *text, int line);
 extern char *strcat(char *destination, char *source);
 
+extern char D_80098B50[10];
+extern char D_80098B5C[10];
+extern char D_80098B68[4];
+extern char D_80098B6C[5];
+extern char *D_8009A688[13];
+extern char *D_8009A6BC[6];
+extern char *strcpy(char *destination, char *source);
+extern int strlen(char *text);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3982,4 +3991,51 @@ void func_8006B528(GsOT *ot, CombHudEntry *entry, int *state, int frozen, int du
             else *state = -1;
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x8006B920
+int func_8006B920(CombHudEntry *entry, char *text, int line)
+{
+    int value;
+    char number[16];
+
+    text[0] = 0;
+    if (line == 0) {
+        if (((CombTrickLabelView *)entry)->fakie != 0 &&
+            (((CombTrickLabelView *)entry)->rotation.combined != 0 || ((CombTrickLabelView *)entry)->first_trick >= 0)) {
+            __builtin_memcpy(text, D_80098B50, sizeof(D_80098B50));
+        }
+        if (((CombTrickLabelView *)entry)->backside != 0) {
+            strcat(text, D_80098B5C);
+        }
+        if (((CombTrickLabelView *)entry)->rotation.parts.flip != 0) {
+            value = (unsigned int)(int)((CombTrickLabelView *)entry)->rotation.parts.flip >> 31;
+            if (((CombTrickLabelView *)entry)->rotation.parts.spin != 0) {
+                value += 2;
+                if (((CombTrickLabelView *)entry)->twist != 0) value += 2;
+            }
+            strcat(text, D_8009A6BC[value]);
+        }
+        value = ((CombTrickLabelView *)entry)->rotation.parts.spin;
+        if (value != 0) {
+            if (value < 0) value = -value;
+            sprintf(number, D_80098B68, value * 180);
+            strcat(text, number);
+        }
+    } else {
+        value = ((CombTrickLabelView *)entry)->first_trick;
+        if (value >= 0) strcpy(text, D_8009A688[value]);
+        value = ((CombTrickLabelView *)entry)->second_trick;
+        if (value >= 0) {
+            strcat(text, D_80098B6C);
+            strcat(text, D_8009A688[value]);
+        }
+    }
+    value = strlen(text);
+    while (value != 0) {
+        if (text[value - 1] != ' ') break;
+        text[value - 1] = 0;
+        value--;
+    }
+    return value;
 }

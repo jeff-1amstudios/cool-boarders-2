@@ -1005,4 +1005,21 @@ typedef struct CombHudFont {
 
 void func_8006B528(GsOT *ot, CombHudEntry *entry, int *state, int frozen, int duration);
 
+typedef struct CombTrickLabelView {
+    unsigned char unknown_00;
+    unsigned char fakie;
+    unsigned char backside;
+    unsigned char unknown_03[0x19];
+    short first_trick;
+    short second_trick;
+    union {
+        int combined;
+        struct {
+            short spin;
+            short flip;
+        } parts;
+    } rotation;
+    short twist;
+} CombTrickLabelView;
+
 #endif

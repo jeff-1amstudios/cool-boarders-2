@@ -348,3 +348,12 @@ D_80098A98 = 0x80098A98; // size:0x2
 func_8009624C = 0x8009624C; // type:func
 func_8006B920 = 0x8006B920; // type:func
 strcat = 0x80044978; // type:func
+
+D_80098B50 = 0x80098B50; // type:char size:0xA
+D_80098B5C = 0x80098B5C; // type:char size:0xA
+D_80098B68 = 0x80098B68; // type:char size:0x4
+D_80098B6C = 0x80098B6C; // type:char size:0x5
+D_8009A688 = 0x8009A688; // size:0x34
+D_8009A6BC = 0x8009A6BC; // size:0x18
+strcpy = 0x800449A8; // type:func
+strlen = 0x800449B8; // type:func
