@@ -264,6 +264,12 @@ extern int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface,
 
 extern int func_80016A24(unsigned long voice_bit, int sample_index);
 
+extern void func_8006A1A0(BpScore *score);
+extern int func_8006A230(BpScore *score);
+extern int D_8009A504[13];
+extern unsigned short D_8009A538[16];
+extern unsigned short D_8009A558[8];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3255,4 +3261,116 @@ void func_80069D84(int sample, int mode)
     sample = 29;
 play:
     func_80016A24(0x10000, sample);
+}
+
+// FUNCTION: COMB.BIN:0x80069E00
+int func_80069E00(CombScorePlayer *player, BpScore *score)
+{
+    BpScoreLimit *limit = &player->limit;
+    BpScoreMotion *motion = &player->motion;
+    int *position = player->position;
+    int value, angle, absolute_angle, slot, x, z;
+    int result;
+    CombScorePlayer *move_player;
+
+    if (player->motion.heading_active) {
+        angle = ratan2(player->velocity.vx, player->velocity.vz);
+        value = (int)((unsigned int)(player->rotation.vy - angle) << 20) >> 20;
+        absolute_angle = value < 0 ? -value : value;
+        value = absolute_angle;
+        angle = value > 0x400 ? 0x800 - value : value;
+        value = angle >> 7;
+        /* Index 8 reads the first halfword of the following table. */
+        score->heading_bonus = *(unsigned short *)((unsigned long)D_8009A558 +
+                                                   value * sizeof(unsigned short));
+    } else {
+        score->heading_bonus = 0;
+    }
+
+    slot = 0;
+    do {
+        angle = player->selections[slot].override;
+        if (angle != 0) {
+            value = angle;
+            goto check_selection;
+        }
+        goto fallback_selection;
+    found_move:
+        score->move_index[slot] = result;
+        goto score_move;
+    fallback_selection:
+        value = player->selections[slot].fallback;
+    check_selection:
+        score->move_index[slot] = -1;
+        if (value >= 0) {
+            result = 0;
+            move_player = player;
+            do {
+                if (value == move_player->moves[0].id) {
+                    goto found_move;
+                }
+                result++;
+                move_player = (CombScorePlayer *)((unsigned char *)move_player + sizeof(BpScoreMove));
+            } while (result < 13);
+    score_move:
+            /* A missed ID reads the first word at the next table address. */
+            value = *(int *)((unsigned long)D_8009A504 + result * sizeof(int));
+            if (slot != 0) {
+                score->move_bonus[slot] = value + value / 2;
+            } else {
+                score->move_bonus[0] = value;
+            }
+        }
+        slot++;
+    } while (slot < 2);
+
+    if (score->move_bonus[0] != 0) {
+        score->duration_bonus = motion->move_duration + 20;
+    } else {
+        score->duration_bonus = 0;
+    }
+
+    x = position[0] - score->origin_x;
+    z = position[2] - score->origin_z;
+    score->distance_bonus = (unsigned long)SquareRoot0(x * x + z * z) >> 8;
+
+    value = score->height * 100 / limit->maximum;
+    if (value < 50) {
+        value = value / 10;
+    } else {
+        if (value >= 99) {
+            value = 100;
+        }
+        value = (value - 50) / 5 + 5;
+    }
+    score->height_bonus = D_8009A538[value];
+
+    value = motion->first_rotation;
+    score->rotations[0] = value;
+    score->rotation_bonus[0] = (value >= 0 ? value * 25 : -value * 25) * 2;
+    if (score->reverse == 0) {
+        angle = -(value > 0);
+    } else {
+        angle = value >> 31;
+    }
+    result = angle & 30;
+    score->reverse_bonus = result;
+    score->unknown_07 = 0;
+
+    value = motion->second_rotation;
+    score->rotations[1] = value;
+    score->rotation_bonus[1] = (value >= 0 ? value * 25 : -value * 25) * 8;
+
+    if (motion->first_rotation != 0 && motion->second_rotation != 0) {
+        short bonus = 50;
+
+        if (score->combined_flag != 0) {
+            bonus = 100;
+        }
+        score->combined_bonus = bonus;
+    }
+    if (motion->reduced_score != 0) {
+        func_8006A1A0(score);
+    }
+    return func_8006A230(score);
 }

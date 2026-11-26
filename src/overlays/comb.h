@@ -915,4 +915,23 @@ typedef struct CombStartLocation {
     short related[3];
 } CombStartLocation;
 
+typedef struct CombScorePlayer {
+    unsigned char unknown_0000[0x2C];
+    int position[3];
+    unsigned char unknown_0038[0x1A0];
+    SVECTOR rotation;
+    unsigned char unknown_01e0[0x4FC];
+    BpScoreLimit limit;
+    unsigned char unknown_0700[0x34];
+    BpScoreMotion motion;
+    unsigned char unknown_075c[0x134];
+    BpScoreMove moves[13];
+    unsigned char unknown_0c38[0xA];
+    BpScoreSelection selections[2];
+    unsigned char unknown_0c4a[0x3C9E];
+    VECTOR velocity;
+} CombScorePlayer;
+
+int func_80069E00(CombScorePlayer *player, BpScore *score);
+
 #endif
