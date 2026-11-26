@@ -359,6 +359,17 @@ extern char D_80098BA4[2];
 extern int func_8007DBB8(int course, int value);
 extern void func_8009621C(int font, unsigned char red, unsigned char green, unsigned char blue);
 
+extern int D_800A4B68;
+extern int D_800A4B6C;
+extern BpCoursePoint *D_800A4B70[2];
+extern int D_800A4B78[2];
+extern BpCoursePoint D_8009A6D8[2];
+extern BpCoursePoint D_8009A700[5];
+extern BpCoursePoint D_8009A764[6];
+extern BpCoursePoint D_8009A7DC[3];
+extern BpCoursePoint D_8009A818[4];
+extern BpCoursePoint D_8009A868[2];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4269,4 +4280,69 @@ void func_8006C4AC(GsOT *ot, int first, int second, int unused)
     func_8009621C(D_800A5D28, 32, 32, 255);
     func_80095E90(&ot->org[3], D_800A5D28, D_80098BA4, i, progress, 0);
     func_8009621C(D_800A5D28, 128, 128, 128);
+}
+
+// FUNCTION: COMB.BIN:0x8006C8F8
+void func_8006C8F8(int course, int direction)
+{
+    int limit;
+    int list;
+    int point;
+
+    switch (course) {
+    case 0:
+    case 9:
+    case 15:
+        limit = 0x7FFF;
+        break;
+    default:
+        limit = 0x200;
+        break;
+    }
+    D_800A4B68 = limit;
+
+    switch (course) {
+    case 3:
+        D_800A4B70[0] = D_8009A6D8;
+        D_800A4B78[0] = 2;
+        D_800A4B78[1] = 0;
+        D_800A4B6C = 1;
+        break;
+    case 5:
+        D_800A4B70[0] = D_8009A700;
+        D_800A4B70[1] = D_8009A764;
+        D_800A4B78[1] = 6;
+        D_800A4B78[0] = course;
+        D_800A4B6C = 2;
+        break;
+    case 9:
+        D_800A4B70[0] = D_8009A7DC;
+        D_800A4B78[0] = 3;
+        D_800A4B78[1] = 0;
+        D_800A4B6C = 1;
+        break;
+    case 15:
+        D_800A4B70[0] = D_8009A818;
+        D_800A4B70[1] = D_8009A868;
+        D_800A4B78[0] = 4;
+        D_800A4B78[1] = 2;
+        D_800A4B6C = 2;
+        break;
+    default:
+        D_800A4B78[0] = 0;
+        D_800A4B78[1] = 0;
+        D_800A4B6C = 0;
+        break;
+    }
+
+    if (direction == -1) {
+        for (list = 0; list < D_800A4B6C; list++) {
+            for (point = 0; point < D_800A4B78[list]; point++) {
+                BpCoursePoint *entry = (BpCoursePoint *)(
+                    (unsigned int)(point * sizeof(BpCoursePoint)) + (unsigned int)D_800A4B70[list]);
+                long *x = &entry->position.vx;
+                *x = -*x;
+            }
+        }
+    }
 }

@@ -1044,4 +1044,6 @@ void func_8006C358(GsOT *ot, int *counter, int different, int value, int directi
 
 void func_8006C4AC(GsOT *ot, int first, int second, int unused);
 
+void func_8006C8F8(int course, int direction);
+
 #endif
