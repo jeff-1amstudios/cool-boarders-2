@@ -1068,4 +1068,6 @@ int func_80070514(CombPlayer *player, CombSurfaceState *previous, CombSurfaceSta
 
 int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection);
 
+int func_800709BC(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection, int speed);
+
 #endif

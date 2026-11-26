@@ -4706,3 +4706,72 @@ int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projecti
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x800709BC
+int func_800709BC(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection, int speed)
+{
+    VECTOR segment;
+    VECTOR offset;
+    VECTOR squares;
+    VECTOR *offset_ptr = &offset;
+    long heading;
+    long point_heading;
+    long length;
+    long distance;
+    int advance;
+    int x;
+    int z;
+
+    memset(offset_ptr, 0, sizeof(VECTOR));
+    offset.vx = end->vx - start->vx;
+    offset.vy = end->vy - start->vy;
+    offset.vz = end->vz - start->vz;
+    segment = offset;
+    memset(&squares, 0, sizeof(VECTOR));
+    squares.vx = position->vx - start->vx;
+    squares.vy = position->vy - start->vy;
+    squares.vz = position->vz - start->vz;
+    offset = squares;
+    heading = ratan2(segment.vx, segment.vz);
+    point_heading = ratan2(offset.vx, offset.vz);
+    advance = (speed >> 4) / 30;
+    __asm__ volatile (
+        "lwc2 $9, 0(%0)\n\t"
+        "lwc2 $10, 4(%0)\n\t"
+        "lwc2 $11, 8(%0)\n\t"
+        "nop\n\tnop\n\t"
+        "cop2 0xA00428\n\t"
+        "swc2 $25, 0(%1)\n\t"
+        "swc2 $26, 4(%1)\n\t"
+        "swc2 $27, 8(%1)"
+        : : "r" (&segment), "r" (&squares) : "memory");
+        length = SquareRoot0(squares.vx + squares.vz);
+    __asm__ volatile (
+        "lwc2 $9, 0(%0)\n\t"
+        "lwc2 $10, 4(%0)\n\t"
+        "lwc2 $11, 8(%0)\n\t"
+        "nop\n\tnop\n\t"
+        "cop2 0xA00428\n\t"
+        "swc2 $25, 0(%1)\n\t"
+        "swc2 $26, 4(%1)\n\t"
+        "swc2 $27, 8(%1)"
+        : : "r" (offset_ptr), "r" (&squares) : "memory");
+    distance = SquareRoot0(squares.vx + squares.vz);
+    distance = distance * (rcos(point_heading - heading) >> 6) >> 6;
+    distance += advance;
+    if (distance <= 0) {
+        projection->vx = start->vx;
+        projection->vz = start->vz;
+    } else {
+        if (distance < length) {
+            x = advance * rsin(heading) >> 12;
+            z = advance * rcos(heading) >> 12;
+            projection->vx = position->vx + x;
+            projection->vz = position->vz + z;
+        } else {
+            projection->vx = end->vx;
+            projection->vz = end->vz;
+        }
+    }
+    return heading;
+}
