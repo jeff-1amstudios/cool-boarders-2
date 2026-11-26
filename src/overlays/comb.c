@@ -284,6 +284,12 @@ extern unsigned short D_8009FF62;
 extern int func_8006A740(CombResetEntry *entry, int amount,
                         unsigned int positive, unsigned int negative, unsigned int held);
 
+extern POLY_FT4 D_800A4B28;
+extern char D_8009899C[9];
+extern char D_800A4B50[9];
+extern int D_800A4B60;
+extern int D_800A5D24;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3657,4 +3663,40 @@ void func_8006A874(CombMotionPlayer *player)
         i++;
         history_a++;
     } while (i < 16);
+}
+
+// FUNCTION: COMB.BIN:0x8006A8A8
+void func_8006A8A8(int mode)
+{
+    int texture_index = 4;
+    int texture_stride;
+    int u;
+
+    if (mode != 0) {
+        D_800A4B60 = -1;
+    } else {
+        D_800A4B60 = 0;
+    }
+
+    __builtin_memcpy(D_800A4B50, D_8009899C, sizeof(D_8009899C));
+    D_800A5D24 = 0;
+    D_800A4B50[4] = '"';
+
+    SetPolyFT4(&D_800A4B28);
+    D_800A4B28.r0 = 128;
+    D_800A4B28.g0 = 128;
+    D_800A4B28.b0 = 128;
+    D_800A4B28.clut = GetClut(816, 464);
+    D_800A4B28.tpage = GetTPage(0, 2, 384, 256);
+
+    texture_stride = 24;
+    D_800A4B28.v0 = 0;
+    D_800A4B28.v1 = 0;
+    D_800A4B28.v2 = 47;
+    D_800A4B28.v3 = 47;
+    u = texture_index * texture_stride;
+    D_800A4B28.u0 = u;
+    D_800A4B28.u1 = u + 47;
+    D_800A4B28.u2 = u;
+    D_800A4B28.u3 = u + 47;
 }
