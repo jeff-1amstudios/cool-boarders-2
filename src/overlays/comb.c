@@ -300,6 +300,8 @@ extern int D_8009A680;
 extern int D_8009A684;
 extern void func_800767C4(GsOT *ot);
 
+extern void func_8007676C(GsOT *ot, int x, int y);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3756,4 +3758,23 @@ void func_8006AB94(GsOT *ot, int different)
         D_8009A684 = 10;
         D_8009A680 = -(D_8009A680 == 0);
     }
+}
+
+// FUNCTION: COMB.BIN:0x8006AC14
+int func_8006AC14(GsOT *ot, int move_left, int position, int x, int y)
+{
+    if (move_left != 0) {
+        position -= 4;
+    } else {
+        position += 4;
+    }
+    if (position < 80) {
+        position = 80;
+    }
+
+    if (position > 160) {
+        position = 160;
+    }
+    func_8007676C(ot, position + x, y - 52);
+    return position;
 }
