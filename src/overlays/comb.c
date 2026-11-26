@@ -3147,3 +3147,24 @@ int func_8006963C(CombPlaybackPlayerView *player, int frame)
     }
     return frame;
 }
+
+// FUNCTION: COMB.BIN:0x800699A0
+void func_800699A0(CombPlayerCoordinates *player)
+{
+    long saved_y = player->secondary_coordinate.coord.t[1];
+    MATRIX *matrix;
+
+    player->secondary_coordinate.coord = D_80058E20;
+    player->body_coordinate.coord = D_80058E20;
+    matrix = &player->body_coordinate.coord;
+    RotMatrixX(player->body_rotation.vx, matrix);
+    RotMatrixZ(player->body_rotation.vz, matrix);
+    RotMatrixY(player->body_rotation.vy, matrix);
+    matrix = &player->secondary_coordinate.coord;
+    RotMatrixY(player->body_rotation.vy - player->secondary_heading, matrix);
+    RotMatrixX(player->secondary_pitch, matrix);
+    RotMatrixY(player->secondary_heading - player->body_rotation.vy, matrix);
+    player->secondary_coordinate.coord.t[1] = saved_y;
+    player->secondary_coordinate.flg = 0;
+    player->body_coordinate.flg = 0;
+}

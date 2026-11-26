@@ -895,4 +895,17 @@ typedef struct CombPlaybackPlayerView {
 
 int func_8006963C(CombPlaybackPlayerView *player, int frame);
 
+typedef struct CombPlayerCoordinates {
+    unsigned char unknown_0000[0x188];
+    GsCOORDINATE2 body_coordinate;
+    SVECTOR body_rotation;
+    unsigned char unknown_01e0[0xA80];
+    GsCOORDINATE2 secondary_coordinate;
+    short secondary_pitch;
+    short unknown_0cb2;
+    short secondary_heading;
+} CombPlayerCoordinates;
+
+void func_800699A0(CombPlayerCoordinates *player);
+
 #endif
