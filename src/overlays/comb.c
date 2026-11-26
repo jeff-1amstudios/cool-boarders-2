@@ -260,6 +260,8 @@ extern unsigned short D_8009FF64;
 extern void func_80065F5C(CombPlaybackPlayerView *player, int first, int second);
 extern void func_8007A218(void *effects, int x, int y, int z, int active);
 
+extern int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3167,4 +3169,53 @@ void func_800699A0(CombPlayerCoordinates *player)
     player->secondary_coordinate.coord.t[1] = saved_y;
     player->secondary_coordinate.flg = 0;
     player->body_coordinate.flg = 0;
+}
+
+// FUNCTION: COMB.BIN:0x80069ACC
+int func_80069ACC(CombStartPlayer *player, int start, short x, short y, short z)
+{
+    CombSurfaceState query;
+    VECTOR position;
+    VECTOR offset_position;
+    CombSurfaceState *surface;
+    CombStartLocation *location;
+    CombSceneEntry *entry;
+    int result;
+    int height;
+
+    entry = &D_800A5AE8[start];
+    memset_800449E8((unsigned char *)&offset_position, 0, sizeof(offset_position));
+    result = 0;
+    offset_position.vx = ((int *)entry->unknown_00)[0] + x;
+    offset_position.vy = ((int *)entry->unknown_00)[1] + y;
+    offset_position.vz = ((int *)entry->unknown_00)[2] + z;
+    position = offset_position;
+    query.y = 0x800;
+    query.surface = -1;
+    query.kind = 0;
+    query.x = 0;
+    query.z = 0;
+    query.mode = 2;
+    query.height = 0;
+    query.word_18 = 0;
+    query.word_54 = 0;
+    query.word_50 = 0;
+    surface = &player->surface;
+    height = func_8006FB98(&position, start, &query, 0);
+    if (query.surface >= 0) {
+        *surface = query;
+        player->surface.surface = surface->surface;
+        location = (CombStartLocation *)player->unknown_00;
+        location->entry = &D_800A5AE8[surface->surface];
+        location->related[0] = location->entry->linked_entries[0];
+        location->related[1] = location->entry->linked_entries[1];
+        location->related[2] = location->entry->linked_entries[2];
+        location->x = ((int *)location->entry->unknown_00)[0];
+        location->y = ((int *)location->entry->unknown_00)[1];
+        result = -1;
+        location->z = ((int *)location->entry->unknown_00)[2];
+        surface->y = height;
+        surface->mode = 0;
+    }
+    return result;
 }

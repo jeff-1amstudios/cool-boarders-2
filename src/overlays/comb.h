@@ -908,4 +908,11 @@ typedef struct CombPlayerCoordinates {
 
 void func_800699A0(CombPlayerCoordinates *player);
 
+typedef struct CombStartLocation {
+    CombSceneEntry *entry;
+    int x, y, z;
+    unsigned char unknown_10[4];
+    short related[3];
+} CombStartLocation;
+
 #endif
