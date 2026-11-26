@@ -683,4 +683,6 @@ typedef struct CombPlayerNameView {
 
 void func_80063460(CombSettings *settings, int state, int update, int alternate);
 
+void func_80063DDC(int course);
+
 #endif

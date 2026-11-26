@@ -204,6 +204,15 @@ extern void func_8007FAB8(int option);
 extern GsDOBJ2 *D_800A5B04;
 extern GsCOORDINATE2 *D_800A5D18;
 
+extern unsigned int D_800A5AE4;
+extern unsigned int D_800A5D40;
+extern unsigned int D_800A5D48;
+extern unsigned int D_800A5DA0;
+extern unsigned int D_800A5D38;
+extern unsigned int D_800A5D3C;
+extern char *D_800A5D1C;
+extern char D_8009827C[30];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2474,4 +2483,18 @@ void func_80063DA4(void)
 {
     func_8001F378(D_800A5B04);
     func_8001F378(D_800A5D18);
+}
+
+// FUNCTION: COMB.BIN:0x80063DDC
+void func_80063DDC(int course)
+{
+    char *record_path = D_8009827C;
+
+    D_800A5AE4 = 0;
+    D_800A5D40 = 0;
+    D_800A5D48 = 0;
+    D_800A5DA0 = 0;
+    D_800A5D38 = 0;
+    D_800A5D3C = 0;
+    D_800A5D1C = record_path;
 }
