@@ -344,6 +344,9 @@ extern PACKET *func_8007CD1C(GsOT_TAG *tag, PACKET *packet, int value, int *stat
 
 extern PACKET *func_8007B3A8(GsOT_TAG *tag, PACKET *packets, int *data, int different);
 
+extern void func_80077548(GsOT_TAG *tag, int value, int mode, int first, int second);
+extern void func_8007623C(GsOT *ot, int first, int second);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4095,4 +4098,11 @@ void func_8006BC40(GsOT *ot, int *state, int shift, int *value)
 void func_8006BC98(GsOT *ot, int *data, int different)
 {
     D_80058ACC = func_8007B3A8(&ot->org[3], D_80058ACC, data, different);
+}
+
+// FUNCTION: COMB.BIN:0x8006BCD4
+void func_8006BCD4(GsOT *ot, int value, int mode, int first, int second)
+{
+    func_80077548(&ot->org[3], value, mode, first - 0x84, second + 0x50);
+    func_8007623C(ot, first, second);
 }
