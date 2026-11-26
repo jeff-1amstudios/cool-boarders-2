@@ -398,6 +398,12 @@ extern void func_80072164(void);
 extern int D_800A4BA4;
 extern int D_800A4BA8[64];
 
+extern int func_80069D40(int mode);
+extern unsigned int func_80075A68(void);
+extern void func_80075AFC(unsigned int buttons);
+extern void func_8007379C(CombPlayer *player, int animation, int update, int mode);
+extern void func_800809F4(int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5264,4 +5270,114 @@ void func_80073254(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int sur
     if (secondary_view <= 0) {
         D_800A4B98 = 0;
     }
+}
+
+// FUNCTION: COMB.BIN:0x800733B4
+void func_800733B4(CombPlayer *player, CombPlayer *second, int mode)
+{
+    unsigned int buttons = 0;
+    unsigned int previous;
+    int frame;
+    int animation;
+    int x;
+    int z;
+
+    func_8007ABC8(player->effects);
+    if (second != 0) {
+        func_8007ABC8(second->effects);
+    }
+    if (mode == 4) {
+        func_80016860(16, 128);
+        func_80069D40(2);
+        ((CombPlayerTransitionView *)player)->state_7c8 = 0;
+        frame = 0;
+        do {
+            previous = buttons;
+            func_8005B8D0();
+            buttons = func_80075A68();
+            func_80075AFC(buttons);
+            ((CombPlayerTransitionView *)player)->buttons = buttons;
+            if (((buttons ^ previous) & buttons & ((unsigned int)D_8009FF6E << 16)) != 0) {
+                D_800A5D3C = ~D_800A5D3C;
+            }
+            animation = 99;
+            if (((CombPlayerTransitionView *)player)->alternate_animation == 0) {
+                animation = 97;
+            }
+            if (*(int *)(D_800A5D5C->unknown_16 + 2) != 3) {
+                animation = 97;
+            }
+            func_8007379C(player, animation, 1, 0);
+            if (second != 0) {
+                animation = 99;
+                if (((CombPlayerTransitionView *)second)->alternate_animation == 0) {
+                    animation = 97;
+                }
+                if (*(int *)(D_800A5D5C->unknown_16 + 2) != 3) {
+                    animation = 97;
+                }
+                func_8007379C(second, animation, 1, 0);
+            }
+            func_8005D774(mode, mode, 0);
+            frame++;
+        } while (frame < 30);
+        frame = 0;
+        do {
+            frame++;
+            func_8005B8D0();
+            func_8005D774(mode, mode, 0);
+        } while (frame < 8);
+        func_80016860(25, 128);
+        func_80069D40(3);
+    }
+    func_800809F4(D_800A5B18);
+    func_800966A8(&((CombPlayerTransitionView *)player)->rotation);
+    func_80062CF8((CombPlayerDirectionalImpulseView *)player, 0);
+    if (second != 0) {
+        func_80062CF8((CombPlayerDirectionalImpulseView *)second, 0);
+    }
+    frame = 0;
+    do {
+        previous = buttons;
+        func_8005B8D0();
+        buttons = func_80075A68();
+        func_80075AFC(buttons);
+        ((CombPlayerTransitionView *)player)->buttons = buttons;
+        if (((buttons ^ previous) & buttons & ((unsigned int)D_8009FF6E << 16)) != 0) {
+            D_800A5D3C = ~D_800A5D3C;
+        }
+        if (frame < 20) {
+            animation = 100;
+            if (((CombPlayerTransitionView *)player)->alternate_animation == 0) {
+                animation = 98;
+            }
+            if (*(int *)(D_800A5D5C->unknown_16 + 2) != 3) {
+                animation = 98;
+            }
+            func_8007379C(player, animation, 1, -1);
+            if (second != 0) {
+                animation = 100;
+                if (((CombPlayerTransitionView *)second)->alternate_animation == 0) {
+                    animation = 98;
+                }
+                if (*(int *)(D_800A5D5C->unknown_16 + 2) != 3) {
+                    animation = 98;
+                }
+                func_8007379C(second, animation, 1, -1);
+            }
+        } else {
+            func_8007379C(player, ((CombPlayerTransitionView *)player)->direction + 36, 1, -1);
+            if (second != 0) {
+                func_8007379C(second, ((CombPlayerTransitionView *)second)->direction + 36, 1, -1);
+            }
+        }
+        x = (((CombPlayerTransitionView *)player)->motion.vx >> 4) / 30 >> 6;
+        z = x * x;
+        x = (((CombPlayerTransitionView *)player)->motion.vz >> 4) / 30 >> 6;
+        z = SquareRoot12(z + x * x);
+        frame++;
+        func_8005EDC4((CombPlayerHeadingView *)player, z >> 12);
+        func_8005D774(mode, mode, 0);
+    } while (frame < 30);
+    func_80075A48();
 }

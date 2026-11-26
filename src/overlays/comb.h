@@ -1111,4 +1111,23 @@ typedef struct CombEdgeMotionView {
 
 void func_80073254(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
 
+typedef struct CombPlayerTransitionView {
+    unsigned char unknown_0000[0x28];
+    unsigned int buttons;
+    unsigned char unknown_002c[0x1AC];
+    SVECTOR rotation;
+    unsigned char unknown_01e0[0x5E8];
+    int state_7c8;
+    unsigned char unknown_07cc[0x488];
+    short direction;
+    unsigned char unknown_0c56[2];
+    int alternate_animation;
+    unsigned char unknown_0c5c[0x3C8C];
+    VECTOR motion;
+    unsigned char unknown_48f8[0x1C];
+    void *effects;
+} CombPlayerTransitionView;
+
+void func_800733B4(CombPlayer *player, CombPlayer *second, int mode);
+
 #endif
