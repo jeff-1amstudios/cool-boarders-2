@@ -1096,4 +1096,7 @@ void func_80072164(void);
 int func_800722F8(VECTOR *start, VECTOR *end, VECTOR *edge_start,
                   VECTOR *edge_end, VECTOR *intersection);
 
+int func_800725EC(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
+                  SVECTOR *edge_end, SVECTOR *intersection);
+
 #endif
