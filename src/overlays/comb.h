@@ -1080,4 +1080,12 @@ typedef struct CombGeometryHeader {
 
 void func_80070C78(unsigned char *scene, CombGeometryHeader *geometry);
 
+typedef struct CombCourseRecord {
+    short value;
+    short unknown_02;
+    short active;
+} CombCourseRecord;
+
+void func_80070CC4(void);
+
 #endif

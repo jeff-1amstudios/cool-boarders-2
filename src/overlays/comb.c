@@ -384,6 +384,17 @@ extern unsigned char *D_800A4B84;
 extern unsigned short D_800A4B88;
 extern unsigned short D_800A4B8C;
 
+extern CombCourseRecord D_8009A890[][2];
+extern int D_800A4B90;
+extern int D_800A4B94;
+extern int D_800A4B98;
+extern int D_800A4B9C;
+extern CombCourseRecord *D_800A4BA0;
+extern int D_800A5D10;
+extern int D_800A5D20;
+extern int D_800A5D30;
+extern void func_80072164(void);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4789,4 +4800,48 @@ void func_80070C78(unsigned char *scene, CombGeometryHeader *geometry)
     D_800A4B84 = (unsigned char *)geometry + geometry->offset_0c;
     D_800A4B88 = geometry->count_04;
     D_800A4B8C = geometry->count_06;
+}
+
+// FUNCTION: COMB.BIN:0x80070CC4
+void func_80070CC4(void)
+{
+    int i;
+    CombCourseRecord *record;
+
+    i = 0;
+    D_800A4B90 = 0;
+    D_800A4BA0 = D_8009A890[D_800A5D5C->course];
+    record = D_800A4BA0;
+    do {
+        i++;
+        record->active = ~record->value >> 31;
+        record++;
+    } while (i < 2);
+    D_800A4B94 = 0;
+    D_800A4B98 = -1;
+    D_800A4B9C = 0;
+    D_800A5D10 = 0;
+    switch (D_800A5D5C->course) {
+    case 0:
+        D_800A5D20 = 1;
+        D_800A5D30 = 1;
+        break;
+    case 1:
+        D_800A5D20 = 1;
+        D_800A5D30 = 4;
+        break;
+    case 10:
+        D_800A5D20 = 3;
+        D_800A5D30 = 3;
+        break;
+    case 14:
+        D_800A5D20 = 76;
+        D_800A5D30 = 76;
+        break;
+    default:
+        D_800A5D20 = 1;
+        D_800A5D30 = 4;
+        break;
+    }
+    func_80072164();
 }
