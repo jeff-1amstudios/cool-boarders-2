@@ -101,7 +101,6 @@ extern int func_8006AEEC(GsOT *ot, int *state, int shift, CombPlayerHudView *pla
                         int first, int second, int active, int mode);
 extern void func_8006BEF8(GsOT *ot, void *state, int value, CombHudEntry *entries,
                          int count, int first, int second, int mode, int speed);
-extern void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int value, int shift, int extra);
 extern void func_8006BCD4(GsOT *ot, int value, int mode, int first, int second);
 
 extern int D_8009FFA8;
@@ -304,6 +303,9 @@ extern void func_8007676C(GsOT *ot, int x, int y);
 
 extern SVECTOR D_800989A8;
 extern MATRIX D_80058EE0;
+
+extern PACKET *func_8007B5C0(GsOT_TAG *ot, PACKET *packet, int value, int *state, int shift);
+extern void func_8006B370(GsOT *ot, CombHudEntry *entry);
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -3835,4 +3837,23 @@ void func_8006AC7C(GsOT *ot, CombPlayer *player, unsigned int shift)
     }
     D_80058ACC = (PACKET *)quad;
     PopMatrix();
+}
+
+// FUNCTION: COMB.BIN:0x8006B2D0
+void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int direction, int shift, int extra)
+{
+    GsOT_TAG *tag = ot->org + 3;
+    int value = *(int *)(entry->unknown + 0x14);
+
+    if (direction < 0) {
+        value = -value;
+    } else if (direction == 0) {
+        value = 0;
+    }
+    if (*state >= 0) {
+        D_80058ACC = func_8007B5C0(tag, D_80058ACC, value, state, shift);
+    }
+    if (D_800A5D24 != 0) {
+        func_8006B370(ot, entry);
+    }
 }
