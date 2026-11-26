@@ -290,6 +290,10 @@ extern char D_800A4B50[9];
 extern int D_800A4B60;
 extern int D_800A5D24;
 
+extern int func_80095588(short x, short z);
+extern int func_8007715C(GsOT_TAG *tag, int value, int x, int y);
+extern void func_800762C4(GsOT_TAG *tag, int x, int y);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3699,4 +3703,26 @@ void func_8006A8A8(int mode)
     D_800A4B28.u1 = u + 47;
     D_800A4B28.u2 = u;
     D_800A4B28.u3 = u + 47;
+}
+
+// FUNCTION: COMB.BIN:0x8006A9EC
+int func_8006A9EC(GsOT *ot, CombPlayerRenderStateView *state, unsigned int draw, int x, int y)
+{
+    BpDistancePlayer *player = (BpDistancePlayer *)state;
+    GsOT_TAG *tag = &ot->org[4];
+    int distance;
+    int value;
+    int number_x = x + 88;
+    int number_y = y + 80;
+
+    distance = func_80095588((short)(player->x - player->previous_x),
+                             (short)(player->z - player->previous_z));
+    value = (distance * 108000) / 170500;
+    value = (value * 100) / 110;
+    value = (value * 100) / 160;
+    if (draw != 0) {
+        func_8007715C(tag, value, number_x, number_y);
+        func_800762C4(tag, x + 112, number_y);
+    }
+    return distance;
 }
