@@ -995,4 +995,14 @@ typedef struct CombScoreLabels {
     char *text[14];
 } CombScoreLabels;
 
+typedef struct CombHudFont {
+    unsigned char unknown_00[4];
+    unsigned char red, green, blue;
+    unsigned char unknown_07[0x1B];
+    short height;
+    unsigned char unknown_24[0x10];
+} CombHudFont;
+
+void func_8006B528(GsOT *ot, CombHudEntry *entry, int *state, int frozen, int duration);
+
 #endif

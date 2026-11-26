@@ -313,6 +313,13 @@ extern int D_800A5D28;
 extern int sprintf(char *buffer, char *format, ...);
 extern void func_80095E90(GsOT_TAG *ot, int font, char *text, int x, int y, int mode);
 
+extern CombHudFont D_800A5B38[];
+extern int D_800A5D34;
+extern char D_80098A98[2];
+extern void func_8009624C(int font, int mode, unsigned char red, unsigned char green, unsigned char blue);
+extern int func_8006B920(CombHudEntry *entry, char *text, int line);
+extern char *strcat(char *destination, char *source);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3898,5 +3905,81 @@ void func_8006B370(GsOT *ot, CombHudEntry *entry)
     for (i = 0; i < 12; i++) {
         func_80095E90(ot->org + 3, D_800A5D28, lines[i], x, y, 0);
         y += 8;
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8006B528
+void func_8006B528(GsOT *ot, CombHudEntry *entry, int *state, int frozen, int duration)
+{
+    char lines[2][256];
+    int widths[2];
+    TILE tile;
+    DR_MODE mode;
+    GsOT_TAG *tag = ot->org + 3;
+    int font_index = D_800A5D34;
+    CombHudFont *font = &D_800A5B38[font_index];
+    int height = D_800A5B38[font_index].height;
+    unsigned char red = font->red;
+    unsigned char green = font->green;
+    unsigned char blue = font->blue;
+    int time;
+    int shade;
+    int i;
+    int count;
+    int x, y;
+
+    time = *state;
+    if (time >= 0) {
+        if (time < duration / 2) shade = time * 10;
+        else shade = (duration - time) * 10;
+        if ((short)shade > 128) shade = 128;
+        if ((short)shade < 0) shade = 0;
+        func_8009624C(D_800A5D34, -1, 128, 128, 128);
+        for (i = 0; i < 2; i++) {
+            widths[i] = func_8006B920(entry, lines[i], i);
+        }
+        if (widths[0] + widths[1] >= 34) {
+            count = 2;
+        } else {
+            count = 1;
+            if (widths[1] != 0) {
+                if (widths[0] != 0) {
+                    strcat(lines[0], D_80098A98);
+                    widths[0]++;
+                }
+                widths[0] += widths[1];
+                strcat(lines[0], lines[1]);
+            }
+        }
+        for (i = 0; i < count; i++) {
+            widths[i] *= 8;
+            x = -widths[i] / 2;
+            y = 72;
+            if (i != 0) y = height + 72;
+            font->red = shade;
+            font->green = shade;
+            font->blue = shade;
+            func_80095E90(ot->org + 3, D_800A5D34, lines[i], x, y, 0);
+            SetTile(&tile);
+            tile.code |= 2;
+            SetDrawMode(&mode, 0, 0, GetTPage(0, 2, 0, 0), 0);
+            tile.x0 = x;
+            tile.y0 = y;
+            tile.w = widths[i];
+            tile.r0 = shade;
+            tile.g0 = shade;
+            tile.b0 = shade;
+            tile.h = height;
+            *(TILE *)D_80058ACC = tile;
+            ((GsOT_TAG *)D_80058ACC)->p = tag->p;
+            tag->p = (unsigned long)D_80058ACC;
+            D_80058ACC += sizeof(TILE);
+            func_80096D78(tag, &mode);
+        }
+        func_8009624C(D_800A5D34, 0, red, green, blue);
+        if (frozen == 0) {
+            if (*state < duration) (*state)++;
+            else *state = -1;
+        }
     }
 }
