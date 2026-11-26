@@ -4639,3 +4639,70 @@ int func_80070514(CombPlayer *player, CombSurfaceState *previous, CombSurfaceSta
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x80070760
+int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection)
+{
+    VECTOR segment;
+    VECTOR offset;
+    VECTOR squares;
+    long heading;
+    long point_heading;
+    long length;
+    long distance;
+    int result;
+    int x;
+    int z;
+
+    memset(&offset, 0, sizeof(VECTOR));
+    offset.vx = end->vx - start->vx;
+    offset.vy = end->vy - start->vy;
+    offset.vz = end->vz - start->vz;
+    segment = offset;
+    memset(&squares, 0, sizeof(VECTOR));
+    squares.vx = position->vx - start->vx;
+    squares.vy = position->vy - start->vy;
+    squares.vz = position->vz - start->vz;
+    offset = squares;
+    result = 0;
+    heading = ratan2(segment.vx, segment.vz);
+    point_heading = ratan2(offset.vx, offset.vz);
+    __asm__ volatile (
+        "lwc2 $9, 0(%0)\n\t"
+        "lwc2 $10, 4(%0)\n\t"
+        "lwc2 $11, 8(%0)\n\t"
+        "nop\n\tnop\n\t"
+        "cop2 0xA00428\n\t"
+        "swc2 $25, 0(%1)\n\t"
+        "swc2 $26, 4(%1)\n\t"
+        "swc2 $27, 8(%1)"
+        : : "r" (&segment), "r" (&squares) : "memory");
+    /* These scopes preserve the reference register allocation. */
+    do {
+        length = SquareRoot0(squares.vx + squares.vz);
+    } while (0);
+    __asm__ volatile (
+        "lwc2 $9, 0(%0)\n\t"
+        "lwc2 $10, 4(%0)\n\t"
+        "lwc2 $11, 8(%0)\n\t"
+        "nop\n\tnop\n\t"
+        "cop2 0xA00428\n\t"
+        "swc2 $25, 0(%1)\n\t"
+        "swc2 $26, 4(%1)\n\t"
+        "swc2 $27, 8(%1)"
+        : : "r" (&offset), "r" (&squares) : "memory");
+    distance = SquareRoot0(squares.vx + squares.vz);
+    distance = distance * (rcos(point_heading - heading) >> 6) >> 6;
+    if (distance > 0 && distance < length) {
+        do {
+            if (projection != 0) {
+                x = distance * rsin(heading) >> 12;
+                z = distance * rcos(heading) >> 12;
+                projection->vx = start->vx + x;
+                projection->vz = start->vz + z;
+            }
+        } while (0);
+        result = 3;
+    }
+    return result;
+}

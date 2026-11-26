@@ -1066,4 +1066,6 @@ int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mo
 
 int func_80070514(CombPlayer *player, CombSurfaceState *previous, CombSurfaceState *next);
 
+int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection);
+
 #endif
