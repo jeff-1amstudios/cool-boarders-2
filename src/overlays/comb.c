@@ -353,6 +353,12 @@ extern void func_80078560(GsOT *ot, int x, int y, int value, int frame);
 
 extern char D_80098B90[6];
 
+extern CVECTOR D_80098B98[2];
+extern char D_80098BA0[2];
+extern char D_80098BA4[2];
+extern int func_8007DBB8(int course, int value);
+extern void func_8009621C(int font, unsigned char red, unsigned char green, unsigned char blue);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4187,4 +4193,80 @@ void func_8006C358(GsOT *ot, int *counter, int different, int value, int directi
             --*counter;
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x8006C4AC
+void func_8006C4AC(GsOT *ot, int first, int second, int unused)
+{
+    DVECTOR position;
+    DVECTOR size;
+    DVECTOR marker_size;
+    CVECTOR colors[2];
+    int values[2];
+    DR_MODE mode;
+    int course = D_800A5D5C->course;
+    TILE *tile = (TILE *)D_80058ACC;
+    int width;
+    int flash;
+    int depth;
+    int i;
+    int progress;
+    int side;
+
+    position.vx = -144;
+    position.vy = -104;
+    size.vx = 112;
+    size.vy = 13;
+    marker_size.vx = 4;
+    marker_size.vy = 4;
+    __builtin_memcpy(colors, D_80098B98, sizeof(colors));
+    values[0] = first;
+    values[1] = second;
+    width = size.vx - marker_size.vx;
+    i = VSync(-1) % 30 - 15;
+    flash = -(i > 0);
+    depth = 3;
+    for (i = 0; i < 2; ++i) {
+        if (i != 0 || flash != 0) {
+            progress = width * func_8007DBB8(course, values[i]) / 255;
+            side = D_8005AB5C == 1 ? i : 1 - i;
+            ((GsOT_TAG *)tile)->num = 3;
+            tile->code = 0x60;
+            tile->w = marker_size.vx;
+            tile->h = marker_size.vy;
+            tile->r0 = colors[side].r;
+            tile->g0 = colors[side].g;
+            tile->b0 = colors[side].b;
+            tile->x0 = position.vx + progress;
+            tile->y0 = position.vy + (marker_size.vy + 1) * side + 2;
+            ((GsOT_TAG *)tile)->p = ot->org[depth].p;
+            ot->org[depth].p = (unsigned long)tile;
+            ++depth;
+            ++tile;
+        }
+    }
+    ((GsOT_TAG *)tile)->num = 3;
+    tile->code = 0x60;
+    tile->x0 = position.vx;
+    tile->y0 = position.vy;
+    tile->w = size.vx;
+    tile->h = size.vy;
+    tile->r0 = 128;
+    tile->g0 = 128;
+    tile->b0 = 128;
+    tile->code |= 2;
+    ((GsOT_TAG *)tile)->p = ot->org[depth].p;
+    ot->org[depth].p = (unsigned long)tile;
+    ++tile;
+    D_80058ACC = (PACKET *)tile;
+    SetDrawMode(&mode, 0, 0, GetTPage(0, 1, 0, 0), 0);
+    func_80096D78(&ot->org[depth], &mode);
+    i = position.vx - 8;
+    progress = position.vy + (size.vy - 8) / 2;
+    func_8009621C(D_800A5D28, 32, 255, 32);
+    func_80095E90(&ot->org[3], D_800A5D28, D_80098BA0, i, progress, 0);
+    i = position.vx + size.vx;
+    func_8009621C(D_800A5D28, 32, 32, 255);
+    func_80095E90(&ot->org[3], D_800A5D28, D_80098BA4, i, progress, 0);
+    func_8009621C(D_800A5D28, 128, 128, 128);
 }
