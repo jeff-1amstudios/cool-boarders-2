@@ -404,6 +404,8 @@ extern void func_80075AFC(unsigned int buttons);
 extern void func_8007379C(CombPlayer *player, int animation, int update, int mode);
 extern void func_800809F4(int mode);
 
+extern int D_800A4CA8;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5380,4 +5382,10 @@ void func_800733B4(CombPlayer *player, CombPlayer *second, int mode)
         func_8005D774(mode, mode, 0);
     } while (frame < 30);
     func_80075A48();
+}
+
+// FUNCTION: COMB.BIN:0x80074230
+void func_80074230(void)
+{
+    D_800A4CA8 = 0;
 }
