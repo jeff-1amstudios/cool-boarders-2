@@ -4569,3 +4569,73 @@ int func_800702F4(CombSurfaceState *surface, int heading)
     angle = ratan2(second_height - first_height, 256);
     return (angle << 20) >> 20;
 }
+
+// FUNCTION: COMB.BIN:0x80070514
+int func_80070514(CombPlayer *player, CombSurfaceState *previous, CombSurfaceState *next)
+{
+    int result = 0;
+    VECTOR *end = (VECTOR *)&next->x;
+    CombSurfaceState *surface = &((CombSurfaceMotionPlayer *)player)->alternate_surface;
+    int entry_index = previous->surface;
+    VECTOR *start;
+    int previous_state = previous->word_50;
+    CombSceneEntry *entry = &D_800A5AE8[entry_index];
+    int clearance = ((CombPlayerReset *)player)->word_4900;
+    int tolerance;
+    int height;
+    int i;
+    int low;
+
+    next->word_50 = 0;
+    surface->y = 0x800;
+    surface->surface = -1;
+    surface->mode = 2;
+    tolerance = D_800A4B68;
+    surface->kind = 0;
+    surface->x = 0;
+    surface->z = 0;
+    surface->height = 0;
+    surface->word_18 = 0;
+    surface->word_54 = 0;
+    surface->word_50 = 0;
+    height = func_8006E230(end, entry_index, surface, 1);
+    start = (VECTOR *)&previous->x;
+    if (surface->surface < 0) {
+        for (i = 0; i < 3; i++) {
+            if (entry->linked_entries[i] >= 0) {
+                height = func_8006E230(end, entry->linked_entries[i], surface, 1);
+                if (surface->surface >= 0) {
+                    break;
+                }
+            }
+        }
+        if (surface->surface < 0) {
+            return result;
+        }
+    }
+    if (surface->height < next->height) {
+        low = end->vy;
+        if (next->height < low) {
+            low = next->height;
+        }
+        if (previous_state == -2 || start->vy < height) {
+            surface->word_18 = -1;
+            next->word_50 = -2;
+        } else if (low - clearance > height + tolerance) {
+            next->word_50 = -1;
+        } else if (previous->word_50 == 0) {
+            result = func_8006F13C(player, start, end, entry_index, 1);
+        } else {
+            if (height + tolerance < start->vy - clearance) {
+                result = -1;
+                ((CombPlayerReset *)player)->vector_48e8.vx = 0;
+                ((CombPlayerReset *)player)->vector_48e8.vy = 0;
+                ((CombPlayerReset *)player)->vector_48e8.vz = 0;
+            }
+            next->word_50 = -1;
+        }
+    } else {
+        next->word_50 = -2;
+    }
+    return result;
+}
