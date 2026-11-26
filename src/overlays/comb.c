@@ -262,6 +262,8 @@ extern void func_8007A218(void *effects, int x, int y, int z, int active);
 
 extern int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mode);
 
+extern int func_80016A24(unsigned long voice_bit, int sample_index);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3218,4 +3220,39 @@ int func_80069ACC(CombStartPlayer *player, int start, short x, short y, short z)
         surface->mode = 0;
     }
     return result;
+}
+
+// FUNCTION: COMB.BIN:0x80069D84
+void func_80069D84(int sample, int mode)
+{
+    int lower;
+
+    if (sample < 0) {
+        return;
+    }
+    if (mode == 5) {
+        if (sample < 34) {
+            lower = sample < 29;
+            sample = 28;
+            if (lower) {
+                sample = 29;
+            }
+            goto play;
+        }
+    } else {
+        if (mode != 6) {
+            goto play;
+        }
+        if (sample < 34) {
+            lower = sample < 29;
+            sample = 29;
+            if (!lower) {
+                sample = 28;
+            }
+            goto play;
+        }
+    }
+    sample = 29;
+play:
+    func_80016A24(0x10000, sample);
 }
