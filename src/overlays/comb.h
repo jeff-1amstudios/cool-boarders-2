@@ -689,4 +689,16 @@ void func_8006406C(GsOT *ot, GsOT_TAG *tags, unsigned long length);
 
 void func_80064094(CombPlayerCameraView *player);
 
+typedef struct CombStartOffsets {
+    int course[16][3];
+} CombStartOffsets;
+
+typedef struct CombStartPlayer {
+    unsigned char unknown_00[0x28];
+    CombSurfaceState surface;
+    CombSurfaceState initial_surface;
+} CombStartPlayer;
+
+void func_80064418(CombStartPlayer *player, int course, int side);
+
 #endif

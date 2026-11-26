@@ -217,6 +217,10 @@ extern char D_8009827C[30];
 extern BpLightingTable D_8009829C;
 extern int D_800A5F00;
 
+extern CombStartOffsets D_80098374;
+extern CombStartOffsets D_80098434;
+extern int func_80069ACC(CombStartPlayer *player, int start, short x, short y, short z);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2576,4 +2580,30 @@ void func_80064094(CombPlayerCameraView *player)
     GsInitCoordinate2(0, &camera->camera_coordinate);
     func_80060940(player, 0);
     GsSetRefView2(&camera->view);
+}
+
+// FUNCTION: COMB.BIN:0x80064418
+void func_80064418(CombStartPlayer *player, int course, int side)
+{
+    CombStartOffsets x_offsets;
+    CombStartOffsets z_offsets;
+    int column;
+    int x;
+    short z;
+
+    x_offsets = D_80098374;
+    z_offsets = D_80098434;
+
+    if (side != 0)
+        column = (side != -1) * 2;
+    else
+        column = 1;
+
+    x = x_offsets.course[course][column];
+    z = z_offsets.course[course][column];
+    if ((*(int *)D_8009A4FC) == -1)
+        x = -x;
+
+    func_80069ACC(player, 1, x, 0, z);
+    player->initial_surface = player->surface;
 }

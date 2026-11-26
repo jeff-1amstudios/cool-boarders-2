@@ -218,3 +218,8 @@ GsSetFogParam = 0x8002F4C0; // type:func
 func_80064094 = 0x80064094; // type:func
 GsInitCoordinate2 = 0x8002E558; // type:func
 GsSetRefView2 = 0x8002F760; // type:func
+
+func_80064418 = 0x80064418; // type:func
+func_80069ACC = 0x80069ACC; // type:func
+D_80098374 = 0x80098374; // size:0xC0
+D_80098434 = 0x80098434; // size:0xC0
