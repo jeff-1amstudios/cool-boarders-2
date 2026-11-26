@@ -426,3 +426,6 @@ D_800A5D20 = 0x800A5D20; // size:0x4
 D_800A5D30 = 0x800A5D30; // size:0x4
 
 func_80071A38 = 0x80071A38; // type:func
+
+D_800A4BA4 = 0x800A4BA4; // size:0x4
+D_800A4BA8 = 0x800A4BA8; // size:0x100

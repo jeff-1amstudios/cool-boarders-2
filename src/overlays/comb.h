@@ -1091,4 +1091,6 @@ void func_80070CC4(void);
 int func_80071A38(CombPlayer *player, VECTOR *start, VECTOR *end,
                    VECTOR *position, unsigned int surface);
 
+void func_80072164(void);
+
 #endif

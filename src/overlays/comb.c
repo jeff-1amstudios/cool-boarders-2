@@ -395,6 +395,9 @@ extern int D_800A5D20;
 extern int D_800A5D30;
 extern void func_80072164(void);
 
+extern int D_800A4BA4;
+extern int D_800A4BA8[64];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5027,4 +5030,22 @@ int func_80071A38(CombPlayer *player, VECTOR *start, VECTOR *end,
     }
 done:
     return result;
+}
+
+// FUNCTION: COMB.BIN:0x80072164
+void func_80072164(void)
+{
+    int *entry;
+    int i;
+    int empty;
+
+    D_800A4BA4 = 0;
+    empty = -1;
+    i = 63;
+    entry = &D_800A4BA8[63];
+    do {
+        *entry = empty;
+        i--;
+        entry--;
+    } while (i >= 0);
 }
