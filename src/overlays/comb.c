@@ -347,6 +347,8 @@ extern PACKET *func_8007B3A8(GsOT_TAG *tag, PACKET *packets, int *data, int diff
 extern void func_80077548(GsOT_TAG *tag, int value, int mode, int first, int second);
 extern void func_8007623C(GsOT *ot, int first, int second);
 
+extern void func_80076310(GsOT *ot, int offset);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4105,4 +4107,32 @@ void func_8006BCD4(GsOT *ot, int value, int mode, int first, int second)
 {
     func_80077548(&ot->org[3], value, mode, first - 0x84, second + 0x50);
     func_8007623C(ot, first, second);
+}
+
+// FUNCTION: COMB.BIN:0x8006BE3C
+void func_8006BE3C(GsOT *ot, int *state, int frozen, int duration, int angle)
+{
+    int scale;
+
+    if (*state >= 0) {
+        if (*state < duration) {
+            scale = -150;
+            if (angle >= 0) {
+                scale = 150;
+            } else {
+                angle = -angle;
+            }
+            if (angle > 1024) {
+                angle = 1024;
+            }
+            scale = scale * angle;
+            func_80076310(ot, scale / 1024);
+        }
+        if (frozen == 0) {
+            ++*state;
+            if (*state >= (duration << 1)) {
+                *state = 0;
+            }
+        }
+    }
 }
