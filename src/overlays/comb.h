@@ -841,4 +841,6 @@ typedef struct CombCourseBanks {
 
 void func_800657DC(void);
 
+void func_800658FC(int first_bank, int second_bank);
+
 #endif

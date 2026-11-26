@@ -245,6 +245,12 @@ extern CombCharacterBanks D_80098908;
 extern CombCourseBanks D_80098918;
 extern void func_800658FC(int course_bank, int character_bank);
 
+extern void func_80015FC8(void);
+/* The resident routine stores mode as an unsigned byte. This call passes -1
+   in the full argument register. */
+extern void func_80016010();
+extern int func_80016220(void);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2921,4 +2927,15 @@ void func_800657DC(void)
     func_800658FC(courses.values[D_800A5D5C->course],
                   characters.values[D_800A5D5C->character]);
     func_80016804();
+}
+
+// FUNCTION: COMB.BIN:0x800658FC
+void func_800658FC(int first_bank, int second_bank)
+{
+    func_80015FC8();
+    VSync(3);
+    func_80016010(first_bank, second_bank, -1);
+    while (func_80016220() != 0) {
+        VSync(0);
+    }
 }
