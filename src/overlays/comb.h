@@ -1051,4 +1051,15 @@ int func_8006D400(CombPlayer *player, BpCoursePoint *points, VECTOR *position,
 
 int func_8006F13C(CombPlayer *player, VECTOR *start, VECTOR *end, int entry_index, int mode);
 
+typedef struct CombSurfacePlayer {
+    CombStartLocation location;
+    unsigned char unknown_1c[0x20];
+    short surface;
+    unsigned char unknown_3e[0x46];
+    VECTOR position;
+    short start;
+} CombSurfacePlayer;
+
+int func_8006FAAC(CombSurfacePlayer *player);
+
 #endif

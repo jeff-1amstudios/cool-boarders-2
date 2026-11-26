@@ -4473,3 +4473,38 @@ int func_8006F13C(CombPlayer *player, VECTOR *start, VECTOR *end, int entry_inde
     }
     return surface;
 }
+
+// FUNCTION: COMB.BIN:0x8006FAAC
+int func_8006FAAC(CombSurfacePlayer *player)
+{
+    CombSurfaceState query;
+    int result;
+    int surface;
+
+    query.y = 0x800;
+    query.surface = -1;
+    query.kind = 0;
+    query.x = 0;
+    query.z = 0;
+    query.mode = 2;
+    query.height = 0;
+    query.word_18 = 0;
+    query.word_54 = 0;
+    query.word_50 = 0;
+    func_8006FB98(&player->position, player->start, &query, 0);
+    surface = query.surface;
+    if (surface >= 0) {
+        player->surface = surface;
+        player->location.entry = &D_800A5AE8[surface];
+        player->location.related[0] = player->location.entry->linked_entries[0];
+        player->location.related[1] = player->location.entry->linked_entries[1];
+        player->location.related[2] = player->location.entry->linked_entries[2];
+        player->location.x = ((int *)player->location.entry->unknown_00)[0];
+        player->location.y = ((int *)player->location.entry->unknown_00)[1];
+        result = -1;
+        player->location.z = ((int *)player->location.entry->unknown_00)[2];
+    } else {
+        result = 0;
+    }
+    return result;
+}
