@@ -1049,4 +1049,6 @@ void func_8006C8F8(int course, int direction);
 int func_8006D400(CombPlayer *player, BpCoursePoint *points, VECTOR *position,
                   int list, int index);
 
+int func_8006F13C(CombPlayer *player, VECTOR *start, VECTOR *end, int entry_index, int mode);
+
 #endif
