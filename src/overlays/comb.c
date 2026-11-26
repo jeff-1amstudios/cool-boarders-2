@@ -351,6 +351,8 @@ extern void func_80076310(GsOT *ot, int offset);
 
 extern void func_80078560(GsOT *ot, int x, int y, int value, int frame);
 
+extern char D_80098B90[6];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4150,4 +4152,39 @@ void func_8006C2C8(GsOT *ot, int *state, int frozen, int value)
     frame %= 48;
     func_80078560(ot, -152, 88, value, frame / 6);
     *state = frame;
+}
+
+// FUNCTION: COMB.BIN:0x8006C358
+void func_8006C358(GsOT *ot, int *counter, int different, int value, int direction)
+{
+    char text[16];
+    int clamped = 0;
+    int x;
+    int y = -32;
+
+    if (*counter > 0) {
+        x = *counter * -8 + 176;
+        if (x < 96) {
+            x = 96;
+            clamped = -1;
+        }
+        sprintf(text, D_80098B90, value);
+        func_8009624C(D_800A5D34, 0, 96, 96, 0);
+        func_80095E90(&ot->org[3], D_800A5D34, text, x, y, 0);
+        func_8009624C(D_800A5D34, 0, 128, 128, 128);
+    } else {
+        *counter = 0;
+    }
+
+    if (different == 0) {
+        if (direction == -1) {
+            if (clamped == -1) {
+                *counter = 60;
+            } else if (*counter < 60) {
+                ++*counter;
+            }
+        } else {
+            --*counter;
+        }
+    }
 }

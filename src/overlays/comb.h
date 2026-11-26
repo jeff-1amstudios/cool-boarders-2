@@ -1040,4 +1040,6 @@ void func_8006BE3C(GsOT *ot, int *state, int frozen, int duration, int angle);
 
 void func_8006C2C8(GsOT *ot, int *state, int frozen, int value);
 
+void func_8006C358(GsOT *ot, int *counter, int different, int value, int direction);
+
 #endif
