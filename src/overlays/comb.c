@@ -5217,3 +5217,51 @@ int func_800725EC(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x80073254
+void func_80073254(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface)
+{
+    short secondary_view;
+    int edge_heading;
+    int movement_heading;
+    int heading;
+    int difference;
+    int speed;
+    int component;
+    int trig;
+
+    secondary_view = ((CombEdgeMotionView *)player)->secondary_view;
+    edge_heading = ratan2(edge->vx, edge->vz);
+    movement_heading = ratan2(movement->vx, movement->vz);
+    difference = (movement_heading - edge_heading) << 20 >> 20;
+    if ((unsigned int)(difference + 0x400) > 0x800) {
+        heading = edge_heading - 0x800;
+        if (edge_heading < 1) {
+            heading = edge_heading + 0x800;
+        }
+        edge_heading = heading;
+        difference = (movement_heading - edge_heading) << 20 >> 20;
+    }
+    speed = ((CombEdgeMotionView *)player)->speed;
+    trig = rcos(difference);
+    speed = (speed >> 6) * (trig >> 6);
+    trig = rsin(edge_heading);
+    component = speed >> 6;
+    ((CombEdgeMotionView *)player)->velocity.vx = component * (trig >> 6);
+    trig = rcos(edge_heading);
+    component = component * (trig >> 6);
+    difference = ((CombEdgeMotionView *)player)->velocity.vx >> 6;
+    speed = difference * difference;
+    difference = component >> 6;
+    ((CombEdgeMotionView *)player)->velocity.vz = component;
+    ((CombEdgeMotionView *)player)->speed = SquareRoot12(speed + difference * difference);
+    if (((CombEdgeMotionView *)player)->collision == -1) {
+        ((CombEdgeMotionView *)player)->speed = 0;
+        ((CombEdgeMotionView *)player)->velocity.vx = 0;
+        ((CombEdgeMotionView *)player)->velocity.vz = 0;
+    }
+    ((CombEdgeMotionView *)player)->collision = -1;
+    if (secondary_view <= 0) {
+        D_800A4B98 = 0;
+    }
+}

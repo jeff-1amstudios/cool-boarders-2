@@ -1099,4 +1099,16 @@ int func_800722F8(VECTOR *start, VECTOR *end, VECTOR *edge_start,
 int func_800725EC(SVECTOR *start, SVECTOR *end, SVECTOR *edge_start,
                   SVECTOR *edge_end, SVECTOR *intersection);
 
+typedef struct CombEdgeMotionView {
+    unsigned char unknown_0000[0x48E8];
+    VECTOR velocity;
+    int speed;
+    unsigned char unknown_48fc[8];
+    short collision;
+    unsigned char unknown_4906[0x18];
+    signed char secondary_view;
+} CombEdgeMotionView;
+
+void func_80073254(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
+
 #endif
