@@ -226,7 +226,7 @@ extern CombObjectSpeeds D_80098514;
 extern CombObjectLimits D_80098794;
 extern CombObjectPercentages D_800988D4;
 extern CombObjectEntry D_8009A410[];
-extern void func_80065BA8(CombObjectParameters *parameters, int mode);
+extern CombTuningEntry D_8009A5F4[];
 
 extern BpAnimationFrame *func_8009711C(unsigned int frame_index, BpAnimationFrame *frame,
                                        BpAnimationState *state, const int *coordinate_indices,
@@ -3037,4 +3037,55 @@ inactive:
 void func_80065BA0(int update)
 {
     return;
+}
+
+// FUNCTION: COMB.BIN:0x80065BA8
+int func_80065BA8(CombObjectParameters *parameters, int mode)
+{
+    int kind = parameters->kind;
+    int response;
+    int speed;
+    int selected;
+    int value_24 = 0xC94E;
+    int value_28 = 0x7308;
+
+    switch (mode) {
+    case 1:
+        response = D_8009A5F4[kind].response[2];
+        ((CombTuningParameters *)parameters)->turn = D_8009A5F4[kind].turn[2] * 0x1000 / 360;
+        speed = (D_8009A5F4[kind].speed[2] * 0xA000 / 36) * 11 / 17;
+        selected = 1;
+        break;
+    case 2:
+    case 3:
+        response = D_8009A5F4[kind].response[1];
+        ((CombTuningParameters *)parameters)->turn = D_8009A5F4[kind].turn[1] * 0x1000 / 360;
+        speed = (D_8009A5F4[kind].speed[1] * 0xA000 / 36) * 11 / 17;
+        selected = 2;
+        break;
+    case 0:
+    default:
+        response = D_8009A5F4[kind].response[0];
+        ((CombTuningParameters *)parameters)->turn = D_8009A5F4[kind].turn[0] * 0x1000 / 360;
+        speed = (D_8009A5F4[kind].speed[0] * 0xA000 / 36) * 11 / 17;
+        selected = 0;
+    }
+    ((CombTuningParameters *)parameters)->value_24 = value_24;
+    ((CombTuningParameters *)parameters)->value_28 = value_28;
+    ((CombTuningParameters *)parameters)->value_30 = 0x10000;
+    ((CombTuningParameters *)parameters)->value_38 = 4;
+    ((CombTuningParameters *)parameters)->response = (response + 4) * 0xF000 / 0x4F1A0;
+    speed = speed * 110 / 100;
+    ((CombTuningParameters *)parameters)->speed = speed;
+    ((CombTuningParameters *)parameters)->response_scale = response * 0x19000 / 0x4F1A0;
+    ((CombTuningParameters *)parameters)->speed_steps[3] = speed / 2;
+    ((CombTuningParameters *)parameters)->speed_steps[0] = speed / 12;
+    ((CombTuningParameters *)parameters)->speed_steps[1] = speed / 6;
+    ((CombTuningParameters *)parameters)->speed_steps[2] = speed / 3;
+    ((CombTuningParameters *)parameters)->speed_steps[4] = speed * 2 / 3;
+    ((CombTuningParameters *)parameters)->speed_steps[5] = speed * 5 / 6;
+    ((CombTuningParameters *)parameters)->speed_steps[6] = speed * 11 / 12;
+    ((CombTuningParameters *)parameters)->weight = D_8009A5F4[kind].weight;
+    ((CombTuningParameters *)parameters)->unknown_4c = selected;
+    return mode;
 }

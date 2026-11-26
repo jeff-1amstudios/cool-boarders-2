@@ -847,4 +847,30 @@ void func_800658FC(int first_bank, int second_bank);
 
 void func_80065968(BpAnimationPlayback *playback, int animation, int mode, int end_frame);
 
+typedef struct CombTuningParameters {
+    int kind;
+    int speed_steps[7];
+    int speed;
+    int value_24;
+    int value_28;
+    int response;
+    int value_30;
+    int response_scale;
+    int value_38;
+    int turn;
+    int weight;
+    int value_44;
+    int value_48;
+    int unknown_4c;
+} CombTuningParameters;
+
+typedef struct CombTuningEntry {
+    unsigned char speed[3];
+    unsigned char response[3];
+    unsigned char turn[3];
+    signed char weight;
+} CombTuningEntry;
+
+int func_80065BA8(CombObjectParameters *parameters, int mode);
+
 #endif
