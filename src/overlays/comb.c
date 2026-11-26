@@ -241,6 +241,10 @@ extern RECT D_80098900;
 extern void func_800139C4(unsigned char *buffer);
 extern void func_80013A20(unsigned char *data);
 
+extern CombCharacterBanks D_80098908;
+extern CombCourseBanks D_80098918;
+extern void func_800658FC(int course_bank, int character_bank);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2906,4 +2910,15 @@ void func_80065604(int flip_first, int flip_second)
         LoadImage(&second_detail, pixels);
         DrawSync(0);
     }
+}
+
+// FUNCTION: COMB.BIN:0x800657DC
+void func_800657DC(void)
+{
+    CombCharacterBanks characters = D_80098908;
+    CombCourseBanks courses = D_80098918;
+
+    func_800658FC(courses.values[D_800A5D5C->course],
+                  characters.values[D_800A5D5C->character]);
+    func_80016804();
 }

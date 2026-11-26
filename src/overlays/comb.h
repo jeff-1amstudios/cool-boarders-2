@@ -831,4 +831,14 @@ void func_80064984(CombPlayerReset *state, int reverse);
 
 void func_80065604(int flip_first, int flip_second);
 
+typedef struct CombCharacterBanks {
+    short values[7];
+} CombCharacterBanks;
+
+typedef struct CombCourseBanks {
+    short values[16];
+} CombCourseBanks;
+
+void func_800657DC(void);
+
 #endif
