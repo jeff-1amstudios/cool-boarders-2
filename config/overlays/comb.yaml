@@ -109,7 +109,8 @@ segments:
   - [0x8bac, asm, body_8bac]
   - [0x923c, c, func_80063DA4]
   - [0x9274, c, func_80063DDC]
-  - [0x92bc, asm, body_92bc]
+  - [0x92bc, c, func_80063E24]
+  - [0x9504, asm, body_9504]
   - [0x3d520, data, data]
   # Seven-entry switch table owned by func_800608D4.
   - start: 0x3d624

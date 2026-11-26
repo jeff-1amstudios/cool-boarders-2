@@ -207,3 +207,10 @@ D_800A5DA0 = 0x800A5DA0; // size:0x4
 D_800A5D38 = 0x800A5D38; // size:0x4
 D_800A5D3C = 0x800A5D3C; // size:0x4
 D_800A5D1C = 0x800A5D1C; // size:0x4
+
+D_8009829C = 0x8009829C; // size:0xC0
+D_800A5F00 = 0x800A5F00; // size:0x4
+GsSetFlatLight = 0x8002EE70; // type:func
+GsSetAmbient = 0x8002F640; // type:func
+GsSetLightMode = 0x8002F434; // type:func
+GsSetFogParam = 0x8002F4C0; // type:func
