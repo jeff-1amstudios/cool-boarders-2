@@ -294,6 +294,8 @@ extern int func_80095588(short x, short z);
 extern int func_8007715C(GsOT_TAG *tag, int value, int x, int y);
 extern void func_800762C4(GsOT_TAG *tag, int x, int y);
 
+extern int func_80076FA0(GsOT_TAG *ot, int value, int x, int y, int digits);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3725,4 +3727,17 @@ int func_8006A9EC(GsOT *ot, CombPlayerRenderStateView *state, unsigned int draw,
         func_800762C4(tag, x + 112, number_y);
     }
     return distance;
+}
+
+// FUNCTION: COMB.BIN:0x8006AB40
+void func_8006AB40(GsOT *ot, unsigned int value, int first, int second)
+{
+    GsOT_TAG *tag = ot->org + 3;
+
+    value /= 1000;
+    second -= 104;
+    if (value > 99) {
+        value = 99;
+    }
+    func_80076FA0(tag, value, first, second, 2);
 }
