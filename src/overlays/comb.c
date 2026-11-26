@@ -3032,3 +3032,9 @@ inactive:
         playback->animation.word_4dc = -1;
     }
 }
+
+// FUNCTION: COMB.BIN:0x80065BA0
+void func_80065BA0(int update)
+{
+    return;
+}
