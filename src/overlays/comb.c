@@ -307,6 +307,12 @@ extern MATRIX D_80058EE0;
 extern PACKET *func_8007B5C0(GsOT_TAG *ot, PACKET *packet, int value, int *state, int shift);
 extern void func_8006B370(GsOT *ot, CombHudEntry *entry);
 
+extern CombScoreLabels D_80098A58;
+extern char D_80098A90[7];
+extern int D_800A5D28;
+extern int sprintf(char *buffer, char *format, ...);
+extern void func_80095E90(GsOT_TAG *ot, int font, char *text, int x, int y, int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3855,5 +3861,42 @@ void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int direction, int
     }
     if (D_800A5D24 != 0) {
         func_8006B370(ot, entry);
+    }
+}
+
+// FUNCTION: COMB.BIN:0x8006B370
+void func_8006B370(GsOT *ot, CombHudEntry *entry)
+{
+    CombScoreLabels labels;
+    char lines[14][32];
+    int values[14];
+    BpScore *score = (BpScore *)entry;
+    int i;
+    int x;
+    int y;
+
+    labels = D_80098A58;
+    values[0] = score->total;
+    values[1] = score->height_bonus;
+    values[2] = score->reverse;
+    values[3] = score->reverse_bonus;
+    values[4] = score->move_bonus[0];
+    values[5] = score->move_bonus[1];
+    values[6] = score->duration_bonus;
+    values[7] = score->heading_bonus;
+    values[8] = score->rotation_bonus[0];
+    values[9] = score->rotation_bonus[1];
+    values[10] = score->combined_bonus;
+    values[11] = score->distance_bonus;
+    values[12] = score->unknown_07;
+    values[13] = score->unknown_08[0];
+    x = -152;
+    y = -16;
+    for (i = 0; i < 14; i++) {
+        sprintf(lines[i], D_80098A90, labels.text[i], values[i]);
+    }
+    for (i = 0; i < 12; i++) {
+        func_80095E90(ot->org + 3, D_800A5D28, lines[i], x, y, 0);
+        y += 8;
     }
 }

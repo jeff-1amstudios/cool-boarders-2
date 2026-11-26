@@ -335,3 +335,9 @@ D_80058EE0 = 0x80058EE0; // size:0x20
 
 func_8006B370 = 0x8006B370; // type:func
 func_8007B5C0 = 0x8007B5C0; // type:func
+
+D_80098A58 = 0x80098A58; // size:0x38
+D_80098A90 = 0x80098A90; // type:char size:0x7
+D_800A5D28 = 0x800A5D28; // type:u32
+func_80095E90 = 0x80095E90; // type:func
+sprintf = 0x80044A28; // type:func

@@ -991,4 +991,8 @@ void func_8006A874(CombMotionPlayer *player);
 
 void func_8006B2D0(GsOT *ot, CombHudEntry *entry, int *state, int direction, int shift, int extra);
 
+typedef struct CombScoreLabels {
+    char *text[14];
+} CombScoreLabels;
+
 #endif
