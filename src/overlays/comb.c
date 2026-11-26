@@ -2556,3 +2556,13 @@ void func_80063E24(int course)
         GsSetLightMode(0);
     }
 }
+
+// FUNCTION: COMB.BIN:0x8006406C
+void func_8006406C(GsOT *ot, GsOT_TAG *tags, unsigned long length)
+{
+    ot->org = tags;
+    ot->length = length;
+    ot->tag = tags + (1UL << length) - 1;
+    ot->offset = 0;
+    ot->point = 0;
+}

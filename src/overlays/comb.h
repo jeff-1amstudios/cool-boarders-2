@@ -685,4 +685,6 @@ void func_80063460(CombSettings *settings, int state, int update, int alternate)
 
 void func_80063DDC(int course);
 
+void func_8006406C(GsOT *ot, GsOT_TAG *tags, unsigned long length);
+
 #endif
