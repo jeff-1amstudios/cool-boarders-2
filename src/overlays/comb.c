@@ -71,7 +71,7 @@ extern void func_8005E0D8(GsOT *ot, void *view, void *position, int entry,
 extern int D_80099ED0;
 extern long D_8009FF88;
 extern void func_8005ED84(CombPlayer *player);
-extern void func_8006AC7C(GsOT *ot, CombPlayer *player, int shift);
+extern void func_8006AC7C(GsOT *ot, CombPlayer *player, unsigned int shift);
 
 extern short D_800980DC;
 extern short D_800980DE[7];
@@ -301,6 +301,9 @@ extern int D_8009A684;
 extern void func_800767C4(GsOT *ot);
 
 extern void func_8007676C(GsOT *ot, int x, int y);
+
+extern SVECTOR D_800989A8;
+extern MATRIX D_80058EE0;
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -3777,4 +3780,59 @@ int func_8006AC14(GsOT *ot, int move_left, int position, int x, int y)
     }
     func_8007676C(ot, position + x, y - 52);
     return position;
+}
+
+// FUNCTION: COMB.BIN:0x8006AC7C
+void func_8006AC7C(GsOT *ot, CombPlayer *player, unsigned int shift)
+{
+    SVECTOR v0, v1, v2, v3;
+    long p, flag;
+    CombSurfaceState *surface = &((CombSurfaceMotionPlayer *)player)->surface;
+    int *position = &surface->x;
+    int selected = ((CombSurfaceMotionPlayer *)player)->alternate_surface.word_18;
+    POLY_FT4 *quad;
+    long depth;
+    int height;
+
+    memset_800449E8((unsigned char *)&v0, 0, sizeof(v0));
+    v0.vx = 96;
+    v0.vy = 0;
+    v0.vz = 96;
+    memset_800449E8((unsigned char *)&v1, 0, sizeof(v1));
+    v1.vx = 96;
+    v1.vy = 0;
+    v1.vz = -96;
+    memset_800449E8((unsigned char *)&v2, 0, sizeof(v2));
+    v2.vx = -96;
+    v2.vy = 0;
+    v2.vz = 96;
+    v3 = D_800989A8;
+    PushMatrix();
+    SetRotMatrix(&D_80058EE0);
+    quad = (POLY_FT4 *)D_80058ACC;
+    *quad = D_800A4B28;
+    if (surface->mode == 0) {
+        height = position[1];
+    } else if (selected == -1) {
+        height = ((CombSurfaceMotionPlayer *)player)->alternate_surface.height;
+    } else {
+        height = surface->height;
+    }
+    height -= position[1];
+    v0.vy = height;
+    v1.vy = height;
+    v2.vy = height;
+    v3.vy = height;
+    depth = RotTransPers4(&v0, &v1, &v2, &v3,
+                         (long *)&quad->x0, (long *)&quad->x1,
+                         (long *)&quad->x2, (long *)&quad->x3, &p, &flag);
+    if (flag >= 0) {
+        depth >>= shift;
+        quad->code |= 2;
+        ((GsOT_TAG *)quad)->p = ot->org[depth].p;
+        ot->org[depth].p = (unsigned long)quad;
+        quad++;
+    }
+    D_80058ACC = (PACKET *)quad;
+    PopMatrix();
 }
