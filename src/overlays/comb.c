@@ -349,6 +349,8 @@ extern void func_8007623C(GsOT *ot, int first, int second);
 
 extern void func_80076310(GsOT *ot, int offset);
 
+extern void func_80078560(GsOT *ot, int x, int y, int value, int frame);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4135,4 +4137,17 @@ void func_8006BE3C(GsOT *ot, int *state, int frozen, int duration, int angle)
             }
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x8006C2C8
+void func_8006C2C8(GsOT *ot, int *state, int frozen, int value)
+{
+    int frame = *state;
+
+    if (frozen == 0) {
+        ++frame;
+    }
+    frame %= 48;
+    func_80078560(ot, -152, 88, value, frame / 6);
+    *state = frame;
 }
