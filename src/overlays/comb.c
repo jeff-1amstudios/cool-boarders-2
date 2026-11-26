@@ -221,6 +221,13 @@ extern CombStartOffsets D_80098374;
 extern CombStartOffsets D_80098434;
 extern int func_80069ACC(CombStartPlayer *player, int start, short x, short y, short z);
 
+extern CombObjectCourseValues D_800984F4;
+extern CombObjectSpeeds D_80098514;
+extern CombObjectLimits D_80098794;
+extern CombObjectPercentages D_800988D4;
+extern CombObjectEntry D_8009A410[];
+extern void func_80065BA8(CombObjectParameters *parameters, int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -2606,4 +2613,68 @@ void func_80064418(CombStartPlayer *player, int course, int side)
 
     func_80069ACC(player, 1, x, 0, z);
     player->initial_surface = player->surface;
+}
+
+// FUNCTION: COMB.BIN:0x8006457C
+void func_8006457C(CombObjectState *object, int player, int index, int kind,
+                   int value, int x, int y, int z)
+{
+    CombObjectTables tables;
+    int course;
+    CombSetupState *setup;
+    CombObjectParameters *parameters;
+    int reverse;
+    int limit;
+    int speed;
+    unsigned short course_value;
+    int percent;
+
+    tables.course = D_800984F4;
+    tables.speeds = D_80098514;
+    tables.limits = D_80098794;
+    tables.percentages = D_800988D4;
+    course = D_800A5D5C->course;
+    parameters = &object->parameters;
+    setup = func_8001F1A0(0x4F4);
+    if (index >= 0) {
+        reverse = 0;
+    } else {
+        reverse = -index;
+        index = ~index;
+    }
+    limit = tables.limits.values[D_8009A500][course][index];
+    speed = tables.speeds.values[D_8009A500][course][index];
+    object->value_66 = -1;
+    object->active = 1;
+    object->flag = 0xFF;
+    object->entry = &D_8009A410[index];
+    object->count = reverse + 1;
+    object->index = index;
+    object->reverse = reverse;
+    object->flag_5b = 0;
+    if (index == 5) kind = 12;
+    if (index == 6) kind = 13;
+    parameters->kind = kind;
+    parameters->value_44 = 0;
+    parameters->value_48 = 0;
+    func_80065BA8(parameters, 0);
+    course_value = tables.course.course[course];
+    object->limit = limit;
+    object->course_value = course_value;
+    percent = tables.percentages.course[course];
+    object->value_6c = 0;
+    object->value_62 = 0;
+    object->timer = 30;
+    object->speed = speed * percent / 100;
+    if (value != 0) object->value_64 = value;
+    else object->value_64 = 0xFFFF;
+    *(int *)((char *)setup + 0x10) = x;
+    *(int *)((char *)setup + 0x14) = y;
+    *(int *)((char *)setup + 0x18) = z;
+    func_80065278(setup, 0, player, -(index == 6));
+    object->values = setup->values;
+    object->word_0c = setup->word_0c;
+    object->value = setup->value;
+    object->link = setup->link;
+    func_8001F378(setup);
 }

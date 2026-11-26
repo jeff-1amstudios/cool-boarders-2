@@ -701,4 +701,66 @@ typedef struct CombStartPlayer {
 
 void func_80064418(CombStartPlayer *player, int course, int side);
 
+typedef struct CombObjectCourseValues {
+    short course[16];
+} CombObjectCourseValues;
+
+typedef struct CombObjectSpeeds {
+    int values[2][10][8];
+} CombObjectSpeeds;
+
+typedef struct CombObjectLimits {
+    short values[2][10][8];
+} CombObjectLimits;
+
+typedef struct CombObjectPercentages {
+    short course[10];
+} CombObjectPercentages;
+
+typedef struct CombObjectTables {
+    CombObjectCourseValues course;
+    CombObjectSpeeds speeds;
+    CombObjectLimits limits;
+    CombObjectPercentages percentages;
+} CombObjectTables;
+
+typedef struct CombObjectParameters {
+    int kind;
+    unsigned char unknown_04[0x40];
+    int value_44;
+    int value_48;
+    int unknown_4c;
+} CombObjectParameters;
+
+typedef struct CombObjectEntry {
+    unsigned char unknown[16];
+} CombObjectEntry;
+
+typedef struct CombObjectState {
+    short active;
+    unsigned char flag;
+    unsigned char index;
+    CombObjectParameters parameters;
+    CombObjectEntry *entry;
+    short count;
+    unsigned char reverse;
+    unsigned char flag_5b;
+    short course_value;
+    short limit;
+    short timer;
+    short value_62;
+    short value_64;
+    short value_66;
+    int speed;
+    int value_6c;
+    CombSetupValues values;
+    unsigned int word_0c;
+    unsigned char unknown_0080[0x1200];
+    CombSetupLink *link;
+    short value;
+} CombObjectState;
+
+void func_8006457C(CombObjectState *object, int player, int index, int kind,
+                   int value, int x, int y, int z);
+
 #endif
