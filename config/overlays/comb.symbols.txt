@@ -237,3 +237,23 @@ func_80065428 = 0x80065428; // type:func
 func_800654F0 = 0x800654F0; // type:func
 
 func_8009711C = 0x8009711C; // type:func
+
+func_80065604 = 0x80065604; // type:func
+
+func_800139C4 = 0x800139C4; // type:func
+
+func_80013A20 = 0x80013A20; // type:func
+
+StoreImage = 0x80029B10; // type:func
+
+LoadImage = 0x80029AAC; // type:func
+
+DrawSync = 0x800297E8; // type:func
+
+D_800988E8 = 0x800988E8; // size:0x8
+
+D_800988F0 = 0x800988F0; // size:0x8
+
+D_800988F8 = 0x800988F8; // size:0x8
+
+D_80098900 = 0x80098900; // size:0x8

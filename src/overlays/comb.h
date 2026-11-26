@@ -829,4 +829,6 @@ typedef struct CombPlayerReset {
 
 void func_80064984(CombPlayerReset *state, int reverse);
 
+void func_80065604(int flip_first, int flip_second);
+
 #endif
