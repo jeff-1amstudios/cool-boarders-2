@@ -873,4 +873,26 @@ typedef struct CombTuningEntry {
 
 int func_80065BA8(CombObjectParameters *parameters, int mode);
 
+typedef struct CombPlaybackPlayerView {
+    unsigned char unknown_0000[0x28];
+    CombSurfaceState surfaces[3];
+    unsigned char unknown_0130[0xB4];
+    BpAnimationPlayback playback;
+    unsigned char unknown_06d8[0x57C];
+    short direction;
+    unsigned char unknown_0c56[0x66];
+    int history_count;
+    int frame_count;
+    unsigned char unknown_0cc4[0x15C];
+    unsigned short input_history[7500];
+    unsigned char unknown_48b8[0x30];
+    int velocity_x;
+    int velocity_y;
+    int velocity_z;
+    unsigned char unknown_48f4[0x20];
+    void *effects;
+} CombPlaybackPlayerView;
+
+int func_8006963C(CombPlaybackPlayerView *player, int frame);
+
 #endif

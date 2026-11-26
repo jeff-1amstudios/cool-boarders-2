@@ -255,6 +255,11 @@ extern BpAnimationFrame *func_80097B98(unsigned int frame_index, BpAnimationFram
                                        BpAnimationState *state, const int *coordinate_indices,
                                        unsigned long *pmd, int mode);
 
+extern unsigned short D_8009FF5C;
+extern unsigned short D_8009FF64;
+extern void func_80065F5C(CombPlaybackPlayerView *player, int first, int second);
+extern void func_8007A218(void *effects, int x, int y, int z, int active);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3088,4 +3093,57 @@ int func_80065BA8(CombObjectParameters *parameters, int mode)
     ((CombTuningParameters *)parameters)->weight = D_8009A5F4[kind].weight;
     ((CombTuningParameters *)parameters)->unknown_4c = selected;
     return mode;
+}
+
+// FUNCTION: COMB.BIN:0x8006963C
+int func_8006963C(CombPlaybackPlayerView *player, int frame)
+{
+    int animation;
+    int *position = &player->surfaces[0].x;
+    int *previous_position = &player->surfaces[1].x;
+    int previous_mode = player->surfaces[1].mode;
+    unsigned int buttons = D_8009FF5C | D_8009FF64;
+    BpAnimationPlayback *playback = &player->playback;
+    int active;
+    int index;
+    int i;
+
+    animation = player->direction + 0x24;
+    player->surfaces[0].kind = buttons;
+    if (frame < 30) {
+        if (frame == 0) {
+            frame = 1;
+            player->velocity_x /= 2;
+            player->velocity_z /= 2;
+        }
+        func_80065F5C(player, 0, 0);
+        if (previous_mode == 0) {
+            frame++;
+        }
+    } else {
+        func_80065968(playback, animation, 2, 0);
+        player->playback.animation.word_4e0 = animation;
+    }
+    if (player->surfaces[0].mode == 0) {
+        active = 1;
+    } else {
+        active = 1;
+        if (player->surfaces[0].mode >= 0) {
+            active = player->surfaces[0].mode > 2;
+        }
+    }
+    func_8007A218(player->effects,
+                 position[0] - previous_position[0],
+                 position[1] - previous_position[1],
+                 position[2] - previous_position[2], active);
+    player->frame_count++;
+    index = player->history_count;
+    if (index < 7500) {
+        player->history_count = index + 1;
+        player->input_history[index] = buttons;
+    }
+    for (i = 2; i != 0; i--) {
+        player->surfaces[i] = player->surfaces[i - 1];
+    }
+    return frame;
 }
