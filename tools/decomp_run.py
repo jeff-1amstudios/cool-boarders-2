@@ -340,8 +340,12 @@ def review_header_extension(before, after):
         raise Rejected('Existing header declarations or guard changed; append before the final #endif')
 
 
-def review_shared_extension(before, after, *, selected_symbol=None):
-    """Protect shared declarations, allowing the selected function's prototype to evolve."""
+def review_shared_extension(before, after, *, selected_symbol=None, selected_source=''):
+    """Protect shared code while allowing evidenced selected-function type recovery.
+
+    Return the existing globals whose declarations changed. The supervisor also
+    requires feedback evidence for these names before full-file validation.
+    """
     if selected_symbol is not None:
         # The selected definition may need corrected argument types, including
         # when reusing a donor. Its callers are still checked by full-file
@@ -350,6 +354,34 @@ def review_shared_extension(before, after, *, selected_symbol=None):
                                + re.escape(selected_symbol)
                                + r'\s*\([^;{}]*\)\s*;[^\S\n]*\n?', re.M)
         before, after = prototype.sub('', before), prototype.sub('', after)
+    # Match standalone data externs only. Keep complex declarations, helpers,
+    # function prototypes and established layouts under the original byte audit.
+    data_extern = re.compile(
+        r'^extern[ \t]+(?:[A-Za-z_]\w*[ \t*]+)+'
+        r'(?P<name>[A-Za-z_]\w*)'
+        r'(?:[ \t]*\[[^\n;{}=(),]*\])*[ \t]*;[^\S\n]*$', re.M)
+    old, new = {}, {}
+    for text, declarations in ((before, old), (after, new)):
+        clean = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'',
+                       lambda m: ' ' * len(m[0]), text, flags=re.S)
+        for match in data_extern.finditer(text):
+            prefix = clean[:match.start()]
+            if (clean[match.start():match.start() + 6] == 'extern'
+                    and prefix.count('{') == prefix.count('}')):
+                declarations.setdefault(match['name'], []).append(match)
+    body = re.sub(r'/\*.*?\*/|//[^\n]*|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'',
+                  ' ', selected_source, flags=re.S)
+    referenced = set(re.findall(r'\b[A-Za-z_]\w*\b', body))
+    refined = {name for name in old.keys() & new.keys() & referenced
+               if len(old[name]) == len(new[name]) == 1
+               and old[name][0][0] != new[name][0][0]}
+    # Canonicalize only the declaration text, retaining its position/newline.
+    # Renames, removals, duplicate declarations and unrelated edits still fail.
+    def normalize(text, declarations):
+        positions = {declarations[name][0].start() for name in refined}
+        return data_extern.sub(lambda m: f'extern __reviewed_global {m["name"]};'
+                               if m.start() in positions else m[0], text)
+    before, after = normalize(before, old), normalize(after, new)
     previous, proposed = before.splitlines(keepends=True), after.splitlines(keepends=True)
     for operation, old_start, _, start, end in difflib.SequenceMatcher(
             None, previous, proposed, autojunk=False).get_opcodes():
@@ -367,6 +399,7 @@ def review_shared_extension(before, after, *, selected_symbol=None):
         added = re.sub(r'\bextern\s+[^;{}=]+;|#[ \t]*include[ \t]+"[A-Za-z_]\w*\.h"', '', added)
         if added.strip():
             raise Rejected('Only extern declarations and local includes may be added before FUNCTION annotations')
+    return refined
 
 
 class Runner:
@@ -478,8 +511,9 @@ class Runner:
                 new_shared, new_blocks = sections(contents(head, source).decode())
                 # Older attempts sometimes moved the selected function's extern
                 # into its image header. That selected prototype may be replaced;
-                # all other established declarations must still be preserved.
-                review_shared_extension(old_shared, new_shared, selected_symbol=active['name'])
+                # selected-function global type refinements may also evolve.
+                review_shared_extension(old_shared, new_shared, selected_symbol=active['name'],
+                                        selected_source=new_blocks.get(key(active), ''))
                 old_blocks = {k: v.rstrip() for k, v in old_blocks.items()}
                 new_blocks = {k: v.rstrip() for k, v in new_blocks.items()}
                 if key(active) in old_blocks or {k: v for k, v in new_blocks.items() if k != key(active)} != old_blocks:
@@ -869,7 +903,18 @@ class Runner:
                 previous = subprocess.check_output(['git', 'show', f'{baseline}:{entry}'], cwd=self.w.ROOT).decode()
             shared, blocks = sections(previous)
             new_shared, new_blocks = sections(text)
-            review_shared_extension(shared, new_shared, selected_symbol=active['name'])
+            refined = review_shared_extension(shared, new_shared, selected_symbol=active['name'],
+                                              selected_source=new_blocks.get(key(active), ''))
+            if refined:
+                proposal_path = self.w.ROOT / active['context'] / 'ghidra-update.json'
+                try:
+                    proposal = json.loads(proposal_path.read_text())
+                    evidenced = {g['name'] for g in proposal['globals'] if g['evidence'].strip()}
+                except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+                    raise Rejected('Global type refinements need ghidra-update.json evidence') from error
+                if refined - evidenced:
+                    raise Rejected('Global type refinements need feedback evidence: '
+                                   + ', '.join(sorted(refined - evidenced)))
             identity = key(active)
             # Appending a FUNCTION marker can add separator whitespace to the
             # preceding block. Ignore only that trailing whitespace; preserve

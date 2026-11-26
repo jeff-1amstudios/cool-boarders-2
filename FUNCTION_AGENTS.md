@@ -58,9 +58,17 @@ do not install dependencies, change tools or perform repository maintenance.
   to the supplied image source, starting with `// FUNCTION: <image>:0x<ADDRESS>`.
   If restarting from an accepted donor, replace the existing selected block.
   Use the context's build symbol; the Ghidra analysis name can differ.
-- Preserve existing function blocks, shared declarations, layouts and boundaries.
+- Preserve existing function blocks, layouts and boundaries.
   Append new externs and quoted local includes to the shared top block before
   the first function annotation. Reuse existing declarations.
+- Refine an existing standalone global extern's type when the selected function
+  supplies evidence for it (for example, `void *` to a recovered struct pointer).
+  Preserve its symbol name and declaration position; record the evidence in
+  `ghidra-update.json` under `globals`. Keep the improved shared type rather than
+  adding a local cast solely to satisfy the scope audit. Check accepted callers
+  for compatibility. The supervisor validates the entire containing image and
+  plans/imports the accepted type feedback. Unrelated declarations stay protected;
+  existing struct layouts and complex declarations still require manual review.
 - Include the image header. Reuse SDK and accepted game types. Define new
   structs/unions once in guarded local headers, adding types before the image
   header's final `#endif`; do not duplicate layouts in function blocks.
