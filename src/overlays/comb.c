@@ -270,6 +270,13 @@ extern int D_8009A504[13];
 extern unsigned short D_8009A538[16];
 extern unsigned short D_8009A558[8];
 
+extern short D_8009A568[10];
+extern short D_8009A56A[9];
+extern unsigned short D_8009FF6E;
+extern unsigned short D_8009FF70;
+extern unsigned short D_8009FF72;
+extern unsigned short D_8009FF74;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3406,4 +3413,104 @@ int func_8006A230(BpScore *score)
          + score->duration_bonus + score->heading_bonus
          + score->rotation_bonus[0] + score->rotation_bonus[1]
          + score->combined_bonus + score->distance_bonus;
+}
+
+// FUNCTION: COMB.BIN:0x8006A288
+int func_8006A288(CombMovePlayer *player)
+{
+    int result = 0;
+    int clear = -(player->airborne == 0);
+    unsigned int buttons = player->buttons;
+    unsigned int previous = player->previous_buttons;
+    int keep[4];
+    int i, offset;
+    int cleanup_offset;
+    int cleanup_count;
+    int *fill_cursor;
+    int *cleanup_cursor;
+    int *cursor;
+    CombMoveState *move;
+    CombMoveWork work;
+    unsigned int pressed;
+    int invalid = -1;
+    int sentinel;
+    unsigned int directions;
+    unsigned char step;
+    int table_offset;
+
+    for (i = 3; i >= 0; i--) keep[i] = invalid;
+    if (!clear) {
+        pressed = (buttons ^ previous) & buttons;
+        sentinel = -1;
+        for (i = 0, offset = 0x890; i < 13; i++, offset += 0x48) {
+            move = (CombMoveState *)((unsigned char *)player + offset);
+        check_step:
+            work.mask = move->masks[move->step];
+            if (move->step < move->step_count && (pressed & work.mask)) {
+                move->timer = 0;
+                if (move->step == move->step_count - 1) {
+                    clear = -1;
+                    work.count = 1;
+                    table_offset = 0;
+                    result = move->id;
+                    cursor = keep + 1;
+                    move->complete = sentinel;
+                    keep[0] = result;
+                    do {
+                        if (result == *(short *)((unsigned char *)D_8009A568 + table_offset)) {
+                            *cursor = *(short *)((unsigned char *)D_8009A56A + table_offset);
+                            work.count++;
+                            cursor++;
+                        }
+                        table_offset += 4;
+                    } while (table_offset < 20);
+                    if (work.count < 4) {
+                        fill_cursor = (int *)(work.count * 4 + (unsigned int)keep);
+                        do {
+                            *fill_cursor = sentinel;
+                            work.count++;
+                            fill_cursor++;
+                        } while (work.count < 4);
+                    }
+                } else {
+                    step = move->step + 1;
+                    move->step = step;
+                    directions = D_8009FF72 | D_8009FF74 | D_8009FF6E | D_8009FF70;
+                    if (!(work.mask & directions) && (move->masks[step] & directions)) goto check_step;
+                }
+            } else {
+                if (move->complete == sentinel) {
+                    if ((work.mask & buttons) == work.mask) {
+                        result = move->id;
+                        move->timer = 0;
+                        goto timeout;
+                    }
+                    move->timer = move->timeout + 1;
+                } else {
+                    move->timer++;
+                }
+            }
+        timeout:
+            if (move->timer > move->timeout) {
+                move->timer = 0;
+                move->step = 0;
+                move->complete = 0;
+            }
+        }
+    }
+    if (clear) {
+        for (i = 0, cleanup_offset = 0x890; i < 13; i++, cleanup_offset += 0x48) {
+            move = (CombMoveState *)((unsigned char *)player + cleanup_offset);
+            work.id = move->id;
+            for (cleanup_count = 0, cleanup_cursor = keep; cleanup_count < 4; cleanup_count++, cleanup_cursor++) {
+                if (work.id == *cleanup_cursor) break;
+            }
+            if (cleanup_count >= 4) {
+                move->timer = 0;
+                move->step = 0;
+                move->complete = 0;
+            }
+        }
+    }
+    return result;
 }

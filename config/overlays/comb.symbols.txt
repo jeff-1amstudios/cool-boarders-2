@@ -293,3 +293,11 @@ func_8006A230 = 0x8006A230; // type:func
 D_8009A504 = 0x8009A504; // size:0x34
 D_8009A538 = 0x8009A538; // size:0x20
 D_8009A558 = 0x8009A558; // size:0x10
+
+func_8006A288 = 0x8006A288; // type:func
+D_8009A568 = 0x8009A568; // size:0x14
+D_8009A56A = 0x8009A56A; // size:0x12
+D_8009FF6E = 0x8009FF6E; // type:u16 size:0x2
+D_8009FF70 = 0x8009FF70; // type:u16 size:0x2
+D_8009FF72 = 0x8009FF72; // type:u16 size:0x2
+D_8009FF74 = 0x8009FF74; // type:u16 size:0x2

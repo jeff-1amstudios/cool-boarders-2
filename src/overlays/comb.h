@@ -934,4 +934,33 @@ typedef struct CombScorePlayer {
 
 int func_80069E00(CombScorePlayer *player, BpScore *score);
 
+typedef struct CombMoveState {
+    unsigned char timer;
+    unsigned char timeout;
+    unsigned char step;
+    unsigned char step_count;
+    short complete;
+    short id;
+    unsigned int masks[16];
+} CombMoveState;
+
+typedef struct CombMovePlayer {
+    unsigned char unknown_000[0x28];
+    unsigned int buttons;
+    unsigned char unknown_02c[0x12];
+    short airborne;
+    unsigned char unknown_040[0x40];
+    unsigned int previous_buttons;
+    unsigned char unknown_084[0x80C];
+    CombMoveState moves[13];
+} CombMovePlayer;
+
+int func_8006A288(CombMovePlayer *player);
+
+typedef union CombMoveWork {
+    unsigned int mask;
+    int count;
+    int id;
+} CombMoveWork;
+
 #endif
