@@ -3641,3 +3641,20 @@ int func_8006A740(CombResetEntry *entry, int amount, unsigned int positive_input
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x8006A874
+void func_8006A874(CombMotionPlayer *player)
+{
+    int i = 0;
+    CombMotionState *motion = player->motion;
+    int *history_b = motion->history_b;
+    int *history_a = motion->history_a;
+
+    do {
+        *history_a = 0;
+        *history_b = 0;
+        history_b++;
+        i++;
+        history_a++;
+    } while (i < 16);
+}

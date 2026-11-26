@@ -987,4 +987,6 @@ typedef struct CombInputResults {
     int second;
 } CombInputResults;
 
+void func_8006A874(CombMotionPlayer *player);
+
 #endif

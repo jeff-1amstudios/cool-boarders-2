@@ -307,3 +307,5 @@ D_8009FF58 = 0x8009FF58; // type:u16 size:0x2
 D_8009FF5A = 0x8009FF5A; // type:u16 size:0x2
 D_8009FF5E = 0x8009FF5E; // type:u16 size:0x2
 D_8009FF62 = 0x8009FF62; // type:u16 size:0x2
+
+func_8006A874 = 0x8006A874; // type:func
