@@ -370,6 +370,8 @@ extern BpCoursePoint D_8009A7DC[3];
 extern BpCoursePoint D_8009A818[4];
 extern BpCoursePoint D_8009A868[2];
 
+extern int func_80070760(VECTOR *start, VECTOR *end, VECTOR *position, VECTOR *projection);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4345,4 +4347,32 @@ void func_8006C8F8(int course, int direction)
             }
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x8006D400
+int func_8006D400(CombPlayer *player, BpCoursePoint *points, VECTOR *position,
+                  int list, int index)
+{
+    int unused[2]; /* Preserves the reference stack frame. */
+    int matched = -1;
+    int segment = 0;
+
+    if (D_800A4B78[list] - 1 > 0) {
+        do {
+            if (points[segment].index <= index && index <= points[segment + 1].index) {
+                matched = func_80070760(&points[segment].position,
+                                      &points[segment + 1].position, position, 0);
+                if (matched != 0) {
+                    break;
+                }
+            } else {
+                matched = 0;
+            }
+            segment++;
+        } while (segment < D_800A4B78[list] - 1);
+    }
+    if (matched == 0) {
+        segment = -1;
+    }
+    return segment;
 }

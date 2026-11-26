@@ -1046,4 +1046,7 @@ void func_8006C4AC(GsOT *ot, int first, int second, int unused);
 
 void func_8006C8F8(int course, int direction);
 
+int func_8006D400(CombPlayer *player, BpCoursePoint *points, VECTOR *position,
+                  int list, int index);
+
 #endif
