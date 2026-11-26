@@ -2678,3 +2678,95 @@ void func_8006457C(CombObjectState *object, int player, int index, int kind,
     object->link = setup->link;
     func_8001F378(setup);
 }
+
+// FUNCTION: COMB.BIN:0x80064984
+void func_80064984(CombPlayerReset *state, int reverse)
+{
+    int row;
+    int row_offset;
+    short no_entry;
+    int initial_angle;
+
+    state->rotation.vx = 0;
+    if (reverse != 0) {
+        state->rotation.vy = 0x800;
+        row = 0;
+        row_offset = 0;
+        initial_angle = 0x1CC;
+        no_entry = -1;
+    } else {
+        state->rotation.vy = 0;
+        row = 0;
+        row_offset = 0;
+        initial_angle = 0x1CC;
+        no_entry = -1;
+    }
+
+    state->word_4900 = initial_angle;
+    state->value_0760 = 15;
+    state->rotation.vz = 0;
+    state->value_0cb0 = 0;
+    state->value_0cb2 = 0;
+    state->value_0cb4 = 0;
+    state->vector_48d8.vx = 0;
+    state->vector_48d8.vy = 0;
+    state->vector_48d8.vz = 0;
+    state->vector_48e8.vx = 0;
+    state->vector_48e8.vy = 0;
+    state->vector_48e8.vz = 0;
+    state->word_48f8 = 0;
+    state->word_48fc = 0;
+    state->distance = 0;
+    state->word_07a4 = 0;
+    state->word_07a8 = 0;
+    state->word_0734 = 0;
+    state->word_0738 = 0;
+    state->word_073c = 0;
+    state->word_0744 = 0;
+    state->word_0748 = 0;
+    state->word_074c = 0;
+    state->word_0750 = 0;
+    state->word_0754 = 0;
+    state->word_0758 = 0;
+    state->value_0740 = 0;
+    state->value_0742 = 0;
+    state->value_075c = state->value_075e = no_entry;
+    state->value_0762 = 0;
+    state->value_0768 = 1;
+    state->value_076a = no_entry;
+    state->value_076c = 0;
+    state->value_076e = 0;
+    state->value_0770 = 0;
+    state->value_0772 = 0;
+
+    do {
+        int column = 0;
+        int entry_offset = row_offset;
+
+        do {
+            CombResetEntry *entry = (CombResetEntry *)((unsigned char *)state + entry_offset + 0x774);
+
+            entry->word_00 = 0;
+            entry->word_04 = 0;
+            entry->value_08 = 0;
+            entry->value_0a = 0;
+            entry_offset += sizeof(CombResetEntry);
+        } while (++column < 2);
+        row++;
+        row_offset += sizeof(state->entries[0]);
+    } while (row < 2);
+
+    state->value_001a = 0;
+    state->value_001c = -1;
+    state->word_0020 = 0;
+    state->word_0024 = 0;
+    state->value_4906 = 0;
+    state->value_4908 = 0;
+    state->value_490a = 0;
+    state->value_490c = 0;
+    state->value_490e = 0;
+    state->value_4910 = 0;
+    state->byte_4912 = 0;
+    state->byte_4913 = 0;
+    state->value_4904 = 0;
+}

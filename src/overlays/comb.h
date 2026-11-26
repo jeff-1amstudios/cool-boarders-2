@@ -763,4 +763,70 @@ typedef struct CombObjectState {
 void func_8006457C(CombObjectState *object, int player, int index, int kind,
                    int value, int x, int y, int z);
 
+typedef struct CombResetEntry {
+    int word_00;
+    int word_04;
+    short value_08;
+    short value_0a;
+} CombResetEntry;
+
+typedef struct CombPlayerReset {
+    unsigned char unknown_0000[0x1A];
+    short value_001a;
+    short value_001c;
+    unsigned char unknown_001e[2];
+    int word_0020;
+    int word_0024;
+    unsigned char unknown_0028[0x1B0];
+    SVECTOR rotation;
+    int distance;
+    unsigned char unknown_01e4[0x550];
+    int word_0734;
+    int word_0738;
+    int word_073c;
+    short value_0740;
+    short value_0742;
+    int word_0744;
+    int word_0748;
+    int word_074c;
+    int word_0750;
+    int word_0754;
+    int word_0758;
+    short value_075c;
+    short value_075e;
+    short value_0760;
+    short value_0762;
+    unsigned char unknown_0764[4];
+    short value_0768;
+    short value_076a;
+    short value_076c;
+    short value_076e;
+    short value_0770;
+    short value_0772;
+    CombResetEntry entries[2][2];
+    int word_07a4;
+    int word_07a8;
+    unsigned char unknown_07ac[0x504];
+    short value_0cb0;
+    short value_0cb2;
+    short value_0cb4;
+    unsigned char unknown_0cb6[0x3C22];
+    VECTOR vector_48d8;
+    VECTOR vector_48e8;
+    int word_48f8;
+    int word_48fc;
+    int word_4900;
+    short value_4904;
+    short value_4906;
+    short value_4908;
+    short value_490a;
+    short value_490c;
+    short value_490e;
+    short value_4910;
+    unsigned char byte_4912;
+    unsigned char byte_4913;
+} CombPlayerReset;
+
+void func_80064984(CombPlayerReset *state, int reverse);
+
 #endif
