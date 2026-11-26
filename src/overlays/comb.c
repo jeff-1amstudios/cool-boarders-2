@@ -277,6 +277,13 @@ extern unsigned short D_8009FF70;
 extern unsigned short D_8009FF72;
 extern unsigned short D_8009FF74;
 
+extern unsigned short D_8009FF58;
+extern unsigned short D_8009FF5A;
+extern unsigned short D_8009FF5E;
+extern unsigned short D_8009FF62;
+extern int func_8006A740(CombResetEntry *entry, int amount,
+                        unsigned int positive, unsigned int negative, unsigned int held);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3513,4 +3520,68 @@ int func_8006A288(CombMovePlayer *player)
         }
     }
     return result;
+}
+
+// FUNCTION: COMB.BIN:0x8006A4F8
+void func_8006A4F8(CombInputPlayer *player, unsigned int side)
+{
+    CombResetEntry *first_y = &player->entries[0][0];
+    CombResetEntry *second_y = &player->entries[0][1];
+    CombResetEntry *first_x = &player->entries[1][0];
+    CombResetEntry *second_x = &player->entries[1][1];
+    CombInputMotion *motion = &player->motion;
+    unsigned int buttons = player->buttons;
+    unsigned int held;
+    int x, y;
+    int first, second;
+    int original_first, original_second;
+
+    if (player->airborne == 0) {
+        held = buttons & ((unsigned int)D_8009FF62 << (side << 4));
+    } else {
+        held = 0;
+    }
+    {
+        CombInputResults result_y = {0, 0};
+        CombInputResults result_x = {0, 0};
+        result_y.first = func_8006A740(first_y, motion->y,
+            buttons & ((unsigned int)D_8009FF5E << (side << 4)),
+            buttons & ((unsigned int)D_8009FF5C << (side << 4)), held);
+        result_x.first = func_8006A740(first_x, motion->x,
+            buttons & ((unsigned int)D_8009FF58 << (side << 4)),
+            buttons & ((unsigned int)D_8009FF5A << (side << 4)), held);
+        if (held == 0) {
+            y = motion->y;
+            x = motion->x;
+        } else {
+            first = first_y->word_04 * motion->y;
+            y = motion->y & (first >> 31);
+            first = first_x->word_04 * motion->x;
+            x = motion->x & (first >> 31);
+        }
+        result_y.second = func_8006A740(second_y, y,
+            buttons & ((unsigned int)D_8009FF5E << (side << 4)),
+            buttons & ((unsigned int)D_8009FF5C << (side << 4)), held);
+        result_x.second = func_8006A740(second_x, x,
+            buttons & ((unsigned int)D_8009FF58 << (side << 4)),
+            buttons & ((unsigned int)D_8009FF5A << (side << 4)), held);
+        first = result_y.first < 0 ? -result_y.first : result_y.first;
+        second = result_y.second < 0 ? -result_y.second : result_y.second;
+        if (first >= second) {
+            motion->y = result_y.first;
+        } else {
+            motion->y = result_y.second;
+        }
+        original_first = result_x.first;
+        first = original_first;
+        if (first < 0) first = -first;
+        original_second = result_x.second;
+        second = original_second;
+        if (second < 0) second = -second;
+        if (first >= second) {
+            motion->x = original_first;
+        } else {
+            motion->x = original_second;
+        }
+    }
 }

@@ -963,4 +963,28 @@ typedef union CombMoveWork {
     int id;
 } CombMoveWork;
 
+typedef struct CombInputMotion {
+    unsigned char unknown_00[0x10];
+    int x;
+    int y;
+} CombInputMotion;
+
+typedef struct CombInputPlayer {
+    unsigned char unknown_000[0x28];
+    unsigned int buttons;
+    unsigned char unknown_02c[0x12];
+    short airborne;
+    unsigned char unknown_040[0x6F4];
+    CombInputMotion motion;
+    unsigned char unknown_74c[0x28];
+    CombResetEntry entries[2][2];
+} CombInputPlayer;
+
+void func_8006A4F8(CombInputPlayer *player, unsigned int side);
+
+typedef struct CombInputResults {
+    int first;
+    int second;
+} CombInputResults;
+
 #endif

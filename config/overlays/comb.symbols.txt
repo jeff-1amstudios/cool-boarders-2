@@ -301,3 +301,9 @@ D_8009FF6E = 0x8009FF6E; // type:u16 size:0x2
 D_8009FF70 = 0x8009FF70; // type:u16 size:0x2
 D_8009FF72 = 0x8009FF72; // type:u16 size:0x2
 D_8009FF74 = 0x8009FF74; // type:u16 size:0x2
+
+func_8006A740 = 0x8006A740; // type:func
+D_8009FF58 = 0x8009FF58; // type:u16 size:0x2
+D_8009FF5A = 0x8009FF5A; // type:u16 size:0x2
+D_8009FF5E = 0x8009FF5E; // type:u16 size:0x2
+D_8009FF62 = 0x8009FF62; // type:u16 size:0x2
