@@ -296,6 +296,10 @@ extern void func_800762C4(GsOT_TAG *tag, int x, int y);
 
 extern int func_80076FA0(GsOT_TAG *ot, int value, int x, int y, int digits);
 
+extern int D_8009A680;
+extern int D_8009A684;
+extern void func_800767C4(GsOT *ot);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -3740,4 +3744,16 @@ void func_8006AB40(GsOT *ot, unsigned int value, int first, int second)
         value = 99;
     }
     func_80076FA0(tag, value, first, second, 2);
+}
+
+// FUNCTION: COMB.BIN:0x8006AB94
+void func_8006AB94(GsOT *ot, int different)
+{
+    if (D_8009A680 != 0) {
+        func_800767C4(ot);
+    }
+    if (different == 0 && --D_8009A684 == 0) {
+        D_8009A684 = 10;
+        D_8009A680 = -(D_8009A680 == 0);
+    }
 }
