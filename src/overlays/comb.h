@@ -1062,4 +1062,6 @@ typedef struct CombSurfacePlayer {
 
 int func_8006FAAC(CombSurfacePlayer *player);
 
+int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mode);
+
 #endif

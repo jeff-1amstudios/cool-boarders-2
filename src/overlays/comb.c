@@ -377,6 +377,8 @@ extern int func_8006F494(BpCollisionGeometry *geometry, SVECTOR *start, SVECTOR 
 extern void func_80073254(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
 extern void func_800728EC(CombPlayer *player, SVECTOR *movement, SVECTOR *edge, int surface);
 
+extern int func_8006E230(VECTOR *position, int entry, CombSurfaceState *surface, int mode);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -4505,6 +4507,30 @@ int func_8006FAAC(CombSurfacePlayer *player)
         player->location.z = ((int *)player->location.entry->unknown_00)[2];
     } else {
         result = 0;
+    }
+    return result;
+}
+
+// FUNCTION: COMB.BIN:0x8006FB98
+int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mode)
+{
+    VECTOR local_position;
+    CombSceneEntry *entry;
+    int result;
+    int i;
+
+    entry = &D_800A5AE8[start];
+    local_position = *position;
+    result = func_8006E230(&local_position, start, surface, mode);
+    if (surface->surface < 0) {
+        for (i = 0; i < 3; i++) {
+            if (entry->linked_entries[2 - i] >= 0) {
+                result = func_8006E230(&local_position, entry->linked_entries[2 - i], surface, mode);
+                if (surface->surface >= 0) {
+                    break;
+                }
+            }
+        }
     }
     return result;
 }
