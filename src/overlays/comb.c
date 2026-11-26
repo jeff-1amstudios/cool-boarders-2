@@ -1,6 +1,8 @@
 #include "comb.h"
 #include "bp.h"
 
+extern PACKET *func_8008EBB0(GsOT_TAG *tag, PACKET *packet, int *state, int shift);
+
 extern PACKET *func_8007D780(GsOT_TAG *tag, PACKET *packet, int mode,
                            int *state, int shift, int value);
 
@@ -4065,4 +4067,10 @@ void func_8006BB5C(GsOT *ot, int value, int *state, int shift, int extra)
 void func_8006BBB4(GsOT *ot, int mode, int *state, int shift, int value)
 {
     D_80058ACC = func_8007D780(&ot->org[3], D_80058ACC, mode, state, shift, value);
+}
+
+// FUNCTION: COMB.BIN:0x8006BC04
+void func_8006BC04(GsOT *ot, int *state, int shift)
+{
+    D_80058ACC = func_8008EBB0(ot->org, D_80058ACC, state, shift);
 }

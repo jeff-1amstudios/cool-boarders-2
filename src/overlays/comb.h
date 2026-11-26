@@ -1028,4 +1028,6 @@ void func_8006BB5C(GsOT *ot, int value, int *state, int shift, int extra);
 
 void func_8006BBB4(GsOT *ot, int mode, int *state, int shift, int value);
 
+void func_8006BC04(GsOT *ot, int *state, int shift);
+
 #endif
