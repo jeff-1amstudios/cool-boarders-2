@@ -462,6 +462,13 @@ extern BpRandomPoint *D_800A5D08;
 
 extern CVECTOR D_800A5D54;
 
+extern SpriteTexture D_80099214;
+extern short D_8009C50C[];
+extern POLY_FT4 *func_80013654(unsigned long *ordering_table, POLY_FT4 *packet,
+                             int spacing, int x, int y, SpriteTexture *texture);
+extern PACKET *func_8007AF20(GsOT_TAG *tag, PACKET *packet, int x, int scale);
+extern PACKET *func_8007B0FC(GsOT_TAG *tag, PACKET *packet, int frame);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6491,4 +6498,44 @@ void func_8007ABC8(CombEffects *effects)
 void func_8007AC50(void *effects)
 {
     func_8001F378(effects);
+}
+
+// FUNCTION: COMB.BIN:0x8007AC70
+PACKET *func_8007AC70(GsOT_TAG *tag, PACKET *packet, int *state, int paused)
+{
+    SpriteTexture texture = D_80099214;
+    int frame = *state;
+
+    if (frame < 0) return packet;
+    if (frame < 5) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                         6, (5 - frame) * 223 / 5 - 63, -47, &texture);
+    } else if ((frame -= 5) < 11) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                         D_8009C50C[frame], -63, -47, &texture);
+    } else if ((frame -= 11) < 20) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                         0, -63, -47, &texture);
+    } else if ((frame -= 20) < 10) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                         0, -63, -47, &texture);
+        packet = func_8007AF20(tag, packet, (frame - 10) * 768, frame * 1024);
+    } else if ((frame -= 10) < 4) {
+        packet = func_8007B0FC(tag, packet, frame);
+        packet = func_8007AF20(tag, packet, 0, (4 - frame) * 1024 + 6144);
+    } else if ((frame -= 4) < 20) {
+        packet = func_8007B0FC(tag, packet, frame + 4);
+        packet = func_8007AF20(tag, packet, 0, 6144);
+    } else if ((frame -= 20) < 10) {
+        packet = func_8007B0FC(tag, packet, frame + 24);
+        packet = func_8007AF20(tag, packet, -frame * 768, (10 - frame) * 6144 / 10);
+    } else if (frame < 5) {
+        packet = func_8007B0FC(tag, packet, frame + 24);
+    } else {
+        *state = -1;
+    }
+    if (*state >= 0 && paused == 0) {
+        ++*state;
+    }
+    return packet;
 }
