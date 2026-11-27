@@ -1249,4 +1249,6 @@ void func_80076088(int index, int texture_x, int texture_y,
                    int clut_x, int clut_y, int width, int height,
                    int x, int y, int blend);
 
+int func_800761BC(void);
+
 #endif

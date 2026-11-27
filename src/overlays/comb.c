@@ -5796,3 +5796,14 @@ void func_80076088(int index, int texture_x, int texture_y,
     sprite->x0 = (short)x;
     sprite->y0 = (short)y;
 }
+
+// FUNCTION: COMB.BIN:0x800761BC
+int func_800761BC(void)
+{
+    D_800A4D08 = func_8001F1A0(18 * sizeof(SPRT));
+    if (D_800A4D08 == 0) {
+        return 0;
+    }
+    D_800A4D0C = func_8001F1A0(18 * sizeof(DR_MODE));
+    return -(D_800A4D0C != 0);
+}
