@@ -488,6 +488,14 @@ extern PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int va
 extern PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame);
 extern PACKET *func_8007C8E8(GsOT_TAG *tag, PACKET *packet, int value, int frame);
 
+extern CombAnnouncementTextures D_800992D8;
+extern CombAnnouncementVariants D_80099314;
+extern CombBounceTiming D_80099334;
+extern short D_800A4D58;
+extern short D_800A4D5C;
+extern PACKET *func_8007D65C(GsOT_TAG *tag, PACKET *packet, int y,
+                            SpriteTexture *texture, int height);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6929,5 +6937,130 @@ PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame)
         value /= 10;
         x -= 12;
     } while (value > 0);
+    return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007CD1C
+PACKET *func_8007CD1C(GsOT_TAG *tag, PACKET *packet, int value, int *state, int paused)
+{
+    CombAnnouncementTextures textures = D_800992D8;
+    CombAnnouncementVariants variants = D_80099314;
+    CombBounceTiming timing = D_80099334;
+    int frame = *state;
+    int group;
+    int mode;
+    int alternate;
+    int work;
+    int height;
+
+    if (frame < 0) return packet;
+    if (frame == 0) {
+        D_800A4D58 = 3;
+        D_800A4D5C = timing.values[3];
+    }
+    mode = value % 4;
+    group = value / 4;
+    alternate = group == 1;
+    if (frame == 0 && group == 2) {
+        frame = 36;
+        *state = frame;
+    }
+    if (frame < 5) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                6, (5 - frame) * 223 / 5 - 63, -47, &textures.entries[alternate]);
+    } else if ((frame -= 5) < 11) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                D_8009C50C[frame], -63, -47, &textures.entries[alternate]);
+    } else if ((frame -= 11) < 20) {
+        packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                0, -63, -47, &textures.entries[alternate]);
+    } else {
+        frame -= 20;
+        switch (mode) {
+        case 0:
+            if (frame < 5) {
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        6, -frame * 223 / 5 - 63, -47, &textures.entries[alternate]);
+            } else *state = -1;
+            break;
+        case 1:
+            if (frame < 17) {
+                if (frame < 5 && group != 2) {
+                    packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                            6, -frame * 223 / 5 - 63, -47, &textures.entries[alternate]);
+                }
+                work = 12 - frame;
+                height = -work * work * 3 / 4;
+                if (value != 13) {
+                    packet = func_8007BF24(tag, packet, 0, height - 5,
+                            &textures.entries[2], frame * 4096 / 17, 0);
+                } else {
+                    packet = func_8007BF24(tag, packet, 0, height - 5,
+                            &variants.entries[D_800A5EA8], frame * 4096 / 17, 0);
+                }
+            } else if ((frame -= 17) < 193) {
+                if (value != 13) {
+                    packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                            0, -63, -44, &textures.entries[2]);
+                } else {
+                    packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                            0, -variants.entries[D_800A5EA8].w / 2, -44,
+                            &variants.entries[D_800A5EA8]);
+                }
+            } else *state = -1;
+            break;
+        case 2:
+            if (frame < 11) {
+                work = frame * frame - 100;
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        0, -63, frame * frame - 144, &textures.entries[3]);
+                if (group != 2) {
+                    packet = func_8007D65C(tag, packet, -32,
+                            &textures.entries[alternate], work < -31 ? -31 : work);
+                }
+            } else if ((frame -= 11) < 34) {
+                work = (frame - D_800A4D5C + 1) * (frame - D_800A4D5C + 1) -
+                       timing.values[D_800A4D58] * timing.values[D_800A4D58];
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        0, -63, work - 44, &textures.entries[3]);
+                if (group < 2) {
+                    packet = func_8007D65C(tag, packet, -32,
+                            &textures.entries[alternate], work < -31 ? -31 : work);
+                }
+                if (work >= 0) {
+                    D_800A4D58--;
+                    D_800A4D5C = timing.values[D_800A4D58] + frame;
+                }
+            } else if ((frame -= 34) < 165) {
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        0, -63, -44, &textures.entries[3]);
+            } else *state = -1;
+            break;
+        case 3:
+            if (frame < 5) {
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        6, (5 - frame) * 223 / 5 - 63, -44, &textures.entries[4]);
+                if (group != 2) {
+                    packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                            6, -frame * 223 / 5 - 63, -47, &textures.entries[alternate]);
+                }
+            } else if ((frame -= 5) < 11) {
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        D_8009C50C[frame], -63, -44, &textures.entries[4]);
+                if (group != 2) {
+                    packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                            6, -(frame + 5) * 223 / 5 - 63, -47, &textures.entries[alternate]);
+                }
+            } else if ((frame -= 11) < 194) {
+                packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                        0, -63, -44, &textures.entries[4]);
+            } else *state = -1;
+            break;
+        default:
+            *state = -1;
+            break;
+        }
+    }
+    if (*state >= 0 && paused == 0) ++*state;
     return packet;
 }

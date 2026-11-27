@@ -502,3 +502,10 @@ func_8007BF24 = 0x8007BF24; // type:func
 func_8007C2FC = 0x8007C2FC; // type:func
 func_8007C550 = 0x8007C550; // type:func
 func_8007C8E8 = 0x8007C8E8; // type:func
+
+D_800992D8 = 0x800992D8; // size:0x3C
+D_80099314 = 0x80099314; // size:0x1E
+D_80099334 = 0x80099334; // size:0x8
+D_800A4D58 = 0x800A4D58; // size:0x2
+D_800A4D5C = 0x800A4D5C; // size:0x2
+func_8007D65C = 0x8007D65C; // type:func

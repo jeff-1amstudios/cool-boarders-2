@@ -1343,4 +1343,16 @@ PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int value, in
 
 PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame);
 
+typedef struct CombAnnouncementTextures {
+    SpriteTexture entries[6];
+} CombAnnouncementTextures;
+
+typedef struct CombAnnouncementVariants {
+    SpriteTexture entries[3];
+} CombAnnouncementVariants;
+
+typedef struct CombBounceTiming {
+    short values[4];
+} CombBounceTiming;
+
 #endif
