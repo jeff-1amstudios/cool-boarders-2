@@ -6487,3 +6487,9 @@ void func_8007ABC8(CombEffects *effects)
         effects->entries[i].value_10 = 0;
     }
 }
+
+// FUNCTION: COMB.BIN:0x8007AC50
+void func_8007AC50(void *effects)
+{
+    func_8001F378(effects);
+}
