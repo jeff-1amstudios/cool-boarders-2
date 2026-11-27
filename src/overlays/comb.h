@@ -1243,4 +1243,6 @@ unsigned int func_80075A68(void);
 
 unsigned int func_80075AFC(unsigned int buttons);
 
+void func_80075C54(void);
+
 #endif
