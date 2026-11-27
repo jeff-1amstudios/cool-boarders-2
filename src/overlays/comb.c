@@ -5479,3 +5479,34 @@ void func_80074DB4(CombPlayer *player, short *settings, CombPlaybackRecord *save
         *record = *saved;
     }
 }
+
+// FUNCTION: COMB.BIN:0x80074F6C
+void func_80074F6C(CombResultEntry *entry)
+{
+    BpRunScore *run = (BpRunScore *)entry;
+    BpScore *score = &run->score;
+
+    score->move_bonus[0] = 0;
+    score->move_bonus[1] = 0;
+    score->duration_bonus = 0;
+    score->heading_bonus = 0;
+    score->reverse_bonus = 0;
+    score->unknown_07 = 0;
+    score->unknown_08[0] = 0;
+    score->rotation_bonus[0] = 0;
+    score->rotation_bonus[1] = 0;
+    score->combined_bonus = 0;
+    score->distance_bonus = 0;
+    score->total = 0;
+    score->height = 0;
+    score->move_index[0] = -1;
+    score->move_index[1] = -1;
+    score->rotations[0] = 0;
+    score->rotations[1] = 0;
+    run->value_30 = 0;
+    score->combined_flag = 0;
+    score->unknown_26 = -1;
+    score->origin_x = 0;
+    score->origin_z = 0;
+    score->reverse = 0;
+}
