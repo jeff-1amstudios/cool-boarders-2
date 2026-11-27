@@ -433,3 +433,8 @@ func_800725EC = 0x800725EC; // type:func
 
 func_80074230 = 0x80074230; // type:func
 D_800A4CA8 = 0x800A4CA8; // size:0x4
+
+func_80074D0C = 0x80074D0C; // type:func
+D_8009A910 = 0x8009A910; // size:0x1B30
+D_8009C440 = 0x8009C440; // size:0xC0
+D_800A4CB0 = 0x800A4CB0; // size:0x8
