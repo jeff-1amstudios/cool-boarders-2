@@ -471,6 +471,13 @@ extern PACKET *func_8007B0FC(GsOT_TAG *tag, PACKET *packet, int frame);
 
 extern DVECTOR D_800A5DA8[4][16];
 
+extern BackgroundTextures D_80099220;
+extern BackgroundTextures D_80099234;
+extern SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite,
+                         short x, short y, SpriteTexture *texture, unsigned char shade);
+extern DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
+                            unsigned int tpage);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6604,5 +6611,50 @@ PACKET *func_8007B0FC(GsOT_TAG *tag, PACKET *packet, int frame)
         ((GetGraphType() == 1 || GetGraphType() == 2) ? 0x815 : 0x215);
     ((PrimitiveTag *)page)->address = ((PrimitiveTag *)tag)->address;
     ((PrimitiveTag *)tag)->address = (unsigned long)page;
+    return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007B3A8
+PACKET *func_8007B3A8(GsOT_TAG *tag, PACKET *packet, int *state, int paused)
+{
+    BackgroundTextures textures = D_80099220;
+    BackgroundTextures other_textures = D_80099234;
+    int frame = *state;
+    int x;
+    int i;
+    SpriteTexture *texture;
+
+    if (frame >= 0) {
+        x = -50;
+        if (frame < 10) {
+            x = (10 - frame) * (10 - frame) * 2 - 50;
+        } else if (frame > 30) {
+            if (frame < 40) {
+                x -= (frame - 30) * (frame - 30) * 2;
+            } else {
+                *state = -1;
+            }
+        }
+        if (frame < 40) {
+            int draw_x;
+            int offset;
+            i = 0;
+            offset = 0;
+            draw_x = x;
+            do {
+                texture = (SpriteTexture *)((char *)&textures + offset);
+                packet = (PACKET *)((SPRT *(*)(unsigned long *, SPRT *, int, int, SpriteTexture *, int))
+                           func_80012950)((unsigned long *)tag, (SPRT *)packet,
+                           draw_x, -32 - texture->h / 2, texture, 128);
+                packet = (PACKET *)func_80012B6C((unsigned long *)tag, (DR_TPAGE *)packet,
+                           texture->tpage);
+                offset += 10;
+                draw_x += 52;
+            } while (++i < 2);
+        }
+        if (*state >= 0 && paused == 0) {
+            ++*state;
+        }
+    }
     return packet;
 }
