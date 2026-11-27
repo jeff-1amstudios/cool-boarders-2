@@ -7064,3 +7064,35 @@ PACKET *func_8007CD1C(GsOT_TAG *tag, PACKET *packet, int value, int *state, int 
     if (*state >= 0 && paused == 0) ++*state;
     return packet;
 }
+
+
+// FUNCTION: COMB.BIN:0x8007D65C
+PACKET *func_8007D65C(GsOT_TAG *tag, PACKET *packet, int y,
+                      SpriteTexture *texture, int height)
+{
+    POLY_FT4 *polygon = (POLY_FT4 *)packet;
+    unsigned char u, v;
+    int bottom;
+
+    ((PrimitiveTag *)polygon)->length = 9;
+    polygon->code = 0x2C;
+    polygon->x0 = polygon->x2 = -texture->w / 2;
+    polygon->x1 = polygon->x3 = (texture->w + 1) / 2;
+    bottom = (texture->h + 1) / 2 + y;
+    polygon->y2 = polygon->y3 = bottom;
+    polygon->y0 = polygon->y1 = bottom + height;
+    u = texture->u;
+    polygon->u0 = polygon->u2 = u;
+    u += (unsigned char)texture->w;
+    polygon->u1 = polygon->u3 = u;
+    v = texture->v;
+    polygon->v0 = polygon->v1 = v;
+    v += (unsigned char)texture->h;
+    polygon->v2 = polygon->v3 = v;
+    polygon->clut = texture->clut;
+    polygon->tpage = texture->tpage;
+    polygon->r0 = polygon->g0 = polygon->b0 = 0x80;
+    ((PrimitiveTag *)polygon)->address = ((PrimitiveTag *)tag)->address;
+    ((PrimitiveTag *)tag)->address = (unsigned long)polygon;
+    return (PACKET *)(polygon + 1);
+}
