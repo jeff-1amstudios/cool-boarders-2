@@ -6104,3 +6104,11 @@ int func_80076EF8(void)
     D_800A4D18 = func_8001F1A0(0x24);
     return -(D_800A4D18 != 0);
 }
+
+// FUNCTION: COMB.BIN:0x80076F58
+void func_80076F58(void)
+{
+    func_8001F378(D_800A4D10);
+    func_8001F378(D_800A4D14);
+    func_8001F378(D_800A4D18);
+}
