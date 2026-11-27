@@ -1194,4 +1194,25 @@ typedef struct CombCameraTransitionPlayer {
 
 void func_80075070(CombCameraTransitionPlayer *player, int value, VECTOR *saved);
 
+typedef struct CombPlayerHistoryView {
+    unsigned char unknown_0000[0x28];
+    CombSurfaceState surfaces[3];
+    unsigned char unknown_0130[0xA8];
+    SVECTOR rotation;
+    unsigned char unknown_01e0[0x5CC];
+    unsigned char reset_7ac;
+    unsigned char unknown_07ad[0x50F];
+    int frame_count;
+    unsigned char unknown_0cc0[0x160];
+    unsigned short input_history[7500];
+    int reset_48b8;
+    unsigned char unknown_48bc[0x58];
+    void *effects;
+    unsigned char unknown_4918[6];
+    signed char secondary_view;
+    unsigned char sound_enabled;
+} CombPlayerHistoryView;
+
+void func_800756DC(CombPlayerHistoryView *player, int unused, int entry);
+
 #endif

@@ -410,6 +410,8 @@ extern short D_8009A910[10][348];
 extern int D_8009C440[16][3];
 extern BpCourseStartSelection D_800A4CB0;
 
+extern void func_80075894(CombPlayerHistoryView *player);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5542,4 +5544,50 @@ void func_80075070(CombCameraTransitionPlayer *player, int value, VECTOR *saved)
             func_80069D84(28, sound_mode);
         }
     }
+}
+
+// FUNCTION: COMB.BIN:0x800756DC
+void func_800756DC(CombPlayerHistoryView *player, int unused, int entry)
+{
+    short secondary = player->secondary_view;
+    unsigned char sound_enabled = player->sound_enabled;
+    int frame;
+    int count;
+    unsigned char *history_cursor;
+
+    if (entry >= 0 && D_800A4CB0.entries[entry * 6] >= 0) {
+        func_80060940((CombPlayerCameraView *)player, 0);
+        player->rotation.vx = 0;
+        player->rotation.vz = 0;
+        func_800966A8(&player->rotation);
+        if (*((signed char *)D_800A4CB0.entries + entry * 12 + 5) != 0) {
+            func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+            func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+            func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+            func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+        }
+        if (secondary == 0 && sound_enabled != 0) {
+            func_80069D40(16);
+        }
+    } else {
+        func_80075894(player);
+    }
+    player->reset_48b8 = 0;
+    if (secondary <= 0) {
+        player->reset_7ac = 0;
+    }
+    func_8007A218(player->effects, 0, 0, 0, 1);
+    frame = player->frame_count;
+    if (frame < 7500) {
+        player->frame_count = frame + 1;
+        player->input_history[frame] = ((CombMovePlayer *)player)->buttons;
+    }
+    count = 2;
+    history_cursor = (unsigned char *)&player->surfaces[1] + 0x30;
+    do {
+        *(CombSurfaceState *)(history_cursor + 0x28) =
+            *(CombSurfaceState *)(history_cursor - 0x30);
+        count--;
+        history_cursor -= sizeof(CombSurfaceState);
+    } while (count != 0);
 }
