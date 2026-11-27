@@ -45,9 +45,11 @@ headers can include `"sdk.h"` through the shared `src/` include path. It contain
 329 archive-derived entry declarations covering 342 accepted SDK instances,
 plus the three previously matched declarations for `GetGraphType`, `StopPAD`
 and `ChangeClearPAD`. The archive leaves the parameter lists of `strcmp`,
-`strcpy`, `strlen`, `FntPrint` and both `memcpy` instances incomplete: these six
+`strlen`, `FntPrint` and both `memcpy` instances incomplete: these five
 are explicitly marked old-style unprototyped declarations, not assertions that
-the functions take no arguments.
+the functions take no arguments. The archive also omits `strcpy` parameters;
+the shared C declaration supplies `char *strcpy(char *, const char *)` to agree
+with the compiler builtin while retaining builtin recognition.
 Other archive signatures remain analysis evidence and require review when used.
 
 Dependent SDK layouts live in the same guarded header; `src/main.h` retains

@@ -334,7 +334,6 @@ extern char D_80098B68[4];
 extern char D_80098B6C[5];
 extern char *D_8009A688[13];
 extern char *D_8009A6BC[6];
-extern char *strcpy(char *destination, char *source);
 extern int strlen(char *text);
 
 extern PACKET *func_8007AC70(GsOT_TAG *tag, PACKET *packets, int *data, int different);

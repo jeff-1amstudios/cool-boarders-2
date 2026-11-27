@@ -1276,8 +1276,7 @@ extern void srand(unsigned int );
 extern char * strcat(char * , char * );
 /* Archive omits parameter types; keep this declaration unprototyped. */
 extern int strcmp();
-/* Archive omits parameter types; keep this declaration unprototyped. */
-extern char * strcpy();
+extern char *strcpy(char *destination, const char *source);
 /* Archive omits parameter types; keep this declaration unprototyped. */
 extern int strlen();
 extern int strncmp(char * , char * , int );
