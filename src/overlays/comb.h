@@ -1296,4 +1296,6 @@ int func_80076EF8(void);
 
 void func_80078054(GsOT *ot, int x, int y, int value, int draw_mode);
 
+void func_80079BB8(int count);
+
 #endif

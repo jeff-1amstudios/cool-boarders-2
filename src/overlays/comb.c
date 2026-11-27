@@ -458,6 +458,9 @@ extern unsigned char D_800A4D54;
 extern unsigned char D_800A4D55;
 extern unsigned char D_800A4D56;
 
+extern int D_800A5AF0;
+extern BpRandomPoint *D_800A5D08;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6348,4 +6351,19 @@ void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, i
 void func_80079B90(void)
 {
     func_8001F378(D_800A4D50);
+}
+
+// FUNCTION: COMB.BIN:0x80079BB8
+void func_80079BB8(int count)
+{
+    int i;
+
+    D_800A5AF0 = count;
+    D_800A5D08 = func_8001F1A0(count * sizeof(BpRandomPoint));
+    for (i = 0; i < count; i++) {
+        D_800A5D08[i].position.vx = rand() << 1;
+        D_800A5D08[i].position.vy = rand() << 1;
+        D_800A5D08[i].position.vz = rand() << 1;
+        D_800A5D08[i].previous_screen.packed = 0x7FFF7FFF;
+    }
 }
