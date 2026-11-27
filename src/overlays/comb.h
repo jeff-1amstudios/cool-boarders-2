@@ -1292,4 +1292,6 @@ int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
                   unsigned short width, unsigned short height,
                   unsigned short display_width, unsigned short display_height, int blend);
 
+int func_80076EF8(void);
+
 #endif

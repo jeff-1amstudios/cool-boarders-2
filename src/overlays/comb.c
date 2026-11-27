@@ -6089,3 +6089,18 @@ int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
     }
     return index;
 }
+
+// FUNCTION: COMB.BIN:0x80076EF8
+int func_80076EF8(void)
+{
+    D_800A4D10 = func_8001F1A0(0xB4);
+    if (D_800A4D10 == 0) {
+        return 0;
+    }
+    D_800A4D14 = func_8001F1A0(0x6C);
+    if (D_800A4D14 == 0) {
+        return 0;
+    }
+    D_800A4D18 = func_8001F1A0(0x24);
+    return -(D_800A4D18 != 0);
+}
