@@ -1265,4 +1265,6 @@ void func_8007676C(GsOT *ot, int x, int y);
 
 void func_800767C4(GsOT *ot);
 
+void func_80076814(GsOT *ot);
+
 #endif

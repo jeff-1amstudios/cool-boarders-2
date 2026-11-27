@@ -5936,3 +5936,12 @@ void func_800767C4(GsOT *ot)
     func_80096CF4(tag, D_800A4D08 + 16);
     func_80096D78(tag, D_800A4D0C + 16);
 }
+
+// FUNCTION: COMB.BIN:0x80076814
+void func_80076814(GsOT *ot)
+{
+    GsOT_TAG *tag = ot->org + 3;
+
+    func_80096CF4(tag, D_800A4D08 + 17);
+    func_80096D78(tag, D_800A4D0C + 17);
+}
