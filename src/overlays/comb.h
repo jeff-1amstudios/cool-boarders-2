@@ -1239,4 +1239,6 @@ typedef struct CombManualControlPlayer {
 
 void func_80075A48(void);
 
+unsigned int func_80075A68(void);
+
 #endif

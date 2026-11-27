@@ -416,6 +416,9 @@ extern unsigned int D_800A4CB8;
 extern int D_800A5EAC;
 extern int D_800A5EB0;
 
+extern unsigned int func_8001B320(int port, unsigned char *state);
+extern unsigned char D_800A4CBC[];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5639,4 +5642,23 @@ void func_80075A48(void)
     D_800A4CB8 = 0;
     D_800A5EAC = 0;
     D_800A5EB0 = 0;
+}
+
+// FUNCTION: COMB.BIN:0x80075A68
+unsigned int func_80075A68(void)
+{
+    BpControllerResult first;
+    unsigned int second;
+
+    first.value = func_8001B320(0, D_800A4CBC);
+    second = func_8001B320(1, D_800A4CBC + 0x24);
+    if (first.value & 0xffff0000) {
+        D_800A5EAC = -1;
+    } else {
+        D_800A5EAC = 0;
+    }
+    D_800A5EB0 = 0;
+    second <<= 16;
+    first.value = first.buttons;
+    return D_800A4CB8 = first.buttons | second;
 }
