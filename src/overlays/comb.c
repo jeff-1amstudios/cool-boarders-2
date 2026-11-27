@@ -7291,3 +7291,38 @@ int func_8007DE04(int value, int divisor)
     }
     return result * 255 / divisor;
 }
+
+// FUNCTION: COMB.BIN:0x8007DE98
+int func_8007DE98(int value, int divisor)
+{
+    int result;
+
+    if (value < 4) {
+        result = value;
+    } else if (value < 24) {
+        result = (value - 3) * 21 / 20 + 3;
+    } else if (value < 45) {
+        result = value - 20;
+    } else if (value < 58) {
+        result = value - 20;
+    } else if (value < 64) {
+        result = value - 20;
+    } else if (value < 99) {
+        result = value - 20;
+    } else if (value < 105) {
+        result = value - 61;
+    } else if (value < 131) {
+        result = (value - 104) * 31 / 26 + 43;
+    } else if (value < 134) {
+        result = (value - 130) * 4 / 3 + 74;
+    } else if (value < 137) {
+        result = value * 2 - 223;
+    } else if (value < 142) {
+        result = (value - 136) * 6 / 5 + 43;
+    } else if (value < 165) {
+        result = (value - 141) * 25 / 21 + 49;
+    } else {
+        result = value - 86;
+    }
+    return result * 255 / divisor;
+}
