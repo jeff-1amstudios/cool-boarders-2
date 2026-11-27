@@ -6794,3 +6794,64 @@ PACKET *func_8007B5C0(GsOT_TAG *tag, PACKET *packet, int value, int *state, int 
     if (*state >= 0 && paused == 0) ++*state;
     return packet;
 }
+
+// FUNCTION: COMB.BIN:0x8007C2FC
+PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int value, int left)
+{
+    int position;
+    int quotient;
+    SPRT *sprite;
+    DR_TPAGE *page;
+
+    if (x >= left) {
+        for (position = 0; x - position >= left;) {
+            sprite = (SPRT *)packet;
+            packet += sizeof(SPRT);
+            ((PrimitiveTag *)sprite)->length = 4;
+            sprite->code = 0x64;
+            quotient = value / 10;
+            sprite->x0 = x - position;
+            position += 12;
+            sprite->w = 12;
+            sprite->h = 16;
+            sprite->v0 = 0xb0;
+            sprite->clut = 0x7332;
+            sprite->y0 = y;
+            sprite->b0 = 128;
+            sprite->g0 = 128;
+            sprite->r0 = 128;
+            sprite->u0 = (value - quotient * 10) * 12 + 128;
+            value = quotient;
+            ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)tag)->address;
+            ((PrimitiveTag *)tag)->address = (unsigned long)sprite;
+            if (value <= 0) break;
+        }
+    }
+    x += 12;
+    if (x >= left) {
+        sprite = (SPRT *)packet;
+        packet += sizeof(SPRT);
+        ((PrimitiveTag *)sprite)->length = 4;
+        sprite->code = 0x64;
+        sprite->w = 24;
+        sprite->h = 16;
+        sprite->u0 = 0x90;
+        sprite->v0 = 0x2c;
+        sprite->clut = 0x7332;
+        sprite->x0 = x;
+        sprite->y0 = y;
+        sprite->b0 = 128;
+        sprite->g0 = 128;
+        sprite->r0 = 128;
+        ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)tag)->address;
+        ((PrimitiveTag *)tag)->address = (unsigned long)sprite;
+        page = (DR_TPAGE *)packet;
+        packet += sizeof(DR_TPAGE);
+        ((PrimitiveTag *)page)->length = 1;
+        page->code[0] = 0xe1000000 |
+            ((GetGraphType() == 1 || GetGraphType() == 2) ? 0x816 : 0x216);
+        ((PrimitiveTag *)page)->address = ((PrimitiveTag *)tag)->address;
+        ((PrimitiveTag *)tag)->address = (unsigned long)page;
+    }
+    return packet;
+}
