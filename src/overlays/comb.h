@@ -1298,4 +1298,23 @@ void func_80078054(GsOT *ot, int x, int y, int value, int draw_mode);
 
 void func_80079BB8(int count);
 
+typedef struct CombEffectEntry {
+    SVECTOR position;
+    int value_08;
+    int value_0c;
+    int value_10;
+} CombEffectEntry;
+
+typedef struct CombEffects {
+    CombEffectEntry *entries;
+    int count;
+    int value_08;
+    short unknown_0c;
+    short value_0e;
+    short value_10;
+    short value_12;
+} CombEffects;
+
+CombEffects *func_8007A104(int count, CVECTOR *color);
+
 #endif

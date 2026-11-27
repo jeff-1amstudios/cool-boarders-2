@@ -13,7 +13,7 @@ extern int D_800570E0;
 extern int func_8001F378(void *allocation);
 
 extern void *func_8001F1A0(unsigned int size);
-extern void *func_8007A104(int count, CVECTOR *color);
+extern CombEffects *func_8007A104(int count, CVECTOR *color);
 extern void func_8007ABC8(void *effects);
 extern void func_80065278(void *first, void *second, int player, int mode);
 extern void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, int first, int second);
@@ -460,6 +460,8 @@ extern unsigned char D_800A4D56;
 
 extern int D_800A5AF0;
 extern BpRandomPoint *D_800A5D08;
+
+extern CVECTOR D_800A5D54;
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -6372,4 +6374,33 @@ void func_80079BB8(int count)
 void func_8007A0DC(void)
 {
     func_8001F378(D_800A5D08);
+}
+
+// FUNCTION: COMB.BIN:0x8007A104
+CombEffects *func_8007A104(int count, CVECTOR *color)
+{
+    CombEffects *effects;
+    int i;
+
+    effects = func_8001F1A0(count * sizeof(CombEffectEntry) + sizeof(CombEffects));
+    effects->entries = (CombEffectEntry *)(effects + 1);
+    effects->count = count;
+    effects->value_08 = 0;
+    effects->value_10 = 0;
+    effects->value_0e = 0;
+    effects->value_12 = 1;
+    if (color == 0) {
+        D_800A5D54.b = 0x7F;
+        D_800A5D54.g = 0x7F;
+        D_800A5D54.r = 0x7F;
+    } else {
+        D_800A5D54 = *color;
+    }
+    for (i = 0; i < effects->count; i++) {
+        effects->entries[i].position.vx = effects->entries[i].position.vy =
+            effects->entries[i].position.vz = 0;
+        effects->entries[i].value_08 = effects->entries[i].value_0c = 0;
+        effects->entries[i].value_10 = 0;
+    }
+    return effects;
 }
