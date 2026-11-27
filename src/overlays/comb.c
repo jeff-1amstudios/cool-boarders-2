@@ -16,7 +16,7 @@ extern void *func_8001F1A0(unsigned int size);
 extern void *func_8007A104(int count, CVECTOR *color);
 extern void func_8007ABC8(void *effects);
 extern void func_80065278(void *first, void *second, int player, int mode);
-extern void func_80078D80(int red, int green, int blue, int first, int second);
+extern void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, int first, int second);
 extern CombSettings *D_800A5D5C;
 extern CVECTOR D_80098100;
 extern CombPlayer *D_800A5B10[2];
@@ -452,6 +452,11 @@ extern int D_800A5B30;
 
 #include "comb_digits.h"
 #include "comb_variable_digits.h"
+
+extern SVECTOR *D_800A4D50;
+extern unsigned char D_800A4D54;
+extern unsigned char D_800A4D55;
+extern unsigned char D_800A4D56;
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -6288,4 +6293,53 @@ void func_80078560(GsOT *ot, int x, int y, int value, int frame)
     first_length = value % 10;
     CombDrawVariableDigits(tag, second, x, y, frame, second_width, first_length);
     func_80096D78(tag, D_800A4D14 + 8);
+}
+
+// FUNCTION: COMB.BIN:0x80078D80
+void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, int heading, int pitch)
+{
+    int ring;
+    int angle;
+    int column;
+    int latitude;
+    int second_latitude;
+    int step;
+    int accumulated;
+    int outer_latitude;
+
+    D_800A4D50 = func_8001F1A0(0x500);
+    ring = 0;
+    D_800A4D54 = red;
+    D_800A4D55 = green;
+    D_800A4D56 = blue;
+    outer_latitude = pitch + 0xE80;
+    step = pitch + 0x280;
+    accumulated = step;
+    do {
+        latitude = accumulated / 4 + 0xC00;
+        column = 0;
+        do {
+            angle = heading + column * 0x100;
+            D_800A4D50[ring * 16 + column].vx = rsin(angle) * rcos(latitude) >> 12;
+            D_800A4D50[ring * 16 + column].vy = rsin(latitude);
+            D_800A4D50[ring * 16 + column].vz = rcos(angle) * rcos(latitude) >> 12;
+            column++;
+        } while (column < 16);
+        ring++;
+        accumulated += step;
+    } while (ring < 3);
+    ring = 0;
+    second_latitude = outer_latitude;
+    do {
+        column = 0;
+        do {
+            angle = heading + column * 0x100;
+            D_800A4D50[ring * 16 + column + 48].vx = rsin(angle) * rcos(second_latitude) >> 12;
+            D_800A4D50[ring * 16 + column + 48].vy = rsin(second_latitude);
+            D_800A4D50[ring * 16 + column + 48].vz = rcos(angle) * rcos(second_latitude) >> 12;
+            column++;
+        } while (column < 16);
+        ring++;
+        second_latitude += 0x80;
+    } while (ring < 7);
 }
