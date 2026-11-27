@@ -1261,4 +1261,6 @@ void func_80076310(GsOT *ot, int offset);
 
 void func_80076380(GsOT *ot, int x, int y, int selection);
 
+void func_8007676C(GsOT *ot, int x, int y);
+
 #endif
