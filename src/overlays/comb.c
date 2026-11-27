@@ -14,7 +14,7 @@ extern int func_8001F378(void *allocation);
 
 extern void *func_8001F1A0(unsigned int size);
 extern CombEffects *func_8007A104(int count, CVECTOR *color);
-extern void func_8007ABC8(void *effects);
+extern void func_8007ABC8(CombEffects *effects);
 extern void func_80065278(void *first, void *second, int player, int mode);
 extern void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, int first, int second);
 extern CombSettings *D_800A5D5C;
@@ -6468,4 +6468,22 @@ void func_8007A218(CombEffects *state, int x, int y, int z, int active)
     effects->value_0e = x;
     effects->value_10 = z;
     effects->value_12 = active;
+}
+
+// FUNCTION: COMB.BIN:0x8007ABC8
+void func_8007ABC8(CombEffects *effects)
+{
+    int i;
+
+    effects->value_08 = 0;
+    effects->unknown_0c = 0;
+    effects->value_10 = 0;
+    effects->value_0e = 0;
+    effects->value_12 = 1;
+    for (i = 0; i < effects->count; i++) {
+        effects->entries[i].position.vx = effects->entries[i].position.vy =
+            effects->entries[i].position.vz = 0;
+        effects->entries[i].value_08 = effects->entries[i].value_0c = 0;
+        effects->entries[i].value_10 = 0;
+    }
 }
