@@ -1259,4 +1259,6 @@ void func_800762C4(GsOT_TAG *tag, int x, int y);
 
 void func_80076310(GsOT *ot, int offset);
 
+void func_80076380(GsOT *ot, int x, int y, int selection);
+
 #endif

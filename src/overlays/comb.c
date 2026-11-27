@@ -5853,3 +5853,65 @@ void func_80076310(GsOT *ot, int offset)
     func_80096CF4(tag, &sprites[2]);
     func_80096D78(tag, &D_800A4D0C[2]);
 }
+
+// FUNCTION: COMB.BIN:0x80076380
+void func_80076380(GsOT *ot, int x, int y, int selection)
+{
+    GsOT_TAG *tag = &ot->org[3];
+
+    func_80096CF4(tag, &D_800A4D08[9]);
+    func_80096D78(tag, &D_800A4D0C[9]);
+    func_80096CF4(tag, &D_800A4D08[5]);
+    func_80096D78(tag, &D_800A4D0C[5]);
+    func_80096CF4(tag, &D_800A4D08[6]);
+    func_80096D78(tag, &D_800A4D0C[6]);
+    func_80096CF4(tag, &D_800A4D08[7]);
+    func_80096D78(tag, &D_800A4D0C[7]);
+
+    switch (selection) {
+    case 0:
+        func_80096CF4(tag, &D_800A4D08[10]);
+        func_80096D78(tag, &D_800A4D0C[10]);
+        break;
+    case 5:
+        D_800A4D08[9].x0 = x;
+        D_800A4D08[9].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[9]);
+        func_80096D78(tag, &D_800A4D0C[9]);
+        y += 16;
+        D_800A4D08[14].x0 = x;
+        D_800A4D08[14].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[14]);
+        func_80096D78(tag, &D_800A4D0C[14]);
+        y += 16;
+        D_800A4D08[15].x0 = x;
+        D_800A4D08[15].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[15]);
+        func_80096D78(tag, &D_800A4D0C[15]);
+        break;
+    case 3:
+        D_800A4D08[10].x0 = x;
+        D_800A4D08[10].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[10]);
+        func_80096D78(tag, &D_800A4D0C[10]);
+        break;
+    case 4:
+        D_800A4D08[12].x0 = x;
+        D_800A4D08[12].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[12]);
+        func_80096D78(tag, &D_800A4D0C[12]);
+        break;
+    case 2:
+        D_800A4D08[11].x0 = x;
+        D_800A4D08[11].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[11]);
+        func_80096D78(tag, &D_800A4D0C[11]);
+        break;
+    default:
+        D_800A4D08[9].x0 = x;
+        D_800A4D08[9].y0 = y;
+        func_80096CF4(tag, &D_800A4D08[9]);
+        func_80096D78(tag, &D_800A4D0C[9]);
+        break;
+    }
+}
