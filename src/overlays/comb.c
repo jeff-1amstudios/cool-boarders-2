@@ -451,6 +451,7 @@ extern DVECTOR *D_800A4D18;
 extern int D_800A5B30;
 
 #include "comb_digits.h"
+#include "comb_variable_digits.h"
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -6267,4 +6268,24 @@ void func_80078054(GsOT *ot, int x, int y, int value, int draw_mode)
     if (draw_mode) {
         func_80096D78(tag, D_800A4D14 + 5);
     }
+}
+
+// FUNCTION: COMB.BIN:0x80078560
+void func_80078560(GsOT *ot, int x, int y, int value, int frame)
+{
+    int first_length = value / 10;
+    GsOT_TAG *tag = ot->org + 3;
+    int first_width = D_800A4D18[7].vx;
+    int first_height = D_800A4D18[7].vy;
+    SPRT *first = D_800A4D10 + 7;
+    int second_width = D_800A4D18[8].vx;
+    SPRT *second = D_800A4D10 + 8;
+    int second_height = D_800A4D18[8].vy;
+
+    CombDrawVariableDigits(tag, first, x, y, frame, first_width, first_length);
+    x += first_length * first_width;
+    y += first_height - second_height;
+    first_length = value % 10;
+    CombDrawVariableDigits(tag, second, x, y, frame, second_width, first_length);
+    func_80096D78(tag, D_800A4D14 + 8);
 }
