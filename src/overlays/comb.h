@@ -1251,4 +1251,6 @@ void func_80076088(int index, int texture_x, int texture_y,
 
 int func_800761BC(void);
 
+void func_80076204(void);
+
 #endif

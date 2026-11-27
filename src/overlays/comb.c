@@ -5807,3 +5807,10 @@ int func_800761BC(void)
     D_800A4D0C = func_8001F1A0(18 * sizeof(DR_MODE));
     return -(D_800A4D0C != 0);
 }
+
+// FUNCTION: COMB.BIN:0x80076204
+void func_80076204(void)
+{
+    func_8001F378(D_800A4D08);
+    func_8001F378(D_800A4D0C);
+}
