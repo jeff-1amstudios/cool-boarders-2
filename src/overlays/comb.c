@@ -5831,3 +5831,14 @@ void func_8007623C(GsOT *ot, int first, int second)
     sprites[1].x0 = x;
     sprites[1].y0 = y;
 }
+
+// FUNCTION: COMB.BIN:0x800762C4
+void func_800762C4(GsOT_TAG *tag, int x, int y)
+{
+    SPRT *sprite = D_800A4D08;
+
+    sprite->x0 = x;
+    sprite->y0 = y;
+    func_80096CF4(tag, sprite);
+    func_80096D78(tag, D_800A4D0C);
+}
