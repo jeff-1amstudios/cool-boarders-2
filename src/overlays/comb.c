@@ -5400,3 +5400,26 @@ void func_80074D0C(int course)
     D_800A4CB0.entries = D_8009A910[course];
     D_800A5AE0 = D_8009C440[course];
 }
+
+// FUNCTION: COMB.BIN:0x80074D58
+void func_80074D58(void)
+{
+    int course = 0;
+    short *base = D_8009A910[0];
+    int offset = 0;
+    short *entry;
+    short *current;
+
+    do {
+        entry = base;
+        while (1) {
+            current = (short *)(offset + (int)entry);
+            entry += 6;
+            if (current[0] < 0) break;
+            current[3] = -current[3];
+            current[4] = -current[4];
+        }
+        course++;
+        offset += 0x2B8;
+    } while (course < 10);
+}

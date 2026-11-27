@@ -1132,4 +1132,6 @@ void func_800733B4(CombPlayer *player, CombPlayer *second, int mode);
 
 void func_80074D0C(int course);
 
+void func_80074D58(void);
+
 #endif
