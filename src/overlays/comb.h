@@ -1134,4 +1134,31 @@ void func_80074D0C(int course);
 
 void func_80074D58(void);
 
+typedef struct CombPlaybackRecord {
+    int valid;
+    int word_04;
+    signed char mode;
+    unsigned char course;
+    short character;
+    short option;
+    short finished;
+    short value_10;
+    short penalty;
+    CombResultEntry entries[6];
+    int cumulative[4];
+    unsigned short inputs[7500];
+} CombPlaybackRecord;
+
+typedef struct CombPlaybackResetView {
+    unsigned char unknown_0000[0x850];
+    CombResultEntry *entries;
+    CombResultEntry current_entry;
+    unsigned char unknown_0888[0x434];
+    int history_count;
+    int frame_count;
+    CombPlaybackRecord record;
+} CombPlaybackResetView;
+
+void func_80074DB4(CombPlayer *player, short *settings, CombPlaybackRecord *saved);
+
 #endif

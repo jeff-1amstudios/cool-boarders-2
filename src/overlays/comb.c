@@ -196,7 +196,7 @@ extern int D_8009A490;
 extern void func_80063DDC(int course);
 extern void func_80063E24(int course);
 extern void func_80097074(GsF_LIGHT *first, GsF_LIGHT *second, GsF_LIGHT *third);
-extern void func_80074DB4(CombPlayer *player, short *settings, int mode);
+extern void func_80074F6C(CombResultEntry *entry);
 extern void func_80070CC4(void);
 extern void func_8005AF30(int course, int character_flag, int motion_flag,
                           int alternate, int active);
@@ -5422,4 +5422,60 @@ void func_80074D58(void)
         course++;
         offset += 0x2B8;
     } while (course < 10);
+}
+
+// FUNCTION: COMB.BIN:0x80074DB4
+void func_80074DB4(CombPlayer *player, short *settings, CombPlaybackRecord *saved)
+{
+    CombPlaybackRecord *record = &((CombPlaybackResetView *)player)->record;
+    int course = D_800A5D5C->course;
+    short workspace[2];
+    int i;
+    int offset;
+    int j;
+    int *bonuses;
+    int *cursor;
+    CombPlaybackRecord *row;
+
+    ((CombPlaybackResetView *)player)->frame_count = 0;
+    ((CombPlaybackResetView *)player)->history_count = 0;
+    bzero((unsigned char *)record, sizeof(*record));
+    *(int *)((unsigned char *)player + 0xCC4) = 0;
+    ((CombPlaybackResetView *)player)->record.mode = *(int *)D_8009A4FC;
+    ((CombPlaybackResetView *)player)->record.course = course;
+    ((CombPlaybackResetView *)player)->record.character = settings[0];
+    ((CombPlaybackResetView *)player)->record.option = settings[1];
+    ((CombPlaybackResetView *)player)->record.finished = 0;
+    ((CombPlaybackResetView *)player)->record.value_10 = 0;
+    ((CombPlaybackResetView *)player)->record.penalty = 0;
+    ((CombPlaybackResetView *)player)->record.word_04 = 0;
+    i = 0;
+    offset = 0x14;
+    do {
+        func_80074F6C((CombResultEntry *)((unsigned char *)record + offset));
+        i++;
+        offset += 0x34;
+    } while (i < 6);
+    func_80074F6C(&((CombPlaybackResetView *)player)->current_entry);
+    bonuses = D_800A5AE0;
+    ((CombPlaybackResetView *)player)->entries = &record->entries[0];
+    i = 0;
+    do {
+        record->cumulative[i] = 0;
+        j = 0;
+        if (i > 0) {
+            row = (CombPlaybackRecord *)((unsigned char *)record + i * 4);
+            cursor = bonuses;
+            do {
+                row->cumulative[0] += *cursor++;
+                j++;
+            } while (j < i);
+        }
+        i++;
+    } while (i < 4);
+    if (saved != 0 && saved->valid != 0 &&
+        saved->course == D_800A5D5C->course &&
+        saved->mode == *(int *)D_8009A4FC) {
+        *record = *saved;
+    }
 }
