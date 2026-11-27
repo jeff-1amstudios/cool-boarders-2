@@ -7244,3 +7244,18 @@ int func_8007DBB8(int course, int value)
     }
     return result;
 }
+
+// FUNCTION: COMB.BIN:0x8007DCE0
+int func_8007DCE0(int value, int divisor)
+{
+    int result;
+
+    if (value < 62) {
+        result = value;
+    } else if (value < 72) {
+        result = (value - 61) * 12 / 10 + 61;
+    } else {
+        result = value - 10;
+    }
+    return result * 255 / divisor;
+}

@@ -1357,4 +1357,6 @@ typedef struct CombBounceTiming {
 
 int func_8007DBB8(int course, int value);
 
+int func_8007DCE0(int value, int divisor);
+
 #endif
