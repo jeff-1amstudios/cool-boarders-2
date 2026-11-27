@@ -6343,3 +6343,9 @@ void func_80078D80(unsigned char red, unsigned char green, unsigned char blue, i
         second_latitude += 0x80;
     } while (ring < 7);
 }
+
+// FUNCTION: COMB.BIN:0x80079B90
+void func_80079B90(void)
+{
+    func_8001F378(D_800A4D50);
+}
