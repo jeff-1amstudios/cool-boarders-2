@@ -431,6 +431,19 @@ extern void func_80076088(int index, int texture_x, int texture_y,
 extern DR_MODE *D_800A4D0C;
 extern void func_80096CF4(GsOT_TAG *ot, SPRT *sprite);
 
+extern void func_8001EB94(int texture_x, int texture_y, int clut_x, short clut_y);
+extern void func_8001EC68(int value);
+extern int func_80076D68(int texture_x, int texture_y, int clut_x, int clut_y,
+                         unsigned short width, unsigned short height,
+                         unsigned short display_width, unsigned short display_height, int mode);
+extern void func_80076AEC(int index, int texture_x, int texture_y, int clut_x,
+                          int clut_y, int width, int height,
+                          int display_width, int display_height, int mode);
+extern void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
+                          int clut_x, int clut_y, int width, int height,
+                          int display_width, int display_height);
+extern POLY_GT4 D_800A4D1C;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5944,4 +5957,23 @@ void func_80076814(GsOT *ot)
 
     func_80096CF4(tag, D_800A4D08 + 17);
     func_80096D78(tag, D_800A4D0C + 17);
+}
+
+// FUNCTION: COMB.BIN:0x80076864
+void func_80076864(void)
+{
+    func_8001EB94(0x140, 0x150, 0x300, 0x1CC);
+    func_8001EC68(0x20);
+    D_800A5D28 = func_80076D68(0x140, 0x150, 0x300, 0x1CC, 8, 8, 8, 8, 0);
+    D_800A5D34 = func_80076D68(0x140, 0x100, 0x3E0, 0x1CC, 8, 12, 8, 12, 1);
+    func_8009624C(D_800A5D34, 0, 128, 128, 128);
+    func_80076AEC(0, 0x194, 0x13C, 0x360, 0x1CD, 8, 16, 8, 16, 0);
+    func_80076AEC(1, 0x140, 0x1D0, 0x330, 0x1CC, 24, 24, 20, 24, 0);
+    func_80076AEC(3, 0x140, 0x1E8, 0x360, 0x1CC, 24, 24, 24, 24, 0);
+    func_80076C2C(&D_800A4D1C, 0x140, 0x1E8, 0x360, 0x1CC, 24, 24, 24, 24);
+    func_80076AEC(4, 0x194, 0x14C, 0x340, 0x1CC, 8, 12, 8, 12, 0);
+    func_80076AEC(5, 0x180, 0x150, 0x3A0, 0x1CC, 8, 16, 8, 16, 0);
+    func_80076AEC(6, 0x1AC, 0x14C, 0x3A0, 0x1CC, 8, 16, 8, 16, 0);
+    func_80076AEC(7, 0x140, 0x190, 0x3B0, 0x1D0, 16, 16, 16, 16, 0);
+    func_80076AEC(8, 0x168, 0x1A0, 0x3A0, 0x1D0, 8, 8, 8, 8, 0);
 }
