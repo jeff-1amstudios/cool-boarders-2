@@ -469,6 +469,8 @@ extern POLY_FT4 *func_80013654(unsigned long *ordering_table, POLY_FT4 *packet,
 extern PACKET *func_8007AF20(GsOT_TAG *tag, PACKET *packet, int x, int scale);
 extern PACKET *func_8007B0FC(GsOT_TAG *tag, PACKET *packet, int frame);
 
+extern DVECTOR D_800A5DA8[4][16];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6537,5 +6539,70 @@ PACKET *func_8007AC70(GsOT_TAG *tag, PACKET *packet, int *state, int paused)
     if (*state >= 0 && paused == 0) {
         ++*state;
     }
+    return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007B0FC
+PACKET *func_8007B0FC(GsOT_TAG *tag, PACKET *packet, int frame)
+{
+    int row, column, offset;
+    int x, u;
+    int y, v;
+    int fall;
+    int length, code, color;
+    unsigned short clut;
+    SPRT_8 *sprite;
+    DR_TPAGE *page;
+
+    if (frame == 0) {
+        for (row = 0; row < 4; row++) {
+            for (column = 0; column < 16; column++) {
+                D_800A5DA8[row][column].vx = rand() % 48 - 24;
+                D_800A5DA8[row][column].vy = rand() % 48 - 32;
+            }
+        }
+    }
+    clut = 0x733f;
+    fall = frame * frame / 2;
+    row = 0;
+    length = 3;
+    code = 0x74;
+    color = 128;
+    do {
+        y = row * 8 - 47;
+        v = y + 47;
+        column = 0;
+        u = -128;
+        offset = row * 64;
+        x = -63;
+        do {
+            sprite = (SPRT_8 *)packet;
+            packet += sizeof(SPRT_8);
+            ((PrimitiveTag *)sprite)->length = length;
+            sprite->code = code;
+            sprite->x0 = x;
+            sprite->x0 = x + ((DVECTOR *)((char *)D_800A5DA8 + offset))->vx * frame;
+            sprite->y0 = y;
+            sprite->y0 = y + (((DVECTOR *)((char *)D_800A5DA8 + offset))->vy * frame + fall);
+            sprite->u0 = u;
+            u += 8;
+            sprite->sdk_unnamed_2 = v;
+            sprite->clut = clut;
+            sprite->b0 = color;
+            sprite->g0 = color;
+            sprite->r0 = color;
+            ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)tag)->address;
+            ((PrimitiveTag *)tag)->address = (unsigned long)sprite;
+            offset += 4;
+            x += 8;
+        } while (++column < 16);
+    } while (++row < 4);
+    page = (DR_TPAGE *)packet;
+    packet += sizeof(DR_TPAGE);
+    ((PrimitiveTag *)page)->length = 1;
+    page->code[0] = 0xe1000000 |
+        ((GetGraphType() == 1 || GetGraphType() == 2) ? 0x815 : 0x215);
+    ((PrimitiveTag *)page)->address = ((PrimitiveTag *)tag)->address;
+    ((PrimitiveTag *)tag)->address = (unsigned long)page;
     return packet;
 }
