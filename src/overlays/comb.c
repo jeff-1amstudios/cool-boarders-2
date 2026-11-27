@@ -428,6 +428,8 @@ extern void func_80076088(int index, int texture_x, int texture_y,
                           int clut_x, int clut_y, int width, int height,
                           int x, int y, int blend);
 
+extern DR_MODE *D_800A4D0C;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5767,4 +5769,30 @@ void func_80075C54(void)
   func_80076088(0x10,0x14a,0x70,0x3b0,0x1d2,0x58,0x18,0x38,-104,0);
   func_80076088(0x11,0x150,0xe4,0x3a0,0x1d3,0x6c,0x14,-54,0x18,0);
   return;
+}
+
+// FUNCTION: COMB.BIN:0x80076088
+void func_80076088(int index, int texture_x, int texture_y,
+                   int clut_x, int clut_y, int width, int height,
+                   int x, int y, int blend)
+{
+    SPRT *sprite = D_800A4D08 + index;
+    DR_MODE *mode = D_800A4D0C + index;
+    int page_x;
+    int page_y;
+
+    SetSprt(sprite);
+    sprite->r0 = 0x80;
+    sprite->g0 = 0x80;
+    sprite->b0 = 0x80;
+    sprite->clut = GetClut(clut_x, clut_y);
+    page_x = texture_x & 0xFFC0;
+    page_y = texture_y & 0xFF00;
+    sprite->u0 = (texture_x - page_x) * 4;
+    sprite->v0 = texture_y;
+    sprite->w = width;
+    sprite->h = height;
+    SetDrawMode(mode, 0, 0, GetTPage(0, blend, page_x, page_y), 0);
+    sprite->x0 = (short)x;
+    sprite->y0 = (short)y;
 }
