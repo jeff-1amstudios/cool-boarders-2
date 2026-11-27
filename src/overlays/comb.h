@@ -1161,4 +1161,37 @@ typedef struct CombPlaybackResetView {
 
 void func_80074DB4(CombPlayer *player, short *settings, CombPlaybackRecord *saved);
 
+typedef struct CombTransitionSettings {
+    unsigned char unknown_00[3];
+    unsigned char sound_mode;
+} CombTransitionSettings;
+
+typedef struct CombCameraTransitionPlayer {
+    unsigned char unknown_0000[0x3C];
+    short surface;
+    unsigned char unknown_003e[0x69A];
+    CombCameraModeView *camera;
+    unsigned char unknown_06dc[0xE6];
+    short reset_7c2;
+    unsigned char unknown_07c4[0x4EC];
+    short reset_cb0;
+    unsigned char unknown_0cb2[0x24];
+    unsigned short count_cd6;
+    unsigned char unknown_0cd8[0x3BE4];
+    int value_48bc;
+    unsigned char unknown_48c0[4];
+    VECTOR saved_value;
+    int saved_surface;
+    unsigned char unknown_48d8[0x10];
+    VECTOR motion;
+    unsigned char unknown_48f8[0x20];
+    short active_4918;
+    unsigned char unknown_491a[4];
+    signed char secondary_view;
+    unsigned char sound_enabled;
+    CombTransitionSettings *settings;
+} CombCameraTransitionPlayer;
+
+void func_80075070(CombCameraTransitionPlayer *player, int value, VECTOR *saved);
+
 #endif

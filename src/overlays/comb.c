@@ -5510,3 +5510,36 @@ void func_80074F6C(CombResultEntry *entry)
     score->origin_z = 0;
     score->reverse = 0;
 }
+
+// FUNCTION: COMB.BIN:0x80075070
+void func_80075070(CombCameraTransitionPlayer *player, int value, VECTOR *saved)
+{
+    CombCameraModeView *camera = player->camera;
+    unsigned char sound_enabled = player->sound_enabled;
+    int secondary = player->secondary_view;
+    unsigned char sound_mode = player->settings->sound_mode;
+    short *surface = &player->surface;
+
+    if (camera->camera_mode != 3) {
+        if (*(short *)camera->unknown_002 == 1 ||
+            *(short *)camera->unknown_002 == 5) {
+            camera->camera_mode = 3;
+        } else {
+            func_80060940((CombPlayerCameraView *)player, 3);
+            *(int *)((unsigned char *)camera + 0x1A4) = player->surface;
+        }
+        player->saved_surface = *surface;
+        player->saved_value = *saved;
+        player->motion.vx >>= 1;
+        player->reset_cb0 = 0;
+        player->value_48bc = value;
+        player->reset_7c2 = 0;
+        player->motion.vz >>= 1;
+        if (player->active_4918 != 0) {
+            player->count_cd6++;
+        }
+        if (secondary == 0 && sound_enabled != 0) {
+            func_80069D84(28, sound_mode);
+        }
+    }
+}
