@@ -1257,4 +1257,6 @@ void func_8007623C(GsOT *ot, int first, int second);
 
 void func_800762C4(GsOT_TAG *tag, int x, int y);
 
+void func_80076310(GsOT *ot, int offset);
+
 #endif
