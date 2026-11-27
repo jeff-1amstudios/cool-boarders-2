@@ -410,7 +410,7 @@ extern short D_8009A910[10][348];
 extern int D_8009C440[16][3];
 extern BpCourseStartSelection D_800A4CB0;
 
-extern void func_80075894(CombPlayerHistoryView *player);
+extern void func_80075894();
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -5590,4 +5590,41 @@ void func_800756DC(CombPlayerHistoryView *player, int unused, int entry)
         count--;
         history_cursor -= sizeof(CombSurfaceState);
     } while (count != 0);
+}
+
+// FUNCTION: COMB.BIN:0x80075894
+void func_80075894(CombManualControlPlayer *player, int side)
+{
+    CombManualControlMotion *motion = player->motion;
+    unsigned int buttons = player->buttons;
+    unsigned int previous_buttons = player->previous_buttons;
+    int shift;
+    int animation;
+
+    player->rotation.vx = 0;
+    player->rotation.vz = 0;
+    func_800966A8(&player->rotation);
+    shift = side << 4;
+    if (buttons & ((unsigned int)D_8009FF5E << shift)) {
+        player->rotation.vy += 40;
+    }
+    if (buttons & ((unsigned int)D_8009FF5C << shift)) {
+        player->rotation.vy -= 40;
+    }
+    player->matrix = D_80058E20;
+    RotMatrixY(player->rotation.vy, &player->matrix);
+    animation = player->direction + 7;
+    player->reset_188 = 0;
+    player->playback.animation.word_4e0 = animation;
+    func_80062B2C((CombPlayerSlopeView *)player);
+    func_80065968(&player->playback, animation, 2, 0);
+    func_80061440((CombCameraPlayerView *)player, 0, 0);
+    *motion->reset_value = 0;
+    if ((buttons ^ previous_buttons) & buttons & ((unsigned int)D_8009FF62 << shift)) {
+        func_80060940((CombPlayerCameraView *)player, 0);
+        func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+        func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+        func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+        func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
+    }
 }

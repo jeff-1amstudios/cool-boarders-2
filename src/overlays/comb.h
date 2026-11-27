@@ -1215,4 +1215,26 @@ typedef struct CombPlayerHistoryView {
 
 void func_800756DC(CombPlayerHistoryView *player, int unused, int entry);
 
+typedef struct CombManualControlMotion {
+    unsigned char unknown_000[0x28];
+    int *reset_value;
+} CombManualControlMotion;
+
+typedef struct CombManualControlPlayer {
+    unsigned char unknown_000[0x28];
+    unsigned int buttons;
+    unsigned char unknown_02c[0x54];
+    unsigned int previous_buttons;
+    unsigned char unknown_084[0x104];
+    int reset_188;
+    MATRIX matrix;
+    unsigned char unknown_1ac[0x2C];
+    SVECTOR rotation;
+    unsigned char unknown_1e0[4];
+    BpAnimationPlayback playback;
+    CombManualControlMotion *motion;
+    unsigned char unknown_6dc[0x578];
+    short direction;
+} CombManualControlPlayer;
+
 #endif
