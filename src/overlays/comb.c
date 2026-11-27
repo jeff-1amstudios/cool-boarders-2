@@ -499,6 +499,8 @@ extern PACKET *func_8007D65C(GsOT_TAG *tag, PACKET *packet, int y,
 extern SpriteTexture D_8009933C;
 extern PACKET *func_8007D96C(GsOT_TAG *tag, PACKET *packet, int x, int y, int value);
 
+extern char D_80099348[4];
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -7132,5 +7134,69 @@ PACKET *func_8007D780(GsOT_TAG *tag, PACKET *packet, int mode,
         packet = func_8007D96C(tag, packet, 0, -76, value);
     }
     if (*state >= 0 && paused == 0) ++*state;
+    return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007D96C
+PACKET *func_8007D96C(GsOT_TAG *tag, PACKET *packet, int x, int y, int value)
+{
+    unsigned char suffix[4];
+    int state = 0;
+    int sign;
+    unsigned char red, blue;
+    int i, glyph;
+    SPRT *sprite;
+    DR_TPAGE *page;
+
+    __builtin_memcpy(suffix, D_80099348, 4);
+    if (value >= 0) {
+        sign = 11;
+        red = 128;
+        blue = 64;
+    } else {
+        sign = 63;
+        red = 64;
+        blue = 128;
+        value = -value;
+    }
+    x += 32;
+    for (i = 0; state < 2; i++) {
+        if (state == 1) {
+            glyph = (unsigned char)sign;
+            state = 2;
+        } else if (i < 3) {
+            glyph = suffix[i] - 32;
+        } else if (i == 6) {
+            glyph = 14;
+        } else {
+            glyph = value % 10 + 16;
+            value /= 10;
+            if (i > 6 && value == 0) state = 1;
+        }
+        sprite = (SPRT *)packet;
+        packet += sizeof(SPRT);
+        ((PrimitiveTag *)sprite)->length = 4;
+        sprite->code = 0x64;
+        sprite->w = 8;
+        sprite->h = 12;
+        sprite->x0 = x;
+        sprite->y0 = y;
+        sprite->u0 = (glyph % 16) * 8;
+        x -= 8;
+        sprite->v0 = (glyph / 16) * 12;
+        sprite->g0 = 64;
+        sprite->r0 = red;
+        sprite->b0 = blue;
+        sprite->clut = 0x733e;
+        ((PrimitiveTag *)sprite)->address = ((PrimitiveTag *)tag)->address;
+        ((PrimitiveTag *)tag)->address = (unsigned long)sprite;
+    }
+    page = (DR_TPAGE *)packet;
+    packet += sizeof(DR_TPAGE);
+    ((PrimitiveTag *)page)->length = 1;
+    page->code[0] = 0xe1000000 |
+        ((GetGraphType() == 1 || GetGraphType() == 2) ? 0x15 : 0x15);
+    ((PrimitiveTag *)page)->address = ((PrimitiveTag *)tag)->address;
+    ((PrimitiveTag *)tag)->address = (unsigned long)page;
     return packet;
 }
