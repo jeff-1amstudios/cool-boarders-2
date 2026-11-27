@@ -496,6 +496,9 @@ extern short D_800A4D5C;
 extern PACKET *func_8007D65C(GsOT_TAG *tag, PACKET *packet, int y,
                             SpriteTexture *texture, int height);
 
+extern SpriteTexture D_8009933C;
+extern PACKET *func_8007D96C(GsOT_TAG *tag, PACKET *packet, int x, int y, int value);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -7095,4 +7098,39 @@ PACKET *func_8007D65C(GsOT_TAG *tag, PACKET *packet, int y,
     ((PrimitiveTag *)polygon)->address = ((PrimitiveTag *)tag)->address;
     ((PrimitiveTag *)tag)->address = (unsigned long)polygon;
     return (PACKET *)(polygon + 1);
+}
+
+// FUNCTION: COMB.BIN:0x8007D780
+PACKET *func_8007D780(GsOT_TAG *tag, PACKET *packet, int mode,
+                      int *state, int paused, int value)
+{
+    SpriteTexture texture = D_8009933C;
+    int frame = *state;
+
+    if (frame < 0) return packet;
+    if (mode & 1) {
+        if (frame < 5) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                    6, (5 - frame) * 223 / 5 - 63, -64, &texture);
+        } else if ((frame -= 5) < 11) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                    D_8009C50C[frame], -63, -64, &texture);
+        } else if ((frame -= 11) < 20) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                    0, -63, -64, &texture);
+        } else if ((frame -= 20) < 5) {
+            packet = (PACKET *)func_80013654((unsigned long *)tag, (POLY_FT4 *)packet,
+                    6, -frame * 223 / 5 - 63, -64, &texture);
+        } else {
+            *state = -1;
+        }
+    } else if (frame >= 41) {
+        *state = -1;
+    }
+    if (mode & 2) {
+        if (*state < 0) return packet;
+        packet = func_8007D96C(tag, packet, 0, -76, value);
+    }
+    if (*state >= 0 && paused == 0) ++*state;
+    return packet;
 }
