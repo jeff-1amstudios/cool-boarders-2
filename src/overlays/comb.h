@@ -1359,4 +1359,6 @@ int func_8007DBB8(int course, int value);
 
 int func_8007DCE0(int value, int divisor);
 
+int func_8007DD6C(int value, int divisor);
+
 #endif

@@ -7259,3 +7259,20 @@ int func_8007DCE0(int value, int divisor)
     }
     return result * 255 / divisor;
 }
+
+// FUNCTION: COMB.BIN:0x8007DD6C
+int func_8007DD6C(int value, int divisor)
+{
+    int result;
+
+    if (value < 75) {
+        result = value;
+    } else if (value < 87) {
+        result = (value - 74) * 12 / 10 + 74;
+    } else if (value < 97) {
+        result = value - 12;
+    } else {
+        result = value - 10;
+    }
+    return result * 255 / divisor;
+}
