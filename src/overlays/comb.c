@@ -478,6 +478,16 @@ extern SPRT *func_80012950(unsigned long *ordering_table, SPRT *sprite,
 extern DR_TPAGE *func_80012B6C(unsigned long *ordering_table, DR_TPAGE *packet,
                             unsigned int tpage);
 
+extern CombScoreTextures D_80099248;
+extern CombScoreTimings D_80099290;
+extern int D_8009C524;
+extern int D_8009C528;
+extern PACKET *func_8007BF24(GsOT_TAG *tag, PACKET *packet, int x, int y,
+                            SpriteTexture *texture, int scale, int angle);
+extern PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int value, int extra);
+extern PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame);
+extern PACKET *func_8007C8E8(GsOT_TAG *tag, PACKET *packet, int value, int frame);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6656,5 +6666,131 @@ PACKET *func_8007B3A8(GsOT_TAG *tag, PACKET *packet, int *state, int paused)
             ++*state;
         }
     }
+    return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007B5C0
+PACKET *func_8007B5C0(GsOT_TAG *tag, PACKET *packet, int value, int *state, int paused)
+{
+    CombScoreTextures textures = D_80099248;
+    CombScoreTimings timings = D_80099290;
+    int frame = *state;
+    int work;
+
+    if (frame < 0) {
+        return packet;
+    }
+    if (frame == 0) {
+        D_8009C528 = value;
+        if (value < 0) D_8009C524 = 6;
+        else if (value == 0) D_8009C524 = 0;
+        else if (value < 600) D_8009C524 = 1;
+        else if (value < 700) D_8009C524 = 2;
+        else if (value < 800) D_8009C524 = 3;
+        else if (value < 900) D_8009C524 = 4;
+        else D_8009C524 = 5;
+    }
+    if (frame < timings.entries[D_8009C524].entrance) {
+        switch (D_8009C524) {
+        case 0:
+            if (frame < 5) {
+                packet = func_8007BF24(tag, packet, 0, -40,
+                         &textures.entries[D_8009C524], frame << 11, 0);
+            } else {
+                packet = func_8007BF24(tag, packet, 0, -40,
+                         &textures.entries[D_8009C524], ((8 - frame) * 8192) / 3 + 4096, 0);
+            }
+            break;
+        case 1:
+        case 2:
+            work = timings.entries[D_8009C524].entrance - frame;
+            packet = func_8007C2FC(tag, packet, work * work, -32, D_8009C528, -104);
+            work = timings.entries[D_8009C524].entrance - frame - 4;
+            packet = func_8007BF24(tag, packet, 0, -work * work - 24,
+                     &textures.entries[D_8009C524],
+                     (frame << 12) / timings.entries[D_8009C524].entrance, 0);
+            break;
+        case 3:
+        case 4:
+            packet = func_8007C550(tag, packet, D_8009C528, frame);
+            packet = func_8007BF24(tag, packet, 0, -40,
+                     &textures.entries[D_8009C524],
+                     (frame << 12) / timings.entries[D_8009C524].entrance,
+                     (timings.entries[D_8009C524].entrance - frame) * 386);
+            break;
+        case 5:
+            packet = func_8007C8E8(tag, packet, D_8009C528, frame);
+            work = timings.entries[D_8009C524].entrance - frame - 2;
+            packet = func_8007BF24(tag, packet, 0, -work * work - 36,
+                     &textures.entries[D_8009C524],
+                     (timings.entries[D_8009C524].entrance - frame) * 368 + 4096, 0);
+            break;
+        case 6:
+            work = timings.entries[D_8009C524].entrance - frame;
+            packet = func_8007C2FC(tag, packet, work * work, -32, -D_8009C528, -104);
+            work = frame * frame -
+                   (timings.entries[D_8009C524].entrance - 1) *
+                   (timings.entries[D_8009C524].entrance - 1);
+            packet = func_8007BF24(tag, packet, 0, work - 40,
+                     &textures.entries[D_8009C524], 4096, 0);
+            break;
+        }
+    } else {
+        frame -= timings.entries[D_8009C524].entrance;
+        switch (D_8009C524) {
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            if (frame < timings.entries[D_8009C524].hold) {
+                packet = func_8007BF24(tag, packet, 0, -40,
+                         &textures.entries[D_8009C524], 4096, 0);
+                packet = func_8007C2FC(tag, packet, 0, -32, D_8009C528, -104);
+            } else {
+                frame -= timings.entries[D_8009C524].hold;
+                if (frame < timings.entries[D_8009C524].exit) {
+                    work = frame * frame;
+                    packet = func_8007BF24(tag, packet, work, -40,
+                             &textures.entries[D_8009C524], 4096, 0);
+                    packet = func_8007C2FC(tag, packet, -work, -32, D_8009C528, -104);
+                } else *state = -1;
+            }
+            break;
+        case 0:
+            if (frame < timings.entries[0].hold) {
+                packet = func_8007BF24(tag, packet, 0, -40, &textures.entries[0], 4096, 0);
+            } else {
+                frame -= timings.entries[0].hold;
+                if (frame < timings.entries[0].exit) {
+                    packet = func_8007BF24(tag, packet, frame * frame, -40,
+                             &textures.entries[0], 4096, 0);
+                } else *state = -1;
+            }
+            break;
+        case 6:
+            if (frame < timings.entries[6].hold) {
+                if (frame < 8) {
+                    packet = func_8007BF24(tag, packet, 0, (frame - 3) * (frame - 3) - 56,
+                             &textures.entries[6], 4096, 0);
+                } else {
+                    packet = func_8007BF24(tag, packet, 0, -40, &textures.entries[6], 4096, 0);
+                }
+                packet = func_8007C2FC(tag, packet, 0, -32, -D_8009C528, -104);
+            } else {
+                frame -= timings.entries[6].hold;
+                if (frame < timings.entries[6].exit) {
+                    packet = func_8007C2FC(tag, packet, -frame * frame, -32, -D_8009C528, -104);
+                }
+                if (frame < 30) {
+                    work = frame * frame;
+                    packet = func_8007BF24(tag, packet, 0, work - 40,
+                             &textures.entries[D_8009C524], 4096, 0);
+                } else *state = -1;
+            }
+            break;
+        }
+    }
+    if (*state >= 0 && paused == 0) ++*state;
     return packet;
 }

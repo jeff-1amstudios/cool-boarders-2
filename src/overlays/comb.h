@@ -1323,4 +1323,20 @@ void func_8007ABC8(CombEffects *effects);
 
 PACKET *func_8007B3A8(GsOT_TAG *tag, PACKET *packet, int *state, int paused);
 
+typedef struct CombScoreTextures {
+    SpriteTexture entries[7];
+} CombScoreTextures;
+
+typedef struct CombScoreTiming {
+    short entrance;
+    short hold;
+    short exit;
+} CombScoreTiming;
+
+typedef struct CombScoreTimings {
+    CombScoreTiming entries[7];
+} CombScoreTimings;
+
+PACKET *func_8007B5C0(GsOT_TAG *tag, PACKET *packet, int value, int *state, int paused);
+
 #endif
