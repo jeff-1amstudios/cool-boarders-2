@@ -7326,3 +7326,9 @@ int func_8007DE98(int value, int divisor)
     }
     return result * 255 / divisor;
 }
+
+// FUNCTION: COMB.BIN:0x8007E174
+void func_8007E174(int value)
+{
+    SpuSetKey(0, 0x600000);
+}
