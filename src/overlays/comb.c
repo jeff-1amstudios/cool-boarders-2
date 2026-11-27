@@ -265,7 +265,7 @@ extern BpAnimationFrame *func_80097B98(unsigned int frame_index, BpAnimationFram
 extern unsigned short D_8009FF5C;
 extern unsigned short D_8009FF64;
 extern void func_80065F5C(CombPlaybackPlayerView *player, int first, int second);
-extern void func_8007A218(void *effects, int x, int y, int z, int active);
+extern void func_8007A218(CombEffects *effects, int x, int y, int z, int active);
 
 extern int func_8006FB98(VECTOR *position, int start, CombSurfaceState *surface, int mode);
 
@@ -6403,4 +6403,69 @@ CombEffects *func_8007A104(int count, CVECTOR *color)
         effects->entries[i].value_10 = 0;
     }
     return effects;
+}
+
+// FUNCTION: COMB.BIN:0x8007A218
+void func_8007A218(CombEffects *state, int x, int y, int z, int active)
+{
+    CombEffects *effects = state;
+    int dx, dz;
+    int previous;
+    int i;
+    int strength;
+    long length;
+
+    if (effects->value_12 == 0 && active != 0) {
+        dx = x;
+        dz = z;
+    } else {
+        dx = x - effects->value_0e;
+        dz = z - effects->value_10;
+    }
+    previous = effects->value_08;
+    effects->value_08 = (previous + 1) % effects->count;
+    for (i = 0; i < effects->count; i++) {
+        if ((effects->value_08 + i) % effects->count == 0) {
+            effects->entries[effects->value_08].position.vx = dx;
+            effects->entries[effects->value_08].position.vy = 0;
+            effects->entries[effects->value_08].position.vz = dz;
+            switch (active) {
+            case 0:
+                effects->entries[effects->value_08].value_08 = 0;
+                effects->entries[effects->value_08].value_0c = 0;
+                strength = effects->entries[previous].value_10 >> 1;
+                break;
+            case 1:
+                effects->entries[effects->value_08].value_08 = dx;
+                effects->entries[effects->value_08].value_0c = dz;
+                strength = SquareRoot0(x * x + y * y + z * z);
+                strength += SquareRoot0(dx * dx + dz * dz) * 8;
+                break;
+            case 2:
+                effects->entries[effects->value_08].value_08 = dx;
+                effects->entries[effects->value_08].value_0c = dz;
+                length = SquareRoot0(x * x + y * y + z * z);
+                strength = length * 2 + SquareRoot0(dx * dx + dz * dz) * 8;
+                break;
+            default:
+                strength = 0;
+                break;
+            }
+            if (strength < effects->unknown_0c) {
+                strength = (strength + effects->unknown_0c * 3) / 4;
+            }
+            if (strength > 0x300) {
+                strength = 0x300;
+            }
+            effects->unknown_0c = strength;
+            effects->entries[effects->value_08].value_10 = (short)strength;
+        } else {
+            effects->entries[i].position.vx -= x + effects->entries[i].value_08 * 8;
+            effects->entries[i].position.vy -= y;
+            effects->entries[i].position.vz -= z + effects->entries[i].value_0c * 8;
+        }
+    }
+    effects->value_0e = x;
+    effects->value_10 = z;
+    effects->value_12 = active;
 }

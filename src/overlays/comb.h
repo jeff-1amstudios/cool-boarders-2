@@ -1317,4 +1317,6 @@ typedef struct CombEffects {
 
 CombEffects *func_8007A104(int count, CVECTOR *color);
 
+void func_8007A218(CombEffects *effects, int x, int y, int z, int active);
+
 #endif
