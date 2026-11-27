@@ -444,6 +444,10 @@ extern void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
                           int display_width, int display_height);
 extern POLY_GT4 D_800A4D1C;
 
+extern SPRT *D_800A4D10;
+extern DR_MODE *D_800A4D14;
+extern DVECTOR *D_800A4D18;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5976,4 +5980,31 @@ void func_80076864(void)
     func_80076AEC(6, 0x1AC, 0x14C, 0x3A0, 0x1CC, 8, 16, 8, 16, 0);
     func_80076AEC(7, 0x140, 0x190, 0x3B0, 0x1D0, 16, 16, 16, 16, 0);
     func_80076AEC(8, 0x168, 0x1A0, 0x3A0, 0x1D0, 8, 8, 8, 8, 0);
+}
+
+// FUNCTION: COMB.BIN:0x80076AEC
+void func_80076AEC(int index, int texture_x, int texture_y, int clut_x,
+                   int clut_y, int width, int height,
+                   int display_width, int display_height, int blend)
+{
+    SPRT *sprite = D_800A4D10 + index;
+    DR_MODE *mode = D_800A4D14 + index;
+    DVECTOR *size = D_800A4D18 + index;
+    int page_x;
+    int page_y;
+
+    SetSprt(sprite);
+    sprite->r0 = 0x80;
+    sprite->g0 = 0x80;
+    sprite->b0 = 0x80;
+    sprite->clut = GetClut(clut_x, clut_y);
+    page_x = texture_x & 0xFFC0;
+    page_y = texture_y & 0xFF00;
+    sprite->u0 = (texture_x - page_x) * 4;
+    sprite->v0 = texture_y;
+    sprite->w = width;
+    sprite->h = height;
+    SetDrawMode(mode, 0, 0, GetTPage(0, blend, page_x, page_y), 0);
+    size->vx = display_width;
+    size->vy = display_height;
 }
