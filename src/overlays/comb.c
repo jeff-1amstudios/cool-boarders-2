@@ -6171,3 +6171,79 @@ int func_8007715C(GsOT_TAG *tag, int value, int x, int y)
     D_800A4D10->b0 = 0x80;
     return count;
 }
+
+// FUNCTION: COMB.BIN:0x80077548
+void func_80077548(GsOT_TAG *tag, int value, int mode, int x, int y)
+{
+    POLY_GT4 *polygon = (POLY_GT4 *)D_80058ACC;
+    int du = D_800A4D1C.u1 - D_800A4D1C.u0;
+    int dv = D_800A4D1C.v2 - D_800A4D1C.sdk_unnamed_2;
+    unsigned char u = D_800A4D1C.u0;
+    unsigned char v = D_800A4D1C.sdk_unnamed_2;
+    int width = D_800A4D18[3].vx;
+    int height = D_800A4D18[3].vy;
+    int right, bottom;
+    unsigned char left_u, right_u;
+    unsigned int address;
+    unsigned long ot_word;
+
+    *polygon = D_800A4D1C;
+    x -= width / 2;
+    y -= height;
+    if (value < 1) value = 1;
+    if (value > 8) value = 8;
+    if (mode < 1 || mode >= value) {
+        polygon->r0 = 0;
+        polygon->g0 = 0x30;
+        polygon->b0 = 0x80;
+        polygon->r1 = 0;
+        polygon->g1 = 0x30;
+        polygon->b1 = 0x80;
+        polygon->r2 = 0;
+        polygon->g2 = 0x80;
+        polygon->b2 = 0x20;
+        polygon->r3 = 0;
+        polygon->g3 = 0x80;
+        polygon->b3 = 0x20;
+    } else {
+        polygon->r0 = 0x80;
+        polygon->g0 = 0x80;
+        polygon->b0 = 0;
+        polygon->r1 = 0x80;
+        polygon->g1 = 0x80;
+        polygon->b1 = 0;
+        polygon->r2 = 0x80;
+        polygon->g2 = 0;
+        polygon->b2 = 0;
+        polygon->r3 = 0x80;
+        polygon->g3 = 0;
+        polygon->b3 = 0;
+    }
+    value--;
+    right = x + width;
+    bottom = y + height;
+    polygon->v2 = v + dv;
+    polygon->v3 = v + dv;
+    polygon->sdk_unnamed_2 = v;
+    polygon->sdk_unnamed_3 = v;
+    polygon->x0 = x;
+    polygon->y0 = y;
+    polygon->x1 = right;
+    polygon->y1 = y;
+    polygon->x2 = x;
+    polygon->y2 = bottom;
+    polygon->x3 = right;
+    polygon->y3 = bottom;
+    left_u = u + value * du;
+    right_u = left_u + du;
+    polygon->u1 = right_u;
+    polygon->u3 = right_u;
+    polygon->u0 = left_u;
+    polygon->u2 = left_u;
+    address = (unsigned int)polygon & 0xFFFFFF;
+    ((PrimitiveTag *)polygon)->address = tag->p;
+    ot_word = *(unsigned long *)tag;
+    polygon++;
+    D_80058ACC = (PACKET *)polygon;
+    *(unsigned long *)tag = (ot_word & 0xFF000000) | address;
+}
