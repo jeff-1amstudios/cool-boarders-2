@@ -6367,3 +6367,9 @@ void func_80079BB8(int count)
         D_800A5D08[i].previous_screen.packed = 0x7FFF7FFF;
     }
 }
+
+// FUNCTION: COMB.BIN:0x8007A0DC
+void func_8007A0DC(void)
+{
+    func_8001F378(D_800A5D08);
+}
