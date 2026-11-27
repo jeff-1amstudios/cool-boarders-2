@@ -400,7 +400,7 @@ extern int D_800A4BA8[64];
 
 extern int func_80069D40(int mode);
 extern unsigned int func_80075A68(void);
-extern void func_80075AFC(unsigned int buttons);
+extern unsigned int func_80075AFC(unsigned int buttons);
 extern void func_8007379C(CombPlayer *player, int animation, int update, int mode);
 extern void func_800809F4(int mode);
 
@@ -418,6 +418,10 @@ extern int D_800A5EB0;
 
 extern unsigned int func_8001B320(int port, unsigned char *state);
 extern unsigned char D_800A4CBC[];
+
+extern int D_8009C500[];
+extern unsigned char func_8001BAFC(unsigned char length, unsigned char *data,
+                                     unsigned char status);
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -5661,4 +5665,73 @@ unsigned int func_80075A68(void)
     second <<= 16;
     first.value = first.buttons;
     return D_800A4CB8 = first.buttons | second;
+}
+
+// FUNCTION: COMB.BIN:0x80075AFC
+unsigned int func_80075AFC(unsigned int buttons)
+{
+    unsigned char packet[8];
+    unsigned int result;
+    unsigned char *destination;
+    unsigned char *source;
+    unsigned char *end;
+    unsigned int kind;
+    unsigned int status;
+
+    destination = packet + 1;
+    source = (unsigned char *)&buttons;
+    packet[7] = 0xaa;
+    kind = -(unsigned int)(D_800A5EAC != 0) & 0xfe;
+    packet[0] = kind;
+    result = 0;
+    end = (unsigned char *)(D_8009C500[kind] + (int)destination);
+    do {
+        if ((int)destination < (int)end)
+            *destination = *source;
+        else
+            *destination = 0;
+        destination++;
+        source++;
+    } while ((int)destination < (int)(packet + 7));
+
+    status = func_8001BAFC(8, packet, 0xaa);
+    switch (D_8005AB5C) {
+    case 0:
+        break;
+    case 1:
+    case 2:
+        if (status == 0xaa) {
+            switch ((int)packet[0]) {
+            case 0:
+            case 1:
+            case 2:
+                {
+                    unsigned char *output = (unsigned char *)&result;
+                    unsigned char *input;
+                    unsigned char *limit;
+                    if (D_8009C500[packet[0]] > 0) {
+                        input = packet + 1;
+                        limit = (unsigned char *)(D_8009C500[packet[0]] + (int)output);
+                        do {
+                            *output = *input;
+                            output++;
+                            input++;
+                        } while ((int)output < (int)limit);
+                    }
+                }
+                break;
+            case 0xfe:
+                D_800A5EB0 = -1;
+                break;
+            default:
+                D_8005AB5C = -1;
+                break;
+            }
+            break;
+        }
+    default:
+        D_8005AB5C = -1;
+        break;
+    }
+    return result;
 }
