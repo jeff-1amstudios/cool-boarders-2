@@ -1341,4 +1341,6 @@ PACKET *func_8007B5C0(GsOT_TAG *tag, PACKET *packet, int value, int *state, int 
 
 PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int value, int left);
 
+PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame);
+
 #endif

@@ -6855,3 +6855,79 @@ PACKET *func_8007C2FC(GsOT_TAG *tag, PACKET *packet, int x, int y, int value, in
     }
     return packet;
 }
+
+// FUNCTION: COMB.BIN:0x8007C550
+PACKET *func_8007C550(GsOT_TAG *tag, PACKET *packet, int value, int frame)
+{
+    int delay = 8;
+    int scale;
+    int width, height;
+    int x;
+    POLY_FT4 *polygon;
+
+    scale = frame - delay;
+    if (scale >= 0) {
+        scale = scale < 4 ? scale * 0x780 : 0x1000;
+        width = (scale * 24) >> 12;
+        height = (scale * 16) >> 12;
+        polygon = (POLY_FT4 *)packet;
+        packet += sizeof(POLY_FT4);
+        ((PrimitiveTag *)polygon)->length = 9;
+        polygon->code = 0x2c;
+        polygon->x0 = polygon->x2 = 24 - width / 2;
+        polygon->x1 = polygon->x3 = 24 + (width + 1) / 2;
+        polygon->y0 = polygon->y1 = -24 - height / 2;
+        polygon->y2 = polygon->y3 = -24 + (height + 1) / 2;
+        polygon->u0 = polygon->u2 = 0x90;
+        polygon->u1 = polygon->u3 = 0xa8;
+        polygon->v0 = polygon->v1 = 0x2c;
+        polygon->v2 = polygon->v3 = 0x3c;
+        if (scale > 0x1000) {
+            polygon->u1--;
+            polygon->u3--;
+            polygon->v2--;
+            polygon->v3--;
+        }
+        polygon->clut = 0x7332;
+        polygon->tpage = 0x16;
+        polygon->r0 = polygon->g0 = polygon->b0 = 128;
+        ((PrimitiveTag *)polygon)->address = ((PrimitiveTag *)tag)->address;
+        ((PrimitiveTag *)tag)->address = (unsigned long)polygon;
+    }
+    x = 6;
+    do {
+        delay -= 2;
+        scale = frame - delay;
+        if (scale >= 0) {
+            scale = scale < 4 ? scale * 0x800 : 0x1000;
+            width = (scale * 12) >> 12;
+            height = (scale * 16) >> 12;
+            polygon = (POLY_FT4 *)packet;
+            packet += sizeof(POLY_FT4);
+            ((PrimitiveTag *)polygon)->length = 9;
+            polygon->code = 0x2c;
+            polygon->x0 = polygon->x2 = x - width / 2;
+            polygon->x1 = polygon->x3 = x + (width + 1) / 2;
+            polygon->y0 = polygon->y1 = -24 - height / 2;
+            polygon->y2 = polygon->y3 = -24 + (height + 1) / 2;
+            polygon->u0 = polygon->u2 = (value % 10) * 12 + 128;
+            polygon->u1 = polygon->u3 = (value % 10) * 12 + 140;
+            polygon->v0 = polygon->v1 = 0xb0;
+            polygon->v2 = polygon->v3 = 0xc0;
+            if (scale > 0x1000) {
+                polygon->u1--;
+                polygon->u3--;
+                polygon->v2--;
+                polygon->v3--;
+            }
+            polygon->clut = 0x7332;
+            polygon->tpage = 0x16;
+            polygon->r0 = polygon->g0 = polygon->b0 = 128;
+            ((PrimitiveTag *)polygon)->address = ((PrimitiveTag *)tag)->address;
+            ((PrimitiveTag *)tag)->address = (unsigned long)polygon;
+        }
+        value /= 10;
+        x -= 12;
+    } while (value > 0);
+    return packet;
+}
