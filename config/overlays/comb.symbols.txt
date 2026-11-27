@@ -514,3 +514,5 @@ D_8009933C = 0x8009933C; // size:0xA
 func_8007D96C = 0x8007D96C; // type:func
 
 D_80099348 = 0x80099348; // type:char size:0x4
+
+D_8009C52C = 0x8009C52C; // size:0x58

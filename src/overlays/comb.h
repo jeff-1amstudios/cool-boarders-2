@@ -1355,4 +1355,6 @@ typedef struct CombBounceTiming {
     short values[4];
 } CombBounceTiming;
 
+int func_8007DBB8(int course, int value);
+
 #endif

@@ -501,6 +501,12 @@ extern PACKET *func_8007D96C(GsOT_TAG *tag, PACKET *packet, int x, int y, int va
 
 extern char D_80099348[4];
 
+extern int D_8009C52C[11][2];
+extern int func_8007DCE0(int value, int divisor);
+extern int func_8007DD6C(int value, int divisor);
+extern int func_8007DE04(int value, int divisor);
+extern int func_8007DE98(int value, int divisor);
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -7199,4 +7205,42 @@ PACKET *func_8007D96C(GsOT_TAG *tag, PACKET *packet, int x, int y, int value)
     ((PrimitiveTag *)page)->address = ((PrimitiveTag *)tag)->address;
     ((PrimitiveTag *)tag)->address = (unsigned long)page;
     return packet;
+}
+
+// FUNCTION: COMB.BIN:0x8007DBB8
+int func_8007DBB8(int course, int value)
+{
+    int result;
+    int scaled;
+
+    if (value < 0) {
+        result = 0;
+    } else {
+        result = 255;
+        if (value <= D_8009C52C[course][0]) {
+            switch (course) {
+            case 5:
+                result = func_8007DCE0(value, D_8009C52C[5][1]);
+                break;
+            case 6:
+                result = func_8007DD6C(value, D_8009C52C[6][1]);
+                break;
+            case 8:
+                result = func_8007DE04(value, D_8009C52C[8][1]);
+                break;
+            case 9:
+                result = func_8007DE98(value, D_8009C52C[9][1]);
+                break;
+            default:
+                do {
+                    scaled = value << 8;
+                } while (0);
+                result = course * 8;
+                result = *(int *)((char *)&D_8009C52C[0][1] + result);
+                result = (scaled - value) / result;
+                break;
+            }
+        }
+    }
+    return result;
 }
