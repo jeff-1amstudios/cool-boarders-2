@@ -450,6 +450,8 @@ extern DVECTOR *D_800A4D18;
 
 extern int D_800A5B30;
 
+#include "comb_digits.h"
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -6246,4 +6248,23 @@ void func_80077548(GsOT_TAG *tag, int value, int mode, int x, int y)
     polygon++;
     D_80058ACC = (PACKET *)polygon;
     *(unsigned long *)tag = (ot_word & 0xFF000000) | address;
+}
+
+// FUNCTION: COMB.BIN:0x80078054
+void func_80078054(GsOT *ot, int x, int y, int value, int draw_mode)
+{
+    int suffix_zero = 0;
+    int suffix_one = 1;
+    GsOT_TAG *tag = ot->org + 3;
+    SPRT *sprite = D_800A4D10 + 5;
+    int width = D_800A4D18[5].vx;
+    SPRT *suffix = D_800A4D10 + 6;
+
+    CombDrawDigits(tag, sprite, x, y, value, width, 6, 6, 1);
+    x += width * 6;
+    CombDrawDigits(tag, suffix, x, y, suffix_zero, width, 1, 1, 0);
+    CombDrawDigits(tag, suffix, x + width, y, suffix_one, width, 1, 1, 0);
+    if (draw_mode) {
+        func_80096D78(tag, D_800A4D14 + 5);
+    }
 }

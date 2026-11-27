@@ -1294,4 +1294,6 @@ int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
 
 int func_80076EF8(void);
 
+void func_80078054(GsOT *ot, int x, int y, int value, int draw_mode);
+
 #endif
