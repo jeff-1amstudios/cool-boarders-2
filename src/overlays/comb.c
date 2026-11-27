@@ -412,6 +412,10 @@ extern BpCourseStartSelection D_800A4CB0;
 
 extern void func_80075894();
 
+extern unsigned int D_800A4CB8;
+extern int D_800A5EAC;
+extern int D_800A5EB0;
+
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
 {
@@ -5627,4 +5631,12 @@ void func_80075894(CombManualControlPlayer *player, int side)
         func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
         func_80062E8C((CombPlayerDirectionalImpulseView *)player, 0);
     }
+}
+
+// FUNCTION: COMB.BIN:0x80075A48
+void func_80075A48(void)
+{
+    D_800A4CB8 = 0;
+    D_800A5EAC = 0;
+    D_800A5EB0 = 0;
 }

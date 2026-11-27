@@ -1237,4 +1237,6 @@ typedef struct CombManualControlPlayer {
     short direction;
 } CombManualControlPlayer;
 
+void func_80075A48(void);
+
 #endif
