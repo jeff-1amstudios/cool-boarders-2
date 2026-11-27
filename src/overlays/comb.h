@@ -1253,4 +1253,6 @@ int func_800761BC(void);
 
 void func_80076204(void);
 
+void func_8007623C(GsOT *ot, int first, int second);
+
 #endif

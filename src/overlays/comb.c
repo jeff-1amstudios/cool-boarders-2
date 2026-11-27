@@ -429,6 +429,7 @@ extern void func_80076088(int index, int texture_x, int texture_y,
                           int x, int y, int blend);
 
 extern DR_MODE *D_800A4D0C;
+extern void func_80096CF4(GsOT_TAG *ot, SPRT *sprite);
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -5813,4 +5814,20 @@ void func_80076204(void)
 {
     func_8001F378(D_800A4D08);
     func_8001F378(D_800A4D0C);
+}
+
+// FUNCTION: COMB.BIN:0x8007623C
+void func_8007623C(GsOT *ot, int first, int second)
+{
+    GsOT_TAG *tag = &ot->org[3];
+    SPRT *sprites = D_800A4D08;
+    int x = sprites[1].x0;
+    int y = sprites[1].y0;
+
+    sprites[1].x0 = x + first;
+    sprites[1].y0 = y + second;
+    func_80096CF4(tag, &sprites[1]);
+    func_80096D78(tag, &D_800A4D0C[1]);
+    sprites[1].x0 = x;
+    sprites[1].y0 = y;
 }
