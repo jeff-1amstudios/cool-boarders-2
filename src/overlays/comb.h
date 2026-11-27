@@ -1277,4 +1277,19 @@ void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
                    int clut_x, int clut_y, int width, int height,
                    int display_width, int display_height);
 
+typedef struct CombHudFontInit {
+    SPRT sprite;
+    DR_MODE mode;
+    short width;
+    short height;
+    int texture_x;
+    int texture_y;
+    int clut_x;
+    int clut_y;
+} CombHudFontInit;
+
+int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
+                  unsigned short width, unsigned short height,
+                  unsigned short display_width, unsigned short display_height, int blend);
+
 #endif

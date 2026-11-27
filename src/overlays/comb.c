@@ -433,7 +433,7 @@ extern void func_80096CF4(GsOT_TAG *ot, SPRT *sprite);
 
 extern void func_8001EB94(int texture_x, int texture_y, int clut_x, short clut_y);
 extern void func_8001EC68(int value);
-extern int func_80076D68(int texture_x, int texture_y, int clut_x, int clut_y,
+extern int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
                          unsigned short width, unsigned short height,
                          unsigned short display_width, unsigned short display_height, int mode);
 extern void func_80076AEC(int index, int texture_x, int texture_y, int clut_x,
@@ -447,6 +447,8 @@ extern POLY_GT4 D_800A4D1C;
 extern SPRT *D_800A4D10;
 extern DR_MODE *D_800A4D14;
 extern DVECTOR *D_800A4D18;
+
+extern int D_800A5B30;
 
 // FUNCTION: COMB.BIN:0x8005AEA4
 void func_8005AEA4(FileLoadState *state)
@@ -6049,4 +6051,41 @@ void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
     polygon->y2 = display_height;
     polygon->x3 = display_width;
     polygon->y3 = display_height;
+}
+
+// FUNCTION: COMB.BIN:0x80076D68
+int func_80076D68(short texture_x, short texture_y, short clut_x, short clut_y,
+                  unsigned short width, unsigned short height,
+                  unsigned short display_width, unsigned short display_height, int blend)
+{
+    CombHudFontInit *font = (CombHudFontInit *)&D_800A5B38[D_800A5B30];
+    DR_MODE *mode = &font->mode;
+    int page_x;
+    int page_y;
+    int index;
+
+    if (D_800A5B30 < 8) {
+        SetSprt(&font->sprite);
+        font->sprite.r0 = 0x80;
+        font->sprite.g0 = 0x80;
+        font->sprite.b0 = 0x80;
+        font->sprite.clut = GetClut(clut_x, clut_y);
+        page_x = texture_x & 0xFFC0;
+        page_y = texture_y & 0xFF00;
+        font->sprite.u0 = (texture_x - page_x) * 4;
+        font->sprite.v0 = texture_y;
+        font->sprite.w = width;
+        font->sprite.h = height;
+        SetDrawMode(mode, 0, 0, GetTPage(0, blend, page_x, page_y), 0);
+        index = D_800A5B30++;
+        font->clut_x = clut_x;
+        font->clut_y = clut_y;
+        font->texture_x = texture_x;
+        font->texture_y = texture_y;
+        font->width = display_width;
+        font->height = display_height;
+    } else {
+        index = -1;
+    }
+    return index;
 }
