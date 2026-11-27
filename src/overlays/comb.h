@@ -1273,4 +1273,8 @@ void func_80076AEC(int index, int texture_x, int texture_y, int clut_x,
                    int clut_y, int width, int height,
                    int display_width, int display_height, int blend);
 
+void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
+                   int clut_x, int clut_y, int width, int height,
+                   int display_width, int display_height);
+
 #endif

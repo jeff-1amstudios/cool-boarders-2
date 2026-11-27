@@ -6008,3 +6008,45 @@ void func_80076AEC(int index, int texture_x, int texture_y, int clut_x,
     size->vx = display_width;
     size->vy = display_height;
 }
+
+// FUNCTION: COMB.BIN:0x80076C2C
+void func_80076C2C(POLY_GT4 *polygon, int texture_x, int texture_y,
+                   int clut_x, int clut_y, int width, int height,
+                   int display_width, int display_height)
+{
+    int page_x;
+
+    SetPolyGT4(polygon);
+    polygon->clut = GetClut(clut_x, clut_y);
+    page_x = texture_x & 0xFFC0;
+    polygon->tpage = GetTPage(0, 0, page_x, texture_y & 0xFF00);
+    polygon->r0 = 0x80;
+    polygon->g0 = 0x80;
+    polygon->b0 = 0x80;
+    polygon->r1 = 0x80;
+    polygon->g1 = 0x80;
+    polygon->b1 = 0x80;
+    polygon->r2 = 0x80;
+    polygon->g2 = 0x80;
+    polygon->b2 = 0;
+    polygon->r3 = 0x80;
+    polygon->g3 = 0x80;
+    polygon->b3 = 0;
+    texture_x = (texture_x - page_x) * 4;
+    polygon->sdk_unnamed_2 = texture_y;
+    polygon->sdk_unnamed_3 = texture_y;
+    polygon->u0 = texture_x;
+    polygon->u1 = texture_x + width;
+    polygon->u2 = texture_x;
+    polygon->v2 = texture_y + (height - 1);
+    polygon->u3 = texture_x + width;
+    polygon->v3 = texture_y + (height - 1);
+    polygon->x0 = 0;
+    polygon->y0 = 0;
+    polygon->x1 = display_width;
+    polygon->y1 = 0;
+    polygon->x2 = 0;
+    polygon->y2 = display_height;
+    polygon->x3 = display_width;
+    polygon->y3 = display_height;
+}
